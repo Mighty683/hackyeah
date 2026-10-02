@@ -1,0 +1,5 @@
+{
+  "name": "@hackyeah/presentation", "version": "0.0.0", "private": true, "type": "module",
+  "scripts": { "dev": "slidev slides.md --port 3030", "build": "slidev build slides.md --out dist", "export": "slidev export slides.md" },
+  "devDependencies": { "@slidev/cli": "latest", "@slidev/theme-default": "latest" }
+}

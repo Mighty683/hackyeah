@@ -1,0 +1,9 @@
+{
+  "$schema": "https://turborepo.dev/schema.json",
+  "tasks": {
+    "dev": { "cache": false, "persistent": true, "env": ["PORT", "HOST"] },
+    "build": { "dependsOn": ["^build"], "outputs": ["dist/**"] },
+    "@hackyeah/backend#build": { "dependsOn": ["^build", "@hackyeah/frontend#build"], "outputs": ["dist/**"] },
+    "typecheck": { "dependsOn": ["^typecheck"], "outputs": [] }
+  }
+}

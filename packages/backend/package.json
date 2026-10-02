@@ -1,0 +1,9 @@
+{
+  "name": "@hackyeah/backend",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": { "dev": "tsx watch src/index.ts", "build": "tsc -p tsconfig.json", "start": "node dist/index.js", "typecheck": "tsc --noEmit" },
+  "dependencies": { "@hackyeah/types": "workspace:*", "express": "latest" },
+  "devDependencies": { "@types/express": "latest", "@types/node": "^24.13.3", "tsx": "latest", "typescript": "~6.0.2" }
+}
