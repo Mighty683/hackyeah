@@ -11,6 +11,7 @@ class Landmark {
     required this.latitude,
     required this.longitude,
     this.isDemo = false,
+    this.icon = '📍',
   });
 
   static String newId() =>
@@ -26,6 +27,7 @@ class Landmark {
     return Landmark(
       id: id,
       name: point.name,
+      icon: point.icon,
       photoName: photoName,
       latitude: point.latitude,
       longitude: point.longitude,
@@ -39,9 +41,14 @@ class Landmark {
   final double latitude;
   final double longitude;
   final bool isDemo;
+  final String icon;
 
-  SafePoint get point =>
-      SafePoint(name: name, latitude: latitude, longitude: longitude);
+  SafePoint get point => SafePoint(
+    name: name,
+    latitude: latitude,
+    longitude: longitude,
+    icon: icon,
+  );
 
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -50,5 +57,6 @@ class Landmark {
     'latitude': latitude,
     'longitude': longitude,
     'isDemo': isDemo,
+    'icon': icon,
   };
 }

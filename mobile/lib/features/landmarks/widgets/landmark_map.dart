@@ -17,7 +17,6 @@ class LandmarkMap extends StatefulWidget {
     required this.photoDirectory,
     required this.onSelected,
     this.selectedId,
-    this.hidePhotos = false,
     this.map,
     this.position,
     this.route = const [],
@@ -29,7 +28,6 @@ class LandmarkMap extends StatefulWidget {
   final String photoDirectory;
   final ValueChanged<Landmark> onSelected;
   final String? selectedId;
-  final bool hidePhotos;
   final DemoMap? map;
   final Position? position;
   final List<Vector2> route;
@@ -151,8 +149,7 @@ class _LandmarkMapCanvasState extends State<_LandmarkMapCanvas> {
                 ),
               ),
             ),
-            for (var index = 0; index < config.landmarks.length; index++)
-              _pin(config.landmarks[index], index),
+            for (final landmark in config.landmarks) _pin(landmark),
             if (config.position != null)
               Positioned.fill(
                 child: IgnorePointer(
@@ -176,7 +173,7 @@ class _LandmarkMapCanvasState extends State<_LandmarkMapCanvas> {
     },
   );
 
-  Widget _pin(Landmark landmark, int index) {
+  Widget _pin(Landmark landmark) {
     final config = widget.config;
     final position = _project(
       widget.map.project([landmark.longitude, landmark.latitude]),
@@ -196,9 +193,9 @@ class _LandmarkMapCanvasState extends State<_LandmarkMapCanvas> {
           child: Semantics(
             button: true,
             selected: selected,
-            label: config.hidePhotos ? 'Pin ${index + 1}' : landmark.name,
+            label: landmark.name,
             child: Tooltip(
-              message: config.hidePhotos ? 'Pin ${index + 1}' : landmark.name,
+              message: landmark.name,
               child: Material(
                 color: selected ? BaseboundColors.green : BaseboundColors.blue,
                 shape: RoundedRectangleBorder(
@@ -211,34 +208,29 @@ class _LandmarkMapCanvasState extends State<_LandmarkMapCanvas> {
                   child: ExcludeSemantics(
                     child: Column(
                       children: [
-                        if (!config.hidePhotos)
+                        if (landmark.photoName.isNotEmpty)
                           Expanded(
-                            child: landmark.photoName.isEmpty
-                                ? const Icon(
-                                    Icons.place_outlined,
-                                    color: Colors.white,
-                                  )
-                                : Image.file(
-                                    File(
-                                      '${config.photoDirectory}/${landmark.photoName}',
-                                    ),
-                                    width: 48,
-                                    fit: BoxFit.cover,
-                                    cacheWidth: 120,
-                                    errorBuilder: (_, _, _) => const Icon(
-                                      Icons.photo_outlined,
-                                      color: Colors.white,
-                                    ),
-                                  ),
+                            child: Image.file(
+                              File(
+                                '${config.photoDirectory}/${landmark.photoName}',
+                              ),
+                              width: 48,
+                              fit: BoxFit.cover,
+                              cacheWidth: 120,
+                              errorBuilder: (_, _, _) => const Icon(
+                                Icons.photo_outlined,
+                                color: Colors.white,
+                              ),
+                            ),
                           ),
                         Expanded(
                           child: Center(
                             child: Text(
-                              '${index + 1}',
+                              landmark.icon,
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w800,
-                                fontSize: 18,
+                                fontSize: 24,
                               ),
                             ),
                           ),

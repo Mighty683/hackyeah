@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:do_bazy/features/game/navigation_location.dart';
 import 'package:do_bazy/features/game/walking_navigation.dart';
 import 'package:do_bazy/features/landmarks/data/landmark.dart';
@@ -54,6 +56,18 @@ void main() {
   Future<void> emit(Position position) async {
     source.updates.add(position);
     await Future<void>.delayed(Duration.zero);
+    if (navigation.isCalculating) {
+      final completed = Completer<void>();
+      void listen() {
+        if (!navigation.isCalculating && !completed.isCompleted) {
+          completed.complete();
+        }
+      }
+
+      navigation.addListener(listen);
+      await completed.future.timeout(const Duration(seconds: 5));
+      navigation.removeListener(listen);
+    }
   }
 
   test(
@@ -146,6 +160,27 @@ void main() {
       await Future<void>.delayed(Duration.zero);
       expect(location.state, LocationState.disabled);
       expect(location.position, isNull);
+      expect(navigation.route, isNull);
+    },
+  );
+
+  test(
+    'cancelled calculations cannot restore a route or destination',
+    () async {
+      await location.start();
+      await emit(fix(now));
+      navigation.navigateTo(target);
+      expect(navigation.isCalculating, isTrue);
+      navigation.stop();
+      expect(navigation.isCalculating, isFalse);
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+      expect(navigation.destination, isNull);
+      expect(navigation.route, isNull);
+      navigation.navigateTo(target);
+      expect(navigation.isCalculating, isTrue);
+      location.pause();
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+      expect(navigation.isCalculating, isFalse);
       expect(navigation.route, isNull);
     },
   );

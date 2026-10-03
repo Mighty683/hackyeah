@@ -1,13 +1,14 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 
 import '../../game/maps/demo_map.dart';
 import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
+import '../../widgets/basebound_mascot.dart';
 import '../help/help_screen.dart';
 import '../landmarks/data/landmark.dart';
-import '../landmarks/landmark_practice.dart';
 import '../landmarks/widgets/landmark_map.dart';
 import '../landmarks/widgets/landmark_photo.dart';
 import '../mission/mission_audio.dart';
@@ -39,9 +40,6 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   );
   final _audio = MissionAudio();
   Landmark? _selected;
-  LandmarkQuestion? _question;
-  bool _correct = false;
-  bool _tried = false;
   bool _helpOpen = false;
   bool _foreground = true;
   bool _voiceAvailable = true;
@@ -53,17 +51,32 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   List<Landmark> get _visible => widget.landmarks
       .where((place) => withinMap(widget.map, place.latitude, place.longitude))
       .toList();
-  List<Landmark> get _photos =>
-      _visible.where((place) => place.photoName.isNotEmpty).toList();
-  String get _instruction => _question == null
-      ? _navigation.destination == null
-            ? 'Choose a place or find its photo pin.'
-            : _navigation.instruction
-      : _correct
-      ? 'You remembered! This place is here.'
-      : _tried
-      ? 'Another place. Look at the photo again.'
-      : 'Where is ${_question!.target.name}? Choose its pin.';
+  String get _instruction => _navigation.destination == null
+      ? 'Choose a place on the map.'
+      : _navigation.instruction;
+
+  /// A nearby photo is recognition help, never a verified destination.
+  ({Landmark place, double distance})? get _nearestLandmark {
+    final position = _location.position;
+    if (!_location.isPrecise || position == null || _navigation.outsideMap) {
+      return null;
+    }
+    Landmark? nearest;
+    var nearestDistance = 50.0;
+    for (final place in _visible.where((place) => place.photoName.isNotEmpty)) {
+      final distance = Geolocator.distanceBetween(
+        position.latitude,
+        position.longitude,
+        place.latitude,
+        place.longitude,
+      );
+      if (distance <= nearestDistance) {
+        nearest = place;
+        nearestDistance = distance;
+      }
+    }
+    return nearest == null ? null : (place: nearest, distance: nearestDistance);
+  }
 
   @override
   void initState() {
@@ -78,7 +91,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   }
 
   void _routeChanged() {
-    if (!mounted || _helpOpen || _question != null) return;
+    if (!mounted || _helpOpen || _navigation.isCalculating) return;
     final route = _navigation.route;
     if (route == null && _announcedRoute != null) {
       _announcedRoute = null;
@@ -163,35 +176,10 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     super.dispose();
   }
 
-  void _choose(Landmark landmark) {
-    if (_question == null) {
-      setState(() {
-        _selected = landmark;
-        _recognised = false;
-      });
-      return;
-    }
-    if (_correct) return;
-    setState(() {
-      _tried = true;
-      _correct = _question!.isCorrect(landmark);
-    });
-    _speak();
-  }
-
-  void _recall() {
-    _navigation.stop();
-    setState(() {
-      _question = LandmarkQuestion.pick(
-        _photos,
-        previousId: _question?.target.id,
-      );
-      _correct = false;
-      _tried = false;
-      _selected = null;
-    });
-    _speak();
-  }
+  void _choose(Landmark landmark) => setState(() {
+    _selected = landmark;
+    _recognised = false;
+  });
 
   Future<void> _navigate() async {
     final target = _selected;
@@ -255,122 +243,153 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
         warm: true,
         child: AnimatedBuilder(
           animation: _navigation,
-          builder: (context, _) => Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final landscape =
-                    constraints.maxWidth > constraints.maxHeight * 1.25;
-                final controls = SingleChildScrollView(child: _controls());
-                final map = LayoutBuilder(
-                  builder: (context, bounds) {
-                    final side = math.min(bounds.maxWidth, bounds.maxHeight);
-                    final position = _navigation.outsideMap
-                        ? null
-                        : _location.position;
-                    return Center(
-                      child: SizedBox(
-                        width: side,
-                        height: side,
-                        child: LandmarkMap(
-                          map: widget.map,
-                          landmarks: _question?.choices ?? _visible,
-                          photoDirectory: widget.photoDirectory,
-                          position: position,
-                          route: _question == null
-                              ? _navigation.route?.points ?? []
-                              : [],
-                          selectedId: _question == null
-                              ? _selected?.id
-                              : _correct
-                              ? _question!.target.id
-                              : null,
-                          hidePhotos: _question != null && !_correct,
-                          onSelected: _choose,
-                          showAttribution: false,
-                        ),
-                      ),
-                    );
-                  },
-                );
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Semantics(
-                            liveRegion: true,
-                            header: true,
-                            child: Text(
-                              _recognised
-                                  ? 'You recognised this place!'
-                                  : _instruction,
-                              style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w700,
-                                height: 1.2,
-                              ),
+          builder: (context, _) => Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final landscape =
+                        constraints.maxWidth > constraints.maxHeight * 1.25;
+                    final controls = SingleChildScrollView(child: _controls());
+                    final map = LayoutBuilder(
+                      builder: (context, bounds) {
+                        final side = math.min(
+                          bounds.maxWidth,
+                          bounds.maxHeight,
+                        );
+                        final position = _navigation.outsideMap
+                            ? null
+                            : _location.position;
+                        return Center(
+                          child: SizedBox(
+                            width: side,
+                            height: side,
+                            child: LandmarkMap(
+                              map: widget.map,
+                              landmarks: _visible,
+                              photoDirectory: widget.photoDirectory,
+                              position: position,
+                              route: _navigation.route?.points ?? [],
+                              selectedId: _selected?.id,
+                              onSelected: _choose,
+                              showAttribution: false,
                             ),
                           ),
+                        );
+                      },
+                    );
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Semantics(
+                                liveRegion: true,
+                                header: true,
+                                child: Text(
+                                  _recognised
+                                      ? 'You recognised this place!'
+                                      : _instruction,
+                                  style: const TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w700,
+                                    height: 1.2,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: _speak,
+                              tooltip: 'Replay audio',
+                              icon: const BaseboundIcon(
+                                BaseboundIconName.speaker,
+                                size: 24,
+                              ),
+                            ),
+                          ],
                         ),
-                        IconButton(
-                          onPressed: _speak,
-                          tooltip: 'Replay audio',
-                          icon: const BaseboundIcon(
-                            BaseboundIconName.speaker,
-                            size: 24,
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Walk together with an adult · North is up',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: BaseboundColors.muted,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Expanded(
+                          child: landscape
+                              ? Row(
+                                  children: [
+                                    Expanded(child: map),
+                                    const SizedBox(width: 12),
+                                    Expanded(child: controls),
+                                  ],
+                                )
+                              : Column(
+                                  children: [
+                                    Expanded(child: map),
+                                    const SizedBox(height: 8),
+                                    ConstrainedBox(
+                                      constraints: BoxConstraints(
+                                        maxHeight: constraints.maxHeight * .4,
+                                      ),
+                                      child: controls,
+                                    ),
+                                  ],
+                                ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          '© OpenStreetMap contributors · ODbL',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: BaseboundColors.muted,
                           ),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 8),
-                    if (_question == null)
-                      const Text(
-                        'Walk together with an adult · North is up',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: BaseboundColors.muted,
-                        ),
-                      ),
-                    const SizedBox(height: 8),
-                    Expanded(
-                      child: landscape
-                          ? Row(
-                              children: [
-                                Expanded(child: map),
-                                const SizedBox(width: 12),
-                                Expanded(child: controls),
-                              ],
-                            )
-                          : Column(
-                              children: [
-                                Expanded(child: map),
-                                const SizedBox(height: 8),
-                                ConstrainedBox(
-                                  constraints: BoxConstraints(
-                                    maxHeight: constraints.maxHeight * .4,
-                                  ),
-                                  child: controls,
-                                ),
-                              ],
-                            ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      '© OpenStreetMap contributors · ODbL',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: BaseboundColors.muted,
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
+                    );
+                  },
+                ),
+              ),
+              if (_navigation.isCalculating)
+                Positioned.fill(child: _routeLoading()),
+            ],
           ),
+        ),
+      ),
+    ),
+  );
+
+  Widget _routeLoading() => ColoredBox(
+    color: Theme.of(context).scaffoldBackgroundColor,
+    child: Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const BaseboundMascot(size: 160, pose: DinoPose.search),
+            const SizedBox(height: 24),
+            Semantics(
+              liveRegion: true,
+              child: Text(
+                'Finding a path…',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+            ),
+            const SizedBox(height: 16),
+            const CircularProgressIndicator(),
+            const SizedBox(height: 24),
+            TextButton(
+              onPressed: _navigation.stop,
+              child: const Text('Cancel'),
+            ),
+          ],
         ),
       ),
     ),
@@ -399,7 +418,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                           : 'Fictional demo photo · recognition only',
                     )
                   : null,
-              leading: const BaseboundIcon(BaseboundIconName.pin, size: 24),
+              leading: Text(place.icon, style: const TextStyle(fontSize: 24)),
               onTap: () {
                 Navigator.pop(sheetContext);
                 _choose(place);
@@ -432,34 +451,44 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   Widget _controls() => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
-      if (_question != null)
-        _recallPanel()
-      else ...[
-        if (_selected != null)
-          _placePanel(_selected!)
-        else if (_navigation.destination != null)
-          _routePanel(),
-        if (widget.landmarks.isEmpty)
-          const Text('Ask your adult to add familiar places.')
-        else if (_selected == null && _navigation.destination == null)
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
+      if (_nearestLandmark case final nearby?) ...[
+        SoftPanel(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              OutlinedButton.icon(
-                onPressed: _showPlaces,
-                icon: const BaseboundIcon(BaseboundIconName.pin, size: 24),
-                label: const Text('Places'),
+              Text(
+                'Nearby landmark · about ${metres(nearby.distance)} away',
+                style: const TextStyle(fontWeight: FontWeight.w700),
               ),
-              if (_photos.length >= 2)
-                OutlinedButton.icon(
-                  onPressed: _recall,
-                  icon: const Icon(Icons.photo_outlined, size: 24),
-                  label: const Text('Find the photo pin'),
-                ),
+              const SizedBox(height: 8),
+              LandmarkPhoto(
+                path: '${widget.photoDirectory}/${nearby.place.photoName}',
+                label: nearby.place.name,
+                height: 120,
+              ),
+              TextButton(
+                onPressed: () => _choose(nearby.place),
+                child: Text('${nearby.place.icon} ${nearby.place.name}'),
+              ),
+              if (nearby.place.isDemo)
+                const Text('Fictional demo photo · recognition only'),
             ],
           ),
+        ),
+        const SizedBox(height: 8),
       ],
+      if (_selected != null)
+        _placePanel(_selected!)
+      else if (_navigation.destination != null)
+        _routePanel(),
+      if (widget.landmarks.isEmpty)
+        const Text('Ask your adult to add familiar places.')
+      else if (_selected == null && _navigation.destination == null)
+        OutlinedButton.icon(
+          onPressed: _showPlaces,
+          icon: const BaseboundIcon(BaseboundIconName.pin, size: 24),
+          label: const Text('Places'),
+        ),
       if (_locationStatus case final status?) ...[
         const SizedBox(height: 8),
         Text(
@@ -577,49 +606,4 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       ),
     );
   }
-
-  Widget _recallPanel() => SoftPanel(
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        LandmarkPhoto(
-          path: '${widget.photoDirectory}/${_question!.target.photoName}',
-          label: _question!.target.name,
-          height: 120,
-        ),
-        const SizedBox(height: 8),
-        Text(
-          _question!.target.name,
-          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
-        ),
-        if (_question!.target.isDemo) const Text('Fictional demo photo'),
-        const SizedBox(height: 8),
-        if (!_correct)
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (var index = 0; index < _question!.choices.length; index++)
-                OutlinedButton(
-                  onPressed: () => _choose(_question!.choices[index]),
-                  child: Text('Pin ${index + 1}'),
-                ),
-            ],
-          )
-        else
-          FilledButton(
-            onPressed: _recall,
-            child: const Text('Try another place'),
-          ),
-        TextButton(
-          onPressed: () {
-            setState(() => _question = null);
-            _audioRevision++;
-            _audio.stop();
-          },
-          child: const Text('Explore our map'),
-        ),
-      ],
-    ),
-  );
 }
