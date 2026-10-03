@@ -337,7 +337,7 @@ flowchart TD
 | Lost scene selection (7+) | Choose meeting point nearby or out of sight | Replay audio, back; unavailable voice offers adult help and retry |
 | Lost decision/feedback | Tap a highlighted person, object or landmark; hear a calm consequence | Retry unsafe choice or advance; replay audio, exit |
 | Lost reunion/confirmation | Tap I'M SAFE after the fictional reunion | Explicit local confirmation; no message sent |
-| Lost recall/completion | Recall seven actions, including meeting point only if nearby | Replay audio, Play again with the same snapshot/variant, Back to practice choices |
+| Lost recall/completion | Dino praise and three numbered reminders, including meeting point only if visible nearby | Replay audio, Play again with the same snapshot/variant, Back to practice choices |
 | Parent intro | Add child details | Walk together; Skip child details, demo/privacy details, confirmed Delete all and explicit location recovery in Setup options, back |
 | Child name, age, address, support needs | Enter one optional detail per screen | Next with value or empty field, previous step; final step saves child record |
 | Trusted contacts | Add or review up to three contacts | Edit or confirmed delete; Choose safe places or Skip contacts; Setup options, back to intro |
@@ -393,7 +393,7 @@ On **It is quiet now**, the child stays inside the hallway. After either choice,
 
 ### Mission 02 — lost practice
 
-The new 7+ activity has two explicit variants: the agreed meeting point is visible nearby, or it is out of sight. Both practice stopping, looking, asking at a nearby public desk, declining to leave with an unknown person, a pretend call with no answer, trying a different contact, waiting, reunion, an explicit I'M SAFE tap and seven-action recall. Wrong choices get calm feedback and retry the same decision. There is no score or timer.
+The new 7+ activity has two explicit variants: the agreed meeting point is visible nearby, or it is out of sight. Both practice stopping, looking, asking at a nearby public desk, declining to leave with an unknown person, a pretend call with no answer, trying a different contact, waiting, reunion, an explicit I'M SAFE tap and a short recall. Lost and air raid share the same recap component before Finish practice and on completion: Dino’s “You did a great job!” and three numbered reminders. Lost groups the practiced actions into stopping/looking (meeting place only if visible nearby), asking for help/contacting family/waiting, and confirming after reunion. The pretend-message notice remains visible; narration reads the same praise and reminders. Wrong choices get calm feedback and retry the same decision. There is no score or timer.
 
 Parent setup can save a practice Fountain or Information desk illustration and optional label within the existing safe-places stage. This field is independent of geographic pins. The same registry supplies setup, reminder and recognition art; it is not a photograph or a safety assessment. Contacts contribute display labels/avatar motifs only. Calls, replies and notifications are simulated; the mission never receives real phone numbers, addresses or map coordinates. Missing details use labelled fixtures, and an unknown landmark ID becomes Pretend fountain. Failed record reads require retry or explicit fictional practice and never overwrite the record.
 

@@ -1,6 +1,29 @@
 import 'data/lost_practice_context.dart';
 import 'lost_landmarks.dart';
 
+/// The displayed and spoken reminders share the same short practice recap.
+abstract final class LostPracticeRecap {
+  static const praise = 'You did a great job! You finished the practice.';
+  static const notice = 'No message was sent.';
+  static const points = [
+    (
+      title: 'Stop and look around',
+      description: 'Use your meeting place only if it is visible nearby.',
+    ),
+    (
+      title: 'Ask for help here',
+      description: 'Contact your family. Stay here and wait.',
+    ),
+    (
+      title: 'After reunion, tap I am safe',
+      description: 'Confirm only after you are together in the story.',
+    ),
+  ];
+
+  static String get narration =>
+      '$praise ${points.map((point) => '${point.title}. ${point.description}').join(' ')} $notice';
+}
+
 enum LostPracticeVariant { meetingPointNearby, meetingPointUnavailable }
 
 enum LostMissionVisual {
@@ -390,13 +413,10 @@ class LostMissionSession {
         visual: LostMissionVisual.confirmation,
         actionLabel: 'Remember the steps',
       ),
-      const LostMissionStep(
+      LostMissionStep(
         id: 'recall',
         title: 'Remember what you practiced',
-        narration:
-            'Stop. Look around. Use your meeting place only if it is '
-            'visible nearby. Ask for help here. Contact your family. '
-            'Stay and wait. After reunion, tap I am safe.',
+        narration: LostPracticeRecap.narration,
         visual: LostMissionVisual.recall,
         actionLabel: 'Finish practice',
       ),

@@ -11,6 +11,7 @@ import '../../ui/basebound_ui.dart';
 import 'air_raid_mission.dart';
 import 'mission_audio.dart';
 import 'mission_scene.dart';
+import 'practice_recap.dart';
 import 'practice_message_conversation.dart';
 import 'practice_phone_keypad.dart';
 
@@ -696,66 +697,14 @@ class _MissionScreenState extends State<MissionScreen>
   Widget _summaryContent(String title) => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
-      Text(
-        title,
-        style: const TextStyle(
-          fontSize: 28,
-          fontWeight: FontWeight.w700,
-          height: 1.2,
-        ),
+      PracticeRecap(
+        title: title,
+        praise: AirRaidPracticeRecap.praise,
+        points: AirRaidPracticeRecap.points,
       ),
-      const SizedBox(height: 12),
-      const BaseboundGuide(message: AirRaidPracticeRecap.praise),
-      const SizedBox(height: 16),
-      for (var index = 0; index < AirRaidPracticeRecap.points.length; index++)
-        Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: _summaryPoint(index),
-        ),
       _audioControls(),
     ],
   );
-
-  Widget _summaryPoint(int index) {
-    final point = AirRaidPracticeRecap.points[index];
-    return SoftPanel(
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '${index + 1}.',
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: BaseboundColors.blue,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  point.title,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    height: 1.3,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  point.description,
-                  style: const TextStyle(fontSize: 16, height: 1.4),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _recallLayout() => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
