@@ -17,12 +17,14 @@ class OfflinePointPicker extends StatefulWidget {
     required this.onSelected,
     this.initialPoint,
     this.selectionLabel = 'safe place',
+    this.selectionIcon = '📍',
     super.key,
   });
 
   final List<SafePoint> otherPoints;
   final SafePoint? initialPoint;
   final String selectionLabel;
+  final String selectionIcon;
   final ValueChanged<SafePoint> onSelected;
 
   @override
@@ -32,9 +34,16 @@ class OfflinePointPicker extends StatefulWidget {
 class _OfflinePointPickerState extends State<OfflinePointPicker> {
   late final _game = _PointPickerGame(
     initialPoint: widget.initialPoint,
+    selectionIcon: widget.selectionIcon,
     otherPoints: widget.otherPoints,
     onSelected: widget.onSelected,
   );
+
+  @override
+  void didUpdateWidget(covariant OfflinePointPicker oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _game.updateSelectionIcon(widget.selectionIcon);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -146,6 +155,7 @@ class _OfflinePointPickerState extends State<OfflinePointPicker> {
 class _PointPickerGame extends FlameGame {
   _PointPickerGame({
     required this.initialPoint,
+    required this.selectionIcon,
     required this.otherPoints,
     required this.onSelected,
   }) : super(
@@ -159,7 +169,8 @@ class _PointPickerGame extends FlameGame {
   final List<SafePoint> otherPoints;
   final ValueChanged<SafePoint> onSelected;
   late final DemoMap _map;
-  CircleComponent? _marker;
+  String selectionIcon;
+  TextComponent? _marker;
   bool _ready = false;
 
   @override
@@ -172,8 +183,7 @@ class _PointPickerGame extends FlameGame {
     camera.viewfinder.position = Vector2(DemoMap.mapLeft, DemoMap.mapTop);
     _map = await DemoMapRepository().load();
     await world.add(OfflineMapComponent(map: _map, onPointSelected: _select));
-    for (var index = 0; index < otherPoints.length; index++) {
-      final point = otherPoints[index];
+    for (final point in otherPoints) {
       final position = _map.project([point.longitude, point.latitude]);
       await world.add(
         CircleComponent(
@@ -185,11 +195,11 @@ class _PointPickerGame extends FlameGame {
       );
       await world.add(
         TextComponent(
-          text: '${index + 1}',
+          text: point.icon,
           position: position + Vector2(0, -16),
           anchor: Anchor.center,
           textRenderer: TextPaint(
-            style: const TextStyle(color: Color(0xFF333333)),
+            style: const TextStyle(fontSize: 20, color: Color(0xFF333333)),
           ),
         ),
       );
@@ -199,6 +209,11 @@ class _PointPickerGame extends FlameGame {
     if (initial != null) {
       _select(_map.project([initial.longitude, initial.latitude]));
     }
+  }
+
+  void updateSelectionIcon(String icon) {
+    selectionIcon = icon;
+    _marker?.text = icon;
   }
 
   void selectCenter() {
@@ -223,11 +238,11 @@ class _PointPickerGame extends FlameGame {
     );
     final marker = _marker;
     if (marker == null) {
-      _marker = CircleComponent(
-        radius: 10,
+      _marker = TextComponent(
+        text: selectionIcon,
         anchor: Anchor.center,
         position: point,
-        paint: Paint()..color = const Color(0xFF8C3152),
+        textRenderer: TextPaint(style: const TextStyle(fontSize: 24)),
       );
       world.add(_marker!);
     } else {

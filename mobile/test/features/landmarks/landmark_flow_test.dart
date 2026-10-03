@@ -12,6 +12,7 @@ import 'package:do_bazy/game/maps/demo_map.dart';
 import 'package:do_bazy/features/landmarks/widgets/landmark_map.dart';
 import 'package:do_bazy/features/landmarks/widgets/landmark_photo.dart';
 import 'package:do_bazy/ui/basebound_ui.dart';
+import 'package:do_bazy/widgets/basebound_mascot.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
@@ -56,6 +57,7 @@ void main() {
     );
     await _tap(tester, 'Open landmark');
     await tester.enterText(find.byType(TextField), 'Red corner shop');
+    await _tap(tester, '🏪 Shop');
     await _tap(tester, 'Choose map position', settle: false);
     await _pumpMap(tester);
     expect(_saveButton(tester).onPressed, isNull);
@@ -66,6 +68,10 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
     await tester.pumpAndSettle();
     expect(saved?.name, 'Red corner shop');
+    expect(saved?.icon, '🏪');
+    expect(Landmark.fromJson(saved!.toJson()).icon, '🏪');
+    final legacyLandmark = saved!.toJson()..remove('icon');
+    expect(Landmark.fromJson(legacyLandmark).icon, '📍');
     expect(saved?.latitude, inInclusiveRange(50, 51));
     expect(saved?.longitude, inInclusiveRange(19, 21));
     expect(find.byType(LandmarkEditorScreen), findsNothing);
@@ -304,67 +310,107 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('child retries a wrong map pin and learns the correct location', (
-    tester,
-  ) async {
-    final geography = DemoMap.fromJson(
-      jsonDecode(File('assets/maps/tauron-arena.geojson').readAsStringSync())
-          as Map<String, dynamic>,
-    );
-    final landmarks = [
-      Landmark(
-        id: '1_1',
-        name: 'Red shop',
-        photoName: '1_1.photo',
-        latitude: geography.center[1].toDouble(),
-        longitude: geography.center[0].toDouble(),
-      ),
-      Landmark(
-        id: '2_2',
-        name: 'Playground',
-        photoName: '2_2.photo',
-        latitude: geography.center[1].toDouble() + .003,
-        longitude: geography.center[0].toDouble() + .003,
-      ),
-    ];
-    await _start(
-      tester,
-      GameScreen(
-        map: geography,
-        landmarks: landmarks,
-        photoDirectory: directory.path,
-      ),
-      settle: false,
-    );
-    await _pumpMap(tester);
-    await _tap(tester, 'Find the photo pin', settle: false);
-    final target = tester
-        .widget<LandmarkPhoto>(find.byType(LandmarkPhoto))
-        .label;
-    final map = tester.widget<LandmarkMap>(find.byType(LandmarkMap));
-    final wrong = map.landmarks.indexWhere((entry) => entry.name != target);
-    final right = map.landmarks.indexWhere((entry) => entry.name == target);
-    await _tap(tester, 'Pin ${wrong + 1}', settle: false);
-    expect(
-      find.text('Another place. Look at the photo again.'),
-      findsOneWidget,
-    );
-    expect(find.text('Try another place'), findsNothing);
-    await _tap(tester, 'Pin ${right + 1}', settle: false);
-    expect(find.text('You remembered! This place is here.'), findsOneWidget);
-    await _tap(tester, 'Try another place', settle: false);
-    expect(
-      tester.widget<LandmarkPhoto>(find.byType(LandmarkPhoto)).label,
-      isNot(target),
-    );
-    expect(
-      tester.widget<LandmarkMap>(find.byType(LandmarkMap)).hidePhotos,
-      isTrue,
-    );
-    expect(tester.takeException(), isNull);
-    await tester.pumpWidget(const SizedBox.shrink());
-    await tester.pump();
-  });
+  testWidgets(
+    'shows only the closest landmark within 50 m of precise live GPS',
+    (tester) async {
+      final geography = DemoMap.fromJson(
+        jsonDecode(File('assets/maps/tauron-arena.geojson').readAsStringSync())
+            as Map<String, dynamic>,
+      );
+      final latitude = geography.center[1].toDouble();
+      final longitude = geography.center[0].toDouble();
+      final landmarks = [
+        Landmark(
+          id: '1_1',
+          name: 'Red shop',
+          photoName: '1_1.photo',
+          latitude: latitude,
+          longitude: longitude,
+          icon: '🏪',
+        ),
+        Landmark(
+          id: '2_2',
+          name: 'Playground',
+          photoName: '2_2.photo',
+          latitude: latitude + .0003,
+          longitude: longitude,
+          icon: '🛝',
+        ),
+      ];
+      var now = DateTime.now();
+      final source = FakeLocationSource();
+      final location = NavigationLocation(source: source, now: () => now);
+      await _start(
+        tester,
+        GameScreen(
+          map: geography,
+          landmarks: landmarks,
+          photoDirectory: directory.path,
+          location: location,
+        ),
+        settle: false,
+      );
+      await _pumpMap(tester);
+      expect(find.text('Find the photo pin'), findsNothing);
+      expect(find.byType(LandmarkPhoto), findsNothing);
+
+      Future<void> move(double offset, {double accuracy = 5}) async {
+        now = now.add(const Duration(seconds: 1));
+        source.updates.add(
+          fix(
+            now,
+            latitude: latitude + offset,
+            longitude: longitude,
+            accuracy: accuracy,
+          ),
+        );
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+
+      await move(.0001);
+      expect(find.text('🏪 Red shop'), findsOneWidget);
+      expect(find.byType(LandmarkPhoto), findsOneWidget);
+      expect(
+        tester.widget<LandmarkPhoto>(find.byType(LandmarkPhoto)).label,
+        'Red shop',
+      );
+      await move(.0003);
+      expect(find.text('🛝 Playground'), findsOneWidget);
+      expect(find.text('🏪 Red shop'), findsNothing);
+      // Just inside/outside 50 m north of the northern landmark.
+      await move(.0003 + .00044);
+      expect(find.byType(LandmarkPhoto), findsOneWidget);
+      await move(.0003 + .00046);
+      expect(find.byType(LandmarkPhoto), findsNothing);
+      await move(0, accuracy: 100);
+      expect(find.byType(LandmarkPhoto), findsNothing);
+      await move(0);
+      expect(find.byType(LandmarkPhoto), findsOneWidget);
+      now = now.add(const Duration(seconds: 31));
+      location.checkFreshness();
+      await tester.pump();
+      expect(find.byType(LandmarkPhoto), findsNothing);
+      await move(0);
+      await _tap(tester, '🏪 Red shop', settle: false);
+      expect(find.text('Walk here together'), findsOneWidget);
+      await tester.ensureVisible(find.text('Walk here together'));
+      await tester.tap(find.text('Walk here together'));
+      await tester.pump();
+      expect(find.text('Finding a path…'), findsOneWidget);
+      expect(
+        tester.widget<BaseboundMascot>(find.byType(BaseboundMascot)).pose,
+        DinoPose.search,
+      );
+      await tester.tap(find.text('Cancel'));
+      await tester.pump();
+      expect(find.text('Finding a path…'), findsNothing);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+      location.dispose();
+      await source.updates.close();
+    },
+  );
 }
 
 Future<void> _start(

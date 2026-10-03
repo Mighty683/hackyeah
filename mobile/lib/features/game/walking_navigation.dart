@@ -40,6 +40,8 @@ class WalkingNavigation extends ChangeNotifier {
   final DemoMap map;
   final NavigationLocation location;
   final OfflineRouter _router;
+  bool isCalculating = false;
+  int _calculationRevision = 0;
   Landmark? destination;
   WalkingRoute? route;
   double progress = 0;
@@ -58,6 +60,7 @@ class WalkingNavigation extends ChangeNotifier {
 
   void navigateTo(Landmark place) {
     if (place.isDemo) return;
+    _cancelCalculation();
     destination = place;
     route = null;
     progress = 0;
@@ -65,6 +68,7 @@ class WalkingNavigation extends ChangeNotifier {
   }
 
   void stop() {
+    _cancelCalculation();
     destination = null;
     route = null;
     nearPlace = false;
@@ -78,12 +82,14 @@ class WalkingNavigation extends ChangeNotifier {
     nearPlace = false;
     problem = null;
     if (fix == null || !location.isPrecise || outsideMap || target == null) {
+      _cancelCalculation();
       route = null;
       progress = 0;
       notifyListeners();
       return;
     }
     if (!withinMap(map, target.latitude, target.longitude)) {
+      _cancelCalculation();
       route = null;
       problem = 'This place is outside the downloaded map.';
       notifyListeners();
@@ -118,21 +124,41 @@ class WalkingNavigation extends ChangeNotifier {
         return;
       }
     }
-    final path = _router.routeDetails(
-      point,
-      map.project([target.longitude, target.latitude]),
-    );
-    progress = 0;
-    if (path == null) {
-      route = null;
-      problem = 'No connected walking route here. Ask your adult to help choose another place.';
-    } else {
-      route = WalkingRoute(map, path);
-      final nearest = route!.locate(point);
-      progress = nearest.progress;
-      joinDistance = nearest.distance;
+    if (!isCalculating) {
+      _calculate(point, map.project([target.longitude, target.latitude]));
     }
+  }
+
+  void _cancelCalculation() {
+    _calculationRevision++;
+    isCalculating = false;
+  }
+
+  Future<void> _calculate(Vector2 start, Vector2 target) async {
+    final revision = ++_calculationRevision;
+    isCalculating = true;
+    route = null;
     notifyListeners();
+    try {
+      // Keep A* off the UI isolate so the searching screen stays responsive.
+      final path = await compute(_findPath, (_router, start, target));
+      if (revision != _calculationRevision) return;
+      isCalculating = false;
+      progress = 0;
+      if (path == null) {
+        problem = 'No connected walking route here. Ask your adult to help choose another place.';
+        notifyListeners();
+        return;
+      }
+      route = WalkingRoute(map, path);
+      // Apply the latest GPS fix; a calculation may finish after the child moved.
+      _update();
+    } catch (_) {
+      if (revision != _calculationRevision) return;
+      isCalculating = false;
+      problem = 'Could not find a path. Ask your adult to try again.';
+      notifyListeners();
+    }
   }
 
   String get instruction {
@@ -162,6 +188,7 @@ class WalkingNavigation extends ChangeNotifier {
 
   @override
   void dispose() {
+    _cancelCalculation();
     location.removeListener(_update);
     super.dispose();
   }
@@ -346,3 +373,6 @@ class WalkingRoute {
   static String _capitalise(String text) =>
       '${text[0].toUpperCase()}${text.substring(1)}';
 }
+
+RoutedPath? _findPath((OfflineRouter, Vector2, Vector2) request) =>
+    request.$1.routeDetails(request.$2, request.$3);

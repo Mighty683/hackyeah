@@ -28,7 +28,7 @@ flowchart TD
     TP["CONTACT PHONE<br/>Optional phone number"]
     TR["CONTACT RELATIONSHIP<br/>Optional relationship; save contact"]
     SP["SAFE PLACES<br/>Add or review optional destinations"]
-    M["SAFE PLACE NAME<br/>Optional name"]
+    M["SAFE PLACE NAME + ICON<br/>Optional name; choose emoji"]
     MP["SAFE PLACE PIN<br/>Choose a position on the offline map; save place"]
     ME["PLACE: MAP ERROR<br/>Go back and try again"]
     DONE["SETUP COMPLETE<br/>Start practice or review family details"]
@@ -37,7 +37,7 @@ flowchart TD
     F["OUR MAP: LOADING<br/>Read saved photo landmarks and named parent places"]
     FE["OUR MAP: LOAD ERROR<br/>Retry without resetting saved records"]
     L["OUR MAP: LOADING<br/>Load the offline map"]
-    G["OUR MAP<br/>Independent photo pins, recognition and GPS walking guidance"]
+    G["OUR MAP<br/>Independent emoji/photo pins, nearby landmarks and GPS walking guidance"]
     R["NEAR PLACE<br/>Accurate GPS is within 20 m; child confirms recognition"]
     E["OUR MAP: MAP ERROR<br/>Go back and try again"]
     I["ABOUT OUR MAP<br/>GPS, offline route limits and map credits"]
@@ -47,10 +47,8 @@ flowchart TD
 
     LP["PARENT: WALK TOGETHER<br/>Independent photo landmarks on the offline map"]
     PHOTO["ANDROID CAMERA OR GALLERY<br/>Choose one photo; cancellation saves nothing"]
-    LN["LANDMARK NAME<br/>Name one recognisable place"]
+    LN["LANDMARK NAME + ICON<br/>Name one recognisable place; choose emoji"]
     LPOINT["LANDMARK PIN<br/>Tap the map or explicitly use current GPS; confirm a demo-area pin"]
-    LQ["OUR MAP: PHOTO RECALL<br/>One photo + 2–4 numbered map pins on the same map"]
-    LR["LANDMARK FEEDBACK<br/>Show the remembered location; no score or path"]
     LERR["LANDMARK LOAD ERROR<br/>Retry without resetting saved records"]
     A -->|Walk together, without completing setup| LP
     DONE -->|Walk together| LP
@@ -70,14 +68,6 @@ flowchart TD
     LP -->|Back: return to parent opener| LRETURN{"Opened by"}
     LRETURN -->|Introduction| A
     LRETURN -->|Completion| DONE
-    G -->|Find the photo pin: at least two photo landmarks; stop active directions| LQ
-    LQ -->|Different pin: calm feedback; retry| LQ
-    LQ -->|Correct pin| LR
-    LR -->|Try another independently chosen place| LQ
-    LQ -->|Explore our map| G
-    LR -->|Explore our map| G
-    LQ -->|Back| PS
-    LR -->|Back| PS
     LP -->|Load failed| LERR
     LERR -->|Retry| LP
 
@@ -241,7 +231,11 @@ flowchart TD
     L -->|Map loaded| G
     L -->|Map load failed| E
     E -->|Try again| F
-    G -->|Tap photo pin or place list: open details only| G
+    G -->|Tap photo pin, nearby landmark or place list: open details only| G
+    G -->|Fresh precise GPS: show nearest photo landmark within 50 m| G
+    G -->|Calculate or replan path| SEARCH["FINDING A PATH<br/>Dinosaur with spyglass; cancel available"]
+    SEARCH -->|Path or no-path result ready| G
+    SEARCH -->|Cancel calculation| G
     G -->|Automatic foreground GPS; no permission prompt| GPS["GPS STATE<br/>Waiting, live, approximate, denied, disabled, stale or outside map"]
     GPS -->|Fresh position: update dot and route progress| G
     GPS -->|No valid position: no invented dot or active directions| G
@@ -293,20 +287,19 @@ flowchart TD
 | Contact name, phone, relationship | Enter one optional detail per screen | Next with value or empty field, previous step; final step saves contact |
 | Safe places | Add or review optional map places or a lost-practice landmark | Edit or confirmed delete; Finish setup or Skip safe places; Setup options, back to contacts |
 | Practice landmark picture/name | Choose one bundled illustration, then an optional label | Previous step, save with retained edits on failure; back without saving |
-| Safe place name | Name one safe place | Choose position, back without saving |
+| Safe place name | Name one safe place and choose an emoji icon | Choose position, back without saving |
 | Safe place pin | Choose one geographic position | Tap or accessible centre/direction controls; save, previous step |
 | Setup complete | Play together | Walk together; Review setup returns to intro; Setup options, back to safe places |
 | Setup load error | Recover saved details | Retry, confirmed Delete all in Setup options, back |
 | Form save error | Retry saving without losing edits | Back without saving |
 | Our map loading/error | Load named places, photo metadata and offline map | Retry without resetting records; Help prototype, back |
-| Our map | Select a familiar place or match a photo | Places selector, automatic foreground GPS, gesture pan/zoom, audio replay, info, Help prototype |
+| Our map | Select a familiar place or inspect the nearest landmark | Places selector, automatic foreground GPS, gesture pan/zoom, audio replay, info, Help prototype |
 | Walking guidance | Follow the next mapped turn with an adult | Route distance, destination photo, stop directions, change destination |
 | Near place | Confirm recognising the original photo place | Accurate GPS required; path endpoint alone does not confirm arrival |
 | Map information | Read optional GPS and coverage details | Close |
 | Parent landmark library | Add a photo of one familiar place | Camera/gallery choice, explicit Load demo landmarks, tap a pin for details, edit name/pin, confirmed delete or delete all, back to opener |
-| Landmark name | Name the photographed place | Choose map position, back without saving |
+| Landmark name | Name the photographed place and choose an emoji icon | Choose map position, back without saving |
 | Landmark pin | Confirm one position inside the demo map | Manual tap/accessible direction controls, optional foreground GPS, previous step; saving preserves edits on failure |
-| Our map photo recall | Match one photo to one of 2–4 map pins | Shared map and unchanged GPS dot, audio replay, calm retry, correct-location feedback, another photo, return to exploration |
 | Landmark load error | Retry reading saved landmarks | Back; no silent deletion or reset |
 | Help prototype entry | Choose not responding, air raid, lost, or unsure | Open 112 dialler, no-signal information, close |
 | Help step | Answer one question or read one instruction | Previous step, 112 dialler, trusted-contact dialler where offered |
@@ -347,19 +340,19 @@ The current activity split adds a separate scenario-list route to the implemente
 
 ### Child map interaction
 
-**Our map** combines independent photo landmarks, saved named parent pins, recognition and walking guidance. Opening it shows the full bundled 2 × 2 km TAURON Arena, Kraków area, without an invented player position or random destination. Tap a pin to inspect its name/photo. **Walk here together** starts guidance to that selected real place. Fictional demo pins are for recognition only and have no walking action.
+**Our map** combines independent photo landmarks, saved named parent pins, recognition and walking guidance. Opening it shows the full bundled 2 × 2 km TAURON Arena, Kraków area, without an invented player position or random destination. Pins show a saved Unicode emoji instead of a number; photo landmarks also keep their thumbnail. Tap a pin to inspect its name/photo. **Walk here together** starts guidance to that selected real place. Fictional demo pins are for recognition only and have no walking action.
 
 The welcome screen requests foreground location permission once on first launch before role navigation. Denial permits practice; explicit permission retry or Android settings access is available in parent Setup options. Welcome does not start location tracking. **Our map** starts foreground GPS automatically without requesting permission. Only received phone positions set the blue dot; the accuracy circle shows uncertainty. An accepted fix is at most 30 seconds old, and turn guidance requires reported accuracy at most 25 m. Approximate fixes may show a dot but pause directions. Old fixes remove both dot and route. Denied permission, disabled GPS, stream failure and out-of-area positions are explicit states. Out-of-area coordinates are never clamped onto the arena map. Backgrounding, leaving this screen or opening Help cancels GPS; returning while foreground obtains a fresh fix without another permission prompt. No background permission or location history is added.
 
-The map stays north-up and starts with the whole area visible. Dragging and pinching are the only camera controls, with 1–8× zoom. GPS updates the dot and route without recentering or zooming. There are no GPS-toggle, zoom, recenter or overview buttons. An accessible **Places** selector opens on demand; one contextual panel shows exploration, the selected place, walking guidance or photo recall. Photo markers retain a 48-pixel touch target at each zoom. Directions, map attribution and scrolling secondary controls remain outside the map gesture area. Landscape places controls beside the map. Appearance verification remains with the user.
+The map stays north-up and starts with the whole area visible. Dragging and pinching are the only camera controls, with 1–8× zoom. GPS updates the dot and route without recentering or zooming. There are no GPS-toggle, zoom, recenter or overview buttons. An accessible **Places** selector opens on demand; a contextual panel shows exploration, the selected place or walking guidance. The closest photo landmark within 50 m appears beneath the map, or beside it in landscape. Photo markers retain a 48-pixel touch target at each zoom. Directions, map attribution and scrolling secondary controls remain outside the map gesture area. Landscape places controls beside the map. Appearance verification remains with the user.
 
-Routes use the existing offline pedestrian graph. Text and offline narration provide the next turn, path distance and names where available; turn directions are relative to the route, not phone orientation. A GPS fix over 25 m from the route replans. The endpoint ring marks a nearby mapped path, not a verified entrance. Reaching that ring alone does not mark arrival: accurate GPS must be within 20 m of the original pin to offer **I recognise this place**. Directions stop when confirmed. No connected path means a clear message, with no straight-line walking substitute. Access, barriers, entrances and current hazards are not verified; walk with an adult.
+Route calculation and replanning show a dinosaur with a spyglass and **Finding a path…** overlay, with Cancel available. A* runs off the UI isolate; cancellation, stale GPS, leaving or pausing discard late results. Routes use the existing offline pedestrian graph. Text and offline narration provide the next turn, path distance and names where available; turn directions are relative to the route, not phone orientation. A GPS fix over 25 m from the route replans. The endpoint ring marks a nearby mapped path, not a verified entrance. Reaching that ring alone does not mark arrival: accurate GPS must be within 20 m of the original pin to offer **I recognise this place**. Directions stop when confirmed. No connected path means a clear message, with no straight-line walking substitute. Access, barriers, entrances and current hazards are not verified; walk with an adult.
 
 Functional verification covers GPS-only movement, denied/approximate/stale/out-of-area fixes, lifecycle cancellation, turn geometry/names, unavailable routes, offset endpoints and recognition on the shared map. Physical Android walking/GPS and appearance review remain unverified.
 
 ### Independent photo landmarks
 
-Parents open **Walk together** directly from the family intro or setup completion. This name describes exploring together, not a recorded walk. Camera or gallery capture opens the existing parent form style: name, then map position. A landmark needs a non-empty short name and confirmed geographic pin. The app copies its photo out of the camera cache when saving. Editing retains its photo while changing the name or position. Back from the name step saves nothing; back from pin placement retains the draft.
+Parents open **Walk together** directly from the family intro or setup completion. This name describes exploring together, not a recorded walk. Camera or gallery capture opens the existing parent form style: name and emoji icon, then map position. A landmark needs a non-empty short name and confirmed geographic pin. The app copies its photo out of the camera cache when saving. Editing retains its photo while changing the name, icon or position. Existing records without an icon use 📍. Back from the name step saves nothing; back from pin placement retains the draft.
 
 Pins are independent recognition points, stored separately from safe places. There is no stored route, sequence, track or assumed visiting order. A child may select any real point for a route from their current GPS position. Landmark collections use the existing game geography, with photo markers, pan/pinch and accessible list selection. Camera/gallery is provided by Android rather than an invented in-app camera screen. Camera results interrupted by Android activity destruction are recovered when the parent reopens Walk together.
 
@@ -369,9 +362,9 @@ On a fresh installation, startup automatically adds three generated fictional ph
 
 **Load demo landmarks** remains an explicit parent action to add missing generated photo landmarks: red shop, yellow slide and blue bus stop. Existing records and edited demo records are preserved; repeated imports add only missing demo IDs. Demo labels remain visible in lists, details and practice. These images do not depict the real map locations. Bundled source assets remain available after deleting saved copies, but they are not automatically restored.
 
-Children choose **Our map** from activity selection to explore photos and locations. With at least two saved map landmarks, **Find the photo pin** asks “Where is this place?” and offers two to four numbered pins, with matching accessible buttons. A wrong answer gives calm feedback and retries the same question. A correct answer reveals the photo at its map location. **Try another place** samples an independent landmark, avoiding the previous target; it does not advance along a route. Offline Android narration and replay reuse the existing mission voice with an adult-help fallback. Photo recall is a state of the shared map; it stops active walking directions and never changes the live GPS position. It adds no scores or timers.
+Children choose **Our map** from activity selection to explore photos and locations. The nearest photo landmark within 50 m of precise, fresh live GPS is shown with its photo, saved emoji, name and approximate straight-line distance. Tapping its name opens the existing place details. Only one nearest landmark is shown; it updates as GPS moves. The card is hidden with no nearby landmark, approximate/stale/paused GPS or a position outside coverage. Fictional demo photos retain their label. Photo recall and numbered pin choices have been removed. Offline narration and replay remain available for walking instructions; nearby landmarks do not start routes or move the GPS dot.
 
-Names, coordinates and photo references persist in a separate encrypted `flutter_secure_storage` record. Photos are ordinary app-private files, not encrypted by that metadata store. Parent **Delete all saved details** now removes the family record, landmark record and saved app photo copies; gallery originals remain untouched. The app has no parent lock, cloud sync or photo backup/restore promise. Live walking guidance is implemented only within the bundled map. Reviewed emergency assistance and validated pedestrian routing remain future work.
+Names, emoji icons, coordinates and photo references persist in a separate encrypted `flutter_secure_storage` record. Photos are ordinary app-private files, not encrypted by that metadata store. Parent **Delete all saved details** now removes the family record, landmark record and saved app photo copies; gallery originals remain untouched. The app has no parent lock, cloud sync or photo backup/restore promise. Live walking guidance is implemented only within the bundled map. Reviewed emergency assistance and validated pedestrian routing remain future work.
 
 ### Data and demo boundaries
 

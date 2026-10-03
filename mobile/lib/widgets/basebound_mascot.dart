@@ -4,7 +4,7 @@ library;
 import 'package:flutter/material.dart';
 
 /// Decorative poses support the current activity without conveying instructions.
-enum DinoPose { wave, point, think, listen, celebrate, calm }
+enum DinoPose { wave, point, think, listen, celebrate, calm, search }
 
 class BaseboundMascot extends StatelessWidget {
   const BaseboundMascot({
@@ -242,6 +242,12 @@ class _MascotPainter extends CustomPainter {
         const Offset(103, 52),
         const Offset(106, 30),
       ),
+      DinoPose.search => (
+        const Offset(38, 64),
+        const Offset(100, 43),
+        const Offset(97, 64),
+        const Offset(83, 45),
+      ),
       DinoPose.calm => (
         const Offset(37, 82),
         const Offset(53, 88),
@@ -300,6 +306,7 @@ class _MascotPainter extends CustomPainter {
   }
 
   void _drawPoseAccents(Canvas canvas) {
+    if (pose == DinoPose.search) _drawSpyglass(canvas);
     if (pose == DinoPose.think) {
       for (final (center, radius) in [
         (const Offset(102, 22), 2.5),
@@ -325,6 +332,40 @@ class _MascotPainter extends CustomPainter {
       _sparkle(canvas, const Offset(15, 18), 6);
       _sparkle(canvas, const Offset(109, 13), 5);
     }
+  }
+
+  void _drawSpyglass(Canvas canvas) {
+    canvas.save();
+    canvas.translate(79, 42);
+    canvas.rotate(-.12);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        const Rect.fromLTWH(0, -4, 13, 8),
+        const Radius.circular(2),
+      ),
+      Paint()..color = ink,
+    );
+    canvas.drawPath(
+      Path()
+        ..moveTo(9, -5)
+        ..lineTo(37, -8)
+        ..lineTo(37, 8)
+        ..lineTo(9, 5)
+        ..close(),
+      Paint()..color = const Color(0xFFC59A52),
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        const Rect.fromLTWH(31, -9, 6, 18),
+        const Radius.circular(2),
+      ),
+      Paint()..color = const Color(0xFF8C713E),
+    );
+    canvas.drawOval(
+      const Rect.fromLTWH(34, -7, 4, 14),
+      Paint()..color = const Color(0xFF97C5EF),
+    );
+    canvas.restore();
   }
 
   void _sparkle(Canvas canvas, Offset center, double radius) {
