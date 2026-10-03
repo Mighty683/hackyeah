@@ -1,18 +1,13 @@
-import 'dart:async';
-
 import 'package:do_bazy/features/mission/air_raid_mission.dart';
-import 'package:do_bazy/features/mission/mission_audio.dart';
-import 'package:do_bazy/features/mission/mission_choice_card.dart';
 import 'package:do_bazy/features/mission/mission_scene.dart';
-import 'package:do_bazy/features/mission/mission_screen.dart';
 import 'package:do_bazy/features/mission/practice_phone_keypad.dart';
 import 'package:do_bazy/features/parent/data/family_plan.dart';
-import 'package:do_bazy/features/parent/data/family_plan_repository.dart';
-import 'package:do_bazy/ui/basebound_ui.dart';
 import 'package:do_bazy/widgets/basebound_mascot.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'mission_test_support.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -40,11 +35,11 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
-    await _showMission(
+    await showMission(
       tester,
       audioChannel,
       MissionMode.home,
-      repository: _PracticeRepository(
+      repository: PracticeRepository(
         contacts: const [
           TrustedContact(name: 'Demo adult', phone: '987 654 321'),
           TrustedContact(name: 'Demo parent', phone: '+48 (123) 456-789'),
@@ -55,20 +50,19 @@ void main() {
     final firstNarration = audioCalls.lastWhere(
       (call) => call.method == 'narrate',
     );
-    await _tap(tester, 'Replay audio');
+    await tapMissionAction(tester, 'Replay audio');
     final replayNarration = audioCalls.lastWhere(
       (call) => call.method == 'narrate',
     );
     expect(replayNarration.arguments, firstNarration.arguments);
     expect(audioCalls.where((call) => call.method == 'narrate').length, 2);
 
-    await _tap(tester, 'Find a place');
+    await tapMissionAction(tester, 'Find a place');
     expect(
       tester.widget<MissionScene>(find.byType(MissionScene)).choices,
       hasLength(3),
     );
-    expect(find.byType(MissionChoiceCard), findsNothing);
-    await _tap(tester, 'Go to the window');
+    await tapMissionAction(tester, 'Go to the window');
     expect(
       find.text('Windows are less safe. Move away from them.'),
       findsOneWidget,
@@ -76,44 +70,43 @@ void main() {
     expect(find.byType(BaseboundMascot), findsOneWidget);
     expect(find.text('Try again'), findsNothing);
     expect(find.text('Next step'), findsNothing);
-    await _tap(tester, 'Move deeper inside');
+    await tapMissionAction(tester, 'Move deeper inside');
     expect(
       tester.widget<MissionScene>(find.byType(MissionScene)).choices,
       hasLength(4),
     );
-    expect(find.byType(MissionChoiceCard), findsNothing);
-    await _tap(tester, 'Inside hallway', advanceFeedback: false);
+    await tapMissionAction(tester, 'Inside hallway', advanceFeedback: false);
     expect(
       tester.widget<MissionScene>(find.byType(MissionScene)).visual,
       MissionVisual.twoWalls,
     );
-    await _finishFeedback(tester);
-    await _tap(tester, 'Mom');
-    await _tap(tester, 'Keep calling');
-    await _tap(tester, 'Send one message');
+    await finishMissionFeedback(tester);
+    await tapMissionAction(tester, 'Mom');
+    await tapMissionAction(tester, 'Keep calling');
+    await tapMissionAction(tester, 'Send one message');
     expect(find.byType(PracticePhoneKeypad), findsOneWidget);
     expect(find.text('987 654 321'), findsNothing);
-    await _tap(tester, '1');
-    await _tap(tester, 'Check number');
+    await tapMissionAction(tester, '1');
+    await tapMissionAction(tester, 'Check number');
     expect(
       find.text('That number does not match yet. Try again or use a hint.'),
       findsOneWidget,
     );
     expect(find.text('Send pretend message'), findsNothing);
-    await _tap(tester, 'Need a hint?');
+    await tapMissionAction(tester, 'Need a hint?');
     expect(find.text('+48 (123) 456-789'), findsOneWidget);
-    await _tap(tester, 'Hide hint');
-    await _tap(tester, 'Clear number');
+    await tapMissionAction(tester, 'Hide hint');
+    await tapMissionAction(tester, 'Clear number');
     for (final digit in '48123456780'.split('')) {
-      await _tap(tester, digit);
+      await tapMissionAction(tester, digit);
     }
     await tester.ensureVisible(find.byTooltip('Delete last digit'));
     await tester.tap(find.byTooltip('Delete last digit'));
     await tester.pumpAndSettle();
-    await _tap(tester, '9');
-    await _tap(tester, 'Check number');
+    await tapMissionAction(tester, '9');
+    await tapMissionAction(tester, 'Check number');
     expect(find.text('That matches a saved number.'), findsOneWidget);
-    await _tap(tester, 'Send pretend message');
+    await tapMissionAction(tester, 'Send pretend message');
     expect(find.text('A pretend conversation'), findsOneWidget);
     expect(find.text('I am away from windows.'), findsOneWidget);
     expect(
@@ -122,16 +115,16 @@ void main() {
     );
     expect(find.text('Practice only. Nothing was sent.'), findsOneWidget);
     expect(find.text('Hear the reply'), findsNothing);
-    await _tap(tester, 'Stay here');
-    await _tap(tester, 'Stay here');
+    await tapMissionAction(tester, 'Stay here');
+    await tapMissionAction(tester, 'Stay here');
     final characterBefore = tester.widget<AnimatedPositioned>(
       find.byKey(const ValueKey('mission-character')),
     );
-    await _tap(tester, 'Leave now');
+    await tapMissionAction(tester, 'Leave now');
     expect(find.textContaining('Stay inside your home.'), findsOneWidget);
     expect(find.byType(BaseboundMascot), findsOneWidget);
     expect(
-      _lastNarration(audioCalls)['text'],
+      lastMissionNarration(audioCalls)['text'],
       contains('Stay inside your home.'),
     );
     final door = find.byWidgetPredicate(
@@ -148,16 +141,16 @@ void main() {
     );
     expect(characterAfter.left, characterBefore.left);
     expect(characterAfter.top, characterBefore.top);
-    await _tap(tester, 'Stay and wait', advanceFeedback: false);
+    await tapMissionAction(tester, 'Stay and wait', advanceFeedback: false);
     expect(
       find.text('Good. Stay inside your home. Wait for the all-clear.'),
       findsOneWidget,
     );
     expect(tester.widget<InkWell>(doorTapTarget).onTap, isNull);
-    await _finishFeedback(tester);
-    await _tap(tester, 'Remember the steps');
+    await finishMissionFeedback(tester);
+    await tapMissionAction(tester, 'Remember the steps');
     expect(find.byType(MissionScene), findsNothing);
-    expect(find.byType(SoftPanel), findsNWidgets(3));
+    expect(find.text('Wait for the all-clear'), findsOneWidget);
     expect(find.text(AirRaidPracticeRecap.praise), findsOneWidget);
     for (final point in AirRaidPracticeRecap.points) {
       expect(find.text(point.title), findsOneWidget);
@@ -167,19 +160,25 @@ void main() {
       tester.widget<BaseboundMascot>(find.byType(BaseboundMascot)).pose,
       DinoPose.celebrate,
     );
-    expect(_lastNarration(audioCalls)['text'], AirRaidPracticeRecap.narration);
-    await _tap(tester, 'Finish practice');
+    expect(
+      lastMissionNarration(audioCalls)['text'],
+      AirRaidPracticeRecap.narration,
+    );
+    await tapMissionAction(tester, 'Finish practice');
     expect(find.text('Practice complete'), findsOneWidget);
-    expect(find.byType(SoftPanel), findsNWidgets(3));
+    expect(find.text('Wait for the all-clear'), findsOneWidget);
     expect(find.text(AirRaidPracticeRecap.praise), findsOneWidget);
-    expect(_lastNarration(audioCalls)['text'], AirRaidPracticeRecap.narration);
+    expect(
+      lastMissionNarration(audioCalls)['text'],
+      AirRaidPracticeRecap.narration,
+    );
     expect(
       audioCalls
           .where((call) => call.method == 'narrate')
           .any((call) => (call.arguments as Map)['sound'] == 'all_clear'),
       isTrue,
     );
-    await _tap(tester, 'Play again');
+    await tapMissionAction(tester, 'Play again');
     expect(find.text('An alarm at home'), findsOneWidget);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
@@ -193,137 +192,33 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
-    await _showMission(tester, audioChannel, MissionMode.outdoor);
-    await _tap(tester, 'Choose where to go');
-    await _tap(tester, 'Home: far away', advanceFeedback: false);
-    expect(_lastNarration(audioCalls)['sound'], 'select');
-    await _finishFeedback(tester);
+    await showMission(tester, audioChannel, MissionMode.outdoor);
+    await tapMissionAction(tester, 'Choose where to go');
+    await tapMissionAction(tester, 'Home: far away', advanceFeedback: false);
+    expect(lastMissionNarration(audioCalls)['sound'], 'select');
+    await finishMissionFeedback(tester);
     expect(find.text('Still outside'), findsOneWidget);
-    expect(_lastNarration(audioCalls)['text'], contains('towards home'));
-    expect(_lastNarration(audioCalls)['sound'], 'noise');
-    await _tap(tester, 'Choose what to do');
+    expect(lastMissionNarration(audioCalls)['text'], contains('towards home'));
+    expect(lastMissionNarration(audioCalls)['sound'], 'noise');
+    await tapMissionAction(tester, 'Choose what to do');
     expect(find.text('What will you do?'), findsOneWidget);
-    expect(_lastNarration(audioCalls)['sound'], isNull);
+    expect(lastMissionNarration(audioCalls)['sound'], isNull);
     final scene = find.byType(MissionScene);
     await tester.ensureVisible(scene);
     await tester.drag(scene, const Offset(0, 90));
     await tester.pumpAndSettle();
     expect(find.text('You got down. Now protect your head.'), findsOneWidget);
-    expect(_lastNarration(audioCalls)['sound'], 'action');
-    await _finishFeedback(tester);
-    await _tap(tester, 'Cover your head', advanceFeedback: false);
-    expect(_lastNarration(audioCalls)['sound'], 'action');
-    await _finishFeedback(tester);
+    expect(lastMissionNarration(audioCalls)['sound'], 'action');
+    await finishMissionFeedback(tester);
+    await tapMissionAction(tester, 'Cover your head', advanceFeedback: false);
+    expect(lastMissionNarration(audioCalls)['sound'], 'action');
+    await finishMissionFeedback(tester);
     expect(find.text('An adult helps you'), findsOneWidget);
-    await _tap(tester, 'Follow the adult');
+    await tapMissionAction(tester, 'Follow the adult');
     expect(find.text('Inside the practice shelter'), findsOneWidget);
-    await _tap(tester, 'Tell a trusted adult');
+    await tapMissionAction(tester, 'Tell a trusted adult');
     expect(find.text('Tell a trusted adult'), findsOneWidget);
     expect(tester.takeException(), isNull);
-    await tester.pumpWidget(const SizedBox.shrink());
-    await tester.pump();
-  });
-
-  testWidgets('sound effects can be muted while narration remains available', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(430, 932);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    await _showMission(tester, audioChannel, MissionMode.home);
-    expect(_lastNarration(audioCalls)['sound'], 'alarm');
-    final initialText = _lastNarration(audioCalls)['text'];
-
-    await tester.tap(find.byTooltip('Mute sound effects'));
-    await tester.pumpAndSettle();
-    expect(find.byTooltip('Unmute sound effects'), findsOneWidget);
-    expect(_lastNarration(audioCalls)['text'], initialText);
-    expect(_lastNarration(audioCalls)['sound'], isNull);
-    await _tap(tester, 'Replay audio');
-    expect(_lastNarration(audioCalls)['text'], initialText);
-    expect(_lastNarration(audioCalls)['sound'], isNull);
-
-    await _tap(tester, 'Find a place');
-    await _tap(tester, 'Move deeper inside', advanceFeedback: false);
-    expect(_lastNarration(audioCalls)['text'], contains('moved away'));
-    expect(_lastNarration(audioCalls)['sound'], isNull);
-    await tester.tap(find.byTooltip('Unmute sound effects'));
-    await tester.pumpAndSettle();
-    expect(_lastNarration(audioCalls)['sound'], 'success');
-
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
-    await tester.pump();
-    expect(audioCalls.last.method, 'stop');
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-    await tester.pumpAndSettle();
-    expect(_lastNarration(audioCalls)['sound'], 'success');
-    await tester.pumpWidget(const SizedBox.shrink());
-    await tester.pump(const Duration(seconds: 3));
-    expect(audioCalls.last.method, 'dispose');
-  });
-
-  testWidgets('sound cues still play and mute without an offline voice', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(430, 932);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(audioChannel, (call) async {
-          audioCalls.add(call);
-          return call.method == 'initialize' ? false : null;
-        });
-    await _showMission(tester, audioChannel, MissionMode.outdoor);
-    expect(find.textContaining('The voice is unavailable'), findsOneWidget);
-    expect(_lastNarration(audioCalls)['text'], isEmpty);
-    expect(_lastNarration(audioCalls)['sound'], 'alarm');
-    await _tap(tester, 'Replay audio');
-    expect(_lastNarration(audioCalls)['sound'], 'alarm');
-    await tester.tap(find.byTooltip('Mute sound effects'));
-    await tester.pumpAndSettle();
-    expect(audioCalls.last.method, 'stop');
-    final replay = tester.widget<Semantics>(
-      find.byWidgetPredicate(
-        (widget) =>
-            widget is Semantics && widget.properties.label == 'Replay audio',
-      ),
-    );
-    expect(replay.properties.enabled, isFalse);
-    await tester.pumpWidget(const SizedBox.shrink());
-    await tester.pump();
-    expect(audioCalls.last.method, 'dispose');
-  });
-
-  testWidgets('correct feedback waits for narration without confirmation', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(430, 932);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    final feedbackVoice = Completer<void>();
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(audioChannel, (call) async {
-          audioCalls.add(call);
-          if (call.method == 'initialize') return true;
-          if (call.method == 'narrate' &&
-              (call.arguments as Map)['text'] ==
-                  'You reached the nearby practice shelter, away from windows.') {
-            await feedbackVoice.future;
-          }
-          return null;
-        });
-    await _showMission(tester, audioChannel, MissionMode.outdoor);
-    await _tap(tester, 'Choose where to go');
-    await _tap(tester, 'Nearby solid shelter', advanceFeedback: false);
-    await tester.pump(const Duration(seconds: 5));
-    expect(find.text('Where will you go?'), findsOneWidget);
-    expect(find.text('Next step'), findsNothing);
-    feedbackVoice.complete();
-    await tester.pumpAndSettle();
-    expect(find.text('Inside the practice shelter'), findsOneWidget);
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();
   });
@@ -335,8 +230,8 @@ void main() {
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
-      final repository = _PracticeRepository(failRead: true);
-      await _showMission(
+      final repository = PracticeRepository(failRead: true);
+      await showMission(
         tester,
         audioChannel,
         MissionMode.home,
@@ -350,12 +245,12 @@ void main() {
         'Mom',
         'Send one message',
       ]) {
-        await _tap(tester, label);
+        await tapMissionAction(tester, label);
       }
       expect(find.text('Try loading again'), findsOneWidget);
       expect(find.byType(PracticePhoneKeypad), findsNothing);
       repository.failRead = false;
-      await _tap(tester, 'Try loading again');
+      await tapMissionAction(tester, 'Try loading again');
       expect(find.byType(PracticePhoneKeypad), findsOneWidget);
       expect(
         find.text(
@@ -364,343 +259,13 @@ void main() {
         ),
         findsOneWidget,
       );
-      await _tap(tester, 'Continue without a number');
+      await tapMissionAction(tester, 'Continue without a number');
       expect(find.text('A pretend conversation'), findsOneWidget);
-      await _tap(tester, 'Stay here');
+      await tapMissionAction(tester, 'Stay here');
       expect(find.text('You hear a loud noise'), findsOneWidget);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump();
     },
   );
-
-  testWidgets(
-    'silent feedback pauses automatic advancement in the background',
-    (tester) async {
-      tester.view.physicalSize = const Size(430, 932);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(audioChannel, (call) async => false);
-      await _showMission(tester, audioChannel, MissionMode.outdoor);
-      await _tap(tester, 'Choose where to go');
-      await _tap(tester, 'Nearby solid shelter', advanceFeedback: false);
-      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
-      await tester.pump(const Duration(seconds: 5));
-      expect(find.text('Where will you go?'), findsOneWidget);
-      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-      await tester.pumpAndSettle();
-      expect(find.text('Where will you go?'), findsOneWidget);
-      await _finishFeedback(tester);
-      expect(find.text('Inside the practice shelter'), findsOneWidget);
-      await tester.pumpWidget(const SizedBox.shrink());
-      await tester.pump();
-    },
-  );
-
-  testWidgets(
-    'short quiz screens keep choices usable while advancing automatically',
-    (tester) async {
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-      for (final size in [
-        const Size(320, 640),
-        const Size(390, 844),
-        const Size(800, 480),
-      ]) {
-        tester.view.physicalSize = size;
-        await _showMission(tester, audioChannel, MissionMode.home);
-        for (final label in [
-          'Find a place',
-          'Move deeper inside',
-          'Inside hallway',
-          'Mom',
-        ]) {
-          final action = find.byWidgetPredicate(
-            (widget) => widget is Semantics && widget.properties.label == label,
-          );
-          final target = action.evaluate().isEmpty ? find.text(label) : action;
-          final currentScene = tester.widget<MissionScene>(
-            find.byType(MissionScene),
-          );
-          for (final choice in currentScene.choices) {
-            final choiceTarget = find.byWidgetPredicate(
-              (widget) =>
-                  widget is Semantics &&
-                  widget.properties.label == choice.label,
-            );
-            final bounds = tester.getRect(choiceTarget);
-            expect(bounds.top, greaterThanOrEqualTo(0));
-            expect(bounds.bottom, lessThanOrEqualTo(size.height));
-            expect(choiceTarget.hitTestable(), findsOneWidget);
-          }
-          expect(target.hitTestable(), findsOneWidget, reason: '$size: $label');
-          await tester.tap(target);
-          await tester.pumpAndSettle();
-          if (tester
-                  .widget<MissionScene>(find.byType(MissionScene))
-                  .selectedChoice
-                  ?.isCorrect ==
-              true) {
-            await _finishFeedback(tester);
-          }
-          expect(tester.takeException(), isNull, reason: '$size: $label');
-        }
-        await tester.pumpWidget(const SizedBox.shrink());
-        await tester.pumpAndSettle();
-      }
-    },
-  );
-
-  testWidgets('outdoor poses work on compact screens and with large text', (
-    tester,
-  ) async {
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    for (final configuration in [
-      (const Size(320, 640), 1.0),
-      (const Size(800, 480), 1.0),
-      (const Size(320, 700), 2.0),
-    ]) {
-      tester.view.physicalSize = configuration.$1;
-      await _showMission(
-        tester,
-        audioChannel,
-        MissionMode.outdoor,
-        textScale: configuration.$2,
-      );
-      for (final label in [
-        'Choose where to go',
-        'Home: far away',
-        'Choose what to do',
-        'Keep standing',
-        'Get down',
-        'Keep hands down',
-        'Cover your head',
-        'Follow the adult',
-      ]) {
-        await _tap(tester, label);
-        expect(tester.takeException(), isNull, reason: label);
-      }
-      await tester.pumpWidget(const SizedBox.shrink());
-      await tester.pumpAndSettle();
-    }
-  });
-
-  testWidgets('narrow screens and large text keep room targets usable', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(320, 700);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    await _showMission(
-      tester,
-      audioChannel,
-      MissionMode.home,
-      textScale: 2,
-      repository: _PracticeRepository(
-        contacts: const [TrustedContact(phone: '123 456 789')],
-      ),
-    );
-    expect(tester.takeException(), isNull);
-    await _tap(tester, 'Find a place');
-    expect(tester.takeException(), isNull);
-    await _tap(tester, 'Move deeper inside');
-    expect(
-      find.byWidgetPredicate(
-        (widget) =>
-            widget is Semantics && widget.properties.label == 'Living room',
-      ),
-      findsOneWidget,
-    );
-    expect(
-      find.byWidgetPredicate(
-        (widget) => widget is Semantics && widget.properties.label == 'Bedroom',
-      ),
-      findsOneWidget,
-    );
-    expect(
-      find.byWidgetPredicate(
-        (widget) => widget is Semantics && widget.properties.label == 'Kitchen',
-      ),
-      findsOneWidget,
-    );
-    expect(
-      find.byWidgetPredicate(
-        (widget) =>
-            widget is Semantics && widget.properties.label == 'Inside hallway',
-      ),
-      findsOneWidget,
-    );
-    expect(tester.takeException(), isNull);
-    await _tap(tester, 'Inside hallway');
-    await _tap(tester, 'Grandparent');
-    expect(
-      find.byWidgetPredicate(
-        (widget) =>
-            widget is Semantics &&
-            widget.properties.label == 'Send one message',
-      ),
-      findsOneWidget,
-    );
-    await _tap(tester, 'Send one message');
-    for (final digit in '123456789'.split('')) {
-      await _tap(tester, digit);
-    }
-    await _tap(tester, 'Check number');
-    await _tap(tester, 'Send pretend message');
-    expect(find.text('A pretend conversation'), findsOneWidget);
-    await _tap(tester, 'Stay here');
-    expect(find.text('You hear a loud noise'), findsOneWidget);
-    await _tap(tester, 'Stay here');
-    await _tap(tester, 'Stay and wait');
-    await _tap(tester, 'Remember the steps');
-    expect(find.byType(SoftPanel), findsNWidgets(3));
-    await tester.ensureVisible(find.text('Stay there, even when it is quiet.'));
-    await tester.pumpAndSettle();
-    expect(tester.takeException(), isNull);
-    await _tap(tester, 'Finish practice');
-    expect(find.text('Practice complete'), findsOneWidget);
-    expect(find.byType(SoftPanel), findsNWidgets(3));
-    await _tap(tester, 'Play again');
-    expect(find.text('An alarm at home'), findsOneWidget);
-    expect(tester.takeException(), isNull);
-    await tester.pumpWidget(const SizedBox.shrink());
-    await tester.pump();
-  });
-}
-
-Map<dynamic, dynamic> _lastNarration(List<MethodCall> calls) =>
-    calls.lastWhere((call) => call.method == 'narrate').arguments as Map;
-
-Future<void> _showMission(
-  WidgetTester tester,
-  MethodChannel channel,
-  MissionMode mode, {
-  double textScale = 1,
-  FamilyPlanRepository? repository,
-}) async {
-  await tester.pumpWidget(
-    MaterialApp(
-      theme: BaseboundTheme.training(),
-      builder: (context, child) => MediaQuery(
-        data: MediaQuery.of(context)
-            .copyWith(textScaler: TextScaler.linear(textScale)),
-        child: child!,
-      ),
-      home: MissionScreen(
-        mode: mode,
-        audio: MissionAudio(channel: channel),
-        repository: repository ?? _PracticeRepository(),
-      ),
-    ),
-  );
-  await tester.pumpAndSettle();
-}
-
-Future<void> _finishFeedback(WidgetTester tester) async {
-  await tester.pump(const Duration(seconds: 3));
-  await tester.pumpAndSettle();
-}
-
-Future<void> _tap(
-  WidgetTester tester,
-  String label, {
-  bool advanceFeedback = true,
-}) async {
-  final accessibleAction = find.byWidgetPredicate(
-    (widget) => widget is Semantics && widget.properties.label == label,
-  );
-  final target = accessibleAction.evaluate().isEmpty
-      ? find.text(label)
-      : accessibleAction;
-  expect(target, findsOneWidget);
-  final context = tester.element(find.byType(MissionScreen));
-  if (MediaQuery.textScalerOf(context).scale(1) <= 1.1 &&
-      find.byType(PracticePhoneKeypad).evaluate().isEmpty) {
-    expect(target.hitTestable(), findsOneWidget, reason: label);
-  } else {
-    await tester.ensureVisible(target);
-  }
-  await tester.tap(target);
-  await tester.pumpAndSettle();
-  final sceneFinder = find.byType(MissionScene);
-  if (advanceFeedback &&
-      sceneFinder.evaluate().isNotEmpty &&
-      (tester.widget<MissionScene>(sceneFinder).selectedChoice?.isCorrect ==
-              true ||
-          tester
-                  .widget<MissionScene>(sceneFinder)
-                  .selectedChoice
-                  ?.continuesAfterFeedback ==
-              true)) {
-    await _finishFeedback(tester);
-  }
-  _expectMissionChoicesAreUsable(tester);
-}
-
-class _PracticeRepository extends FamilyPlanRepository {
-  _PracticeRepository({this.contacts = const [], this.failRead = false});
-
-  final List<TrustedContact> contacts;
-  bool failRead;
-
-  @override
-  Future<FamilyPlan> load() async {
-    if (failRead) throw StateError('Demo read failure');
-    return FamilyPlan(contacts: contacts);
-  }
-}
-
-// Each choice is an independent accessible target inside the scene image.
-void _expectMissionChoicesAreUsable(WidgetTester tester) {
-  final sceneFinder = find.byType(MissionScene);
-  if (sceneFinder.evaluate().isEmpty) return;
-  final scene = tester.widget<MissionScene>(sceneFinder);
-  final bounds = tester.getRect(sceneFinder);
-  final targets = <Rect>[];
-  expect(find.byType(MissionChoiceCard), findsNothing);
-  for (final choice in scene.choices) {
-    final target = find.byWidgetPredicate(
-      (widget) =>
-          widget is Semantics && widget.properties.label == choice.label,
-    );
-    expect(target, findsOneWidget);
-    final rect = tester.getRect(target);
-    expect(
-      rect.left,
-      greaterThanOrEqualTo(bounds.left - .5),
-      reason: choice.label,
-    );
-    expect(
-      rect.top,
-      greaterThanOrEqualTo(bounds.top - .5),
-      reason: choice.label,
-    );
-    expect(
-      rect.right,
-      lessThanOrEqualTo(bounds.right + .5),
-      reason: choice.label,
-    );
-    expect(
-      rect.bottom,
-      lessThanOrEqualTo(bounds.bottom + .5),
-      reason: choice.label,
-    );
-    expect(rect.width, greaterThanOrEqualTo(48), reason: choice.label);
-    expect(rect.height, greaterThanOrEqualTo(48), reason: choice.label);
-    for (final other in targets) {
-      expect(rect.overlaps(other), isFalse, reason: choice.label);
-    }
-    targets.add(rect);
-    final semantics = tester.widget<Semantics>(target).properties;
-    final enabled =
-        scene.onChoose != null && !scene.rejectedChoiceIds.contains(choice.id);
-    expect(semantics.onTap, enabled ? isNotNull : isNull, reason: choice.label);
-    expect(semantics.enabled, enabled, reason: choice.label);
-  }
 }

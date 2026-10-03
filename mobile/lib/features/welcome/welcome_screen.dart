@@ -184,7 +184,7 @@ class _WelcomeChoices extends StatelessWidget {
           description: 'Set up practice.',
           icon: BaseboundIconName.adult,
           onPressed: rolesEnabled
-              ? () => _openScreen(context, const AdultScreen())
+              ? () => _openScreen(context, const ParentScreen())
               : null,
         ),
         const SizedBox(height: 24),
@@ -224,14 +224,6 @@ class _WelcomeIllustration extends StatelessWidget {
       ),
     ),
   );
-}
-
-/// Retains the adult route while separating configuration from child play.
-class AdultScreen extends StatelessWidget {
-  const AdultScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) => const ParentScreen();
 }
 
 void _openScreen(BuildContext context, Widget screen) {

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../basebound_icon_art.dart';
 
 void drawDoor(StoryIconArt a) {
-  // The visible inner jamb and broad threshold give the open door its depth.
   a.roundRect(const Rect.fromLTWH(18, 6, 23, 36), a.brown, radius: 4);
   a.roundRect(const Rect.fromLTWH(22, 10, 14, 29), a.cream, radius: 2);
   a.polygon(const [

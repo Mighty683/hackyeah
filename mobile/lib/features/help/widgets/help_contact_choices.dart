@@ -1,0 +1,35 @@
+import 'package:flutter/material.dart';
+
+import '../../../ui/basebound_icons.dart';
+import '../../../ui/basebound_ui.dart';
+import '../../parent/data/family_plan.dart';
+
+class HelpContactChoices extends StatelessWidget {
+  const HelpContactChoices({required this.contacts, super.key});
+
+  final List<TrustedContact> contacts;
+
+  @override
+  Widget build(BuildContext context) => SimpleDialog(
+    title: const Text('Choose a trusted adult'),
+    children: [
+      for (final (index, contact) in contacts.indexed)
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+          child: BaseboundActionTile(
+            icon: BaseboundIconName.adult,
+            onPressed: () => Navigator.of(context).pop(contact),
+            label: contact.name.trim().isNotEmpty
+                ? contact.name.trim()
+                : contact.relationship.trim().isNotEmpty
+                ? contact.relationship.trim()
+                : 'Trusted adult ${index + 1}',
+          ),
+        ),
+      TextButton(
+        onPressed: () => Navigator.of(context).pop(),
+        child: const Text('Back to help'),
+      ),
+    ],
+  );
+}

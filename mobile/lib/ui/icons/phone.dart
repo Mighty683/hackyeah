@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../basebound_icon_art.dart';
 
 void drawPhone(StoryIconArt a) {
-  // A curved toy receiver keeps the familiar call silhouette at small sizes.
   a.shape(
     Path()
       ..moveTo(12, 5)

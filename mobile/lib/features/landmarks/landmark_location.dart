@@ -43,10 +43,7 @@ Future<SafePoint> currentLandmarkLocation() async {
 }
 
 bool mapContainsPoint(DemoMap map, SafePoint point) =>
-    point.longitude >= map.bounds[0] &&
-    point.longitude <= map.bounds[2] &&
-    point.latitude >= map.bounds[1] &&
-    point.latitude <= map.bounds[3];
+    map.contains(point.latitude, point.longitude);
 
 class LandmarkLocationException implements Exception {
   const LandmarkLocationException(this.message);

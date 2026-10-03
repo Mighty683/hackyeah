@@ -6,7 +6,6 @@ import 'package:do_bazy/features/landmarks/data/landmark_repository.dart';
 import 'package:do_bazy/features/landmarks/widgets/landmark_map.dart';
 import 'package:do_bazy/features/landmarks/widgets/landmark_photo.dart';
 import 'package:do_bazy/features/mission/data/lost_practice_context.dart';
-import 'package:do_bazy/features/mission/lost_mission.dart';
 import 'package:do_bazy/features/mission/lost_mission_launcher.dart';
 import 'package:do_bazy/features/mission/lost_mission_scene.dart';
 import 'package:do_bazy/features/mission/lost_meeting_point_map.dart';
@@ -142,7 +141,7 @@ void main() {
       expect(find.text('Fictional demo photo'), findsOneWidget);
       await _tap(tester, find.byKey(const ValueKey('lost-choice-2_2')));
       expect(find.textContaining('That is a different place.'), findsOneWidget);
-      await _next(tester); // Retry the wrong photo.
+      await _next(tester);
       await _tap(tester, find.byKey(const ValueKey('lost-choice-1_1')));
       await _next(tester);
       await _pump(tester);
@@ -316,58 +315,6 @@ void main() {
       await _pump(tester);
     },
   );
-
-  test('map help returns to staying nearby; selecting a pin does not confirm safety', () {
-    final context = LostPracticeContext.fromFamilyPlan(
-      const FamilyPlan(
-        practiceMeetingPoint: PracticeMeetingPoint(landmarkId: '1_1'),
-      ),
-      photoPlaces: [
-        LostPracticePlace(
-          id: '1_1',
-          label: 'Library entrance',
-          photoPath: '${directory.path}/1_1.photo',
-        ),
-        LostPracticePlace(
-          id: '2_2',
-          label: 'Library entrance',
-          photoPath: '${directory.path}/2_2.photo',
-        ),
-      ],
-    );
-    final session = LostMissionSession(
-      variant: LostPracticeVariant.meetingPointNearby,
-      context: context,
-    );
-    session.choose('stop');
-    session.advance();
-    session.advance();
-    session.choose('2_2');
-    session.advance();
-    expect(session.step.id, 'meeting_point');
-    session.retry();
-    session.choose('1_1');
-    session.advance();
-    expect(session.step.id, 'map_meeting_point');
-    session.advance();
-    expect(session.step.id, 'map_meeting_point');
-    session.useMapHelp();
-    expect(session.step.id, 'point_unavailable');
-    session.choose('stay');
-    session.advance();
-    expect(session.step.id, 'helper');
-    expect(session.safetyConfirmed, isFalse);
-    session.restart();
-    session.choose('stop');
-    session.advance();
-    session.advance();
-    session.choose('1_1');
-    session.advance();
-    session.choose('1_1');
-    session.advance();
-    expect(session.step.id, 'arrive');
-    expect(session.safetyConfirmed, isFalse);
-  });
 }
 
 class _PhotoRepository extends LandmarkRepository {

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../basebound_icon_art.dart';
 
-/// A curious child in a favourite star shirt, ready to explore.
 void drawChild(StoryIconArt a) {
   a.shape(
     Path()

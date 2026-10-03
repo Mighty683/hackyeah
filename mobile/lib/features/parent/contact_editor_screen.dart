@@ -50,7 +50,6 @@ class _ContactEditorScreenState extends State<ContactEditorScreen> {
     return ParentEditorScaffold(
       title: 'Trusted contact',
       onSave: _save,
-      illustration: ParentEditorArt.contact,
       saveLabel: 'Save trusted contact',
       steps: [
         ParentEditorStep(

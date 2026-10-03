@@ -10,34 +10,37 @@ import '../game/location_permission_setup.dart';
 import '../mission/practice_launcher.dart';
 import '../landmarks/landmark_library_screen.dart';
 import '../landmarks/data/landmark_repository.dart';
-import '../landmarks/data/landmark.dart';
-import '../landmarks/widgets/landmark_photo.dart';
-import '../mission/lost_landmarks.dart';
 import 'child_editor_screen.dart';
 import 'contact_editor_screen.dart';
 import 'data/family_plan.dart';
 import 'data/family_plan_repository.dart';
 import 'practice_meeting_point_editor_screen.dart';
 import 'safe_point_editor_screen.dart';
-import 'widgets/parent_editor_scaffold.dart';
+import '../../ui/parent_setup_ui.dart';
+import 'widgets/parent_setup_layout.dart';
+import 'widgets/parent_setup_dialogs.dart';
+import 'widgets/parent_setup_stages.dart';
+import 'widgets/parent_meeting_point_section.dart';
 
 enum _SetupStage { introduction, contacts, safePlaces, ready }
 
 class ParentScreen extends StatefulWidget {
-  const ParentScreen({super.key, this.locationPermission});
+  const ParentScreen({super.key, this.locationPermission, this.repository});
 
   final LocationPermissionSetup? locationPermission;
+  final FamilyPlanRepository? repository;
 
   @override
   State<ParentScreen> createState() => _ParentScreenState();
 }
 
 class _ParentScreenState extends State<ParentScreen> {
-  final _repository = FamilyPlanRepository();
+  late final _repository = widget.repository ?? FamilyPlanRepository();
   late final _locationPermission =
       widget.locationPermission ?? LocationPermissionSetup();
   FamilyPlan? _plan;
   _SetupStage _stage = _SetupStage.introduction;
+  int _landmarkRevision = 0;
   bool _busy = false;
   String? _error;
 
@@ -120,66 +123,22 @@ class _ParentScreenState extends State<ParentScreen> {
     );
   }
 
-  Future<void> _editPracticeMeetingPoint() => _openEditor(
-    PracticeMeetingPointEditorScreen(
-      point: _plan!.practiceMeetingPoint,
-      onSave: (point) => _save(_plan!.copyWith(practiceMeetingPoint: point)),
-    ),
-  );
+  Future<void> _editPracticeMeetingPoint() async {
+    await _openEditor(
+      PracticeMeetingPointEditorScreen(
+        point: _plan!.practiceMeetingPoint,
+        onSave: (point) => _save(_plan!.copyWith(practiceMeetingPoint: point)),
+      ),
+    );
+    if (mounted) setState(() => _landmarkRevision++);
+  }
 
   Future<void> _openLandmarks() async {
     await Navigator.of(context).push<void>(
       MaterialPageRoute(builder: (_) => const LandmarkLibraryScreen()),
     );
-    if (mounted) setState(() {});
+    if (mounted) setState(() => _landmarkRevision++);
   }
-
-  Future<void> _configureLocation() async {
-    final status = await _locationPermission.check();
-    if (!mounted) return;
-    final proceed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Map location'),
-        content: Text(_locationMessage(status)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Close'),
-          ),
-          if (status != LocationPermissionStatus.granted)
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: Text(
-                status == LocationPermissionStatus.settingsRequired
-                    ? 'Open Android settings'
-                    : 'Allow location',
-              ),
-            ),
-        ],
-      ),
-    );
-    if (proceed != true || !mounted) return;
-    String message;
-    if (status == LocationPermissionStatus.settingsRequired) {
-      final opened = await _locationPermission.openSettings();
-      message = opened
-          ? 'Allow location while using the app. Reopen Our map when ready.'
-          : 'Open Android app settings to allow location while using the app.';
-    } else {
-      message = _locationMessage(await _locationPermission.requestFromAdult());
-    }
-    if (!mounted) return;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
-  }
-
-  String _locationMessage(LocationPermissionStatus status) => switch (status) {
-    LocationPermissionStatus.granted => 'Location is allowed. The map and Help can use GPS while open; no track is saved.',
-    LocationPermissionStatus.denied => 'Location is off. Allow it to show the map’s blue dot. Photos and practice work without it.',
-    LocationPermissionStatus.settingsRequired => 'Android requires app settings to allow location. Choose location access while using the app. Photos and practice work without it.',
-    LocationPermissionStatus.unavailable => 'Could not check location permission. You can retry; photos and practice still work.',
-  };
 
   void _goTo(_SetupStage stage) {
     FocusManager.instance.primaryFocus?.unfocus();
@@ -195,39 +154,14 @@ class _ParentScreenState extends State<ParentScreen> {
     _goTo(_SetupStage.values[_stage.index - 1]);
   }
 
-  Future<bool> _confirm(String title, String message) async =>
-      await showDialog<bool>(
-        context: context,
-        builder: (context) => Theme(
-          data: parentSetupTheme(),
-          child: AlertDialog(
-            title: Text(title),
-            content: Text(message),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('Keep'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                style: TextButton.styleFrom(
-                  foregroundColor: BaseboundColors.coral,
-                ),
-                child: const Text('Delete'),
-              ),
-            ],
-          ),
-        ),
-      ) ??
-      false;
-
   Future<void> _delete({
     int? contact,
     int? place,
     bool practiceMeetingPoint = false,
     bool all = false,
   }) async {
-    final confirmed = await _confirm(
+    final confirmed = await confirmParentDeletion(
+      context,
       all ? 'Delete all saved details?' : 'Delete this entry?',
       all
           ? 'This removes the child details, trusted contacts, safe places, practice meeting point, landmarks, and saved photo copies from this device. It cannot be undone.'
@@ -301,7 +235,7 @@ class _ParentScreenState extends State<ParentScreen> {
         tooltip: 'Setup options',
         onSelected: (value) {
           if (value == 'location') {
-            _configureLocation();
+            configureParentLocation(context, _locationPermission);
           } else if (value == 'delete') {
             _delete(all: true);
           }
@@ -335,7 +269,7 @@ class _ParentScreenState extends State<ParentScreen> {
             children: [
               Text(
                 'Family setup · ${_stage.index + 1} of 4',
-                style: _subtitleStyle,
+                style: parentSetupSubtitleStyle,
               ),
               const SizedBox(height: 8),
               LinearProgressIndicator(
@@ -346,7 +280,7 @@ class _ParentScreenState extends State<ParentScreen> {
                 semanticsLabel: 'Family setup, step ${_stage.index + 1} of 4',
               ),
               const SizedBox(height: 24),
-              ..._stageContent(),
+              _stageContent(),
             ],
           ),
         ),
@@ -377,251 +311,41 @@ class _ParentScreenState extends State<ParentScreen> {
           const Text(
             'You can delete saved details from Setup options.',
             textAlign: TextAlign.center,
-            style: _subtitleStyle,
+            style: parentSetupSubtitleStyle,
           ),
         ],
       ),
     ),
   );
 
-  List<Widget> _stageContent() => switch (_stage) {
-    _SetupStage.introduction => _introduction(),
-    _SetupStage.contacts => _contacts(),
-    _SetupStage.safePlaces => _safePlaces(),
-    _SetupStage.ready => _ready(),
+  Widget _stageContent() => switch (_stage) {
+    _SetupStage.introduction => ParentIntroductionStage(
+      onOpenLandmarks: _openLandmarks,
+    ),
+    _SetupStage.contacts => ParentContactsStage(
+      contacts: _plan!.contacts,
+      onAdd: _editContact,
+      onEdit: _editContact,
+      onDelete: (index) => _delete(contact: index),
+    ),
+    _SetupStage.safePlaces => ParentPlacesStage(
+      points: _plan!.safePoints,
+      onAdd: _editPlace,
+      onEdit: _editPlace,
+      onDelete: (index) => _delete(place: index),
+      meetingPoint: ParentMeetingPointSection(
+        point: _plan!.practiceMeetingPoint,
+        refreshRevision: _landmarkRevision,
+        onEdit: _editPracticeMeetingPoint,
+        onDelete: () => _delete(practiceMeetingPoint: true),
+      ),
+    ),
+    _SetupStage.ready => ParentReadyStage(
+      plan: _plan!,
+      onOpenLandmarks: _openLandmarks,
+      onReview: () => _goTo(_SetupStage.introduction),
+    ),
   };
-
-  List<Widget> _introduction() => [
-    _heading('Set up your family plan', BaseboundIconName.family),
-    const Text(
-      'Add your child’s details, then contacts and safe places. One step at a time.',
-      style: _subtitleStyle,
-    ),
-    const SizedBox(height: 24),
-    const ParentEditorNote(
-      message: 'Use fictional personal details for this demo. All details are optional.',
-      icon: BaseboundIconName.info,
-    ),
-    const SizedBox(height: 16),
-    const Text(
-      'Saved details are encrypted on this device. Anyone using this app can open them. No parent lock or cloud sync.',
-      style: _subtitleStyle,
-    ),
-    const SizedBox(height: 24),
-    BaseboundActionTile(
-      label: 'Walk together',
-      icon: BaseboundIconName.map,
-      onPressed: _openLandmarks,
-    ),
-  ];
-
-  List<Widget> _contacts() {
-    final contacts = _plan!.contacts;
-    return [
-      _heading('Who can your child contact?', BaseboundIconName.family),
-      Text(
-        'Add up to three trusted adults. ${contacts.length}/3 saved.',
-        style: _subtitleStyle,
-      ),
-      const SizedBox(height: 24),
-      for (var index = 0; index < contacts.length; index++)
-        _entry(
-          title: contacts[index].name.isEmpty
-              ? 'Contact ${index + 1}'
-              : contacts[index].name,
-          subtitle: [
-            contacts[index].relationship,
-            contacts[index].phone,
-          ].where((value) => value.isNotEmpty).join(' · '),
-          onEdit: () => _editContact(index),
-          onDelete: () => _delete(contact: index),
-          icon: BaseboundIconName.adult,
-        ),
-      if (contacts.length < FamilyPlan.maxContacts)
-        BaseboundActionTile(
-          label: 'Add a trusted contact',
-          icon: BaseboundIconName.addAdult,
-          onPressed: _editContact,
-        ),
-      const SizedBox(height: 24),
-      const Text(
-        'Saving a contact does not call or verify the number.',
-        style: _subtitleStyle,
-      ),
-    ];
-  }
-
-  List<Widget> _safePlaces() {
-    final points = _plan!.safePoints;
-    return [
-      _heading('Choose your child’s safe places', BaseboundIconName.pin),
-      const Text(
-        'Choose destinations for your family’s emergency plan.',
-        style: _subtitleStyle,
-      ),
-      const SizedBox(height: 16),
-      const ParentEditorNote(
-        message: 'This demo stores map pins only. It does not check safety or provide real emergency routes.',
-        icon: BaseboundIconName.info,
-      ),
-      const SizedBox(height: 24),
-      for (var index = 0; index < points.length; index++)
-        _entry(
-          title: points[index].displayName,
-          subtitle: points[index].isDemo
-              ? 'Fictional demo place'
-              : 'Tap to edit this safe place.',
-          onEdit: () => _editPlace(index),
-          onDelete: () => _delete(place: index),
-          icon: BaseboundIconName.pin,
-        ),
-      BaseboundActionTile(
-        label: 'Add a safe place',
-        icon: BaseboundIconName.addPlace,
-        onPressed: _editPlace,
-      ),
-      const SizedBox(height: 28),
-      ..._practiceMeetingPoint(),
-    ];
-  }
-
-  List<Widget> _practiceMeetingPoint() {
-    final point = _plan!.practiceMeetingPoint;
-    final preset = resolveLostLandmark(point?.presetId ?? 'fountain');
-    final unknownPreset = point != null && point.presetId != preset.id;
-    return [
-      _heading('A meeting point for lost practice', BaseboundIconName.pin),
-      const Text(
-        'Choose a saved photo place. Your child will recognize the same '
-        'photo and find its pin on Our map.',
-        style: _subtitleStyle,
-      ),
-      const SizedBox(height: 16),
-      if (point == null)
-        const ParentEditorNote(
-          message: 'No meeting point chosen. Choose a saved photo place, or explicitly use a demo picture.',
-          icon: BaseboundIconName.info,
-        )
-      else if (point.landmarkId != null)
-        _savedPhotoMeetingPoint(point)
-      else ...[
-        Center(
-          child: LostLandmarkIllustration(presetId: point.presetId, size: 80),
-        ),
-        const SizedBox(height: 8),
-        _entry(
-          title: unknownPreset
-              ? 'Pretend fountain'
-              : point.label.trim().isEmpty
-              ? preset.label
-              : point.label,
-          subtitle: 'Pretend practice picture. Tap to choose a photo place.',
-          onEdit: _editPracticeMeetingPoint,
-          onDelete: () => _delete(practiceMeetingPoint: true),
-          icon: BaseboundIconName.pin,
-        ),
-        if (unknownPreset)
-          const ParentEditorNote(
-            message: 'The saved picture is unavailable. A pretend Fountain is shown. Edit to choose a new picture.',
-            icon: BaseboundIconName.info,
-          ),
-      ],
-      const SizedBox(height: 12),
-      OutlinedButton.icon(
-        onPressed: _editPracticeMeetingPoint,
-        icon: const BaseboundIcon(BaseboundIconName.edit),
-        label: Text(
-          point == null
-              ? 'Add a practice meeting point'
-              : 'Edit practice meeting point',
-        ),
-      ),
-    ];
-  }
-
-  Future<({Landmark? place, String directory})> _readMeetingPointPhoto(
-    String id,
-  ) async {
-    final repository = LandmarkRepository();
-    final places = await repository.load();
-    final directory = await repository.photoDirectory();
-    return (
-      place: places.where((place) => place.id == id).firstOrNull,
-      directory: directory.path,
-    );
-  }
-
-  Widget _savedPhotoMeetingPoint(PracticeMeetingPoint point) =>
-      FutureBuilder<({Landmark? place, String directory})>(
-        future: _readMeetingPointPhoto(point.landmarkId!),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          final place = snapshot.data?.place;
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (place != null)
-                LandmarkPhoto(
-                  fit: BoxFit.contain,
-                  path: '${snapshot.data!.directory}/${place.photoName}',
-                  label: place.name,
-                  height: 140,
-                ),
-              _entry(
-                title: place?.name ?? 'Meeting photo unavailable',
-                subtitle: place == null
-                    ? 'Choose a saved photo place again.'
-                    : place.isDemo
-                    ? 'Fictional demo photo and pin.'
-                    : 'Saved photo and pin for lost practice.',
-                onEdit: _editPracticeMeetingPoint,
-                onDelete: () => _delete(practiceMeetingPoint: true),
-                icon: BaseboundIconName.pin,
-              ),
-            ],
-          );
-        },
-      );
-
-  List<Widget> _ready() => [
-    _heading('Ready to practice together', BaseboundIconName.check),
-    Text(
-      '${_plan!.contacts.length} trusted contacts · ${_plan!.safePoints.length} safe places saved',
-      style: _subtitleStyle,
-    ),
-    const SizedBox(height: 24),
-    ParentEditorNote(
-      message: _plan!.safePoints.isEmpty
-          ? 'No safe place chosen. Add a place or explore Our map.'
-          : 'Your saved places are available on Our map.',
-      icon: BaseboundIconName.play,
-    ),
-    const SizedBox(height: 16),
-    const Text(
-      'Training only. Saved safe places are not verified. No real emergency navigation or assistance.',
-      style: _subtitleStyle,
-    ),
-    const SizedBox(height: 16),
-    const Text(
-      'Lost practice teaches your selected photo place and its pin on Our map. '
-      'Calls, replies and safety confirmation are simulated. No message is sent.',
-      style: _subtitleStyle,
-    ),
-    const SizedBox(height: 24),
-    BaseboundActionTile(
-      label: 'Walk together',
-      icon: BaseboundIconName.map,
-      onPressed: _openLandmarks,
-    ),
-    const SizedBox(height: 12),
-    BaseboundActionTile(
-      label: 'Review setup',
-      icon: BaseboundIconName.edit,
-      onPressed: () => _goTo(_SetupStage.introduction),
-    ),
-  ];
 
   Widget _footer() {
     final (label, action) = switch (_stage) {
@@ -643,108 +367,13 @@ class _ParentScreenState extends State<ParentScreen> {
         ),
       ),
     };
-    return DecoratedBox(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: BaseboundColors.border)),
-      ),
-      child: SafeArea(top: false, child: _footerLayout(label, action)),
+    return ParentSetupFooter(
+      label: label,
+      onContinue: action,
+      ready: _stage == _SetupStage.ready,
+      onSkip: _stage == _SetupStage.introduction
+          ? () => _goTo(_SetupStage.contacts)
+          : null,
     );
   }
-
-  Widget _footerLayout(String label, VoidCallback action) => Padding(
-    padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
-    child: Align(
-      heightFactor: 1,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 640),
-        child: _footerActions(label, action),
-      ),
-    ),
-  );
-
-  Widget _footerActions(String label, VoidCallback action) => Column(
-    mainAxisSize: MainAxisSize.min,
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      FilledButton.icon(
-        onPressed: action,
-        icon: BaseboundIcon(
-          _stage == _SetupStage.ready
-              ? BaseboundIconName.play
-              : BaseboundIconName.next,
-          color: Colors.white,
-          size: 24,
-        ),
-        label: Text(label, textAlign: TextAlign.center),
-      ),
-      if (_stage == _SetupStage.introduction)
-        TextButton(
-          onPressed: () => _goTo(_SetupStage.contacts),
-          child: const Text('Skip child details'),
-        ),
-    ],
-  );
-
-  Widget _heading(String title, BaseboundIconName icon) => Padding(
-    padding: const EdgeInsets.only(bottom: 16),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 4),
-          child: BaseboundIcon(icon, size: 24),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Semantics(
-            header: true,
-            child: Text(
-              title,
-              style: const TextStyle(
-                fontSize: 28,
-                height: 1.2,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
-
-  static const _subtitleStyle = TextStyle(
-    fontFamily: 'Nunito',
-    color: BaseboundColors.muted,
-    fontSize: 16,
-    height: 1.4,
-  );
-
-  Widget _entry({
-    required String title,
-    required String subtitle,
-    required VoidCallback onEdit,
-    required VoidCallback onDelete,
-    required BaseboundIconName icon,
-  }) => Padding(
-    padding: const EdgeInsets.only(bottom: 12),
-    child: Row(
-      children: [
-        Expanded(
-          child: BaseboundActionTile(
-            label: title,
-            description: subtitle.isEmpty ? null : subtitle,
-            icon: icon,
-            onPressed: onEdit,
-          ),
-        ),
-        const SizedBox(width: 8),
-        IconButton(
-          onPressed: onDelete,
-          icon: const BaseboundIcon(BaseboundIconName.delete, size: 24),
-          tooltip: 'Delete $title',
-        ),
-      ],
-    ),
-  );
 }

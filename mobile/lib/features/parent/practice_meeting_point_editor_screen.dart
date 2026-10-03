@@ -132,7 +132,6 @@ class _PracticeMeetingPointEditorScreenState
   @override
   Widget build(BuildContext context) => ParentEditorScaffold(
     title: 'Practice meeting point',
-    illustration: ParentEditorArt.place,
     onSave: _save,
     saveEnabled: _demoMode || (!_loading && !_loadFailed && _selected != null),
     saveLabel: 'Save practice meeting point',

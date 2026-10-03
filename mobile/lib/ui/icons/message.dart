@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../basebound_icon_art.dart';
 
-/// A soft folded speech note for leaving a friendly message.
 void drawMessage(StoryIconArt a) {
   final note = Path()
     ..moveTo(14, 7)

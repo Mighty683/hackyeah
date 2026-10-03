@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flame/components.dart';
 import 'package:flutter/services.dart';
 
-/// Offline map provider sharing the API's checked-in GeoJSON fixture.
+/// Loads the bundled TAURON Arena GeoJSON snapshot.
 class DemoMapRepository {
   Future<DemoMap> load() async {
     final source = await rootBundle.loadString(
@@ -48,6 +48,18 @@ class DemoMap {
     mapTop +
         (bounds[3] - longitudeLatitude[1]) / (bounds[3] - bounds[1]) * mapSize,
   );
+
+  bool contains(double latitude, double longitude) =>
+      longitude >= bounds[0] &&
+      longitude <= bounds[2] &&
+      latitude >= bounds[1] &&
+      latitude <= bounds[3];
+
+  /// Converts map coordinates back to longitude, latitude.
+  List<num> unproject(Vector2 point) => [
+    bounds[0] + (point.x - mapLeft) / mapSize * (bounds[2] - bounds[0]),
+    bounds[3] - (point.y - mapTop) / mapSize * (bounds[3] - bounds[1]),
+  ];
 }
 
 class DemoMapFeature {

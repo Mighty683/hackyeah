@@ -5,7 +5,6 @@ import 'package:do_bazy/features/landmarks/data/demo_landmarks.dart';
 import 'package:do_bazy/features/landmarks/landmark_location.dart';
 import 'package:do_bazy/game/maps/demo_map.dart';
 import 'package:do_bazy/features/landmarks/data/landmark_repository.dart';
-import 'package:do_bazy/features/landmarks/landmark_practice.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -128,23 +127,6 @@ void main() {
       expect(updated.last.name, 'Family point');
     },
   );
-
-  test('practice samples independent locations with two to four choices', () {
-    final points = List.generate(
-      7,
-      (index) => _point('${index}_$index', 'Place $index'),
-    );
-    var previous = points.first.id;
-    for (var attempt = 0; attempt < 20; attempt++) {
-      final question = LandmarkQuestion.pick(points, previousId: previous);
-      expect(question.choices.length, 4);
-      expect(question.choices.map((entry) => entry.id).toSet().length, 4);
-      expect(question.choices.where(question.isCorrect).length, 1);
-      expect(question.target.id, isNot(previous));
-      previous = question.target.id;
-    }
-    expect(LandmarkQuestion.pick(points.take(2).toList()).choices.length, 2);
-  });
 }
 
 Landmark _point(String id, String name) => Landmark(

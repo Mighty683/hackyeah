@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 
@@ -9,16 +8,16 @@ import '../../widgets/basebound_mascot.dart';
 import '../../game/maps/demo_map.dart';
 import '../landmarks/data/landmark.dart';
 import '../landmarks/data/landmark_repository.dart';
-import '../landmarks/landmark_location.dart';
 import '../landmarks/widgets/landmark_photo.dart';
 import '../parent/data/family_plan.dart';
 import '../parent/data/family_plan_repository.dart';
 import '../parent/parent_screen.dart';
 import 'data/lost_practice_context.dart';
+import 'lost_practice_loader.dart';
 import 'lost_landmarks.dart';
 import 'lost_mission.dart';
 import 'lost_mission_screen.dart';
-import 'mission_audio.dart';
+import '../../audio/practice_audio.dart';
 
 /// Loads a fresh display-only family snapshot without changing saved records.
 class LostMissionLauncher extends StatefulWidget {
@@ -33,7 +32,7 @@ class LostMissionLauncher extends StatefulWidget {
   final ChildProfile child;
   final FamilyPlanRepository? repository;
   final LandmarkRepository? landmarkRepository;
-  final MissionAudio? audio;
+  final PracticeAudio? audio;
 
   @override
   State<LostMissionLauncher> createState() => _LostMissionLauncherState();
@@ -44,7 +43,7 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
   late final _repository = widget.repository ?? FamilyPlanRepository();
   late final _landmarkRepository =
       widget.landmarkRepository ?? LandmarkRepository();
-  late final _audio = widget.audio ?? MissionAudio();
+  late final _audio = widget.audio ?? PracticeAudio();
   LostPracticeContext? _practiceContext;
   LostPracticeVariant? _variant;
   bool _loading = true;
@@ -73,84 +72,19 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
       _loadFailed = false;
     });
     try {
-      final plan = await _repository.load();
-      final photoPlaces = <LostPracticePlace>[];
-      final mapLandmarks = <Landmark>[];
-      DemoMap? map;
-      LostPracticeHomePoint? homePoint;
-      var photoDirectory = '';
-      if (plan.practiceMeetingPoint == null ||
-          plan.practiceMeetingPoint?.landmarkId != null) {
-        final landmarks = await _landmarkRepository.load();
-        final directory = await _landmarkRepository.photoDirectory();
-        photoDirectory = directory.path;
-        final loadedMap = await DemoMapRepository().load();
-        map = loadedMap;
-        for (final place in landmarks) {
-          final photoPath = '$photoDirectory/${place.photoName}';
-          if (!mapContainsPoint(map, place.point) ||
-              !await File(photoPath).exists()) {
-            continue;
-          }
-          mapLandmarks.add(place);
-          photoPlaces.add(
-            LostPracticePlace(
-              id: place.id,
-              label: place.name,
-              photoPath: photoPath,
-              isDemo: place.isDemo,
-            ),
-          );
-        }
-        final home = plan.safePoints
-            .where(
-              (point) =>
-                  (point.name.trim().toLowerCase() == 'home' ||
-                      const {'🏠', '🏡'}.contains(point.icon)) &&
-                  mapContainsPoint(loadedMap, point),
-            )
-            .firstOrNull;
-        if (home != null) {
-          homePoint = LostPracticeHomePoint(label: home.displayName);
-          mapLandmarks.add(
-            Landmark(
-              id: LostPracticeHomePoint.id,
-              name: home.displayName,
-              photoName: '',
-              latitude: home.latitude,
-              longitude: home.longitude,
-              icon: '🏠',
-              isDemo: home.isDemo,
-            ),
-          );
-        }
-      }
-      // Older installs can start from their saved photos without rewriting setup.
-      final practicePlan =
-          plan.practiceMeetingPoint == null && photoPlaces.isNotEmpty
-          ? plan.copyWith(
-              practiceMeetingPoint: PracticeMeetingPoint(
-                landmarkId: photoPlaces.first.id,
-                label: photoPlaces.first.label,
-              ),
-            )
-          : plan;
-      final practice = LostPracticeContext.fromFamilyPlan(
-        practicePlan,
-        fallbackChild: widget.child,
-        photoPlaces: photoPlaces,
-        homePoint: homePoint,
-      );
+      final snapshot = await LostPracticeLoader(
+        familyRepository: _repository,
+        landmarkRepository: _landmarkRepository,
+        child: widget.child,
+      ).load();
       if (!mounted) return;
       setState(() {
-        _savedPlan = plan;
-        _practiceContext = practice;
-        _map = map;
-        _mapLandmarks = mapLandmarks;
-        _photoDirectory = photoDirectory;
-        _needsMeetingPoint =
-            practicePlan.practiceMeetingPoint == null ||
-            practice.meetingPointUnavailable;
+        _savedPlan = snapshot.savedPlan;
+        _practiceContext = snapshot.context;
+        _map = snapshot.map;
+        _mapLandmarks = snapshot.mapLandmarks;
+        _photoDirectory = snapshot.photoDirectory;
+        _needsMeetingPoint = snapshot.needsMeetingPoint;
         _loading = false;
       });
     } catch (_) {

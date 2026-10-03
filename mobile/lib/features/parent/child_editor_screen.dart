@@ -55,7 +55,6 @@ class _ChildEditorScreenState extends State<ChildEditorScreen> {
     return ParentEditorScaffold(
       title: 'Child details',
       onSave: _save,
-      illustration: ParentEditorArt.child,
       saveLabel: 'Save child details',
       steps: [
         ParentEditorStep(

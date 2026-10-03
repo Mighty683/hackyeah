@@ -94,7 +94,6 @@ class _LandmarkEditorScreenState extends State<LandmarkEditorScreen> {
   @override
   Widget build(BuildContext context) => ParentEditorScaffold(
     title: widget.landmark == null ? 'Add landmark' : 'Edit landmark',
-    illustration: ParentEditorArt.place,
     saveLabel: 'Save landmark',
     saveEnabled:
         _selected != null && _name.text.trim().isNotEmpty && !_locating,

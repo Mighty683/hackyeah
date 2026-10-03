@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../basebound_icon_art.dart';
 
-/// An open glass shelter and honey-coloured bench beside a bus-stop sign.
 void drawBusStop(StoryIconArt a) {
   a.shape(
     Path()

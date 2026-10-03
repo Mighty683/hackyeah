@@ -54,7 +54,7 @@ The family plan is stored locally using `flutter_secure_storage` (Android RSA-OA
 
 Independent landmarks: **Adult → Walk together → Take a photo → camera or gallery → name → map pin → Save landmark**. Each point is separate from safe places; the feature records no path, sequence or movement history. It uses the current parent form theme, photo pins on the existing illustrated map and ordinary app-private photo copies; encrypted metadata stores names and coordinates. **Use my location** is optional, requests foreground location only, and rejects positions outside the demo map while allowing manual placement. Camera-cache photos are copied before saving and interrupted camera results can be recovered on reopening the parent library.
 
-Fresh installations automatically receive three AI-generated fictional photo landmarks and one fictional **Home** practice pin. Child details and contacts stay empty. Existing saved records and edits are preserved, and deleting demo data does not restore it on relaunch. For a quick demo choose **Child activities → Our map → Find the photo pin**. Parent **Walk together → Load demo landmarks** can explicitly add missing photo examples. Children explore photo pins or match one photo to one of two to four map pins, with calm retries, location feedback and offline narration. There is no assumed next landmark or fixed visiting order. Fictional demo pins cannot be selected for GPS walking guidance. Photo generation prompts are in [`assets/landmarks/prompts.json`](assets/landmarks/prompts.json).
+Fresh installations automatically receive three AI-generated fictional photo landmarks and one fictional **Home** practice pin. Child details and contacts stay empty. Existing saved records and edits are preserved, and deleting demo data does not restore it on relaunch. For a quick demo choose **Child activities → Our map → Find the photo pin**. Parent **Walk together → Load demo landmarks** can explicitly add missing photo examples. Children explore photo pins; lost practice uses saved photos for recognition, and walking guidance uses live GPS with offline narration. There is no assumed next landmark or fixed visiting order. Fictional demo pins cannot be selected for GPS walking guidance. Photo generation prompts are in [`assets/landmarks/prompts.json`](assets/landmarks/prompts.json).
 
 A separate offline help prototype covers someone not responding, air raid, and being lost, with an unsure fallback. It is explicitly unreviewed and not for real emergencies. An explicit tap opens the phone app for 112 or an adult-configured trusted contact; no call is automatic and no connection or SMS delivery is claimed. The welcome and game screens offer help, including target/map loading and errors. Help reads the same encrypted family record as parent setup.
 
@@ -69,16 +69,20 @@ Location permission is requested once at first launch before role navigation; de
 - `lib/features/landmarks/`: independent photo capture/pin editing, demo import, local storage and child map recognition practice.
 - `lib/features/parent/`: family onboarding, child/contact/safe-place steps, local models and encrypted repository.
 - `lib/features/game/game_launcher.dart`: load photo landmarks, named parent pins and offline geography together.
-- `lib/features/mission/`: practice selection, air-raid/lost scenario state, display-only family context, illustrated decisions and offline Android audio.
+- `lib/features/mission/`: practice selection, separate scenario models/content/sessions, display-only family context, and illustrated decisions. Screen widgets coordinate sessions; layout widgets and painters own presentation.
+- `lib/audio/practice_audio.dart`: shared offline Android narration and cue playback for missions and walking guidance.
+- `lib/ui/`: shared themes, action controls, adult setup styling, and icon artwork. Icon drawing stays separate from labels and actions.
 - `lib/features/game/navigation_location.dart`: permission, foreground sensor lifecycle and freshness.
-- `lib/features/game/walking_navigation.dart`: GPS route progress and turn-by-turn instructions.
+- `lib/features/game/walking_navigation.dart`: live GPS route session and progress.
+- `lib/features/game/walking_route.dart`: route geometry, distance, and turn-by-turn instructions.
 - `lib/features/game/game_screen.dart`: shared map, destination details and photo recall; help pauses GPS and narration.
 - `lib/features/help/`: separate offline help prototype and explicit dialler handoff.
-- `lib/widgets/basebound_mascot.dart`: static guide shared by welcome, game and help.
+- `lib/widgets/basebound_mascot.dart`: static guide used by welcome and training screens.
 - `lib/game/components/`: illustrated map rendering.
-- `lib/game/maps/demo_map.dart`: offline map provider and geographic projection.
+- `lib/game/maps/demo_map.dart`: offline map provider, coverage bounds, and geographic projection.
 - `lib/game/maps/offline_router.dart`: offline A* pedestrian graph with directed segment tags.
-- `lib/game/maps/schematic_map_scene.dart`: curated geography, simplified outlines and custom landmark artwork.
+- `lib/game/maps/schematic_map_scene.dart`: curated geography and custom landmark artwork.
+- `lib/game/maps/map_geometry.dart`: projected paths and simplified map outlines.
 - `assets/maps/tauron-arena.geojson`: real geography bundled for offline play.
 
 Dependencies are locked in `pubspec.lock`. No API keys or network permissions are needed by the game scene. Help uses `url_launcher` to open the phone app and reads contacts through `flutter_secure_storage`. It requests neither direct-call nor SMS permission. Content remains available with no internet or telephone service; dialler launch is not evidence of network availability. Background SMS, automatic escalation, verified shelter routes and complete offline first aid are **not implemented**.

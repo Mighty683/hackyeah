@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../basebound_icon_art.dart';
 
-/// A little brick schoolhouse, with its clock above the welcoming blue doors.
 void drawSchool(StoryIconArt a) {
   final roof = Color.lerp(a.coral, a.brown, .38)!;
   a.roundRect(const Rect.fromLTRB(5, 21, 43, 41), a.coral, radius: 2.8);

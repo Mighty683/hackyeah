@@ -230,6 +230,57 @@ void main() {
       }
     },
   );
+  test('map help returns to staying nearby; selecting a pin does not confirm safety', () {
+    final context = LostPracticeContext.fromFamilyPlan(
+      const FamilyPlan(
+        practiceMeetingPoint: PracticeMeetingPoint(landmarkId: '1_1'),
+      ),
+      photoPlaces: [
+        LostPracticePlace(
+          id: '1_1',
+          label: 'Library entrance',
+          photoPath: '/practice/1_1.photo',
+        ),
+        LostPracticePlace(
+          id: '2_2',
+          label: 'Library entrance',
+          photoPath: '/practice/2_2.photo',
+        ),
+      ],
+    );
+    final session = LostMissionSession(
+      variant: LostPracticeVariant.meetingPointNearby,
+      context: context,
+    );
+    session.choose('stop');
+    session.advance();
+    session.advance();
+    session.choose('2_2');
+    session.advance();
+    expect(session.step.id, 'meeting_point');
+    session.retry();
+    session.choose('1_1');
+    session.advance();
+    expect(session.step.id, 'map_meeting_point');
+    session.advance();
+    expect(session.step.id, 'map_meeting_point');
+    session.useMapHelp();
+    expect(session.step.id, 'point_unavailable');
+    session.choose('stay');
+    session.advance();
+    expect(session.step.id, 'helper');
+    expect(session.safetyConfirmed, isFalse);
+    session.restart();
+    session.choose('stop');
+    session.advance();
+    session.advance();
+    session.choose('1_1');
+    session.advance();
+    session.choose('1_1');
+    session.advance();
+    expect(session.step.id, 'arrive');
+    expect(session.safetyConfirmed, isFalse);
+  });
 }
 
 LostMissionSession _session({

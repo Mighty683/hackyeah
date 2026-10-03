@@ -4,14 +4,15 @@ import 'package:image_picker/image_picker.dart';
 import '../../game/maps/demo_map.dart';
 import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
-import '../parent/widgets/parent_editor_scaffold.dart';
+import '../../ui/parent_setup_ui.dart';
 import 'data/landmark.dart';
 import 'data/landmark_repository.dart';
 import 'data/demo_landmarks.dart';
 import 'landmark_editor_screen.dart';
 import 'landmark_location.dart';
 import 'widgets/landmark_map.dart';
-import 'widgets/landmark_photo.dart';
+import 'widgets/landmark_library_cards.dart';
+import 'widgets/landmark_photo_source.dart';
 import 'widgets/photo_action_icon.dart';
 
 /// Adult photo capture for the same familiar-place map children use.
@@ -122,43 +123,7 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
   }
 
   Future<void> _addPhoto() async {
-    final source = await showModalBottomSheet<ImageSource>(
-      context: context,
-      showDragHandle: true,
-      builder: (context) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text(
-                'Save a recognisable place',
-                style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 16),
-              OutlinedButton.icon(
-                icon: const PhotoActionIcon(),
-                label: const Text('Take a photo'),
-                style: OutlinedButton.styleFrom(
-                  alignment: Alignment.centerLeft,
-                ),
-                onPressed: () => Navigator.pop(context, ImageSource.camera),
-              ),
-              const SizedBox(height: 12),
-              OutlinedButton.icon(
-                icon: const PhotoActionIcon(gallery: true),
-                label: const Text('Choose from gallery'),
-                style: OutlinedButton.styleFrom(
-                  alignment: Alignment.centerLeft,
-                ),
-                onPressed: () => Navigator.pop(context, ImageSource.gallery),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+    final source = await chooseLandmarkPhotoSource(context);
     if (source == null || !mounted) return;
     setState(() => _busy = true);
     try {
@@ -324,7 +289,12 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
                 onSelected: (entry) => setState(() => _selected = entry),
               ),
               const SizedBox(height: 16),
-              if (_selected != null) _selectedCard(_selected!),
+              if (_selected case final selected?)
+                SelectedLandmarkCard(
+                  entry: selected,
+                  photoDirectory: _photoDirectory!,
+                  onEdit: _busy ? null : () => _edit(landmark: selected),
+                ),
               Align(
                 alignment: Alignment.centerLeft,
                 child: TextButton.icon(
@@ -349,7 +319,14 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                for (final entry in _landmarks) _listEntry(entry),
+                for (final entry in _landmarks)
+                  LandmarkLibraryEntry(
+                    entry: entry,
+                    photoDirectory: _photoDirectory!,
+                    onMap: _mapLandmarks.any((point) => point.id == entry.id),
+                    onEdit: _busy ? null : () => _edit(landmark: entry),
+                    onDelete: _busy ? null : () => _delete(landmark: entry),
+                  ),
               ],
               const SizedBox(height: 24),
               const ParentEditorNote(
@@ -365,78 +342,4 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
       ),
     );
   }
-
-  Widget _selectedCard(Landmark entry) => Padding(
-    padding: const EdgeInsets.only(bottom: 16),
-    child: SoftPanel(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          LandmarkPhoto(
-            path: '$_photoDirectory/${entry.photoName}',
-            label: entry.name,
-          ),
-          const SizedBox(height: 12),
-          Text(
-            entry.name,
-            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 24),
-          ),
-          if (entry.isDemo)
-            const Padding(
-              padding: EdgeInsets.only(top: 8),
-              child: Text(
-                'Fictional demo photo and pin · recognition only',
-                style: TextStyle(color: BaseboundColors.muted),
-              ),
-            ),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: TextButton.icon(
-              onPressed: _busy ? null : () => _edit(landmark: entry),
-              icon: const BaseboundIcon(BaseboundIconName.edit),
-              label: const Text('Edit landmark'),
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-
-  Widget _listEntry(Landmark entry) => Padding(
-    padding: const EdgeInsets.only(bottom: 12),
-    child: Card(
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(12),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        leading: SizedBox(
-          width: 64,
-          child: LandmarkPhoto(
-            path: '$_photoDirectory/${entry.photoName}',
-            label: entry.name,
-            height: 56,
-          ),
-        ),
-        title: Text(
-          entry.name,
-          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
-        ),
-        subtitleTextStyle: const TextStyle(
-          color: BaseboundColors.muted,
-          fontSize: 16,
-          height: 1.4,
-        ),
-        subtitle: !_mapLandmarks.any((point) => point.id == entry.id)
-            ? const Text('Outside this demo map')
-            : entry.isDemo
-            ? const Text('Fictional demo landmark')
-            : null,
-        onTap: _busy ? null : () => _edit(landmark: entry),
-        trailing: IconButton(
-          onPressed: _busy ? null : () => _delete(landmark: entry),
-          tooltip: 'Delete ${entry.name}',
-          icon: const BaseboundIcon(BaseboundIconName.delete),
-        ),
-      ),
-    ),
-  );
 }

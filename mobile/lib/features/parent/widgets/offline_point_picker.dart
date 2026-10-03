@@ -248,16 +248,13 @@ class _PointPickerGame extends FlameGame {
     } else {
       marker.position = point;
     }
-    final longitude =
-        _map.bounds[0] +
-        (point.x - DemoMap.mapLeft) /
-            DemoMap.mapSize *
-            (_map.bounds[2] - _map.bounds[0]);
-    final latitude =
-        _map.bounds[3] -
-        (point.y - DemoMap.mapTop) /
-            DemoMap.mapSize *
-            (_map.bounds[3] - _map.bounds[1]);
-    onSelected(SafePoint(name: '', latitude: latitude, longitude: longitude));
+    final coordinates = _map.unproject(point);
+    onSelected(
+      SafePoint(
+        name: '',
+        latitude: coordinates[1].toDouble(),
+        longitude: coordinates[0].toDouble(),
+      ),
+    );
   }
 }

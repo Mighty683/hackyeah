@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../basebound_icon_art.dart';
 
 void drawMessageRead(StoryIconArt a) {
-  // The lifted flap and peeking note make this a letter already opened.
   a.shape(
     Path()
       ..moveTo(5, 21)

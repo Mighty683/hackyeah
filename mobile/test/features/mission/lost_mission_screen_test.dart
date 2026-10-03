@@ -6,7 +6,7 @@ import 'package:do_bazy/features/mission/lost_mission.dart';
 import 'package:do_bazy/features/mission/lost_mission_choice_card.dart';
 import 'package:do_bazy/features/mission/lost_mission_scene.dart';
 import 'package:do_bazy/features/mission/lost_mission_screen.dart';
-import 'package:do_bazy/features/mission/mission_audio.dart';
+import 'package:do_bazy/audio/practice_audio.dart';
 import 'package:do_bazy/features/mission/practice_recap.dart';
 import 'package:do_bazy/widgets/basebound_mascot.dart';
 import 'package:do_bazy/features/parent/data/family_plan.dart';
@@ -219,7 +219,7 @@ void main() {
                   builder: (_) => LostMissionScreen(
                     variant: LostPracticeVariant.meetingPointNearby,
                     practiceContext: _context,
-                    audio: MissionAudio(channel: channel),
+                    audio: PracticeAudio(channel: channel),
                   ),
                 ),
               ),
@@ -343,7 +343,7 @@ Future<void> _show(
       home: LostMissionScreen(
         variant: variant,
         practiceContext: _context,
-        audio: MissionAudio(channel: channel),
+        audio: PracticeAudio(channel: channel),
       ),
     ),
   );

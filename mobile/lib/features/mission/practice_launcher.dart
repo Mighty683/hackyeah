@@ -7,7 +7,7 @@ import '../game/game_launcher.dart';
 import '../parent/data/family_plan.dart';
 import 'air_raid_mission.dart';
 import 'lost_mission_launcher.dart';
-import 'mission_audio.dart';
+import '../../audio/practice_audio.dart';
 import 'mission_screen.dart';
 
 /// Offers a scenario list and the shared familiar-place map as two activities.
@@ -54,7 +54,7 @@ class _PracticeSelectionScreen extends StatefulWidget {
 
 class _PracticeSelectionScreenState extends State<_PracticeSelectionScreen>
     with WidgetsBindingObserver {
-  MissionAudio _audio = MissionAudio();
+  PracticeAudio _audio = PracticeAudio();
   late _Selection _selection = widget.initialSelection;
   bool _audioAvailable = true;
   bool _opening = false;
@@ -116,7 +116,7 @@ class _PracticeSelectionScreenState extends State<_PracticeSelectionScreen>
     // Native audio is shared; wait for the leaving screen to release it.
     await route.completed;
     if (!mounted) return;
-    _audio = MissionAudio();
+    _audio = PracticeAudio();
     setState(() {
       _opening = false;
       _selection = widget.initialSelection;

@@ -67,32 +67,44 @@ void main() {
         MaterialApp(home: ChildOnboardingScreen(repository: repository)),
       );
       await tester.pumpAndSettle();
-      await _tap(tester, 'Add my name');
-      expect(find.text('Please tell us your age to continue.'), findsOneWidget);
-      await tester.enterText(find.byType(TextField), '0');
-      await _tap(tester, 'Add my name');
-      expect(find.text('Please tell us your age to continue.'), findsOneWidget);
+      if (gender == ChildGender.boy) {
+        await _tap(tester, 'Add my name');
+        expect(
+          find.text('Please tell us your age to continue.'),
+          findsOneWidget,
+        );
+        await tester.enterText(find.byType(TextField), '0');
+        await _tap(tester, 'Add my name');
+        expect(
+          find.text('Please tell us your age to continue.'),
+          findsOneWidget,
+        );
+      }
       await tester.enterText(find.byType(TextField), '9');
       await _tap(tester, 'Add my name');
-      await tester.binding.handlePopRoute();
-      await tester.pumpAndSettle();
-      expect(
-        tester.widget<TextField>(find.byType(TextField)).controller!.text,
-        '9',
-      );
-      await _tap(tester, 'Add my name');
-      await _tap(tester, 'Choose my character');
-      expect(find.text('Add your name or a nickname.'), findsOneWidget);
+      if (gender == ChildGender.boy) {
+        await tester.binding.handlePopRoute();
+        await tester.pumpAndSettle();
+        expect(
+          tester.widget<TextField>(find.byType(TextField)).controller!.text,
+          '9',
+        );
+        await _tap(tester, 'Add my name');
+        await _tap(tester, 'Choose my character');
+        expect(find.text('Add your name or a nickname.'), findsOneWidget);
+      }
       await tester.enterText(find.byType(TextField), 'Demo child');
       await _tap(tester, 'Choose my character');
       await _tap(tester, gender == ChildGender.boy ? 'Boy' : 'Girl');
-      repository.failSave = true;
-      await _tap(tester, 'Start practice');
-      expect(
-        find.text('Could not save your details. Try again.'),
-        findsOneWidget,
-      );
-      repository.failSave = false;
+      if (gender == ChildGender.boy) {
+        repository.failSave = true;
+        await _tap(tester, 'Start practice');
+        expect(
+          find.text('Could not save your details. Try again.'),
+          findsOneWidget,
+        );
+        repository.failSave = false;
+      }
       await _tap(tester, 'Start practice');
       expect(find.byType(PracticeLauncher), findsOneWidget);
       expect(repository.plan.child.fullName, 'Demo child');

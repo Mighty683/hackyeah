@@ -9,11 +9,14 @@ import 'package:flutter/services.dart';
 import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
 import 'air_raid_mission.dart';
-import 'mission_audio.dart';
+import '../../audio/practice_audio.dart';
+import '../../audio/practice_narration_controller.dart';
 import 'mission_scene.dart';
-import 'practice_recap.dart';
+import 'mission_recap_layout.dart';
 import 'practice_message_conversation.dart';
-import 'practice_phone_keypad.dart';
+import 'mission_phone_practice.dart';
+import 'mission_decision_layout.dart';
+import 'mission_viewport_layout.dart';
 
 /// An explicitly fictional training session, separate from the help prototype.
 class MissionScreen extends StatefulWidget {
@@ -26,7 +29,7 @@ class MissionScreen extends StatefulWidget {
   });
 
   final MissionMode mode;
-  final MissionAudio? audio;
+  final PracticeAudio? audio;
   final FamilyPlanRepository? repository;
 
   final ChildGender gender;
@@ -38,50 +41,35 @@ class MissionScreen extends StatefulWidget {
 class _MissionScreenState extends State<MissionScreen>
     with WidgetsBindingObserver {
   late final MissionSession _session = MissionSession(mode: widget.mode);
-  late MissionAudio _audio = widget.audio ?? MissionAudio();
+  late final _narration = PracticeNarrationController(
+    widget.audio ?? PracticeAudio(),
+    recreateAudio: widget.audio == null ? PracticeAudio.new : null,
+  );
   late final _repository = widget.repository ?? FamilyPlanRepository();
   List<TrustedContact>? _phoneContacts;
   bool _enteringPhoneNumber = false;
   bool _phoneLoadFailed = false;
   String _phoneNarration = '';
-  bool _audioReady = false;
-  bool _initializingAudio = true;
-  bool _speaking = false;
   bool _effectsEnabled = true;
   bool _exiting = false;
   bool _foreground = true;
-  int _audioRequest = 0;
   int _feedbackRequest = 0;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _narration.addListener(_narrationChanged);
     unawaited(_initializeAudio());
   }
 
+  void _narrationChanged() {
+    if (mounted) setState(() {});
+  }
+
   Future<void> _initializeAudio({bool retry = false}) async {
-    final request = ++_audioRequest;
-    setState(() {
-      _initializingAudio = true;
-      _speaking = false;
-    });
-    if (retry && widget.audio == null) {
-      await _audio.dispose();
-      if (!mounted || _exiting || request != _audioRequest) return;
-      _audio = MissionAudio();
-    }
-    var ready = false;
-    try {
-      ready = await _audio.initialize();
-    } catch (_) {
-      ready = false;
-    }
-    if (!mounted || _exiting || request != _audioRequest) return;
-    setState(() {
-      _audioReady = ready;
-      _initializingAudio = false;
-    });
+    await _narration.initialize(retry: retry);
+    if (!mounted || _exiting) return;
     await _playCurrent();
   }
 
@@ -111,34 +99,15 @@ class _MissionScreenState extends State<MissionScreen>
     return 'success';
   }
 
-  Future<void> _narrate() async {
-    if (_initializingAudio || !_foreground || _exiting) return;
-    final request = ++_audioRequest;
-    final text = _spokenText;
+  Future<void> _narrate() {
     final sound = _soundCue;
-    setState(() => _speaking = _audioReady);
-    try {
-      await _audio.stop();
-      if (!mounted || !_foreground || _exiting || request != _audioRequest) {
-        return;
-      }
-      if (sound == 'alarm' || sound == 'all_clear') {
-        unawaited(HapticFeedback.lightImpact());
-      }
-      if (_audioReady) {
-        await _audio.narrate(text, sound: sound);
-      } else if (sound != null) {
-        await _audio.playCue(sound);
-      }
-    } catch (_) {
-      if (mounted && request == _audioRequest) {
-        setState(() => _audioReady = false);
-      }
-    } finally {
-      if (mounted && request == _audioRequest) {
-        setState(() => _speaking = false);
-      }
-    }
+    return _narration.narrate(
+      _spokenText,
+      sound: sound,
+      beforePlayback: sound == 'alarm' || sound == 'all_clear'
+          ? () => unawaited(HapticFeedback.lightImpact())
+          : null,
+    );
   }
 
   void _toggleEffects() {
@@ -148,7 +117,9 @@ class _MissionScreenState extends State<MissionScreen>
   }
 
   bool get _canReplay =>
-      !_initializingAudio && !_exiting && (_audioReady || _soundCue != null);
+      !_narration.initializing &&
+      !_exiting &&
+      (_narration.ready || _soundCue != null);
 
   void _choose(String id) {
     if (!_session.canChoose ||
@@ -171,7 +142,7 @@ class _MissionScreenState extends State<MissionScreen>
       : _narrate();
 
   Future<void> _respondToChoice() async {
-    if (_initializingAudio) return;
+    if (_narration.initializing) return;
     final request = ++_feedbackRequest;
     final choice = _session.selectedChoice;
     // Keep feedback readable even if the voice is unavailable or very short.
@@ -265,8 +236,7 @@ class _MissionScreenState extends State<MissionScreen>
     if (_exiting) return;
     setState(() => _exiting = true);
     ++_feedbackRequest;
-    ++_audioRequest;
-    await _audio.dispose();
+    await _narration.close();
     if (mounted) Navigator.of(context).pop();
   }
 
@@ -274,21 +244,18 @@ class _MissionScreenState extends State<MissionScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     _foreground = state == AppLifecycleState.resumed;
     ++_feedbackRequest;
+    _narration.setForeground(_foreground);
     if (_foreground) {
       unawaited(_playCurrent());
-      return;
     }
-    if (!_initializingAudio) ++_audioRequest;
-    if (mounted) setState(() => _speaking = false);
-    unawaited(_audio.stop());
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     ++_feedbackRequest;
-    ++_audioRequest;
-    unawaited(_audio.dispose());
+    _narration.removeListener(_narrationChanged);
+    _narration.dispose();
     super.dispose();
   }
 
@@ -314,7 +281,9 @@ class _MissionScreenState extends State<MissionScreen>
         ),
         actions: [
           IconButton(
-            onPressed: _initializingAudio || _exiting ? null : _toggleEffects,
+            onPressed: _narration.initializing || _exiting
+                ? null
+                : _toggleEffects,
             tooltip: _effectsEnabled
                 ? 'Mute sound effects'
                 : 'Unmute sound effects',
@@ -336,7 +305,7 @@ class _MissionScreenState extends State<MissionScreen>
                 icon: BaseboundIcon(
                   BaseboundIconName.speaker,
                   size: 24,
-                  color: _speaking ? BaseboundColors.blue : null,
+                  color: _narration.speaking ? BaseboundColors.blue : null,
                 ),
               ),
             ),
@@ -366,7 +335,7 @@ class _MissionScreenState extends State<MissionScreen>
   Widget _audioControls() => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
-      if (_initializingAudio)
+      if (_narration.initializing)
         const Padding(
           padding: EdgeInsets.only(top: 12),
           child: Text(
@@ -374,7 +343,7 @@ class _MissionScreenState extends State<MissionScreen>
             style: TextStyle(color: BaseboundColors.muted),
           ),
         ),
-      if (!_audioReady && !_initializingAudio)
+      if (!_narration.ready && !_narration.initializing)
         Padding(
           padding: const EdgeInsets.only(top: 12),
           child: SoftPanel(
@@ -417,17 +386,17 @@ class _MissionScreenState extends State<MissionScreen>
           ? _session.selectedChoice?.visual ?? step.visual
           : step.visual;
       if (step.isDecision) {
-        return _decisionLayout(visual, constraints);
+        return _decisionLayout(visual);
       }
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Expanded(
             child: CustomMultiChildLayout(
-              delegate: _MissionViewportLayout(),
+              delegate: MissionViewportLayout(),
               children: [
                 LayoutId(
-                  id: _MissionRegion.instruction,
+                  id: MissionRegion.instruction,
                   child: SingleChildScrollView(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -454,7 +423,7 @@ class _MissionScreenState extends State<MissionScreen>
                   ),
                 ),
                 LayoutId(
-                  id: _MissionRegion.actions,
+                  id: MissionRegion.actions,
                   child: SingleChildScrollView(
                     child: _session.hasFeedback
                         ? _feedback()
@@ -462,7 +431,7 @@ class _MissionScreenState extends State<MissionScreen>
                   ),
                 ),
                 LayoutId(
-                  id: _MissionRegion.scene,
+                  id: MissionRegion.scene,
                   child: Center(child: _scene(visual)),
                 ),
               ],
@@ -477,49 +446,14 @@ class _MissionScreenState extends State<MissionScreen>
     },
   );
 
-  Widget _phonePracticeLayout() => SingleChildScrollView(
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (_phoneContacts case final contacts?)
-          PracticePhoneKeypad(
-            contacts: contacts,
-            onComplete: _completePhonePractice,
-            onInstructionChanged: _phoneInstructionChanged,
-          )
-        else ...[
-          const Text(
-            'Type their phone number',
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.w700,
-              height: 1.2,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Semantics(
-            liveRegion: true,
-            child: Text(
-              _phoneNarration,
-              style: const TextStyle(fontSize: 17, height: 1.4),
-            ),
-          ),
-          const SizedBox(height: 16),
-          if (_phoneLoadFailed) ...[
-            FilledButton(
-              onPressed: () => unawaited(_loadPhoneContacts()),
-              child: const Text('Try loading again'),
-            ),
-            TextButton(
-              onPressed: _completePhonePractice,
-              child: const Text('Continue without a number'),
-            ),
-          ] else
-            const Center(child: CircularProgressIndicator()),
-        ],
-        _audioControls(),
-      ],
-    ),
+  Widget _phonePracticeLayout() => MissionPhonePractice(
+    contacts: _phoneContacts,
+    narration: _phoneNarration,
+    loadFailed: _phoneLoadFailed,
+    onComplete: _completePhonePractice,
+    onInstructionChanged: _phoneInstructionChanged,
+    onRetry: () => unawaited(_loadPhoneContacts()),
+    audioControls: _audioControls(),
   );
 
   Widget _messageLayout() => Column(
@@ -581,72 +515,12 @@ class _MissionScreenState extends State<MissionScreen>
     ],
   );
 
-  Widget _decisionLayout(MissionVisual visual, BoxConstraints constraints) {
-    final largeText = MediaQuery.textScalerOf(context).scale(1) > 1.4;
-    if (largeText) {
-      return SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _decisionInstruction(),
-            const SizedBox(height: 16),
-            _scene(visual),
-            if (_session.hasFeedback) ...[
-              const SizedBox(height: 12),
-              _feedback(),
-            ],
-          ],
-        ),
-      );
-    }
-    if (constraints.maxWidth > constraints.maxHeight) {
-      return Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(child: _decisionInstruction()),
-                ),
-                if (_session.hasFeedback)
-                  Flexible(child: SingleChildScrollView(child: _feedback())),
-              ],
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(child: Center(child: _scene(visual))),
-        ],
-      );
-    }
-    // Reserve the same footer before and after a tap so wrong answers do not
-    // resize the scene or shift the child's on-screen position.
-    final feedbackHeight = (constraints.maxHeight * .22).clamp(96.0, 160.0);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SizedBox(
-          height:
-              (constraints.maxHeight -
-                      constraints.maxWidth * 1.5 -
-                      feedbackHeight -
-                      24)
-                  .clamp(64.0, constraints.maxHeight * .35),
-          child: SingleChildScrollView(child: _decisionInstruction()),
-        ),
-        const SizedBox(height: 12),
-        Expanded(child: Center(child: _scene(visual))),
-        const SizedBox(height: 12),
-        SizedBox(
-          height: feedbackHeight,
-          child: SingleChildScrollView(
-            child: _session.hasFeedback ? _feedback() : const SizedBox.shrink(),
-          ),
-        ),
-      ],
-    );
-  }
+  Widget _decisionLayout(MissionVisual visual) => MissionDecisionLayout(
+    instruction: _decisionInstruction(),
+    scene: _scene(visual),
+    feedback: _session.hasFeedback ? _feedback() : const SizedBox.shrink(),
+    hasFeedback: _session.hasFeedback,
+  );
 
   Widget _feedback() => Semantics(
     liveRegion: true,
@@ -694,40 +568,16 @@ class _MissionScreenState extends State<MissionScreen>
     _ => 'Next step',
   };
 
-  Widget _summaryContent(String title) => Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      PracticeRecap(
-        title: title,
-        praise: AirRaidPracticeRecap.praise,
-        points: AirRaidPracticeRecap.points,
-      ),
-      _audioControls(),
-    ],
+  Widget _recallLayout() => MissionRecapLayout(
+    title: _session.step.title,
+    audioControls: _audioControls(),
+    actions: [_nextButton()],
   );
 
-  Widget _recallLayout() => Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      Expanded(
-        child: SingleChildScrollView(
-          child: _summaryContent(_session.step.title),
-        ),
-      ),
-      const SizedBox(height: 16),
-      _nextButton(),
-    ],
-  );
-
-  Widget _completionLayout() => Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      Expanded(
-        child: SingleChildScrollView(
-          child: _summaryContent('Practice complete'),
-        ),
-      ),
-      const SizedBox(height: 16),
+  Widget _completionLayout() => MissionRecapLayout(
+    title: 'Practice complete',
+    audioControls: _audioControls(),
+    actions: [
       FilledButton.icon(
         onPressed: _restart,
         icon: const BaseboundIcon(BaseboundIconName.replay),
@@ -740,47 +590,4 @@ class _MissionScreenState extends State<MissionScreen>
       ),
     ],
   );
-}
-
-enum _MissionRegion { instruction, scene, actions }
-
-/// Readable content takes priority; the uncropped illustration takes the rest.
-/// Accessibility text can scroll without moving the primary button.
-class _MissionViewportLayout extends MultiChildLayoutDelegate {
-  _MissionViewportLayout();
-
-  @override
-  void performLayout(Size size) {
-    final instruction = layoutChild(
-      _MissionRegion.instruction,
-      BoxConstraints(
-        minWidth: size.width,
-        maxWidth: size.width,
-        maxHeight: size.height * .4,
-      ),
-    );
-    final actions = layoutChild(
-      _MissionRegion.actions,
-      BoxConstraints(
-        minWidth: size.width,
-        maxWidth: size.width,
-        maxHeight: (size.height - instruction.height) * .8,
-      ),
-    );
-    final sceneHeight = (size.height - instruction.height - actions.height - 16)
-        .clamp(0.0, size.height);
-    layoutChild(
-      _MissionRegion.scene,
-      BoxConstraints.tight(Size(size.width, sceneHeight)),
-    );
-    positionChild(_MissionRegion.instruction, Offset.zero);
-    positionChild(_MissionRegion.scene, Offset(0, instruction.height + 8));
-    positionChild(
-      _MissionRegion.actions,
-      Offset(0, size.height - actions.height),
-    );
-  }
-
-  @override
-  bool shouldRelayout(_MissionViewportLayout oldDelegate) => false;
 }

@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -11,9 +9,11 @@ import '../help/help_screen.dart';
 import '../landmarks/data/landmark.dart';
 import '../landmarks/widgets/landmark_map.dart';
 import '../landmarks/widgets/landmark_photo.dart';
-import '../mission/mission_audio.dart';
+import '../../audio/practice_audio.dart';
 import 'navigation_location.dart';
 import 'walking_navigation.dart';
+import 'widgets/game_map_layout.dart';
+import 'widgets/place_panels.dart';
 
 /// Familiar places, recognition and live walking guidance share one map.
 class GameScreen extends StatefulWidget {
@@ -38,7 +38,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     map: widget.map,
     location: _location,
   );
-  final _audio = MissionAudio();
+  final _audio = PracticeAudio();
   Landmark? _selected;
   bool _helpOpen = false;
   bool _foreground = true;
@@ -49,7 +49,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   WalkingRoute? _announcedRoute;
 
   List<Landmark> get _visible => widget.landmarks
-      .where((place) => withinMap(widget.map, place.latitude, place.longitude))
+      .where((place) => widget.map.contains(place.latitude, place.longitude))
       .toList();
   String get _instruction => _navigation.destination == null
       ? 'Choose a place on the map.'
@@ -245,115 +245,21 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
           animation: _navigation,
           builder: (context, _) => Stack(
             children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    final landscape =
-                        constraints.maxWidth > constraints.maxHeight * 1.25;
-                    final controls = SingleChildScrollView(child: _controls());
-                    final map = LayoutBuilder(
-                      builder: (context, bounds) {
-                        final side = math.min(
-                          bounds.maxWidth,
-                          bounds.maxHeight,
-                        );
-                        final position = _navigation.outsideMap
-                            ? null
-                            : _location.position;
-                        return Center(
-                          child: SizedBox(
-                            width: side,
-                            height: side,
-                            child: LandmarkMap(
-                              map: widget.map,
-                              landmarks: _visible,
-                              photoDirectory: widget.photoDirectory,
-                              position: position,
-                              route: _navigation.route?.points ?? [],
-                              selectedId: _selected?.id,
-                              onSelected: _choose,
-                              showAttribution: false,
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Semantics(
-                                liveRegion: true,
-                                header: true,
-                                child: Text(
-                                  _recognised
-                                      ? 'You recognised this place!'
-                                      : _instruction,
-                                  style: const TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w700,
-                                    height: 1.2,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            IconButton(
-                              onPressed: _speak,
-                              tooltip: 'Replay audio',
-                              icon: const BaseboundIcon(
-                                BaseboundIconName.speaker,
-                                size: 24,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Walk together with an adult · North is up',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: BaseboundColors.muted,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Expanded(
-                          child: landscape
-                              ? Row(
-                                  children: [
-                                    Expanded(child: map),
-                                    const SizedBox(width: 12),
-                                    Expanded(child: controls),
-                                  ],
-                                )
-                              : Column(
-                                  children: [
-                                    Expanded(child: map),
-                                    const SizedBox(height: 8),
-                                    ConstrainedBox(
-                                      constraints: BoxConstraints(
-                                        maxHeight: constraints.maxHeight * .4,
-                                      ),
-                                      child: controls,
-                                    ),
-                                  ],
-                                ),
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          '© OpenStreetMap contributors · ODbL',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: BaseboundColors.muted,
-                          ),
-                        ),
-                      ],
-                    );
-                  },
+              GameMapLayout(
+                instruction: _recognised
+                    ? 'You recognised this place!'
+                    : _instruction,
+                onReplay: _speak,
+                controls: _controls(),
+                map: LandmarkMap(
+                  map: widget.map,
+                  landmarks: _visible,
+                  photoDirectory: widget.photoDirectory,
+                  position: _navigation.outsideMap ? null : _location.position,
+                  route: _navigation.route?.points ?? [],
+                  selectedId: _selected?.id,
+                  onSelected: _choose,
+                  showAttribution: false,
                 ),
               ),
               if (_navigation.isCalculating)
@@ -478,9 +384,28 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
         const SizedBox(height: 8),
       ],
       if (_selected != null)
-        _placePanel(_selected!)
+        SelectedPlacePanel(
+          place: _selected!,
+          map: widget.map,
+          photoDirectory: widget.photoDirectory,
+          hasDirections: _navigation.destination != null,
+          onClose: () => setState(() => _selected = null),
+          onNavigate: _navigate,
+        )
       else if (_navigation.destination != null)
-        _routePanel(),
+        WalkingRoutePanel(
+          target: _navigation.destination!,
+          photoDirectory: widget.photoDirectory,
+          hasRoute: _navigation.route != null,
+          remaining: _navigation.remaining,
+          nearPlace: _navigation.nearPlace,
+          recognised: _recognised,
+          onRecognise: () {
+            setState(() => _recognised = true);
+            _navigation.stop();
+          },
+          onStop: _navigation.stop,
+        ),
       if (widget.landmarks.isEmpty)
         const Text('Ask your adult to add familiar places.')
       else if (_selected == null && _navigation.destination == null)
@@ -503,107 +428,4 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
         ),
     ],
   );
-
-  Widget _placePanel(Landmark place) => Padding(
-    padding: const EdgeInsets.only(bottom: 8),
-    child: SoftPanel(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  place.name,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              IconButton(
-                onPressed: () => setState(() => _selected = null),
-                tooltip: 'Close place',
-                icon: const Icon(Icons.close, size: 24),
-              ),
-            ],
-          ),
-          if (place.photoName.isNotEmpty)
-            LandmarkPhoto(
-              path: '${widget.photoDirectory}/${place.photoName}',
-              label: place.name,
-              height: 120,
-            ),
-          const SizedBox(height: 8),
-          if (place.isDemo)
-            Text(
-              place.photoName.isEmpty
-                  ? 'Fictional demo place · not a verified safe destination'
-                  : 'Fictional demo photo and pin · recognition only',
-            )
-          else if (!withinMap(widget.map, place.latitude, place.longitude))
-            const Text(
-              'Outside this downloaded map. Walking guidance is unavailable.',
-            )
-          else
-            FilledButton.icon(
-              onPressed: _navigate,
-              icon: const Icon(Icons.directions_walk, size: 24),
-              label: const Text('Walk here together'),
-            ),
-          if (_navigation.destination != null)
-            TextButton(
-              onPressed: () => setState(() => _selected = null),
-              child: const Text('Back to directions'),
-            ),
-        ],
-      ),
-    ),
-  );
-
-  Widget _routePanel() {
-    final target = _navigation.destination!;
-    final route = _navigation.route;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: SoftPanel(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'To ${target.name}',
-              style: const TextStyle(fontWeight: FontWeight.w700),
-            ),
-            if (target.photoName.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              LandmarkPhoto(
-                path: '${widget.photoDirectory}/${target.photoName}',
-                label: target.name,
-                height: 80,
-              ),
-            ],
-            if (route != null) ...[
-              Text('${metres(_navigation.remaining)} of mapped path remaining'),
-              const Text(
-                'Path ends near the pin. Check with your adult.',
-                style: TextStyle(fontSize: 12),
-              ),
-            ],
-            if (_navigation.nearPlace && !_recognised)
-              FilledButton(
-                onPressed: () {
-                  setState(() => _recognised = true);
-                  _navigation.stop();
-                },
-                child: const Text('I recognise this place'),
-              ),
-            TextButton(
-              onPressed: _navigation.stop,
-              child: const Text('Stop directions'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }

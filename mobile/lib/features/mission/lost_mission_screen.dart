@@ -11,7 +11,8 @@ import 'data/lost_practice_context.dart';
 import 'lost_meeting_point_map.dart';
 import 'lost_mission.dart';
 import 'lost_mission_scene.dart';
-import 'mission_audio.dart';
+import '../../audio/practice_audio.dart';
+import '../../audio/practice_narration_controller.dart';
 import 'practice_recap.dart';
 
 /// Offline decision practice; calls and safety confirmation are pretend.
@@ -28,7 +29,7 @@ class LostMissionScreen extends StatefulWidget {
 
   final LostPracticeVariant variant;
   final LostPracticeContext practiceContext;
-  final MissionAudio? audio;
+  final PracticeAudio? audio;
   final DemoMap? map;
   final List<Landmark> mapLandmarks;
   final String photoDirectory;
@@ -43,45 +44,30 @@ class _LostMissionScreenState extends State<LostMissionScreen>
     variant: widget.variant,
     context: widget.practiceContext,
   );
-  late MissionAudio _audio = widget.audio ?? MissionAudio();
+  late final _narration = PracticeNarrationController(
+    widget.audio ?? PracticeAudio(),
+    recreateAudio: widget.audio == null ? PracticeAudio.new : null,
+  );
   final _scroll = ScrollController();
-  bool _audioReady = false;
-  bool _initializingAudio = true;
-  bool _speaking = false;
   bool _exiting = false;
   bool _foreground = true;
-  int _audioRequest = 0;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _narration.addListener(_narrationChanged);
     unawaited(_initializeAudio());
   }
 
+  void _narrationChanged() {
+    if (mounted) setState(() {});
+  }
+
   Future<void> _initializeAudio({bool retry = false}) async {
-    final request = ++_audioRequest;
-    setState(() {
-      _initializingAudio = true;
-      _speaking = false;
-    });
-    if (retry && widget.audio == null) {
-      await _audio.dispose();
-      if (!mounted || _exiting || request != _audioRequest) return;
-      _audio = MissionAudio();
-    }
-    var ready = false;
-    try {
-      ready = await _audio.initialize();
-    } catch (_) {
-      ready = false;
-    }
-    if (!mounted || _exiting || request != _audioRequest) return;
-    setState(() {
-      _audioReady = ready;
-      _initializingAudio = false;
-    });
-    if (ready) await _narrate();
+    await _narration.initialize(retry: retry);
+    if (!mounted || _exiting) return;
+    if (_narration.ready) await _narrate();
   }
 
   String get _spokenText {
@@ -93,27 +79,8 @@ class _LostMissionScreenState extends State<LostMissionScreen>
     return '${step.narration} Your choices are: $choices.';
   }
 
-  Future<void> _narrate() async {
-    if (!_audioReady || !_foreground || _exiting) return;
-    final request = ++_audioRequest;
-    final text = _spokenText;
-    setState(() => _speaking = true);
-    try {
-      await _audio.stop();
-      if (!mounted || !_foreground || _exiting || request != _audioRequest) {
-        return;
-      }
-      await _audio.narrate(text);
-    } catch (_) {
-      if (mounted && request == _audioRequest) {
-        setState(() => _audioReady = false);
-      }
-    } finally {
-      if (mounted && request == _audioRequest) {
-        setState(() => _speaking = false);
-      }
-    }
-  }
+  Future<void> _narrate() =>
+      _narration.ready ? _narration.narrate(_spokenText) : Future<void>.value();
 
   void _choose(String id) {
     if (_exiting || _session.hasFeedback || _session.isComplete) return;
@@ -156,28 +123,24 @@ class _LostMissionScreenState extends State<LostMissionScreen>
   Future<void> _exit() async {
     if (_exiting) return;
     setState(() => _exiting = true);
-    ++_audioRequest;
-    await _audio.dispose();
+    await _narration.close();
     if (mounted) Navigator.of(context).pop();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     _foreground = state == AppLifecycleState.resumed;
+    _narration.setForeground(_foreground);
     if (_foreground) {
       unawaited(_narrate());
-      return;
     }
-    if (!_initializingAudio) ++_audioRequest;
-    if (mounted) setState(() => _speaking = false);
-    unawaited(_audio.stop());
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    ++_audioRequest;
-    unawaited(_audio.dispose());
+    _narration.removeListener(_narrationChanged);
+    _narration.dispose();
     _scroll.dispose();
     super.dispose();
   }
@@ -223,17 +186,17 @@ class _LostMissionScreenState extends State<LostMissionScreen>
   Widget _replayButton() => Semantics(
     label: 'Replay audio',
     button: true,
-    enabled: _audioReady && !_exiting,
-    onTap: _audioReady && !_exiting ? () => unawaited(_narrate()) : null,
+    enabled: _narration.ready && !_exiting,
+    onTap: _narration.ready && !_exiting ? () => unawaited(_narrate()) : null,
     child: ExcludeSemantics(
       child: IconButton(
-        onPressed: _audioReady && !_exiting
+        onPressed: _narration.ready && !_exiting
             ? () => unawaited(_narrate())
             : null,
         tooltip: 'Replay audio',
         icon: BaseboundIcon(
           BaseboundIconName.speaker,
-          color: _speaking ? BaseboundColors.blue : null,
+          color: _narration.speaking ? BaseboundColors.blue : null,
         ),
       ),
     ),
@@ -400,13 +363,13 @@ class _LostMissionScreenState extends State<LostMissionScreen>
   }
 
   Widget _audioControls() {
-    if (_initializingAudio) {
+    if (_narration.initializing) {
       return const Padding(
         padding: EdgeInsets.only(top: 10),
         child: Text('Getting the voice ready…', textAlign: TextAlign.center),
       );
     }
-    if (_audioReady) return const SizedBox.shrink();
+    if (_narration.ready) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(top: 10),
       child: SoftPanel(

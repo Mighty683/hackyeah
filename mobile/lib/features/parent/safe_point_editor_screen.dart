@@ -55,7 +55,6 @@ class _SafePointEditorScreenState extends State<SafePointEditorScreen> {
     return ParentEditorScaffold(
       title: widget.point == null ? 'Add a safe place' : 'Edit a safe place',
       onSave: _save,
-      illustration: ParentEditorArt.place,
       saveLabel: 'Save safe place',
       saveEnabled: selected != null,
       steps: [
