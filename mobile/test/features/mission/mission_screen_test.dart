@@ -3,6 +3,9 @@ import 'package:do_bazy/features/mission/mission_audio.dart';
 import 'package:do_bazy/features/mission/mission_choice_card.dart';
 import 'package:do_bazy/features/mission/mission_scene.dart';
 import 'package:do_bazy/features/mission/mission_screen.dart';
+import 'package:do_bazy/features/mission/practice_phone_keypad.dart';
+import 'package:do_bazy/features/parent/data/family_plan.dart';
+import 'package:do_bazy/features/parent/data/family_plan_repository.dart';
 import 'package:do_bazy/ui/basebound_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -34,7 +37,17 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
-    await _showMission(tester, audioChannel, MissionMode.home);
+    await _showMission(
+      tester,
+      audioChannel,
+      MissionMode.home,
+      repository: _PracticeRepository(
+        contacts: const [
+          TrustedContact(name: 'Demo adult', phone: '987 654 321'),
+          TrustedContact(name: 'Demo parent', phone: '+48 (123) 456-789'),
+        ],
+      ),
+    );
     expect(find.text('An alarm at home'), findsOneWidget);
     final firstNarration = audioCalls.lastWhere(
       (call) => call.method == 'narrate',
@@ -74,7 +87,37 @@ void main() {
     await _tap(tester, 'Mom');
     await _tap(tester, 'Tell them');
     await _tap(tester, 'Send one message');
-    await _tap(tester, 'Hear the reply');
+    expect(find.byType(PracticePhoneKeypad), findsOneWidget);
+    expect(find.text('987 654 321'), findsNothing);
+    await _tap(tester, '1');
+    await _tap(tester, 'Check number');
+    expect(
+      find.text('That number does not match yet. Try again or use a hint.'),
+      findsOneWidget,
+    );
+    expect(find.text('Send pretend message'), findsNothing);
+    await _tap(tester, 'Need a hint?');
+    expect(find.text('+48 (123) 456-789'), findsOneWidget);
+    await _tap(tester, 'Hide hint');
+    await _tap(tester, 'Clear number');
+    for (final digit in '48123456780'.split('')) {
+      await _tap(tester, digit);
+    }
+    await tester.ensureVisible(find.byTooltip('Delete last digit'));
+    await tester.tap(find.byTooltip('Delete last digit'));
+    await tester.pumpAndSettle();
+    await _tap(tester, '9');
+    await _tap(tester, 'Check number');
+    expect(find.text('That matches a saved number.'), findsOneWidget);
+    await _tap(tester, 'Send pretend message');
+    expect(find.text('A pretend conversation'), findsOneWidget);
+    expect(find.text('I am away from windows.'), findsOneWidget);
+    expect(
+      find.text('Good. Stay there and wait for the all-clear.'),
+      findsOneWidget,
+    );
+    expect(find.text('Practice only. Nothing was sent.'), findsOneWidget);
+    expect(find.text('Hear the reply'), findsNothing);
     await _tap(tester, 'Stay here');
     await _tap(tester, 'Stay here');
     await _tap(tester, 'Keep waiting');
@@ -123,6 +166,55 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();
   });
+
+  testWidgets(
+    'phone practice handles missing numbers and retries failed reads',
+    (tester) async {
+      tester.view.physicalSize = const Size(320, 700);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final repository = _PracticeRepository(failRead: true);
+      await _showMission(
+        tester,
+        audioChannel,
+        MissionMode.home,
+        repository: repository,
+        textScale: 2,
+      );
+      for (final label in [
+        'Find a place',
+        'Move deeper inside',
+        'Next step',
+        'Inside hallway',
+        'Next step',
+        'Mom',
+        'Tell them',
+        'Send one message',
+      ]) {
+        await _tap(tester, label);
+      }
+      expect(find.text('Try loading again'), findsOneWidget);
+      expect(find.byType(PracticePhoneKeypad), findsNothing);
+      repository.failRead = false;
+      await _tap(tester, 'Try loading again');
+      expect(find.byType(PracticePhoneKeypad), findsOneWidget);
+      expect(
+        find.text(
+          'No phone number is saved yet. '
+          'Ask an adult to add one in parent setup.',
+        ),
+        findsOneWidget,
+      );
+      await _tap(tester, 'Continue without a number');
+      expect(find.text('A pretend conversation'), findsOneWidget);
+      await _tap(tester, 'Stay here');
+      expect(find.text('You hear a loud noise'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
+    },
+  );
 
   testWidgets('short quiz screens keep choices and next button in view', (
     tester,
@@ -180,7 +272,15 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
-    await _showMission(tester, audioChannel, MissionMode.home, textScale: 2);
+    await _showMission(
+      tester,
+      audioChannel,
+      MissionMode.home,
+      textScale: 2,
+      repository: _PracticeRepository(
+        contacts: const [TrustedContact(phone: '123 456 789')],
+      ),
+    );
     expect(tester.takeException(), isNull);
     await _tap(tester, 'Find a place');
     expect(tester.takeException(), isNull);
@@ -196,6 +296,15 @@ void main() {
     await _tap(tester, 'Grandparent');
     await _tap(tester, 'Tell them');
     expect(find.text('Send one message'), findsOneWidget);
+    await _tap(tester, 'Send one message');
+    for (final digit in '123456789'.split('')) {
+      await _tap(tester, digit);
+    }
+    await _tap(tester, 'Check number');
+    await _tap(tester, 'Send pretend message');
+    expect(find.text('A pretend conversation'), findsOneWidget);
+    await _tap(tester, 'Stay here');
+    expect(find.text('You hear a loud noise'), findsOneWidget);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();
@@ -207,6 +316,7 @@ Future<void> _showMission(
   MethodChannel channel,
   MissionMode mode, {
   double textScale = 1,
+  FamilyPlanRepository? repository,
 }) async {
   await tester.pumpWidget(
     MaterialApp(
@@ -219,6 +329,7 @@ Future<void> _showMission(
       home: MissionScreen(
         mode: mode,
         audio: MissionAudio(channel: channel),
+        repository: repository ?? _PracticeRepository(),
       ),
     ),
   );
@@ -234,7 +345,8 @@ Future<void> _tap(WidgetTester tester, String label) async {
       : accessibleAction;
   expect(target, findsOneWidget);
   final context = tester.element(find.byType(MissionScreen));
-  if (MediaQuery.textScalerOf(context).scale(1) <= 1.1) {
+  if (MediaQuery.textScalerOf(context).scale(1) <= 1.1 &&
+      find.byType(PracticePhoneKeypad).evaluate().isEmpty) {
     expect(target.hitTestable(), findsOneWidget, reason: label);
   } else {
     await tester.ensureVisible(target);
@@ -242,6 +354,19 @@ Future<void> _tap(WidgetTester tester, String label) async {
   await tester.tap(target);
   await tester.pumpAndSettle();
   _expectMissionChoicesAreUsable(tester);
+}
+
+class _PracticeRepository extends FamilyPlanRepository {
+  _PracticeRepository({this.contacts = const [], this.failRead = false});
+
+  final List<TrustedContact> contacts;
+  bool failRead;
+
+  @override
+  Future<FamilyPlan> load() async {
+    if (failRead) throw StateError('Demo read failure');
+    return FamilyPlan(contacts: contacts);
+  }
 }
 
 // Each choice is an independent accessible target inside the scene image.

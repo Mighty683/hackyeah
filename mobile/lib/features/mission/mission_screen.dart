@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import '../parent/data/family_plan.dart';
+import '../parent/data/family_plan_repository.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,6 +11,8 @@ import '../../ui/basebound_ui.dart';
 import 'air_raid_mission.dart';
 import 'mission_audio.dart';
 import 'mission_scene.dart';
+import 'practice_message_conversation.dart';
+import 'practice_phone_keypad.dart';
 
 /// An explicitly fictional training session, separate from the help prototype.
 class MissionScreen extends StatefulWidget {
@@ -17,11 +20,13 @@ class MissionScreen extends StatefulWidget {
     super.key,
     required this.mode,
     this.audio,
+    this.repository,
     this.gender = ChildGender.girl,
   });
 
   final MissionMode mode;
   final MissionAudio? audio;
+  final FamilyPlanRepository? repository;
 
   final ChildGender gender;
 
@@ -33,6 +38,11 @@ class _MissionScreenState extends State<MissionScreen>
     with WidgetsBindingObserver {
   late final MissionSession _session = MissionSession(mode: widget.mode);
   late MissionAudio _audio = widget.audio ?? MissionAudio();
+  late final _repository = widget.repository ?? FamilyPlanRepository();
+  List<TrustedContact>? _phoneContacts;
+  bool _enteringPhoneNumber = false;
+  bool _phoneLoadFailed = false;
+  String _phoneNarration = '';
   bool _audioReady = false;
   bool _initializingAudio = true;
   bool _speaking = false;
@@ -74,6 +84,10 @@ class _MissionScreenState extends State<MissionScreen>
   }
 
   String get _spokenText {
+    if (_enteringPhoneNumber) return _phoneNarration;
+    if (_session.step.id == 'message') {
+      return 'Practice only. Nothing was sent. ${_session.step.narration}';
+    }
     if (_session.isComplete) {
       return 'You finished the practice. You learned to move away from windows, '
           'find a protected place, tell a trusted adult, and wait for the all-clear.';
@@ -110,8 +124,65 @@ class _MissionScreenState extends State<MissionScreen>
   }
 
   void _choose(String id) {
-    if (_session.hasFeedback || _session.isComplete) return;
+    if (_session.hasFeedback || _session.isComplete || _enteringPhoneNumber) {
+      return;
+    }
+    if (_session.step.id == 'communication' && id == 'message') {
+      setState(() => _enteringPhoneNumber = true);
+      unawaited(_loadPhoneContacts());
+      return;
+    }
     setState(() => _session.choose(id));
+    unawaited(_narrate());
+  }
+
+  Future<void> _loadPhoneContacts() async {
+    setState(() {
+      _phoneContacts = null;
+      _phoneLoadFailed = false;
+      _phoneNarration = 'Loading saved numbers.';
+    });
+    unawaited(_narrate());
+    try {
+      final plan = await _repository.load();
+      if (!mounted || _exiting || !_enteringPhoneNumber) return;
+      setState(() {
+        _phoneContacts = plan.contacts
+            .where((contact) => RegExp(r'[0-9]').hasMatch(contact.phone))
+            .toList();
+        _phoneNarration = _phoneContacts!.isEmpty
+            ? 'No phone number is saved yet. Ask an adult to add one in parent '
+                  'setup. You can continue without a number.'
+            : 'Type your trusted adult’s phone number. This is practice only. '
+                  'No calls or messages are sent.';
+      });
+    } catch (_) {
+      if (!mounted || _exiting || !_enteringPhoneNumber) return;
+      setState(() {
+        _phoneLoadFailed = true;
+        _phoneNarration =
+            'Your saved numbers could not be read. '
+            'Try loading again, or continue without a number.';
+      });
+    }
+    unawaited(_narrate());
+  }
+
+  void _phoneInstructionChanged(String instruction) {
+    setState(() => _phoneNarration = instruction);
+    unawaited(_narrate());
+  }
+
+  void _completePhonePractice() {
+    if (!_enteringPhoneNumber || _exiting) return;
+    setState(() {
+      _enteringPhoneNumber = false;
+      _phoneContacts = null;
+      _phoneNarration = '';
+      _session.choose('message');
+      // The pretend message and reply share one screen after number practice.
+      _session.advance();
+    });
     unawaited(_narrate());
   }
 
@@ -131,7 +202,12 @@ class _MissionScreenState extends State<MissionScreen>
   }
 
   void _restart() {
-    setState(_session.restart);
+    setState(() {
+      _session.restart();
+      _enteringPhoneNumber = false;
+      _phoneContacts = null;
+      _phoneNarration = '';
+    });
     unawaited(_narrate());
   }
 
@@ -269,7 +345,9 @@ class _MissionScreenState extends State<MissionScreen>
 
   Widget _stepLayout() => LayoutBuilder(
     builder: (context, constraints) {
+      if (_enteringPhoneNumber) return _phonePracticeLayout();
       final step = _session.step;
+      if (step.id == 'message') return _messageLayout();
       final visual = _session.selectedChoice?.visual ?? step.visual;
       if (step.isDecision && !_session.hasFeedback) {
         return _decisionLayout(visual, constraints);
@@ -338,6 +416,67 @@ class _MissionScreenState extends State<MissionScreen>
         ],
       );
     },
+  );
+
+  Widget _phonePracticeLayout() => SingleChildScrollView(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (_phoneContacts case final contacts?)
+          PracticePhoneKeypad(
+            contacts: contacts,
+            onComplete: _completePhonePractice,
+            onInstructionChanged: _phoneInstructionChanged,
+          )
+        else ...[
+          const Text(
+            'Type their phone number',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w700,
+              height: 1.2,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Semantics(
+            liveRegion: true,
+            child: Text(
+              _phoneNarration,
+              style: const TextStyle(fontSize: 17, height: 1.4),
+            ),
+          ),
+          const SizedBox(height: 16),
+          if (_phoneLoadFailed) ...[
+            FilledButton(
+              onPressed: () => unawaited(_loadPhoneContacts()),
+              child: const Text('Try loading again'),
+            ),
+            TextButton(
+              onPressed: _completePhonePractice,
+              child: const Text('Continue without a number'),
+            ),
+          ] else
+            const Center(child: CircularProgressIndicator()),
+        ],
+        _audioControls(),
+      ],
+    ),
+  );
+
+  Widget _messageLayout() => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Expanded(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [const PracticeMessageConversation(), _audioControls()],
+          ),
+        ),
+      ),
+      const SizedBox(height: 16),
+      _nextButton(),
+    ],
   );
 
   Widget _scene(MissionVisual visual) {

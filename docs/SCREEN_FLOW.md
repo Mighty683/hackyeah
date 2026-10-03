@@ -141,8 +141,22 @@ flowchart TD
     MODE -->|Back or Choose a scenario| SC
     MODE -->|At home| HOME["HOME ALARM TUTORIAL"]
     MODE -->|Outside| OUT["OUTDOOR ALARM SIMULATION"]
-    HOME --> MR["MISSION RECALL<br/>Completion sticker; no score"]
-    OUT --> MR
+    HOME --> MC["FICTIONAL FAMILY<br/>Choose Mom, Dad or Grandparent"]
+    MC --> MM["HOW WILL YOU TELL THEM?<br/>Keep calling or Send one message"]
+    MM -->|Keep calling: calm feedback and retry| MM
+    MM -->|Send one message| MPL["LOAD PHONE PRACTICE<br/>Read saved trusted contacts locally"]
+    MPL -->|Usable saved number| MPK["PRETEND PHONE KEYPAD<br/>Enter a saved trusted adult's number"]
+    MPL -->|No usable number| MPN["NO SAVED NUMBER<br/>Explain adult setup"]
+    MPL -->|Read failed| MPE["PHONE PRACTICE READ ERROR<br/>Preserve saved details"]
+    MPE -->|Try loading again| MPL
+    MPK -->|Digits, backspace, Clear or Need a hint?| MPK
+    MPK -->|Incorrect number: calm retry| MPK
+    MPK -->|Matching number; Send pretend message| MPR["PRETEND CONVERSATION<br/>Outgoing message and adult reply on one screen; nothing sent"]
+    MPN -->|Continue without a number| MPR
+    MPE -->|Continue without a number| MPR
+    MPR -->|Stay here| MW["WAITING PRACTICE<br/>Noise, silence and explicit all-clear"]
+    MW --> MR["MISSION RECALL<br/>Completion sticker; no score"]
+    OUT -->|After reaching the practice shelter| MC
     MR -->|Replay| RE{"Selected mission mode"}
     RE -->|Home| HOME
     RE -->|Outside| OUT
@@ -300,6 +314,9 @@ flowchart TD
 | Practice scenarios | Choose alarm or lost practice | Replay audio, back to activities |
 | Mission mode (7+) | Choose home or outside | Replay audio, back to scenarios |
 | Mission scene | Tap a highlighted scene object to choose an action, or hear the situation | Replay audio, back |
+| Alarm phone practice | Enter a saved trusted adult's number using the pretend keypad | Backspace, Clear, optional contact-number hint; match the number, then Send pretend message |
+| Alarm phone practice unavailable | Explain missing saved numbers or a failed read | Continue without a number; failed reads also offer Try loading again; saved details remain intact |
+| Alarm pretend conversation | See the outgoing message and adult reply together | Stay here continues to the loud-noise decision; Practice only. Nothing was sent. |
 | Mission feedback | See the consequence and explanation | Retry the same decision or advance; replay audio |
 | Mission recall | See the six learned actions and completion sticker | Replay audio, replay mission, choose practice |
 | Lost practice loading/error | Load the current display-only family snapshot | Retry or explicitly use pretend family; back preserves saved details |
@@ -350,11 +367,13 @@ Help also reads named non-demo saved family pins and independently uses foregrou
 
 ### Mission 01 — air-raid alarm practice
 
-The home tutorial practices alarm recognition, moving away from windows, choosing an interior hallway, messaging a fictional trusted adult, staying after a noise, waiting through silence, and following an explicit all-clear. The premise is a fallback when the agreed shelter cannot be reached. An interior area and two walls offer some protection; the game does not certify a home as safe.
+The home tutorial practices alarm recognition, moving away from windows, choosing an interior hallway, a pretend message to a trusted adult, staying after a noise, waiting through silence, and following an explicit all-clear. The premise is a fallback when the agreed shelter cannot be reached. An interior area and two walls offer some protection; the game does not certify a home as safe.
+
+After choosing a fictional Mom, Dad or Grandparent, **How will you tell them?** keeps the repeated-calls mistake and calm retry. **Send one message** opens a pretend numeric keypad within the mission. The child practices a number from the encrypted local trusted-contact records, with digits, backspace and Clear. Any saved usable contact number matches after removing formatting such as `+`, spaces and separators; country-code digits remain required. **Need a hint?** reveals saved contact names/relationships and numbers. A correct match enables **Send pretend message**. One conversation screen then shows the outgoing “I am away from windows.” and adult reply “Good. Stay there and wait for the all-clear.” together, labelled **Practice only. Nothing was sent.** **Stay here** advances directly to the loud-noise decision. If no usable number is saved, the screen explains adult setup and offers **Continue without a number**. A failed read offers **Try loading again** or **Continue without a number**, preserving saved records. Both fallback actions open the same pretend conversation.
 
 The MVP targets children aged 7+ with two to four choices and optional fictional outdoor practice: compare nearby shelter against distant destinations and exposed places. Child onboarding collects age, but there is no younger-child branch; saved age does not change this mission. An outdoor mistake leads to getting down (drag or tap), protecting the head, and moving to shelter. Home mistakes explain the consequence and retry without punishment. Both modes finish with a visual recall and completion sticker, with no score or timer.
 
-Instructions, feedback, and replay use an installed offline English Android speech voice. If unavailable, the app shows an adult-help message; text remains as a fallback. Short warning and all-clear playback excerpts are teaching samples, not complete alarm signals. Contacts, messages, replies, shelter selection and movement are fictional; this mission neither calls nor sends messages nor uses saved personal contacts or map pins. See [mission-01-air-raid-alarm.md](mission-01-air-raid-alarm.md) for the scenario and source notes.
+Instructions, feedback, and replay use an installed offline English Android speech voice. If unavailable, the app shows an adult-help message; text remains as a fallback. Short warning and all-clear playback excerpts are teaching samples, not complete alarm signals. Family avatars, messages, replies, shelter selection and movement are fictional. Saved trusted contacts are read only for local phone-number practice; typed digits are not persisted. The mission makes no calls, sends no SMS, opens no external app and uses no network or saved map pins. Matching a saved number does not verify the contact, delivery or safety. See [mission-01-air-raid-alarm.md](mission-01-air-raid-alarm.md) for the scenario and source notes.
 
 ### Mission 02 — lost practice
 

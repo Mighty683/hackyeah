@@ -140,6 +140,10 @@ Correct behavior:
 
 **Send one message.**
 
+In the Android demo, choosing this action opens a pretend numeric keypad. The child enters a trusted adult's phone number saved in parent setup, with digits, backspace and Clear. **Need a hint?** reveals saved contact names/relationships and numbers. Any usable saved trusted-contact number can match; formatting such as `+`, spaces and separators is ignored, while country-code digits are retained. A mismatch gets calm feedback and another try. A correct match enables **Send pretend message**. One conversation screen then shows the outgoing “I am away from windows.” and adult reply “Good. Stay there and wait for the all-clear.” together. It is labelled **Practice only. Nothing was sent.** **Stay here** continues directly to the loud-noise decision, with no separate message-feedback or reply step to dismiss.
+
+If no usable number is saved, explain that an adult can add one in setup and offer **Continue without a number**. If reading the saved record fails, offer **Try loading again** or **Continue without a number** without changing the record. The earlier Mom/Dad/Grandparent choice remains fictional and does not select a real recipient. This keypad only practices recall: it makes no calls, sends no SMS, opens no external app and uses no network. Typed digits are not saved, and a match verifies neither the contact nor safety.
+
 Example message, read aloud:
 
 > “I am in a safe place.”
@@ -358,7 +362,7 @@ Implemented in three parallel areas, integrated through a shared mission-state c
 
 Integration adds narrated practice selection beside the existing map game. Both child entry and parent “Play together” lead to the same 7+ MVP: choose alarm practice, then home or outside. There is no age-selection screen or younger-child implementation; saved age does not change the mission. No age verification is claimed. Screen-flow documentation records the implemented mission separately from future missions and reviewed emergency assistance.
 
-The home scene explicitly assumes the agreed shelter cannot be reached. An internal room and two walls are a fallback, not a verified shelter or guarantee of safety. “I am away from windows” replaces the example message’s unconditional safety claim. Outdoor destinations are fictional; the nearby building represents a practice shelter. Five possible destinations are split across two decisions to keep each screen at four choices or fewer. No real messages or calls are made, and no saved contacts or practice pins are used.
+The home scene explicitly assumes the agreed shelter cannot be reached. An internal room and two walls are a fallback, not a verified shelter or guarantee of safety. “I am away from windows” replaces the example message’s unconditional safety claim. Outdoor destinations are fictional; the nearby building represents a practice shelter. Five possible destinations are split across two decisions to keep each screen at four choices or fewer. Saved trusted contacts are read locally only for the pretend keypad's number matching and optional hints. No real messages or calls are made, no typed digits are persisted, and no saved practice pins are used. All message feedback and replies remain simulated.
 
 Narration requires an installed offline English Android voice. If missing or playback fails, the app asks for adult help and retains text as a fallback; this device state does not satisfy independent play without reading. Alarm/all-clear sounds are short teaching excerpts from original Polish recordings, not the complete official-duration signal. Asset attribution and licensing are in `mobile/assets/audio/mission01/README.md`.
 
