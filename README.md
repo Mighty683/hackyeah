@@ -1,4 +1,4 @@
-# HackYeah — Basebound
+# HackYeah — Safe Path
 
 A Flutter + Flame Android game with a Slidev pitch deck. The mobile game is the primary product; the web app template has been removed.
 

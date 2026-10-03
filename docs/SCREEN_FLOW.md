@@ -1,4 +1,4 @@
-# Basebound screen and action reference
+# Safe Path screen and action reference
 
 Updated: 2026-10-03. Android is the application; the Slidev screens are pitch prototypes.
 
