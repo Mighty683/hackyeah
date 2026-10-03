@@ -23,9 +23,13 @@ flowchart TD
     L -->|Map loaded| G
     L -->|Map failed to load| E
     G -->|Tap a map point: move character| G
+    G -->|Drag: pan; pinch or zoom buttons: zoom 1–4×| G
+    G -->|Show whole map: restore full source area| G
     G -->|Reach the base| R
-    G -->|Start again: reset position| G
-    R -->|Play again: reset position| G
+    G -->|Start again: reset position and whole map| G
+    R -->|Drag, pinch or zoom buttons: explore without moving character| R
+    R -->|Show whole map: restore full source area| R
+    R -->|Play again: reset position and whole map| G
     G -->|About this demo| I
     R -->|About this demo| I
     I -->|Close: return to previous game state| P{"Previous game state"}
@@ -44,12 +48,12 @@ flowchart TD
 | Welcome | Choose child or adult | None |
 | Adult introduction | Start playing together | Back to welcome |
 | Game loading | Wait for the map | Back |
-| Game playing | Move the character to the pretend base | Restart, demo information, back |
-| Game result | Read the result and replay | Demo information, back |
+| Game playing | Move the character to the pretend base | Pan/zoom, show whole map, restart, demo information, back |
+| Game result | Read the result and replay | Pan/zoom, show whole map, demo information, back |
 | Game load error | Return and reopen the game | Back |
 | Demo information | Read optional demo details | Close |
 
-Keep the map attribution visible. Water, energy and warmth cards are removed because they do not affect this demo. There is one restart control in each game state. Detailed geography and licensing information live in the information dialog.
+Keep the map attribution visible. The square overview covers the same geographic extent as the offline source. The child view is deliberately schematic: broad park/water shapes, a few main roads and illustrated landmarks instead of a dense street map. Minor streets/buildings/POIs are omitted, and secondary labels appear only when space permits. Decorative trees and illustrated buildings are not exact real-world positions or outlines. Dragging or pinching explores the map without selecting a movement destination; only a resolved tap moves the character. Zoom buttons and Show whole map are secondary controls, disabled while loading or after a load error. Instructions and attribution stay outside scrolling areas. Only secondary controls can scroll; the map has its own gesture area. Short or large-text layouts use a shorter instruction, and landscape places the map beside the instructions and controls. Water, energy and warmth cards are removed because they do not affect this demo. There is one restart control in each loaded game state. Detailed geography and licensing information live in the information dialog.
 
 ## Proposed future product flow — not implemented
 

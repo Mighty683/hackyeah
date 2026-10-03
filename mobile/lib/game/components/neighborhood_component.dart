@@ -1,32 +1,38 @@
+import 'dart:math' as math;
+
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/text.dart';
 import 'package:flutter/painting.dart';
 
 import '../maps/demo_map.dart';
+import '../maps/schematic_map_scene.dart';
+import 'player_component.dart';
 
-/// Real OSM geometry with a demo destination; paths are prepared once on load.
+/// Child-facing illustrated practice map, not street or emergency navigation.
+/// Source geography remains unchanged; only a curated schematic is displayed.
 class NeighborhoodComponent extends PositionComponent with TapCallbacks {
   NeighborhoodComponent({
     required this.map,
     required this.home,
     required this.onDestinationSelected,
-  }) : super(size: Vector2(560, 420)) {
-    for (final feature in map.features) {
-      final shape = _prepareShape(feature);
-      _layers.putIfAbsent(feature.layer, () => []).add(shape);
-    }
-  }
+    this.homeLabel = 'Pretend base',
+    this.showHome = true,
+  }) : _scene = SchematicMapScene(map),
+       super(size: Vector2(560, 420));
 
   final DemoMap map;
   final Vector2 home;
+  final String homeLabel;
+  final bool showHome;
   final void Function(Vector2 point) onDestinationSelected;
-  final Map<String, List<_MapShape>> _layers = {};
+  final SchematicMapScene _scene;
   final _paint = Paint();
   final _label = TextPaint(
     style: const TextStyle(
-      color: Color(0xFF284D40),
-      fontSize: 10,
+      color: Color(0xFF3F4C47),
+      fontFamily: 'Roboto',
+      fontSize: 14,
       fontWeight: FontWeight.w700,
     ),
   );
@@ -44,138 +50,233 @@ class NeighborhoodComponent extends PositionComponent with TapCallbacks {
     }
   }
 
-  _MapShape _prepareShape(DemoMapFeature feature) {
-    final path = Path()..fillType = PathFillType.evenOdd;
-    final points = <Offset>[];
-    switch (feature.geometryType) {
-      case 'Point':
-        points.add(map.project(feature.coordinates.cast<num>()).toOffset());
-      case 'LineString':
-        _addLine(path, feature.coordinates, close: false);
-      case 'MultiLineString':
-        for (final line in feature.coordinates) {
-          _addLine(path, line as List, close: false);
-        }
-      case 'Polygon':
-        _addPolygon(path, feature.coordinates);
-      case 'MultiPolygon':
-        for (final polygon in feature.coordinates) {
-          _addPolygon(path, polygon as List);
-        }
-    }
-    return _MapShape(feature, path, points);
-  }
-
-  void _addPolygon(Path path, List<dynamic> rings) {
-    for (final ring in rings) {
-      _addLine(path, ring as List, close: true);
-    }
-  }
-
-  void _addLine(Path path, List<dynamic> coordinates, {required bool close}) {
-    for (var index = 0; index < coordinates.length; index++) {
-      final point = map.project((coordinates[index] as List).cast<num>());
-      if (index == 0) {
-        path.moveTo(point.x, point.y);
-      } else {
-        path.lineTo(point.x, point.y);
-      }
-    }
-    if (close) path.close();
-  }
-
   @override
   void render(Canvas canvas) {
     super.render(canvas);
+    final transform = canvas.getTransform();
+    final scale = math.max(
+      0.01,
+      math.sqrt(transform[0] * transform[0] + transform[1] * transform[1]),
+    );
     canvas.save();
     canvas.clipRect(_mapRect);
-    _paint
-      ..style = PaintingStyle.fill
-      ..color = const Color(0xFFE8EADD);
-    canvas.drawRect(_mapRect, _paint);
-    for (final layer in [
-      'landuse',
-      'park',
-      'water',
-      'building',
-      'road',
-      'railway',
-      'poi',
-    ]) {
-      for (final shape in _layers[layer] ?? <_MapShape>[]) {
-        _drawShape(canvas, shape);
-      }
-    }
-    canvas.restore();
+    _scene.paint(canvas, scale);
+    if (showHome) _drawBase(canvas, scale);
+    _drawLabels(canvas, scale);
     _paint
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1
-      ..color = const Color(0xFFB4C2AC);
-    canvas.drawRect(_mapRect, _paint);
+      ..strokeWidth = 1 / scale
+      ..color = const Color(0xFFE2D6BA);
+    canvas.drawRect(_mapRect.deflate(.5 / scale), _paint);
+    canvas.restore();
+  }
+
+  void _drawLabels(Canvas canvas, double scale) {
+    final landmarkRadius = _scene.illustrationRadius(scale);
+    final obstacles = <Rect>[
+      Rect.fromCircle(center: _scene.arena, radius: landmarkRadius),
+      if (_scene.shop != null)
+        Rect.fromCircle(center: _scene.shop!, radius: landmarkRadius),
+      if (showHome)
+        Rect.fromCircle(center: home.toOffset(), radius: 21 / scale),
+      for (final player
+          in parent?.children.whereType<PlayerComponent>() ??
+              <PlayerComponent>[])
+        player.markerBounds(scale).inflate(4 / scale),
+    ];
+    if (showHome) {
+      obstacles.add(
+        _drawLabel(
+          canvas,
+          homeLabel,
+          _labelCenters(
+            home.toOffset(),
+            35 / scale,
+            horizontalDistance:
+                (27 + (_label.toTextPainter(homeLabel).width + 12) / 2) / scale,
+          ),
+          scale,
+          obstacles,
+        ),
+      );
+    }
+    obstacles.add(
+      _drawLabel(
+        canvas,
+        'Arena',
+        _labelCenters(_scene.arena, landmarkRadius + 17 / scale),
+        scale,
+        obstacles,
+      ),
+    );
+    if (scale < .65) return;
+    _labelPlace(canvas, 'Park', _scene.parkLabel, 0, scale, obstacles);
+    _labelPlace(canvas, 'Pond', _scene.pondLabel, 31, scale, obstacles);
+    _labelPlace(
+      canvas,
+      'Shop',
+      _scene.shop,
+      landmarkRadius * scale + 17,
+      scale,
+      obstacles,
+    );
+  }
+
+  void _labelPlace(
+    Canvas canvas,
+    String text,
+    Offset? point,
+    double spacing,
+    double scale,
+    List<Rect> obstacles,
+  ) {
+    if (point == null) return;
+    obstacles.add(
+      _drawLabel(
+        canvas,
+        text,
+        _labelCenters(point, spacing / scale),
+        scale,
+        obstacles,
+        omitOnOverlap: true,
+      ),
+    );
+  }
+
+  List<Offset> _labelCenters(
+    Offset center,
+    double distance, {
+    double? horizontalDistance,
+  }) => [
+    center + Offset(0, distance),
+    center - Offset(0, distance),
+    center + Offset(horizontalDistance ?? distance + 20, 0),
+    center - Offset(horizontalDistance ?? distance + 20, 0),
+  ];
+
+  void _drawBase(Canvas canvas, double scale) {
+    final inset = math.min(
+      math.min(home.x - _mapRect.left, _mapRect.right - home.x),
+      math.min(home.y - _mapRect.top, _mapRect.bottom - home.y),
+    );
+    canvas.save();
+    canvas.translate(home.x, home.y);
+    canvas.scale(math.max(0, math.min(1 / scale, inset / 21)));
     _paint
       ..style = PaintingStyle.fill
-      ..color = const Color(0xFF2B7560);
-    canvas.drawCircle(home.toOffset(), 9, _paint);
-    _label.render(
-      canvas,
-      'BASE (DEMO)',
-      home + Vector2(0, -18),
-      anchor: Anchor.center,
-    );
-    _label.render(
-      canvas,
-      'TAURON ARENA',
-      map.project(map.center) + Vector2(0, 25),
-      anchor: Anchor.center,
-    );
-    _label.render(canvas, 'N ↑', Vector2(40, 30), anchor: Anchor.center);
-    _label.render(canvas, '2 km', Vector2(280, 414), anchor: Anchor.center);
-  }
-
-  void _drawShape(Canvas canvas, _MapShape shape) {
-    final feature = shape.feature;
-    final polygon = feature.geometryType.endsWith('Polygon');
+      ..color = const Color(0xFFFFFCF1);
+    canvas.drawCircle(Offset.zero, 21, _paint);
     _paint
-      ..style = polygon ? PaintingStyle.fill : PaintingStyle.stroke
-      ..strokeWidth = _lineWidth(feature)
-      ..strokeCap = StrokeCap.round
-      ..color = _color(feature);
-    canvas.drawPath(shape.path, _paint);
-    _paint.style = PaintingStyle.fill;
-    for (final point in shape.points) {
-      canvas.drawCircle(point, feature.layer == 'poi' ? 1.5 : 1, _paint);
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5
+      ..color = const Color(0xFFE1CDA6);
+    canvas.drawCircle(Offset.zero, 21, _paint);
+    _paint
+      ..style = PaintingStyle.fill
+      ..color = const Color(0xFFE6AB62);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        const Rect.fromLTRB(-12, -3, 12, 15),
+        const Radius.circular(2),
+      ),
+      _paint,
+    );
+    _paint.color = const Color(0xFFB76D47);
+    canvas.drawPath(
+      Path()
+        ..moveTo(-16, -3)
+        ..lineTo(0, -17)
+        ..lineTo(16, -3)
+        ..close(),
+      _paint,
+    );
+    _paint.color = const Color(0xFFFFF4D3);
+    canvas.drawRect(const Rect.fromLTRB(-9, 1, -3, 7), _paint);
+    canvas.drawRect(const Rect.fromLTRB(3, 1, 9, 7), _paint);
+    _paint.color = const Color(0xFF8D593E);
+    canvas.drawRect(const Rect.fromLTRB(-3, 7, 3, 15), _paint);
+    _paint
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5
+      ..color = const Color(0xFF8D593E);
+    canvas.drawLine(const Offset(12, -9), const Offset(12, -19), _paint);
+    _paint
+      ..style = PaintingStyle.fill
+      ..color = const Color(0xFFDC8F54);
+    canvas.drawPath(
+      Path()
+        ..moveTo(12, -19)
+        ..lineTo(20, -15)
+        ..lineTo(12, -12)
+        ..close(),
+      _paint,
+    );
+    canvas.restore();
+  }
+
+  Rect _drawLabel(
+    Canvas canvas,
+    String text,
+    List<Offset> centers,
+    double scale,
+    List<Rect> obstacles, {
+    bool omitOnOverlap = false,
+  }) {
+    final painter = _label.toTextPainter(text);
+    final inset = _mapRect.deflate(math.min(3 / scale, _mapRect.width / 4));
+    final labelScale = math.max(
+      scale,
+      math.max(
+        (painter.width + 12) / inset.width,
+        (painter.height + 6) / inset.height,
+      ),
+    );
+    final width = (painter.width + 12) / labelScale;
+    final height = (painter.height + 6) / labelScale;
+    Rect? chosen;
+    var leastOverlap = double.infinity;
+    for (final center in centers) {
+      final rect = Rect.fromLTWH(
+        (center.dx - width / 2).clamp(
+          inset.left,
+          math.max(inset.left, inset.right - width),
+        ),
+        (center.dy - height / 2).clamp(
+          inset.top,
+          math.max(inset.top, inset.bottom - height),
+        ),
+        width,
+        height,
+      );
+      var overlap = 0.0;
+      for (final obstacle in obstacles) {
+        if (!rect.overlaps(obstacle)) continue;
+        final intersection = rect.intersect(obstacle);
+        overlap += intersection.width * intersection.height;
+      }
+      if (overlap < leastOverlap) {
+        chosen = rect;
+        leastOverlap = overlap;
+      }
+      if (overlap == 0) break;
     }
+    if (omitOnOverlap && leastOverlap > 0) return Rect.zero;
+    final rect = chosen!;
+    canvas.save();
+    canvas.translate(rect.left, rect.top);
+    canvas.scale(1 / labelScale);
+    _paint
+      ..style = PaintingStyle.fill
+      ..color = const Color(0xFFFFFEF8);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(0, 0, width * labelScale, height * labelScale),
+        const Radius.circular(6),
+      ),
+      _paint,
+    );
+    painter.paint(canvas, const Offset(6, 3));
+    canvas.restore();
+    return rect;
   }
-
-  Color _color(DemoMapFeature feature) {
-    if (feature.id == 'way/292867512') return const Color(0xFF61A68B);
-    return switch (feature.layer) {
-      'park' => const Color(0xFFB9D5A2),
-      'water' => const Color(0xFF9CCFD9),
-      'building' => const Color(0xFFC7BBAA),
-      'road' => const Color(0xFFFCFBF5),
-      'railway' => const Color(0xFF91958D),
-      'poi' => const Color(0xFF7D8B77),
-      _ => const Color(0xFFDDE2D2),
-    };
-  }
-
-  double _lineWidth(DemoMapFeature feature) {
-    if (feature.layer == 'water') return 2;
-    if (feature.layer != 'road') return 0.7;
-    return switch (feature.properties['highway']) {
-      'motorway' || 'trunk' || 'primary' => 4,
-      'secondary' || 'tertiary' || 'residential' => 2.5,
-      'footway' || 'path' || 'cycleway' || 'steps' => 0.8,
-      _ => 1.5,
-    };
-  }
-}
-
-class _MapShape {
-  _MapShape(this.feature, this.path, this.points);
-
-  final DemoMapFeature feature;
-  final Path path;
-  final List<Offset> points;
 }
