@@ -36,9 +36,12 @@ void main() {
       await FamilyPlanRepository().save(_configuredPlan);
       await tester.pumpWidget(const MaterialApp(home: PracticeLauncher()));
       await tester.pumpAndSettle();
-      expect(find.text('Alarm practice'), findsOneWidget);
+      expect(find.text('Practices'), findsOneWidget);
       expect(find.text('Our map'), findsOneWidget);
       expect(find.text('Landmark practice'), findsNothing);
+      await _tap(tester, 'Practices');
+      expect(find.text('Alarm practice'), findsOneWidget);
+      expect(find.text('Our map'), findsNothing);
       await _tap(tester, "I'm lost practice");
       expect(
         find.text('Practice meeting point: Blue help desk'),
@@ -56,19 +59,19 @@ void main() {
       expect(mission.variant, variant);
       expect(mission.practiceContext.meetingPoint.presetId, 'information_desk');
       expect(mission.practiceContext.contacts.first.label, 'Demo adult');
-      // The activity launcher must not resume its speech under the mission.
+      // The scenario list must not resume its speech under the mission.
       expect((audioCalls.last.arguments as Map)['text'], contains('parent'));
       expect(
         (audioCalls.last.arguments as Map)['text'],
-        isNot(contains('Choose your practice')),
+        isNot(contains('Choose a scenario')),
       );
       await tester.tap(find.byTooltip('Leave practice'));
       await tester.pumpAndSettle();
       expect(find.byType(LostMissionLauncher), findsNothing);
-      expect(find.text('Choose practice'), findsOneWidget);
+      expect(find.text('Choose a scenario'), findsOneWidget);
       expect(
         (audioCalls.last.arguments as Map)['text'],
-        contains('Choose your practice'),
+        contains('Choose a scenario'),
       );
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
@@ -123,6 +126,7 @@ void main() {
     );
     await tester.pumpWidget(const MaterialApp(home: PracticeLauncher()));
     await tester.pumpAndSettle();
+    await _tap(tester, 'Practices');
     await _tap(tester, "I'm lost practice");
     expect(find.text('Practice meeting point: First point'), findsOneWidget);
     await tester.pageBack();
