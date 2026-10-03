@@ -481,7 +481,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       size: 24,
       color: onPressed == null
           ? BaseboundColors.muted.withValues(alpha: .4)
-          : BaseboundColors.ink,
+          : null,
     ),
   );
 

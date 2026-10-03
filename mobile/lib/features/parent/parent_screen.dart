@@ -578,7 +578,7 @@ class _ParentScreenState extends State<ParentScreen> {
       children: [
         Padding(
           padding: const EdgeInsets.only(top: 4),
-          child: BaseboundIcon(icon, size: 24, color: BaseboundColors.muted),
+          child: BaseboundIcon(icon, size: 24),
         ),
         const SizedBox(width: 12),
         Expanded(

@@ -285,9 +285,7 @@ class BaseboundActionTile extends StatelessWidget {
       ),
       child: Row(
         children: [
-          ExcludeSemantics(
-            child: BaseboundIcon(icon, size: 24, color: BaseboundColors.ink),
-          ),
+          ExcludeSemantics(child: BaseboundIcon(icon, size: 24)),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -312,11 +310,7 @@ class BaseboundActionTile extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           const ExcludeSemantics(
-            child: BaseboundIcon(
-              BaseboundIconName.next,
-              size: 20,
-              color: BaseboundColors.muted,
-            ),
+            child: BaseboundIcon(BaseboundIconName.next, size: 20),
           ),
         ],
       ),

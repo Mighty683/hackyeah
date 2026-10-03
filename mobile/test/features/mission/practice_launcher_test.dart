@@ -1,4 +1,4 @@
-import 'package:do_bazy/features/mission/mission_choice_card.dart';
+import 'package:do_bazy/features/mission/mission_scene.dart';
 import 'package:do_bazy/features/mission/mission_screen.dart';
 import 'package:do_bazy/features/mission/practice_launcher.dart';
 import 'package:flutter/material.dart';
@@ -34,7 +34,10 @@ void main() {
       expect(find.byType(MissionScreen), findsOneWidget);
       expect(find.text('An alarm at home'), findsOneWidget);
       await _tap(tester, 'Find a place');
-      expect(find.byType(MissionChoiceCard), findsNWidgets(3));
+      expect(
+        tester.widget<MissionScene>(find.byType(MissionScene)).choices,
+        hasLength(3),
+      );
       for (final label in [
         'Go to the window',
         'Go outside',

@@ -49,9 +49,9 @@ void main() {
     await _tap(tester, 'Find a place');
     expect(
       tester.widget<MissionScene>(find.byType(MissionScene)).choices,
-      isEmpty,
+      hasLength(3),
     );
-    expect(find.byType(MissionChoiceCard), findsNWidgets(3));
+    expect(find.byType(MissionChoiceCard), findsNothing);
     await _tap(tester, 'Go to the window');
     expect(
       find.text('Windows are less safe. Move away from them.'),
@@ -62,9 +62,9 @@ void main() {
     await _tap(tester, 'Next step');
     expect(
       tester.widget<MissionScene>(find.byType(MissionScene)).choices,
-      isEmpty,
+      hasLength(4),
     );
-    expect(find.byType(MissionChoiceCard), findsNWidgets(4));
+    expect(find.byType(MissionChoiceCard), findsNothing);
     await _tap(tester, 'Inside hallway');
     expect(
       tester.widget<MissionScene>(find.byType(MissionScene)).visual,
@@ -150,18 +150,18 @@ void main() {
           (widget) => widget is Semantics && widget.properties.label == label,
         );
         final target = action.evaluate().isEmpty ? find.text(label) : action;
-        for (final card in tester.widgetList<MissionChoiceCard>(
-          find.byType(MissionChoiceCard),
-        )) {
-          final choice = find.byWidgetPredicate(
+        final currentScene = tester.widget<MissionScene>(
+          find.byType(MissionScene),
+        );
+        for (final choice in currentScene.choices) {
+          final choiceTarget = find.byWidgetPredicate(
             (widget) =>
-                widget is Semantics &&
-                widget.properties.label == card.choice.label,
+                widget is Semantics && widget.properties.label == choice.label,
           );
-          final bounds = tester.getRect(choice);
+          final bounds = tester.getRect(choiceTarget);
           expect(bounds.top, greaterThanOrEqualTo(0));
           expect(bounds.bottom, lessThanOrEqualTo(size.height));
-          expect(choice.hitTestable(), findsOneWidget);
+          expect(choiceTarget.hitTestable(), findsOneWidget);
         }
         expect(target.hitTestable(), findsOneWidget, reason: '$size: $label');
         await tester.tap(target);
@@ -244,34 +244,47 @@ Future<void> _tap(WidgetTester tester, String label) async {
   _expectMissionChoicesAreUsable(tester);
 }
 
-// Choices stay below the illustration, with independent accessible tap targets.
+// Each choice is an independent accessible target inside the scene image.
 void _expectMissionChoicesAreUsable(WidgetTester tester) {
   final sceneFinder = find.byType(MissionScene);
   if (sceneFinder.evaluate().isEmpty) return;
   final scene = tester.widget<MissionScene>(sceneFinder);
-  expect(scene.choices, isEmpty);
   final bounds = tester.getRect(sceneFinder);
-  for (final card in tester.widgetList<MissionChoiceCard>(
-    find.byType(MissionChoiceCard),
-  )) {
-    final choice = card.choice;
+  final targets = <Rect>[];
+  expect(find.byType(MissionChoiceCard), findsNothing);
+  for (final choice in scene.choices) {
     final target = find.byWidgetPredicate(
       (widget) =>
           widget is Semantics && widget.properties.label == choice.label,
     );
     expect(target, findsOneWidget);
     final rect = tester.getRect(target);
-    // Scrolled content can extend above its clipped action viewport. Compare
-    // the illustration only when the control's top edge is actually visible.
-    if (target.hitTestable(at: Alignment.topCenter).evaluate().isNotEmpty) {
-      expect(
-        rect.top,
-        greaterThanOrEqualTo(bounds.bottom - .5),
-        reason: choice.label,
-      );
-    }
+    expect(
+      rect.left,
+      greaterThanOrEqualTo(bounds.left - .5),
+      reason: choice.label,
+    );
+    expect(
+      rect.top,
+      greaterThanOrEqualTo(bounds.top - .5),
+      reason: choice.label,
+    );
+    expect(
+      rect.right,
+      lessThanOrEqualTo(bounds.right + .5),
+      reason: choice.label,
+    );
+    expect(
+      rect.bottom,
+      lessThanOrEqualTo(bounds.bottom + .5),
+      reason: choice.label,
+    );
     expect(rect.width, greaterThanOrEqualTo(48), reason: choice.label);
     expect(rect.height, greaterThanOrEqualTo(48), reason: choice.label);
+    for (final other in targets) {
+      expect(rect.overlaps(other), isFalse, reason: choice.label);
+    }
+    targets.add(rect);
     final semantics = tester.widget<Semantics>(target).properties;
     expect(semantics.onTap, isNotNull, reason: choice.label);
     expect(semantics.enabled, isTrue, reason: choice.label);

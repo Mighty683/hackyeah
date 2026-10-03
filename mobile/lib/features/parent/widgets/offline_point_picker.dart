@@ -138,7 +138,7 @@ class _OfflinePointPickerState extends State<OfflinePointPicker> {
     required double dy,
   }) => IconButton(
     onPressed: () => _game.nudge(dx, dy),
-    icon: BaseboundIcon(icon, size: 24, color: BaseboundColors.muted),
+    icon: BaseboundIcon(icon, size: 24),
     tooltip: tooltip,
   );
 }

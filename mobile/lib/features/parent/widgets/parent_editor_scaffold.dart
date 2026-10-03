@@ -80,7 +80,7 @@ class ParentEditorNote extends StatelessWidget {
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        BaseboundIcon(icon, color: BaseboundColors.ink, size: 24),
+        BaseboundIcon(icon, size: 24),
         const SizedBox(width: 12),
         Expanded(
           child: Text(

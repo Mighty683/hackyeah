@@ -169,11 +169,7 @@ class _LandmarkEditorScreenState extends State<LandmarkEditorScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const ExcludeSemantics(
-                  child: BaseboundIcon(
-                    BaseboundIconName.pin,
-                    size: 24,
-                    color: BaseboundColors.muted,
-                  ),
+                  child: BaseboundIcon(BaseboundIconName.pin, size: 24),
                 ),
                 const SizedBox(width: 12),
                 Expanded(

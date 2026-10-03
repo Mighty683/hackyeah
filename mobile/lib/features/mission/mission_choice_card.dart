@@ -90,7 +90,7 @@ class MissionChoiceCard extends StatelessWidget {
                           : BaseboundIconName.cross)
                     : missionActionIcon(choice.icon),
                 size: 24,
-                color: selected ? accent : BaseboundColors.ink,
+                color: selected ? accent : null,
               ),
               const SizedBox(width: 12),
               Expanded(

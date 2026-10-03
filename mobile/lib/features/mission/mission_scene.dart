@@ -21,7 +21,7 @@ bool missionUsesSceneChoices(MissionVisual visual) => switch (visual) {
   _ => false,
 };
 
-/// Portrait art with optional targets for standalone scene callers.
+/// Uncropped practice art with accessible targets around scene objects.
 class MissionScene extends StatelessWidget {
   const MissionScene({
     super.key,
@@ -68,14 +68,7 @@ class MissionScene extends StatelessWidget {
                   _phoneSignal(constraints),
                 for (var index = 0; index < choices.length; index++)
                   if (layout.targets[choices[index].id] case final target?)
-                    _target(
-                      constraints,
-                      selectedChoice?.id == choices[index].id
-                          ? layout.selectedTargets[choices[index].id] ?? target
-                          : target,
-                      choices[index],
-                      index,
-                    ),
+                    _target(constraints, target, choices[index], index),
               ],
             ),
           ),
@@ -128,7 +121,9 @@ class MissionScene extends StatelessWidget {
         onTap: onChoose == null ? null : () => onChoose!(choice.id),
         showIllustration:
             visual == MissionVisual.contacts ||
-            visual == MissionVisual.communication,
+            visual == MissionVisual.communication ||
+            visual == MissionVisual.getDown ||
+            visual == MissionVisual.protectHead,
       ),
     ),
   );
@@ -189,7 +184,8 @@ class _PortraitBackdrop extends StatelessWidget {
   }
 }
 
-/// Standalone callers retain native scene targets with flat, neutral captions.
+/// Every available object uses the same highlight until a choice is made.
+/// Only the small caption is opaque, so the object remains visible and tappable.
 class _SceneChoice extends StatelessWidget {
   const _SceneChoice({
     required this.choice,
@@ -205,9 +201,9 @@ class _SceneChoice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = choice.isCorrect
-        ? BaseboundColors.green
-        : BaseboundColors.coral;
+    final accent = selected
+        ? (choice.isCorrect ? BaseboundColors.green : BaseboundColors.coral)
+        : BaseboundColors.blue;
     return Semantics(
       button: true,
       enabled: onTap != null,
@@ -216,53 +212,52 @@ class _SceneChoice extends StatelessWidget {
       label: choice.label,
       child: ExcludeSemantics(
         child: Material(
-          type: MaterialType.transparency,
+          color: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: accent, width: 2),
+          ),
+          clipBehavior: Clip.antiAlias,
           child: InkWell(
             onTap: onTap,
-            borderRadius: BorderRadius.circular(12),
-            focusColor: BaseboundColors.sky.withValues(alpha: .8),
+            focusColor: BaseboundColors.sky.withValues(alpha: .5),
             splashColor: BaseboundColors.sky.withValues(alpha: .5),
-            child: Center(
+            child: Align(
+              alignment: Alignment.bottomCenter,
               child: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: selected
-                      ? (choice.isCorrect
-                            ? BaseboundColors.greenLight
-                            : BaseboundColors.coralLight)
-                      : Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: selected ? accent : BaseboundColors.border,
-                  ),
-                ),
-                child: selected
-                    ? Row(
-                        children: [
-                          BaseboundIcon(
-                            choice.isCorrect
-                                ? BaseboundIconName.check
-                                : BaseboundIconName.cross,
-                            size: 20,
-                            color: accent,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(child: _label(compact: true)),
-                        ],
-                      )
-                    : Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (showIllustration) ...[
-                            BaseboundIcon(
-                              missionActionIcon(choice.icon),
-                              size: 24,
-                            ),
-                            const SizedBox(height: 8),
-                          ],
-                          Flexible(child: _label()),
-                        ],
+                width: double.infinity,
+                padding: const EdgeInsets.all(4),
+                color: Colors.white.withValues(alpha: .96),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (showIllustration || selected) ...[
+                      BaseboundIcon(
+                        selected
+                            ? (choice.isCorrect
+                                  ? BaseboundIconName.check
+                                  : BaseboundIconName.cross)
+                            : missionActionIcon(choice.icon),
+                        size: 24,
+                        color: selected ? accent : null,
                       ),
+                      const SizedBox(width: 4),
+                    ],
+                    Flexible(
+                      child: Text(
+                        _caption,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontFamily: 'Nunito',
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: BaseboundColors.ink,
+                          height: 1.15,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -271,17 +266,16 @@ class _SceneChoice extends StatelessWidget {
     );
   }
 
-  Widget _label({bool compact = false}) => Text(
-    choice.label,
-    textAlign: TextAlign.center,
-    style: TextStyle(
-      fontFamily: 'Nunito',
-      fontSize: compact ? 14 : 17,
-      fontWeight: FontWeight.w700,
-      color: BaseboundColors.ink,
-      height: 1.25,
-    ),
-  );
+  String get _caption => switch (choice.id) {
+    'window' => 'Go to window',
+    'door' => choice.label == 'Go outside' ? 'Go outside' : 'Go to door',
+    'interior' => 'Go inside',
+    'living_room' => 'Living room',
+    'hallway' => 'Inside hallway',
+    'more_places' => 'More places',
+    'protect_head' => 'Cover your head',
+    _ => choice.label,
+  };
 }
 
 ChildPoseName _characterPose(
@@ -442,10 +436,10 @@ class _PortraitScenePainter extends CustomPainter {
       );
     }
     _window(canvas, const Rect.fromLTWH(28, 95, 108, 140));
-    _panel(canvas, const Rect.fromLTWH(272, 95, 116, 249), wood, radius: 6);
+    _panel(canvas, const Rect.fromLTWH(272, 95, 116, 300), wood, radius: 6);
     _panel(
       canvas,
-      const Rect.fromLTWH(282, 105, 88, 229),
+      const Rect.fromLTWH(282, 105, 88, 290),
       const Color(0xFFAADAEC),
       radius: 2,
     );
@@ -457,20 +451,20 @@ class _PortraitScenePainter extends CustomPainter {
     );
     _panel(
       canvas,
-      const Rect.fromLTWH(289, 421, 98, 175),
+      const Rect.fromLTWH(148, 145, 106, 250),
       const Color(0xFFC69D79),
       radius: 6,
     );
     _panel(
       canvas,
-      const Rect.fromLTWH(299, 431, 76, 165),
+      const Rect.fromLTWH(158, 155, 86, 240),
       BaseboundColors.cream,
       radius: 2,
     );
     _symbol(
       canvas,
       BaseboundIconName.hallway,
-      const Rect.fromLTWH(308, 438, 60, 60),
+      const Rect.fromLTWH(173, 249, 56, 60),
     );
     _symbol(
       canvas,

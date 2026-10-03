@@ -7,7 +7,6 @@ import '../../ui/basebound_ui.dart';
 import '../../widgets/basebound_mascot.dart';
 import 'data/lost_practice_context.dart';
 import 'lost_mission.dart';
-import 'lost_mission_choice_card.dart';
 import 'lost_mission_scene.dart';
 import 'mission_audio.dart';
 
@@ -222,7 +221,7 @@ class _LostMissionScreenState extends State<LostMissionScreen>
         tooltip: 'Replay audio',
         icon: BaseboundIcon(
           BaseboundIconName.speaker,
-          color: _speaking ? BaseboundColors.blue : BaseboundColors.ink,
+          color: _speaking ? BaseboundColors.blue : null,
         ),
       ),
     ),
@@ -252,16 +251,22 @@ class _LostMissionScreenState extends State<LostMissionScreen>
               const SizedBox(height: 10),
               _instruction(),
               const SizedBox(height: 12),
-              SizedBox(
-                height: _sceneHeight,
-                child: LostMissionScene(
+              if (_session.step.isDecision && !_session.hasFeedback)
+                LostMissionScene(
                   step: _session.step,
                   practiceContext: widget.practiceContext,
-                  selectedChoice: _session.selectedChoice,
+                  onChoice: _exiting ? null : _choose,
+                )
+              else
+                SizedBox(
+                  height: _sceneHeight,
+                  child: LostMissionScene(
+                    step: _session.step,
+                    practiceContext: widget.practiceContext,
+                    selectedChoice: _session.selectedChoice,
+                  ),
                 ),
-              ),
               if (_session.hasFeedback) _feedback(),
-              if (!_session.hasFeedback && _session.step.isDecision) _choices(),
               const SizedBox(height: 8),
             ],
           ),
@@ -307,24 +312,6 @@ class _LostMissionScreenState extends State<LostMissionScreen>
         fontWeight: FontWeight.w700,
         height: 1.3,
       ),
-    ),
-  );
-
-  Widget _choices() => Padding(
-    padding: const EdgeInsets.only(top: 14),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        for (final choice in _session.step.choices)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: LostMissionChoiceCard(
-              key: ValueKey('lost-choice-${choice.id}'),
-              choice: choice,
-              onPressed: _exiting ? null : () => _choose(choice.id),
-            ),
-          ),
-      ],
     ),
   );
 
