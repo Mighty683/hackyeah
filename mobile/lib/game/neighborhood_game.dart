@@ -6,6 +6,7 @@ import 'package:flame/game.dart';
 import '../features/parent/data/family_plan.dart';
 import 'components/neighborhood_component.dart';
 import 'components/player_component.dart';
+import 'components/target_indicator_component.dart';
 import 'maps/demo_map.dart';
 
 /// Offline arena neighborhood with a touch-controlled demo mission.
@@ -20,12 +21,16 @@ class NeighborhoodGame extends FlameGame {
 
   final VoidCallback onArrived;
   final SafePoint? destination;
+  static const nearbyZoom = 4.0;
+  static const maximumZoom = 8.0;
+  static const arrivalRadius = 8.0;
   late final Vector2 _start;
   late final Vector2 _home;
   late final PlayerComponent _player;
   bool _completed = false;
   bool _initialized = false;
   bool _unavailable = false;
+  bool _followPlayer = true;
   Vector2? _gestureWorldPoint;
   double _gestureZoom = 1;
 
@@ -57,7 +62,15 @@ class NeighborhoodGame extends FlameGame {
       ),
     );
     await world.add(_player);
+    await camera.viewport.add(
+      TargetIndicatorComponent(
+        camera: camera,
+        target: _home,
+        isActive: () => _initialized && !_completed && !_unavailable,
+      ),
+    );
     _initialized = true;
+    _showNearby();
   }
 
   /// [canvasPoint] is local to the GameWidget, not a geographic coordinate.
@@ -76,6 +89,7 @@ class NeighborhoodGame extends FlameGame {
   void beginMapGesture(Offset focalPoint) {
     endMapGesture();
     if (!isMapReady) return;
+    _followPlayer = false;
     _gestureZoom = mapZoom;
     _gestureWorldPoint = camera.globalToLocal(
       Vector2(focalPoint.dx, focalPoint.dy),
@@ -85,7 +99,7 @@ class NeighborhoodGame extends FlameGame {
   void updateMapGesture(Offset focalPoint, double scale) {
     final worldPoint = _gestureWorldPoint;
     if (!isMapReady || worldPoint == null) return;
-    camera.viewfinder.zoom = (_gestureZoom * scale).clamp(1.0, 4.0);
+    camera.viewfinder.zoom = (_gestureZoom * scale).clamp(1.0, maximumZoom);
     // Keep the starting world point under the moving focal point. Flame's
     // inverse includes the fixed viewport scale, its offset, and camera zoom.
     final currentPoint = camera.globalToLocal(
@@ -101,12 +115,27 @@ class NeighborhoodGame extends FlameGame {
   void zoomMap(double factor) {
     if (!isMapReady) return;
     endMapGesture();
-    camera.viewfinder.zoom = (mapZoom * factor).clamp(1.0, 4.0);
+    camera.viewfinder.zoom = (mapZoom * factor).clamp(1.0, maximumZoom);
+    _clampCamera();
+  }
+
+  /// Restore the close practice view after browsing another part of the map.
+  void showNearby() {
+    if (!isMapReady) return;
+    _showNearby();
+  }
+
+  void _showNearby() {
+    endMapGesture();
+    _followPlayer = true;
+    camera.viewfinder.zoom = nearbyZoom;
+    camera.viewfinder.position = _player.position.clone();
     _clampCamera();
   }
 
   void showWholeMap() {
     if (!isMapReady) return;
+    _followPlayer = false;
     _showWholeMap();
   }
 
@@ -143,13 +172,15 @@ class NeighborhoodGame extends FlameGame {
 
   void _movePlayer(Vector2 point) {
     if (!isMapReady || _completed) return;
+    // A move resumes following; dragging/pinching remains free exploration.
+    _followPlayer = true;
     _player.moveTo(
       Vector2(
         point.x
-            .clamp(DemoMap.mapLeft + 17, DemoMap.mapLeft + DemoMap.mapSize - 17)
+            .clamp(DemoMap.mapLeft + 2, DemoMap.mapLeft + DemoMap.mapSize - 2)
             .toDouble(),
         point.y
-            .clamp(DemoMap.mapTop + 17, DemoMap.mapTop + DemoMap.mapSize - 17)
+            .clamp(DemoMap.mapTop + 2, DemoMap.mapTop + DemoMap.mapSize - 2)
             .toDouble(),
       ),
     );
@@ -158,8 +189,13 @@ class NeighborhoodGame extends FlameGame {
   @override
   void update(double dt) {
     super.update(dt);
-    if (!isMapReady || _completed) return;
-    if (_player.position.distanceTo(_home) < 32) {
+    if (!isMapReady) return;
+    if (_followPlayer) {
+      camera.viewfinder.position = _player.position.clone();
+      _clampCamera();
+    }
+    if (_completed) return;
+    if (_player.position.distanceTo(_home) < arrivalRadius) {
       _completed = true;
       onArrived();
     }
@@ -169,6 +205,6 @@ class NeighborhoodGame extends FlameGame {
     if (!isMapReady) return;
     _completed = false;
     _player.reset(_start);
-    _showWholeMap();
+    showNearby();
   }
 }

@@ -10,7 +10,7 @@ import '../maps/schematic_map_scene.dart';
 import 'player_component.dart';
 
 /// Child-facing illustrated practice map, not street or emergency navigation.
-/// Source geography remains unchanged; only a curated schematic is displayed.
+/// Nearby source geography stays recognizable without adding a wall of labels.
 class NeighborhoodComponent extends PositionComponent with TapCallbacks {
   NeighborhoodComponent({
     required this.map,
@@ -72,6 +72,8 @@ class NeighborhoodComponent extends PositionComponent with TapCallbacks {
   }
 
   void _drawLabels(Canvas canvas, double scale) {
+    final visible = canvas.getLocalClipBounds().intersect(_mapRect);
+    if (visible.isEmpty) return;
     final landmarkRadius = _scene.illustrationRadius(scale);
     final obstacles = <Rect>[
       Rect.fromCircle(center: _scene.arena, radius: landmarkRadius),
@@ -84,7 +86,7 @@ class NeighborhoodComponent extends PositionComponent with TapCallbacks {
               <PlayerComponent>[])
         player.markerBounds(scale).inflate(4 / scale),
     ];
-    if (showHome) {
+    if (showHome && visible.inflate(21 / scale).contains(home.toOffset())) {
       obstacles.add(
         _drawLabel(
           canvas,
@@ -100,18 +102,37 @@ class NeighborhoodComponent extends PositionComponent with TapCallbacks {
         ),
       );
     }
-    obstacles.add(
-      _drawLabel(
+    if (visible.inflate(landmarkRadius).contains(_scene.arena)) {
+      obstacles.add(
+        _drawLabel(
+          canvas,
+          'Arena',
+          _labelCenters(_scene.arena, landmarkRadius + 17 / scale),
+          scale,
+          obstacles,
+        ),
+      );
+    }
+    if (scale < .65) return;
+    _labelPlace(
+      canvas,
+      'Park',
+      _scene.parkLabelIn(visible),
+      0,
+      scale,
+      obstacles,
+    );
+    _labelPlace(canvas, 'Pond', _scene.pondLabel, 0, scale, obstacles);
+    if (scale >= 2) {
+      _labelPlace(
         canvas,
-        'Arena',
-        _labelCenters(_scene.arena, landmarkRadius + 17 / scale),
+        'Playground',
+        _scene.playgroundLabelIn(visible, scale),
+        17,
         scale,
         obstacles,
-      ),
-    );
-    if (scale < .65) return;
-    _labelPlace(canvas, 'Park', _scene.parkLabel, 0, scale, obstacles);
-    _labelPlace(canvas, 'Pond', _scene.pondLabel, 31, scale, obstacles);
+      );
+    }
     _labelPlace(
       canvas,
       'Shop',
@@ -130,7 +151,7 @@ class NeighborhoodComponent extends PositionComponent with TapCallbacks {
     double scale,
     List<Rect> obstacles,
   ) {
-    if (point == null) return;
+    if (point == null || !canvas.getLocalClipBounds().contains(point)) return;
     obstacles.add(
       _drawLabel(
         canvas,
@@ -224,7 +245,10 @@ class NeighborhoodComponent extends PositionComponent with TapCallbacks {
     bool omitOnOverlap = false,
   }) {
     final painter = _label.toTextPainter(text);
-    final inset = _mapRect.deflate(math.min(3 / scale, _mapRect.width / 4));
+    final visible = canvas.getLocalClipBounds().intersect(_mapRect);
+    final inset = visible.deflate(
+      math.min(3 / scale, visible.shortestSide / 4),
+    );
     final labelScale = math.max(
       scale,
       math.max(
