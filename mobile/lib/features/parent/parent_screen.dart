@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../ui/basebound_icons.dart';
 
 import '../../ui/basebound_ui.dart';
+import '../game/location_permission_setup.dart';
 import '../mission/practice_launcher.dart';
 import '../landmarks/landmark_library_screen.dart';
 import '../landmarks/data/landmark_repository.dart';
@@ -21,7 +22,9 @@ import 'widgets/parent_editor_scaffold.dart';
 enum _SetupStage { introduction, contacts, safePlaces, ready }
 
 class ParentScreen extends StatefulWidget {
-  const ParentScreen({super.key});
+  const ParentScreen({super.key, this.locationPermission});
+
+  final LocationPermissionSetup? locationPermission;
 
   @override
   State<ParentScreen> createState() => _ParentScreenState();
@@ -29,6 +32,8 @@ class ParentScreen extends StatefulWidget {
 
 class _ParentScreenState extends State<ParentScreen> {
   final _repository = FamilyPlanRepository();
+  late final _locationPermission =
+      widget.locationPermission ?? LocationPermissionSetup();
   FamilyPlan? _plan;
   _SetupStage _stage = _SetupStage.introduction;
   bool _busy = false;
@@ -125,6 +130,53 @@ class _ParentScreenState extends State<ParentScreen> {
       MaterialPageRoute(builder: (_) => const LandmarkLibraryScreen()),
     );
   }
+
+  Future<void> _configureLocation() async {
+    final status = await _locationPermission.check();
+    if (!mounted) return;
+    final proceed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Map location'),
+        content: Text(_locationMessage(status)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Close'),
+          ),
+          if (status != LocationPermissionStatus.granted)
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(
+                status == LocationPermissionStatus.settingsRequired
+                    ? 'Open Android settings'
+                    : 'Allow location',
+              ),
+            ),
+        ],
+      ),
+    );
+    if (proceed != true || !mounted) return;
+    String message;
+    if (status == LocationPermissionStatus.settingsRequired) {
+      final opened = await _locationPermission.openSettings();
+      message = opened
+          ? 'Allow location while using the app. Reopen Our map when ready.'
+          : 'Open Android app settings to allow location while using the app.';
+    } else {
+      message = _locationMessage(await _locationPermission.requestFromAdult());
+    }
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  String _locationMessage(LocationPermissionStatus status) => switch (status) {
+    LocationPermissionStatus.granted => 'Location is allowed. Turn on phone location to show the blue dot. GPS runs only while Our map is open; no track is saved.',
+    LocationPermissionStatus.denied => 'Location is off. Allow it to show the map’s blue dot. Photos and practice work without it.',
+    LocationPermissionStatus.settingsRequired => 'Android requires app settings to allow location. Choose location access while using the app. Photos and practice work without it.',
+    LocationPermissionStatus.unavailable => 'Could not check location permission. You can retry; photos and practice still work.',
+  };
 
   void _goTo(_SetupStage stage) {
     FocusManager.instance.primaryFocus?.unfocus();
@@ -244,8 +296,18 @@ class _ParentScreenState extends State<ParentScreen> {
       PopupMenuButton<String>(
         enabled: !_busy,
         tooltip: 'Setup options',
-        onSelected: (_) => _delete(all: true),
+        onSelected: (value) {
+          if (value == 'location') {
+            _configureLocation();
+          } else if (value == 'delete') {
+            _delete(all: true);
+          }
+        },
         itemBuilder: (_) => const [
+          PopupMenuItem(
+            value: 'location',
+            child: Text('Map location permission'),
+          ),
           PopupMenuItem(
             value: 'delete',
             child: Text('Delete all saved details'),
@@ -403,7 +465,9 @@ class _ParentScreenState extends State<ParentScreen> {
       for (var index = 0; index < points.length; index++)
         _entry(
           title: points[index].displayName,
-          subtitle: 'Tap to edit this safe place.',
+          subtitle: points[index].isDemo
+              ? 'Fictional demo place'
+              : 'Tap to edit this safe place.',
           onEdit: () => _editPlace(index),
           onDelete: () => _delete(place: index),
           icon: BaseboundIconName.pin,

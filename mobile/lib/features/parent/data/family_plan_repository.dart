@@ -18,6 +18,9 @@ class FamilyPlanRepository {
   static const _key = 'basebound.family_plan.v1';
   final FlutterSecureStorage _storage;
 
+  /// An empty saved plan still counts as existing setup, not a fresh install.
+  Future<bool> hasSavedPlan() async => await _storage.read(key: _key) != null;
+
   Future<FamilyPlan> load() async {
     final source = await _storage.read(key: _key);
     if (source == null) return const FamilyPlan();

@@ -41,6 +41,7 @@ class _SafePointEditorScreenState extends State<SafePointEditorScreen> {
       name: _name.text.trim(),
       latitude: _selected!.latitude,
       longitude: _selected!.longitude,
+      isDemo: widget.point?.isDemo ?? false,
     ),
   );
 

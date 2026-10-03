@@ -13,6 +13,8 @@ import 'package:do_bazy/features/landmarks/widgets/landmark_map.dart';
 import 'package:do_bazy/features/landmarks/widgets/landmark_photo.dart';
 import 'package:do_bazy/ui/basebound_ui.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -103,7 +105,13 @@ void main() {
     await tester.pump();
     expect(find.text('Walk here together'), findsOneWidget);
     expect(location.position, isNull);
-    await location.start();
+    expect(location.isTracking, isTrue);
+    expect(source.requests, 0);
+    final camera = tester
+        .widget<InteractiveViewer>(find.byType(InteractiveViewer))
+        .transformationController!;
+    expect(camera.value.getMaxScaleOnAxis(), 1);
+    final initialCamera = camera.value.clone();
     source.updates.add(
       fix(
         now,
@@ -114,6 +122,41 @@ void main() {
     await tester.pump();
     await tester.pump();
     expect(find.byKey(const ValueKey('live-gps-marker')), findsOneWidget);
+    expect(camera.value, initialCamera, reason: 'GPS must not move the camera');
+    final mapBounds = tester.getRect(find.byType(InteractiveViewer));
+    final centre =
+        mapBounds.topLeft + Offset(mapBounds.width / 2, mapBounds.height / 4);
+    final left = await tester.startGesture(
+      centre - const Offset(30, 0),
+      pointer: 1,
+    );
+    final right = await tester.startGesture(
+      centre + const Offset(30, 0),
+      pointer: 2,
+    );
+    await tester.pump();
+    await left.moveTo(centre - const Offset(70, 0));
+    await right.moveTo(centre + const Offset(70, 0));
+    await tester.pump();
+    await left.up();
+    await right.up();
+    await tester.pump();
+    expect(camera.value.getMaxScaleOnAxis(), greaterThan(1));
+    final gestureCamera = camera.value.clone();
+    source.updates.add(
+      fix(
+        now,
+        latitude: geography.center[1].toDouble() + .0001,
+        longitude: geography.center[0].toDouble(),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+    expect(
+      camera.value,
+      gestureCamera,
+      reason: 'GPS must preserve the gesture camera',
+    );
     final received = location.position;
     await tester.tapAt(tester.getCenter(find.byType(LandmarkMap)));
     await tester.pump(const Duration(seconds: 2));
@@ -124,6 +167,137 @@ void main() {
     );
     expect(find.text('Follow path'), findsNothing);
     expect(find.text('Block a path'), findsNothing);
+    await tester.pumpWidget(const SizedBox.shrink());
+    location.dispose();
+    await source.updates.close();
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('denied GPS keeps gesture map and accessible places available', (
+    tester,
+  ) async {
+    final geography = DemoMap.fromJson(
+      jsonDecode(File('assets/maps/tauron-arena.geojson').readAsStringSync())
+          as Map<String, dynamic>,
+    );
+    final source = FakeLocationSource()..allowed = LocationPermission.denied;
+    final location = NavigationLocation(source: source);
+    final landmark = Landmark(
+      id: '1_1',
+      name: 'Photo shop',
+      photoName: '1_1.photo',
+      latitude: geography.center[1].toDouble(),
+      longitude: geography.center[0].toDouble(),
+    );
+    await _start(
+      tester,
+      GameScreen(
+        map: geography,
+        landmarks: [landmark],
+        photoDirectory: directory.path,
+        location: location,
+      ),
+      settle: false,
+    );
+    await _pumpMap(tester);
+    expect(source.requests, 0);
+    expect(location.state, LocationState.denied);
+    expect(
+      find.text('Location is not allowed. You can still explore.'),
+      findsOneWidget,
+    );
+    expect(find.text('Use live GPS'), findsNothing);
+    expect(find.text('Stop GPS'), findsNothing);
+    for (final tooltip in [
+      'Zoom in',
+      'Zoom out',
+      'Show whole map',
+      'Show me',
+    ]) {
+      expect(find.byTooltip(tooltip), findsNothing);
+    }
+    await _tap(tester, 'Places', settle: false);
+    await _pumpTransition(tester);
+    expect(tester.getRect(find.text('Photo shop')).bottom, lessThan(844));
+    await _tap(tester, 'Photo shop', settle: false);
+    await _pumpTransition(tester);
+    expect(find.text('Walk here together'), findsOneWidget);
+    expect(find.text('Our places'), findsNothing);
+    await tester.pumpWidget(const SizedBox.shrink());
+    location.dispose();
+    await source.updates.close();
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Help and background pause GPS until foreground map returns', (
+    tester,
+  ) async {
+    const audioChannel = MethodChannel('basebound/mission_audio');
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      audioChannel,
+      (call) async => call.method == 'initialize' ? false : null,
+    );
+    addTearDown(() {
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        audioChannel,
+        null,
+      );
+    });
+    final geography = DemoMap.fromJson(
+      jsonDecode(File('assets/maps/tauron-arena.geojson').readAsStringSync())
+          as Map<String, dynamic>,
+    );
+    final source = FakeLocationSource();
+    final location = NavigationLocation(source: source);
+    await _start(
+      tester,
+      GameScreen(
+        map: geography,
+        landmarks: const [],
+        photoDirectory: directory.path,
+        location: location,
+      ),
+      settle: false,
+    );
+    await _pumpMap(tester);
+    expect(location.isTracking, isTrue);
+    expect(source.requests, 0);
+
+    await tester.tap(find.byTooltip('I need help · prototype'));
+    await _pumpTransition(tester);
+    expect(find.byTooltip('Close help'), findsOneWidget);
+    expect(location.state, LocationState.paused);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    await tester.pump();
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pump();
+    expect(
+      location.state,
+      LocationState.paused,
+      reason: 'Help keeps GPS paused',
+    );
+
+    await tester.tap(find.byTooltip('Close help'));
+    await _pumpTransition(tester);
+    expect(location.isTracking, isTrue);
+    expect(source.requests, 0);
+
+    await tester.tap(find.byTooltip('I need help · prototype'));
+    await _pumpTransition(tester);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    await tester.pump();
+    await tester.tap(find.byTooltip('Close help'));
+    await _pumpTransition(tester);
+    expect(
+      location.state,
+      LocationState.paused,
+      reason: 'Closing Help in background cannot resume GPS',
+    );
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pump();
+    await tester.pump();
+    expect(location.isTracking, isTrue);
+    expect(source.requests, 0);
     await tester.pumpWidget(const SizedBox.shrink());
     location.dispose();
     await source.updates.close();
@@ -241,3 +415,10 @@ FilledButton _saveButton(WidgetTester tester) => tester.widget<FilledButton>(
     matching: find.byWidgetPredicate((widget) => widget is FilledButton),
   ),
 );
+
+Future<void> _pumpTransition(WidgetTester tester) async {
+  // Start the route animation, then finish it without waiting on Flame frames.
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 600));
+  await tester.pump(const Duration(milliseconds: 600));
+}

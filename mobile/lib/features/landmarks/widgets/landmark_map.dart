@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math' as math;
 
 import 'package:flame/components.dart' hide Matrix4;
 import 'package:flame/game.dart' hide Matrix4;
@@ -10,26 +9,6 @@ import '../../../game/components/neighborhood_component.dart';
 import '../../../game/maps/demo_map.dart';
 import '../../../ui/basebound_ui.dart';
 import '../data/landmark.dart';
-
-class LandmarkMapController extends ChangeNotifier {
-  String action = '';
-  double factor = 1;
-  void zoom(double value) {
-    factor = value;
-    action = 'zoom';
-    notifyListeners();
-  }
-
-  void showMe() {
-    action = 'me';
-    notifyListeners();
-  }
-
-  void showWholeMap() {
-    action = 'whole';
-    notifyListeners();
-  }
-}
 
 /// Shared parent/child geography. Pins open details; only GPS sets the live dot.
 class LandmarkMap extends StatefulWidget {
@@ -42,7 +21,6 @@ class LandmarkMap extends StatefulWidget {
     this.map,
     this.position,
     this.route = const [],
-    this.controller,
     this.showAttribution = true,
     super.key,
   });
@@ -55,7 +33,6 @@ class LandmarkMap extends StatefulWidget {
   final DemoMap? map;
   final Position? position;
   final List<Vector2> route;
-  final LandmarkMapController? controller;
   final bool showAttribution;
 
   @override
@@ -116,49 +93,17 @@ class _LandmarkMapCanvas extends StatefulWidget {
 class _LandmarkMapCanvasState extends State<_LandmarkMapCanvas> {
   late final _game = _LandmarkMapGame(widget.map);
   final _transform = TransformationController();
-  bool _follow = true;
   double _side = 0;
   double get _zoom => _transform.value.getMaxScaleOnAxis();
 
   @override
   void initState() {
     super.initState();
-    widget.config.controller?.addListener(_command);
     _transform.addListener(_redraw);
-  }
-
-  @override
-  void didUpdateWidget(covariant _LandmarkMapCanvas oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.config.controller != widget.config.controller) {
-      oldWidget.config.controller?.removeListener(_command);
-      widget.config.controller?.addListener(_command);
-    }
-    if (_follow && oldWidget.config.position != widget.config.position) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _centreOnPosition();
-      });
-    }
   }
 
   void _redraw() {
     if (mounted) setState(() {});
-  }
-
-  void _command() {
-    final controller = widget.config.controller!;
-    switch (controller.action) {
-      case 'whole':
-        _follow = false;
-        _transform.value = Matrix4.identity();
-      case 'me':
-        _follow = true;
-        _centreOnPosition();
-      case 'zoom':
-        _follow = false;
-        final centre = _transform.toScene(Offset(_side / 2, _side / 2));
-        _focus(centre, (_zoom * controller.factor).clamp(1, 8));
-    }
   }
 
   Offset _project(Vector2 point) => Offset(
@@ -166,28 +111,8 @@ class _LandmarkMapCanvasState extends State<_LandmarkMapCanvas> {
     (point.y - DemoMap.mapTop) / DemoMap.mapSize * _side,
   );
 
-  void _centreOnPosition() {
-    final position = widget.config.position;
-    if (position == null || _side == 0) return;
-    _focus(
-      _project(widget.map.project([position.longitude, position.latitude])),
-      math.max(4, _zoom),
-    );
-  }
-
-  void _focus(Offset centre, double zoom) {
-    if (_side == 0) return;
-    final minimum = _side * (1 - zoom);
-    final x = (_side / 2 - centre.dx * zoom).clamp(minimum, 0.0);
-    final y = (_side / 2 - centre.dy * zoom).clamp(minimum, 0.0);
-    _transform.value = Matrix4.identity()
-      ..translateByDouble(x, y, 0, 1)
-      ..scaleByDouble(zoom, zoom, 1, 1);
-  }
-
   @override
   void dispose() {
-    widget.config.controller?.removeListener(_command);
     _transform.removeListener(_redraw);
     _transform.dispose();
     super.dispose();
@@ -201,7 +126,6 @@ class _LandmarkMapCanvasState extends State<_LandmarkMapCanvas> {
       return InteractiveViewer(
         transformationController: _transform,
         maxScale: 8,
-        onInteractionStart: (_) => _follow = false,
         child: Stack(
           children: [
             Positioned.fill(

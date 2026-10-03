@@ -37,13 +37,13 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     map: widget.map,
     location: _location,
   );
-  final _mapController = LandmarkMapController();
   final _audio = MissionAudio();
   Landmark? _selected;
   LandmarkQuestion? _question;
   bool _correct = false;
   bool _tried = false;
   bool _helpOpen = false;
+  bool _foreground = true;
   bool _voiceAvailable = true;
   bool _recognised = false;
   int _audioRevision = 0;
@@ -56,7 +56,9 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   List<Landmark> get _photos =>
       _visible.where((place) => place.photoName.isNotEmpty).toList();
   String get _instruction => _question == null
-      ? _navigation.instruction
+      ? _navigation.destination == null
+            ? 'Choose a place or find its photo pin.'
+            : _navigation.instruction
       : _correct
       ? 'You remembered! This place is here.'
       : _tried
@@ -68,6 +70,11 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _navigation.addListener(_routeChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _foreground && !_helpOpen) {
+        _location.start(requestPermission: false);
+      }
+    });
   }
 
   void _routeChanged() {
@@ -125,13 +132,14 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       await openHelpScreen(context);
     } finally {
       _helpOpen = false;
-      if (mounted) await _location.resume();
+      if (mounted && _foreground) await _location.resume();
     }
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state != AppLifecycleState.resumed) {
+    _foreground = state == AppLifecycleState.resumed;
+    if (!_foreground) {
       _location.pause();
       _audioRevision++;
       _audio.stop();
@@ -150,7 +158,6 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     } else {
       _location.stop();
     }
-    _mapController.dispose();
     _audioRevision++;
     _audio.dispose();
     super.dispose();
@@ -183,7 +190,6 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       _tried = false;
       _selected = null;
     });
-    _mapController.showWholeMap();
     _speak();
   }
 
@@ -194,8 +200,10 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     _announcedRoute = null;
     _recognised = false;
     _navigation.navigateTo(target);
-    if (!_location.isTracking) await _location.start();
-    _mapController.showMe();
+    setState(() => _selected = null);
+    if (_foreground && !_helpOpen && !_location.isTracking) {
+      await _location.start(requestPermission: false);
+    }
     _speak();
   }
 
@@ -279,7 +287,6 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                               : null,
                           hidePhotos: _question != null && !_correct,
                           onSelected: _choose,
-                          controller: _mapController,
                           showAttribution: false,
                         ),
                       ),
@@ -289,19 +296,34 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Semantics(
-                      liveRegion: true,
-                      header: true,
-                      child: Text(
-                        _recognised
-                            ? 'You recognised this place!'
-                            : _instruction,
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w700,
-                          height: 1.2,
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Semantics(
+                            liveRegion: true,
+                            header: true,
+                            child: Text(
+                              _recognised
+                                  ? 'You recognised this place!'
+                                  : _instruction,
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w700,
+                                height: 1.2,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
+                        IconButton(
+                          onPressed: _speak,
+                          tooltip: 'Replay audio',
+                          icon: const BaseboundIcon(
+                            BaseboundIconName.speaker,
+                            size: 24,
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 8),
                     if (_question == null)
@@ -354,135 +376,103 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     ),
   );
 
+  void _showPlaces() => showModalBottomSheet<void>(
+    context: context,
+    showDragHandle: true,
+    builder: (sheetContext) => SafeArea(
+      child: ListView(
+        shrinkWrap: true,
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        children: [
+          const Text(
+            'Our places',
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 8),
+          for (final place in widget.landmarks)
+            ListTile(
+              title: Text(place.name),
+              subtitle: place.isDemo
+                  ? Text(
+                      place.photoName.isEmpty
+                          ? 'Fictional demo place · not verified safe'
+                          : 'Fictional demo photo · recognition only',
+                    )
+                  : null,
+              leading: const BaseboundIcon(BaseboundIconName.pin, size: 24),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                _choose(place);
+              },
+            ),
+        ],
+      ),
+    ),
+  );
+
+  String? get _locationStatus {
+    if (_navigation.outsideMap) return 'GPS is outside this demo map.';
+    return switch (_location.state) {
+      LocationState.off => 'Location is off. You can still explore.',
+      LocationState.waiting => 'Finding your location…',
+      LocationState.live =>
+        _location.isPrecise
+            ? null
+            : 'GPS is approximate. Walking directions are paused.',
+      LocationState.denied => 'Location is not allowed. You can still explore.',
+      LocationState.settingsRequired =>
+        'Your adult can allow location in app settings.',
+      LocationState.disabled => 'Your adult can turn on phone location.',
+      LocationState.unavailable => 'GPS is unavailable. You can still explore.',
+      LocationState.stale => 'GPS is old. Walking directions are paused.',
+      LocationState.paused => 'Location is paused.',
+    };
+  }
+
   Widget _controls() => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       if (_question != null)
         _recallPanel()
       else ...[
-        if (_navigation.destination != null) _routePanel(),
-        if (_selected != null) _placePanel(_selected!),
+        if (_selected != null)
+          _placePanel(_selected!)
+        else if (_navigation.destination != null)
+          _routePanel(),
         if (widget.landmarks.isEmpty)
-          const SoftPanel(
-            child: Text(
-              'No familiar places yet. Ask your adult to add photo landmarks in Walk together.',
-            ),
-          ),
-        if (_selected == null && widget.landmarks.isNotEmpty)
+          const Text('Ask your adult to add familiar places.')
+        else if (_selected == null && _navigation.destination == null)
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
-              for (final place in widget.landmarks)
-                ActionChip(
-                  label: Text(place.name),
-                  onPressed: () => _choose(place),
-                  elevation: 0,
-                  pressElevation: 0,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 12,
-                  ),
-                  side: const BorderSide(color: BaseboundColors.border),
-                  backgroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+              OutlinedButton.icon(
+                onPressed: _showPlaces,
+                icon: const BaseboundIcon(BaseboundIconName.pin, size: 24),
+                label: const Text('Places'),
+              ),
+              if (_photos.length >= 2)
+                OutlinedButton.icon(
+                  onPressed: _recall,
+                  icon: const Icon(Icons.photo_outlined, size: 24),
+                  label: const Text('Find the photo pin'),
                 ),
             ],
           ),
-        if (_photos.length >= 2)
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: OutlinedButton.icon(
-              onPressed: _recall,
-              icon: const BaseboundIcon(BaseboundIconName.pin, size: 24),
-              label: const Text('Find the photo pin'),
-            ),
-          ),
       ],
-      const SizedBox(height: 8),
-      Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        alignment: WrapAlignment.center,
-        children: [
-          OutlinedButton.icon(
-            onPressed: () async {
-              if (_location.isTracking) {
-                _location.stop();
-              } else {
-                await _location.start();
-                _mapController.showMe();
-              }
-            },
-            icon: const Icon(Icons.my_location, size: 24),
-            label: Text(_location.isTracking ? 'Stop GPS' : 'Use live GPS'),
-          ),
-          _mapTool(
-            onPressed: _location.position != null && !_navigation.outsideMap
-                ? _mapController.showMe
-                : null,
-            tooltip: 'Show me',
-            icon: BaseboundIconName.child,
-          ),
-          _mapTool(
-            onPressed: () => _mapController.zoom(1.4),
-            tooltip: 'Zoom in',
-            icon: BaseboundIconName.plus,
-          ),
-          _mapTool(
-            onPressed: () => _mapController.zoom(1 / 1.4),
-            tooltip: 'Zoom out',
-            icon: BaseboundIconName.minus,
-          ),
-          _mapTool(
-            onPressed: _mapController.showWholeMap,
-            tooltip: 'Show whole map',
-            icon: BaseboundIconName.fitMap,
-          ),
-          _mapTool(
-            onPressed: _speak,
-            tooltip: 'Replay audio',
-            icon: BaseboundIconName.speaker,
-          ),
-        ],
-      ),
-      const SizedBox(height: 8),
-      Text(
-        _navigation.outsideMap
-            ? 'GPS is outside the TAURON Arena, Kraków map. No position is placed on this map.'
-            : _location.message,
-        style: const TextStyle(fontSize: 12, color: BaseboundColors.muted),
-      ),
+      if (_locationStatus case final status?) ...[
+        const SizedBox(height: 8),
+        Text(
+          status,
+          style: const TextStyle(fontSize: 12, color: BaseboundColors.muted),
+        ),
+      ],
       if (!_voiceAvailable)
         const Text(
           'Voice is unavailable. Ask your adult to help.',
           style: TextStyle(fontSize: 12),
         ),
     ],
-  );
-
-  Widget _mapTool({
-    required VoidCallback? onPressed,
-    required String tooltip,
-    required BaseboundIconName icon,
-  }) => IconButton.outlined(
-    onPressed: onPressed,
-    tooltip: tooltip,
-    style: IconButton.styleFrom(
-      minimumSize: const Size(48, 48),
-      backgroundColor: Colors.white,
-      side: const BorderSide(color: BaseboundColors.border),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    ),
-    icon: BaseboundIcon(
-      icon,
-      size: 24,
-      color: onPressed == null
-          ? BaseboundColors.muted.withValues(alpha: .4)
-          : BaseboundColors.ink,
-    ),
   );
 
   Widget _placePanel(Landmark place) => Padding(
@@ -517,7 +507,11 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
             ),
           const SizedBox(height: 8),
           if (place.isDemo)
-            const Text('Fictional demo photo and pin · recognition only')
+            Text(
+              place.photoName.isEmpty
+                  ? 'Fictional demo place · not a verified safe destination'
+                  : 'Fictional demo photo and pin · recognition only',
+            )
           else if (!withinMap(widget.map, place.latitude, place.longitude))
             const Text(
               'Outside this downloaded map. Walking guidance is unavailable.',
@@ -527,6 +521,11 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
               onPressed: _navigate,
               icon: const Icon(Icons.directions_walk, size: 24),
               label: const Text('Walk here together'),
+            ),
+          if (_navigation.destination != null)
+            TextButton(
+              onPressed: () => setState(() => _selected = null),
+              child: const Text('Back to directions'),
             ),
         ],
       ),
@@ -546,14 +545,18 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
               'To ${target.name}',
               style: const TextStyle(fontWeight: FontWeight.w700),
             ),
+            if (target.photoName.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              LandmarkPhoto(
+                path: '${widget.photoDirectory}/${target.photoName}',
+                label: target.name,
+                height: 80,
+              ),
+            ],
             if (route != null) ...[
               Text('${metres(_navigation.remaining)} of mapped path remaining'),
-              Text(
-                'Photo pin: ${metres(_navigation.destinationDistance)} ${compass(_navigation.destinationBearing)} · direct distance',
-                style: const TextStyle(fontSize: 12),
-              ),
               const Text(
-                'The ring ends on a mapped path near the pin.',
+                'Path ends near the pin. Check with your adult.',
                 style: TextStyle(fontSize: 12),
               ),
             ],

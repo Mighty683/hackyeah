@@ -68,15 +68,15 @@ class NavigationLocation extends ChangeNotifier {
       state == LocationState.stale;
 
   String get message => switch (state) {
-    LocationState.off => 'Use GPS to see where you are.',
+    LocationState.off =>
+      'Explore the photo pins. Location shows your blue dot.',
     LocationState.waiting => 'Finding your location… Stay with your adult.',
     LocationState.live =>
       isPrecise ? 'Live GPS · accuracy about ${position!.accuracy.round()} m' : 'GPS is approximate. Wait for a clearer position before following directions.',
     LocationState.denied =>
       'Location permission was denied. You can still explore photo pins.',
-    LocationState.settingsRequired =>
-      'Allow location in Android app settings, then try GPS again.',
-    LocationState.disabled => 'Turn on phone location, then try GPS again.',
+    LocationState.settingsRequired => 'Ask your adult to allow location in Family setup or Android app settings.',
+    LocationState.disabled => 'Ask your adult to turn on phone location.',
     LocationState.unavailable =>
       'GPS is unavailable. Try again outdoors with your adult.',
     LocationState.stale => 'GPS stopped updating. Directions are paused until a fresh position arrives.',

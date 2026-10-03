@@ -44,6 +44,7 @@ class _GameLauncherState extends State<GameLauncher> {
           photoName: '',
           latitude: plan.safePoints[i].latitude,
           longitude: plan.safePoints[i].longitude,
+          isDemo: plan.safePoints[i].isDemo,
         ),
     ];
     return _MapContent(map, places, directory.path);

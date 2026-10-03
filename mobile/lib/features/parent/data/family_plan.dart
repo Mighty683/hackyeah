@@ -150,6 +150,7 @@ class SafePoint {
     required this.name,
     required this.latitude,
     required this.longitude,
+    this.isDemo = false,
   });
 
   factory SafePoint.fromJson(Map<String, dynamic> json) {
@@ -157,6 +158,7 @@ class SafePoint {
       name: json['name'] as String,
       latitude: (json['latitude'] as num).toDouble(),
       longitude: (json['longitude'] as num).toDouble(),
+      isDemo: json['isDemo'] as bool? ?? false,
     );
     if (!point.latitude.isFinite ||
         !point.longitude.isFinite ||
@@ -170,6 +172,7 @@ class SafePoint {
   final String name;
   final double latitude;
   final double longitude;
+  final bool isDemo;
 
   String get displayName => name.trim().isEmpty ? 'Safe place' : name;
 
@@ -177,5 +180,6 @@ class SafePoint {
     'name': name,
     'latitude': latitude,
     'longitude': longitude,
+    if (isDemo) 'isDemo': true,
   };
 }
