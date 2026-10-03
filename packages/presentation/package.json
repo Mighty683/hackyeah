@@ -1,5 +1,5 @@
 {
   "name": "@hackyeah/presentation", "version": "0.0.0", "private": true, "type": "module",
-  "scripts": { "dev": "slidev slides.md --port 3030", "demo": "slidev slides.md --port 3031", "build": "slidev build slides.md --out dist", "export": "slidev export slides.md" },
+  "scripts": { "dev": "slidev slides.md --port 3030", "demo": "slidev prototype.md --port 3031", "build": "slidev build slides.md --out dist", "export": "slidev export slides.md" },
   "devDependencies": { "@slidev/cli": "latest", "@slidev/theme-default": "latest" }
 }
