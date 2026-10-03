@@ -60,6 +60,20 @@ class DemoDataSeeder {
     }
     await _removeInterruptedPhotoCopies();
     await loadDemoLandmarks(_landmarkRepository);
+    final seededPlan = await _familyRepository.load();
+    if (seededPlan.practiceMeetingPoint == null) {
+      final meetingPlace = (await _landmarkRepository.load()).firstWhere(
+        (place) => place.id == demoLandmarks.first.landmark.id,
+      );
+      await _familyRepository.save(
+        seededPlan.copyWith(
+          practiceMeetingPoint: PracticeMeetingPoint(
+            landmarkId: meetingPlace.id,
+            label: meetingPlace.name,
+          ),
+        ),
+      );
+    }
     await _storage.write(key: storageKey, value: 'complete');
   }
 

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../ui/basebound_ui.dart';
 import 'air_raid_mission.dart';
 import 'mission_scene_layout.dart';
+import 'scene_highlight_style.dart';
 
 /// Traces objects in the portrait artwork, without captions or button surfaces.
 class MissionObjectHighlights extends CustomPainter {
@@ -40,13 +41,12 @@ class MissionObjectHighlights extends CustomPainter {
           : selected
           ? (choice.isCorrect ? BaseboundColors.green : BaseboundColors.coral)
           : BaseboundColors.blue;
-      final paint = Paint()
-        ..color = color
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 3
-        ..strokeJoin = StrokeJoin.round
-        ..strokeCap = StrokeCap.round;
-      _object(canvas, choice.id, target, paint);
+      paintSceneHighlight(
+        canvas,
+        (paint) => _object(canvas, choice.id, target, paint),
+        color: color,
+        subdued: rejected,
+      );
     }
     canvas.restore();
   }

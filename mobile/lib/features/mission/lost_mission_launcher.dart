@@ -77,12 +77,15 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
       final photoPlaces = <LostPracticePlace>[];
       final mapLandmarks = <Landmark>[];
       DemoMap? map;
+      LostPracticeHomePoint? homePoint;
       var photoDirectory = '';
-      if (plan.practiceMeetingPoint?.landmarkId != null) {
+      if (plan.practiceMeetingPoint == null ||
+          plan.practiceMeetingPoint?.landmarkId != null) {
         final landmarks = await _landmarkRepository.load();
         final directory = await _landmarkRepository.photoDirectory();
         photoDirectory = directory.path;
-        map = await DemoMapRepository().load();
+        final loadedMap = await DemoMapRepository().load();
+        map = loadedMap;
         for (final place in landmarks) {
           final photoPath = '$photoDirectory/${place.photoName}';
           if (!mapContainsPoint(map, place.point) ||
@@ -99,11 +102,44 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
             ),
           );
         }
+        final home = plan.safePoints
+            .where(
+              (point) =>
+                  (point.name.trim().toLowerCase() == 'home' ||
+                      const {'🏠', '🏡'}.contains(point.icon)) &&
+                  mapContainsPoint(loadedMap, point),
+            )
+            .firstOrNull;
+        if (home != null) {
+          homePoint = LostPracticeHomePoint(label: home.displayName);
+          mapLandmarks.add(
+            Landmark(
+              id: LostPracticeHomePoint.id,
+              name: home.displayName,
+              photoName: '',
+              latitude: home.latitude,
+              longitude: home.longitude,
+              icon: '🏠',
+              isDemo: home.isDemo,
+            ),
+          );
+        }
       }
+      // Older installs can start from their saved photos without rewriting setup.
+      final practicePlan =
+          plan.practiceMeetingPoint == null && photoPlaces.isNotEmpty
+          ? plan.copyWith(
+              practiceMeetingPoint: PracticeMeetingPoint(
+                landmarkId: photoPlaces.first.id,
+                label: photoPlaces.first.label,
+              ),
+            )
+          : plan;
       final practice = LostPracticeContext.fromFamilyPlan(
-        plan,
+        practicePlan,
         fallbackChild: widget.child,
         photoPlaces: photoPlaces,
+        homePoint: homePoint,
       );
       if (!mounted) return;
       setState(() {
@@ -113,7 +149,7 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
         _mapLandmarks = mapLandmarks;
         _photoDirectory = photoDirectory;
         _needsMeetingPoint =
-            plan.practiceMeetingPoint == null ||
+            practicePlan.practiceMeetingPoint == null ||
             practice.meetingPointUnavailable;
         _loading = false;
       });
@@ -133,8 +169,7 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
           'Try again, or use a pretend family for practice.';
     }
     if (_needsMeetingPoint) {
-      return 'Ask an adult to choose your meeting place and photo. '
-          'You can also use a demo meeting place for pretend practice.';
+      return 'Ask an adult to choose your meeting place and photo.';
     }
     final detail = _practiceContext?.usesFictionalDetails == true
         ? 'Some family details are pretend. '
@@ -383,10 +418,5 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
     ),
     const SizedBox(height: 12),
     OutlinedButton(onPressed: _load, child: const Text('Try again')),
-    const SizedBox(height: 12),
-    OutlinedButton(
-      onPressed: _useFictionalFamily,
-      child: const Text('Use demo meeting place'),
-    ),
   ];
 }

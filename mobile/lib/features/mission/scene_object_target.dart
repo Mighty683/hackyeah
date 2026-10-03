@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../ui/basebound_ui.dart';
+import 'scene_highlight_style.dart';
 
 /// Makes scene artwork tappable without drawing a button over the picture.
 /// Keeps a labelled control for screen readers and a visible keyboard focus.
@@ -47,19 +48,18 @@ class SceneObjectTarget extends StatelessWidget {
   );
 }
 
-/// A quiet outline around a standalone person or object, never a filled card.
+/// A neon outline keeps standalone scene choices visible over the artwork.
 class SceneObjectHalo extends CustomPainter {
   const SceneObjectHalo({this.rejected = false});
 
   final bool rejected;
 
   @override
-  void paint(Canvas canvas, Size size) => canvas.drawOval(
-    (Offset.zero & size).deflate(4),
-    Paint()
-      ..color = rejected ? BaseboundColors.muted : BaseboundColors.blue
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.5,
+  void paint(Canvas canvas, Size size) => paintSceneHighlight(
+    canvas,
+    (paint) => canvas.drawOval((Offset.zero & size).deflate(9), paint),
+    color: rejected ? BaseboundColors.muted : BaseboundColors.blue,
+    subdued: rejected,
   );
 
   @override

@@ -43,6 +43,10 @@ Avoid the appearance of a mobile game advertisement.
   matching object outlines before selection, without visible choice text
   or button surfaces. Keep an accessible label and a touch target of at least 48 px. Keep the object visible inside
   the target; use separate illustrated objects for abstract actions or contacts.
+- Training object outlines use a steady neon blue glow and a bright inner edge
+  for visibility against scene artwork. This is an exception to the flat-control
+  rule above: keep ordinary buttons, panels and text flat. Give every available
+  choice the same highlight; rejected choices stay muted. Do not pulse or flash.
 - Keep narration and feedback outside the scene, with next/retry actions below.
   Preserve the hallway/two-wall explanation and make the scene scroll or grow
   when needed for narrow screens and large text.
