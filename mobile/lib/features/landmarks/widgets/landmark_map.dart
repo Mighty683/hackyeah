@@ -220,7 +220,7 @@ class _LandmarkMapCanvasState extends State<_LandmarkMapCanvas> {
                 child: CustomPaint(
                   painter: _NavigationPainter(
                     map: widget.map,
-                    position: config.position,
+                    position: null,
                     route: config.route,
                     zoom: _zoom,
                   ),
@@ -229,6 +229,23 @@ class _LandmarkMapCanvasState extends State<_LandmarkMapCanvas> {
             ),
             for (var index = 0; index < config.landmarks.length; index++)
               _pin(config.landmarks[index], index),
+            if (config.position != null)
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: Semantics(
+                    label: 'Your live GPS position',
+                    child: CustomPaint(
+                      key: const ValueKey('live-gps-marker'),
+                      painter: _NavigationPainter(
+                        map: widget.map,
+                        position: config.position,
+                        route: const [],
+                        zoom: _zoom,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       );

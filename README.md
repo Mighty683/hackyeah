@@ -27,7 +27,7 @@ flutter build apk --debug
 
 The APK is generated at `mobile/build/app/outputs/flutter-apk/app-debug.apk`. See [`mobile/README.md`](mobile/README.md) for prerequisites and development details.
 
-The current demo includes parent setup, a touch-controlled offline map game around TAURON Arena Kraków, and Mission 01: visual air-raid-alarm practice for ages 7+. The mission includes a home tutorial, an outdoor simulation, calm retries, fictional messaging, and a completion recap. Narration requires an installed offline English Android voice. All training movement, shelter choices and messages are simulated. The game has no runtime backend dependency.
+The current demo includes parent setup, a shared photo-landmark map with foreground GPS and offline walking turn guidance around TAURON Arena Kraków, and Mission 01: visual air-raid-alarm practice for ages 7+. The mission includes a home tutorial, an outdoor simulation, calm retries, fictional messaging, and a completion recap. Narration requires an installed offline English Android voice. Alarm/lost training movement, shelter choices and messages are simulated. Map movement comes only from real GPS; its walking routes have unverified access and entrances and require an accompanying adult. The game has no runtime backend dependency.
 
 Map data © OpenStreetMap contributors, ODbL 1.0. Attribution, area details, and refresh instructions live in [`mobile/assets/maps/README.md`](mobile/assets/maps/README.md). After installing the JavaScript tooling, `pnpm maps:refresh` updates the bundled snapshot.
 

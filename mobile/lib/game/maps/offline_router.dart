@@ -5,27 +5,10 @@ import 'package:flame/components.dart';
 
 import 'demo_map.dart';
 
-/// Fictional blocked area used only by the practice scenario, in map units.
-class PracticeBlockage {
-  PracticeBlockage({required Vector2 center, required this.radius})
-    : center = center.clone();
-
-  final Vector2 center;
-  final double radius;
-
-  bool intersects(Vector2 start, Vector2 end) {
-    final delta = end - start;
-    final fraction = delta.length2 == 0
-        ? 0.0
-        : ((center - start).dot(delta) / delta.length2).clamp(0.0, 1.0);
-    return center.distanceTo(start + delta * fraction) <= radius;
-  }
-}
-
 /// Offline pedestrian routing on bundled line geometry; access is not verified.
 /// Only shared source vertices connect ways; visual crossings add no shortcuts.
 class OfflineRouter {
-  OfflineRouter(DemoMap map, {this.blockage}) {
+  OfflineRouter(DemoMap map) {
     final vertices = <String, int>{};
     for (final feature in map.features.where(_allowsWalking)) {
       final lines = feature.geometryType == 'LineString'
@@ -51,7 +34,6 @@ class OfflineRouter {
 
   // About 60 m in this 2 km snapshot. Snapping never draws an off-path connector.
   static const maximumSnapDistance = 12.0;
-  final PracticeBlockage? blockage;
   final _points = <Vector2>[];
   final _edges = <Map<int, double>>[];
   final _tags = <Map<int, Map<String, dynamic>>>[];
@@ -138,7 +120,7 @@ class OfflineRouter {
     final start = _points[a];
     final end = _points[b];
     final length = start.distanceTo(end);
-    if (length == 0 || (blockage?.intersects(start, end) ?? false)) return;
+    if (length == 0) return;
     final cost = length * _costFactor(tags);
     final oneWay = tags['oneway:foot'];
     if (oneWay != '-1') {
@@ -172,12 +154,10 @@ class OfflineRouter {
   }
 
   int? nearestNode(Vector2 point) {
-    if (blockage?.intersects(point, point) ?? false) return null;
     int? result;
     var distance = maximumSnapDistance;
     for (var i = 0; i < _points.length; i++) {
       if (_edges[i].isEmpty && !_incoming.contains(i)) continue;
-      if (blockage?.intersects(_points[i], _points[i]) ?? false) continue;
       final candidate = point.distanceTo(_points[i]);
       if (candidate <= distance) {
         result = i;

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../game/maps/demo_map.dart';
 import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
+import '../../widgets/basebound_mascot.dart';
 import '../help/help_screen.dart';
 import '../landmarks/data/landmark.dart';
 import '../landmarks/landmark_practice.dart';
@@ -73,6 +74,12 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   void _routeChanged() {
     if (!mounted || _helpOpen || _question != null) return;
     final route = _navigation.route;
+    if (route == null && _announcedRoute != null) {
+      _announcedRoute = null;
+      _spokenCue = null;
+      _audioRevision++;
+      _audio.stop();
+    }
     if (route != null && route != _announcedRoute) {
       _announcedRoute = route;
       _speak();
@@ -89,7 +96,9 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       _spokenCue = cue;
       _speak();
     }
-    if (!_navigation.nearPlace) _recognised = false;
+    if (_navigation.destination != null && !_navigation.nearPlace) {
+      _recognised = false;
+    }
   }
 
   Future<void> _speak() async {
@@ -150,7 +159,10 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
 
   void _choose(Landmark landmark) {
     if (_question == null) {
-      setState(() => _selected = landmark);
+      setState(() {
+        _selected = landmark;
+        _recognised = false;
+      });
       return;
     }
     if (_correct) return;
@@ -278,18 +290,31 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Semantics(
-                      liveRegion: true,
-                      child: Text(
-                        _recognised
-                            ? 'You recognised this place!'
-                            : _instruction,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800,
-                          height: 1.2,
+                    Row(
+                      children: [
+                        BaseboundMascot(
+                          size: 42,
+                          pose: _question != null
+                              ? DinoPose.think
+                              : DinoPose.point,
                         ),
-                      ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Semantics(
+                            liveRegion: true,
+                            child: Text(
+                              _recognised
+                                  ? 'You recognised this place!'
+                                  : _instruction,
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w800,
+                                height: 1.2,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 6),
                     if (_question == null)
@@ -382,16 +407,14 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
         alignment: WrapAlignment.center,
         children: [
           OutlinedButton.icon(
-            onPressed: _location.state == LocationState.waiting
-                ? null
-                : () async {
-                    if (_location.isTracking) {
-                      _location.stop();
-                    } else {
-                      await _location.start();
-                      _mapController.showMe();
-                    }
-                  },
+            onPressed: () async {
+              if (_location.isTracking) {
+                _location.stop();
+              } else {
+                await _location.start();
+                _mapController.showMe();
+              }
+            },
             icon: const Icon(Icons.my_location),
             label: Text(_location.isTracking ? 'Stop GPS' : 'Use live GPS'),
           ),

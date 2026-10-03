@@ -172,48 +172,6 @@ void main() {
     );
   });
 
-  test(
-    'blockage prevents intersecting edges and never falls back through it',
-    () {
-      final direct = line('direct', [
-        [0, 0],
-        [60, 0],
-      ]);
-      final detour = line('detour', [
-        [0, 0],
-        [0, 20],
-        [60, 20],
-        [60, 0],
-      ]);
-      final map = fixture([direct, detour]);
-      final blockage = PracticeBlockage(
-        center: map.project([30, 0]),
-        radius: 3,
-      );
-      final route = OfflineRouter(
-        map,
-        blockage: blockage,
-      ).route(map.project([0, 0]), map.project([60, 0]))!;
-      for (var i = 1; i < route.length; i++) {
-        expect(blockage.intersects(route[i - 1], route[i]), isFalse);
-      }
-      expect(
-        OfflineRouter(
-          fixture([direct]),
-          blockage: blockage,
-        ).route(map.project([0, 0]), map.project([60, 0])),
-        isNull,
-      );
-      expect(
-        OfflineRouter(
-          map,
-          blockage: blockage,
-        ).route(map.project([0, 0]), map.project([30, 0])),
-        isNull,
-      );
-    },
-  );
-
   test('walking one-way restrictions are applied in the source direction', () {
     for (final direction in ['yes', '-1']) {
       final map = fixture([

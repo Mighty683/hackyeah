@@ -4,6 +4,10 @@ import 'dart:io';
 import 'package:do_bazy/features/landmarks/data/landmark.dart';
 import 'package:do_bazy/features/landmarks/landmark_editor_screen.dart';
 import 'package:do_bazy/features/game/game_screen.dart';
+import 'package:do_bazy/features/game/navigation_location.dart';
+
+import '../game/fake_location_source.dart';
+
 import 'package:do_bazy/game/maps/demo_map.dart';
 import 'package:do_bazy/features/landmarks/widgets/landmark_map.dart';
 import 'package:do_bazy/features/landmarks/widgets/landmark_photo.dart';
@@ -63,6 +67,66 @@ void main() {
     expect(saved?.latitude, inInclusiveRange(50, 51));
     expect(saved?.longitude, inInclusiveRange(19, 21));
     expect(find.byType(LandmarkEditorScreen), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('map taps open photos without moving the live GPS position', (
+    tester,
+  ) async {
+    final geography = DemoMap.fromJson(
+      jsonDecode(File('assets/maps/tauron-arena.geojson').readAsStringSync())
+          as Map<String, dynamic>,
+    );
+    final now = DateTime.utc(2026, 10, 3, 12);
+    final source = FakeLocationSource();
+    final location = NavigationLocation(source: source, now: () => now);
+    final landmark = Landmark(
+      id: '1_1',
+      name: 'Photo shop',
+      photoName: '1_1.photo',
+      latitude: geography.center[1].toDouble() + .003,
+      longitude: geography.center[0].toDouble() + .003,
+    );
+    await _start(
+      tester,
+      GameScreen(
+        map: geography,
+        landmarks: [landmark],
+        photoDirectory: directory.path,
+        location: location,
+      ),
+      settle: false,
+    );
+    await _pumpMap(tester);
+    expect(find.byKey(const ValueKey('live-gps-marker')), findsNothing);
+    await tester.tap(find.byTooltip('Photo shop'));
+    await tester.pump();
+    expect(find.text('Walk here together'), findsOneWidget);
+    expect(location.position, isNull);
+    await location.start();
+    source.updates.add(
+      fix(
+        now,
+        latitude: geography.center[1].toDouble(),
+        longitude: geography.center[0].toDouble(),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+    expect(find.byKey(const ValueKey('live-gps-marker')), findsOneWidget);
+    final received = location.position;
+    await tester.tapAt(tester.getCenter(find.byType(LandmarkMap)));
+    await tester.pump(const Duration(seconds: 2));
+    expect(location.position, same(received));
+    expect(
+      tester.widget<LandmarkMap>(find.byType(LandmarkMap)).position,
+      same(received),
+    );
+    expect(find.text('Follow path'), findsNothing);
+    expect(find.text('Block a path'), findsNothing);
+    await tester.pumpWidget(const SizedBox.shrink());
+    location.dispose();
+    await source.updates.close();
     expect(tester.takeException(), isNull);
   });
 
