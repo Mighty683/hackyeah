@@ -78,7 +78,7 @@ class _GameScreenState extends State<GameScreen> {
         scrollable: true,
         content: Text(
           'This is a practice game, not real-world navigation. '
-          '${widget.destination == null ? 'The base is pretend.' : 'The target is a parent-selected practice place, not a verified safe destination.'} '
+          '${widget.destination == null ? 'The base is pretend.' : 'The target is a parent-selected safe place. Its safety has not been checked.'} '
           'Your character can move freely.\n\n'
           'This simplified map leaves out small streets and buildings. '
           'Trees and buildings are illustrations, not exact outlines.\n\n'
@@ -250,7 +250,9 @@ class _GameScreenState extends State<GameScreen> {
                     _failed
                         ? 'Go back and try again.'
                         : _arrived
-                        ? 'You guided your character to the practice target.'
+                        ? widget.destination == null
+                              ? 'Your character reached the pretend base.'
+                              : 'Your character reached the safe place in this game.'
                         : 'Tap to move. Drag or pinch to explore.',
                     style: const TextStyle(
                       fontSize: 16,

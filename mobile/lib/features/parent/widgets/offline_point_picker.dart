@@ -38,7 +38,7 @@ class _OfflinePointPickerState extends State<OfflinePointPicker> {
       children: [
         Semantics(
           label:
-              'Offline Kraków map. Tap to choose a practice place. '
+              'Offline Kraków map. Tap to choose a safe place. '
               'Alternatively, use the direction buttons below.',
           child: AspectRatio(
             aspectRatio: 1,
