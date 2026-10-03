@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
 import '../../widgets/basebound_mascot.dart';
-import '../mission/practice_launcher.dart';
+import '../child/child_onboarding_screen.dart';
 import '../help/help_screen.dart';
 import '../parent/parent_screen.dart';
 
@@ -43,7 +43,7 @@ class _WelcomeChoices extends StatelessWidget {
         const Center(child: _WelcomeIllustration()),
         const SizedBox(height: 24),
         const Text(
-          'Welcome to Basebound',
+          'Welcome to Safe Path',
           textAlign: TextAlign.center,
           style: TextStyle(
             color: BaseboundColors.ink,
@@ -64,7 +64,7 @@ class _WelcomeChoices extends StatelessWidget {
           icon: BaseboundIconName.child,
           color: BaseboundColors.blue,
           tint: BaseboundColors.sky,
-          onPressed: () => _openScreen(context, const PracticeLauncher()),
+          onPressed: () => _openScreen(context, const ChildOnboardingScreen()),
         ),
         const SizedBox(height: 16),
         _RoleCard(

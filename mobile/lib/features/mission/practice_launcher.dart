@@ -5,13 +5,16 @@ import '../../ui/basebound_ui.dart';
 import '../../widgets/basebound_mascot.dart';
 import '../game/game_launcher.dart';
 import '../landmarks/landmark_library_screen.dart';
+import '../parent/data/family_plan.dart';
 import 'air_raid_mission.dart';
 import 'mission_audio.dart';
 import 'mission_screen.dart';
 
 /// Keeps fictional alarm training separate from the existing map practice.
 class PracticeLauncher extends StatefulWidget {
-  const PracticeLauncher({super.key});
+  const PracticeLauncher({super.key, this.child = const ChildProfile()});
+
+  final ChildProfile child;
 
   @override
   State<PracticeLauncher> createState() => _PracticeLauncherState();
@@ -58,7 +61,9 @@ class _PracticeLauncherState extends State<PracticeLauncher>
     _speak();
   }
 
-  void _openMission(MissionMode mode) => _open(MissionScreen(mode: mode));
+  void _openMission(MissionMode mode) => _open(
+    MissionScreen(mode: mode, gender: widget.child.gender ?? ChildGender.girl),
+  );
 
   Future<void> _open(Widget screen) async {
     if (_opening) return;
@@ -118,6 +123,16 @@ class _PracticeLauncherState extends State<PracticeLauncher>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    if (widget.child.fullName.trim().isNotEmpty) ...[
+                      Text(
+                        'Hi, ${widget.child.fullName}!',
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
                     _PracticeHeading(title: title),
                     const SizedBox(height: 24),
                     ..._choices(),
@@ -178,7 +193,9 @@ class _PracticeLauncherState extends State<PracticeLauncher>
       _card(
         'Map practice',
         BaseboundIconName.map,
-        () => _open(const GameLauncher()),
+        () => _open(
+          GameLauncher(gender: widget.child.gender ?? ChildGender.girl),
+        ),
       ),
     ],
     _Selection.mode => [

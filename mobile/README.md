@@ -1,4 +1,4 @@
-# Basebound — Android game
+# Safe Path — Android game
 
 Standalone Flutter + Flame application and the primary product. The pnpm workspace contains only the Slidev presentation; this app uses Flutter/Dart tooling separately.
 
@@ -32,7 +32,7 @@ Release signing is not configured; the generated release configuration uses the 
 
 ## Current scope
 
-Welcome asks whether the player is an adult or a child. Adults start family onboarding; children choose alarm practice or the map game. Onboarding asks for one action or detail per screen: intro → child name → age → address → support needs → trusted contacts → safe places → completion. Child details are optional; each contact uses name → phone → relationship, with up to three contacts. Each optional safe place uses name → offline map pin. Completed editor records save immediately. Parents can skip optional sections, review setup from the intro, edit or confirm deletion, then choose Play together on completion. No photo feature is included.
+Welcome asks whether the player is an adult or a child. Adults start family onboarding; children choose alarm, map or landmark practice. Onboarding asks for one action or detail per screen: intro → child name → age → address → support needs → trusted contacts → safe places → completion. Child details are optional; each contact uses name → phone → relationship, with up to three contacts. Each optional safe place uses name → offline map pin. Completed editor records save immediately. Parents can skip optional sections, review setup from the intro, edit or confirm deletion, then choose Play together on completion. Parents can also open Walk together to capture independent photo landmarks, and children can choose Landmark practice.
 
 Mission 01 is fictional air-raid-alarm practice for ages 7+, with a home tutorial and an outdoor simulation using two to four visual choices per decision. The MVP has no younger-child branch or age selection. The home premise is an interior fallback when the agreed shelter cannot be reached, not a guarantee that a home is safe. Children practice moving away from windows, choosing an interior place, sending a pretend message, staying through noise and silence, and waiting for an explicit all-clear. Outdoor mistakes teach getting down and protecting the head. Wrong choices get calm feedback and retries; the reward is for completion, with no score or timer.
 
@@ -40,11 +40,15 @@ Android narration requires an installed **offline English TTS voice**. Instructi
 
 The safe-place editor reuses the offline OpenStreetMap snapshot of a 2 × 2 km area around TAURON Arena Kraków. Tap to select a pin, or use the arena-centre and direction buttons. Safe places can be edited or deleted. Each game launch/replay randomly chooses a valid saved pin; repeats are possible. With no safe places, the northeast fictional base remains the target. The character starts at the arena and moves toward tapped points. Movement is simulated, not a walking route. Safe places are parent-selected family destinations; the demo does not check their safety or opening hours and provides no real emergency assistance.
 
-The family plan is stored locally using `flutter_secure_storage` (Android RSA-OAEP/AES-GCM defaults, no biometric requirement). Cloud backup and device-transfer exclusions are configured in the Android manifest and XML resources; recovery/migration is not promised. Failed reads show a retry/delete option rather than silently overwriting data. **Delete all saved details** removes the family-plan record after confirmation. There is no parent lock: anyone using the app can view saved details. Use fictional personal information for demo sessions. Onboarding does not make calls.
+The family plan is stored locally using `flutter_secure_storage` (Android RSA-OAEP/AES-GCM defaults, no biometric requirement). Cloud backup and device-transfer exclusions are configured in the Android manifest and XML resources; recovery/migration is not promised. Failed reads show a retry/delete option rather than silently overwriting data. **Delete all saved details** removes the family-plan record, landmark metadata and saved app photo copies after confirmation. There is no parent lock: anyone using the app can view saved details. Use fictional personal information for demo sessions. Onboarding does not make calls.
+
+Independent landmarks: **Adult → Walk together → Take a photo → camera or gallery → name → map pin → Save landmark**. Each point is separate from safe places; the feature records no path, sequence or movement history. It uses the current parent form theme, photo pins on the existing illustrated map and ordinary app-private photo copies; encrypted metadata stores names and coordinates. **Use my location** is optional, requests foreground location only, and rejects positions outside the demo map while allowing manual placement. Camera-cache photos are copied before saving and interrupted camera results can be recovered on reopening the parent library.
+
+For a quick demo choose **Walk together → Load demo landmarks**, then **Child practice → Landmark practice → Find the photo pin**. The loader adds three generated fictional examples and preserves existing entries and edits. Children explore photo pins or match one photo to one of two to four map pins, with calm retries, location feedback and offline narration. There is no assumed next landmark or walking route. Photo generation prompts are in [`assets/landmarks/prompts.json`](assets/landmarks/prompts.json).
 
 A separate offline help prototype covers someone not responding, air raid, and being lost, with an unsure fallback. It is explicitly unreviewed and not for real emergencies. An explicit tap opens the phone app for 112 or an adult-configured trusted contact; no call is automatic and no connection or SMS delivery is claimed. The welcome and game screens offer help, including target/map loading and errors. Help reads the same encrypted family record as parent setup.
 
-Online map area selection, GPS, road routing, Street View, multi-device sync and validated emergency assistance are outside this branch. Inactive resource cards remain removed; optional map details live behind the info button. See [`../docs/SCREEN_FLOW.md`](../docs/SCREEN_FLOW.md) for implemented and future journeys.
+Online map area selection, live GPS navigation, road routing, Street View, multi-device sync and validated emergency assistance remain future work. Landmark placement supports an optional one-shot foreground GPS fix inside the bundled map, with manual correction. Inactive resource cards remain removed; optional map details live behind the info button. See [`../docs/SCREEN_FLOW.md`](../docs/SCREEN_FLOW.md) for implemented and future journeys.
 
 The child map uses real bundled street, path, tram, building, park and water outlines with a calm illustrated style. Nearby footprints, service roads, footpaths and play areas become clearer at close zoom; tiny details and overlapping labels are omitted. Arena, shop and base use illustrations, and decorative trees are not surveyed positions. The map remains incomplete and is for practice, never real navigation.
 
@@ -52,6 +56,7 @@ Map controls: the game starts at **4× zoom**, showing roughly 500 × 500 metres
 
 - `lib/app.dart`: Flutter application and theme.
 - `lib/features/welcome/welcome_screen.dart`: role selection and adult setup entry.
+- `lib/features/landmarks/`: independent photo capture/pin editing, demo import, local storage and child map recognition practice.
 - `lib/features/parent/`: family onboarding, child/contact/safe-place steps, local models and encrypted repository.
 - `lib/features/game/game_launcher.dart`: load saved safe places and randomly select a valid target for the practice game.
 - `lib/features/mission/`: practice selection, air-raid scenario state, illustrated decisions and offline Android audio.

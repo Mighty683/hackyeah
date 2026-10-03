@@ -38,11 +38,13 @@ class MissionChoiceCard extends StatelessWidget {
     required this.choice,
     required this.onPressed,
     this.selected = false,
+    this.compact = false,
   });
 
   final MissionChoice choice;
   final VoidCallback? onPressed;
   final bool selected;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -72,44 +74,64 @@ class MissionChoiceCard extends StatelessWidget {
               width: selected ? 3 : 1.5,
               color: selected ? accent : BaseboundColors.border,
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-            minimumSize: const Size(64, 100),
+            padding: EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: compact ? 10 : 16,
+            ),
+            minimumSize: Size(64, compact ? 64 : 100),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(26),
             ),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: selected ? accent : BaseboundColors.sky,
-                  borderRadius: BorderRadius.circular(22),
+          child: compact
+              ? Row(
+                  children: [
+                    BaseboundIcon(missionActionIcon(choice.icon), size: 28),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        choice.label,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          height: 1.15,
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              : Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        color: selected ? accent : BaseboundColors.sky,
+                        borderRadius: BorderRadius.circular(22),
+                      ),
+                      child: BaseboundIcon(
+                        selected
+                            ? (choice.isCorrect
+                                  ? BaseboundIconName.check
+                                  : BaseboundIconName.cross)
+                            : missionActionIcon(choice.icon),
+                        size: 38,
+                        color: selected ? Colors.white : null,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      choice.label,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 19,
+                        fontWeight: FontWeight.w800,
+                        height: 1.15,
+                      ),
+                    ),
+                  ],
                 ),
-                child: BaseboundIcon(
-                  selected
-                      ? (choice.isCorrect
-                            ? BaseboundIconName.check
-                            : BaseboundIconName.cross)
-                      : missionActionIcon(choice.icon),
-                  size: 38,
-                  color: selected ? Colors.white : null,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                choice.label,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 19,
-                  fontWeight: FontWeight.w800,
-                  height: 1.15,
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );
