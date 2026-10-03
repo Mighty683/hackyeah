@@ -16,11 +16,13 @@ class OfflinePointPicker extends StatefulWidget {
     required this.otherPoints,
     required this.onSelected,
     this.initialPoint,
+    this.selectionLabel = 'safe place',
     super.key,
   });
 
   final List<SafePoint> otherPoints;
   final SafePoint? initialPoint;
+  final String selectionLabel;
   final ValueChanged<SafePoint> onSelected;
 
   @override
@@ -40,7 +42,7 @@ class _OfflinePointPickerState extends State<OfflinePointPicker> {
       children: [
         Semantics(
           label:
-              'Offline Kraków map. Tap to choose a safe place. '
+              'Offline Kraków map. Tap to choose a ${widget.selectionLabel}. '
               'Alternatively, use the direction buttons below.',
           child: AspectRatio(
             aspectRatio: 1,

@@ -11,6 +11,9 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_secure_storage: ^11.2.0
+  geolocator: ^14.1.1
+  image_picker: ^1.2.3
+  path_provider: ^2.1.6
   url_launcher: ^6.3.3
 
 dev_dependencies:
@@ -28,3 +31,4 @@ flutter:
     - assets/maps/tauron-arena.geojson
     - assets/audio/mission01/
     - assets/illustrations/
+    - assets/landmarks/

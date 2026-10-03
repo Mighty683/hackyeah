@@ -4,6 +4,7 @@ import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
 import '../../widgets/basebound_mascot.dart';
 import '../game/game_launcher.dart';
+import '../landmarks/landmark_library_screen.dart';
 import 'air_raid_mission.dart';
 import 'mission_audio.dart';
 import 'mission_screen.dart';
@@ -27,8 +28,7 @@ class _PracticeLauncherState extends State<PracticeLauncher>
   int _audioRevision = 0;
 
   String get _instruction => switch (_selection) {
-    _Selection.activity =>
-      'Choose your practice. An alarm at home, or the map game.',
+    _Selection.activity => 'Choose your practice. Alarm practice, map practice, or familiar landmarks.',
     _Selection.mode => 'Choose where to practice. At home, or outside.',
   };
 
@@ -169,6 +169,11 @@ class _PracticeLauncherState extends State<PracticeLauncher>
         'Alarm practice',
         BaseboundIconName.alarm,
         () => _select(_Selection.mode),
+      ),
+      _card(
+        'Landmark practice',
+        BaseboundIconName.pin,
+        () => _open(const LandmarkLibraryScreen()),
       ),
       _card(
         'Map practice',
