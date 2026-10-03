@@ -32,6 +32,14 @@ class LostPracticeContact {
   final bool isFictional;
 }
 
+/// A labelled map choice without a photo or geographic data in the story.
+class LostPracticeHomePoint {
+  const LostPracticeHomePoint({required this.label});
+
+  static const id = 'practice-home';
+  final String label;
+}
+
 /// Display-only snapshot. Real phone numbers and locations stay outside play.
 class LostPracticeContext {
   const LostPracticeContext({
@@ -41,12 +49,14 @@ class LostPracticeContext {
     required this.contacts,
     required this.fictionalMeetingPoint,
     this.photoPlaces = const [],
+    this.homePoint,
   });
 
   factory LostPracticeContext.fromFamilyPlan(
     FamilyPlan plan, {
     ChildProfile fallbackChild = const ChildProfile(),
     List<LostPracticePlace> photoPlaces = const [],
+    LostPracticeHomePoint? homePoint,
   }) {
     final configuredPoint = plan.practiceMeetingPoint;
     final linkedPlace = photoPlaces
@@ -110,6 +120,7 @@ class LostPracticeContext {
       fictionalMeetingPoint:
           configuredPoint?.landmarkId == null || linkedPlace?.isDemo == true,
       photoPlaces: List.unmodifiable(photoPlaces),
+      homePoint: homePoint,
     );
   }
 
@@ -123,6 +134,7 @@ class LostPracticeContext {
   final List<LostPracticeContact> contacts;
   final bool fictionalMeetingPoint;
   final List<LostPracticePlace> photoPlaces;
+  final LostPracticeHomePoint? homePoint;
 
   LostPracticePlace? get photoMeetingPoint => photoPlaces
       .where((place) => place.id == meetingPoint.landmarkId)

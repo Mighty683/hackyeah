@@ -295,6 +295,14 @@ class LostMissionSession {
               'Drag to explore. Pinch to zoom. This is map practice only.',
           visual: LostMissionVisual.meetingPoint,
           choices: [
+            if (context.homePoint case final home?)
+              LostMissionChoice(
+                id: LostPracticeHomePoint.id,
+                label: home.label,
+                icon: LostActionIcon.meetingPoint,
+                isCorrect: false,
+                feedback: 'Home is a different place. Look for your meeting place photo.',
+              ),
             for (final choice in photoChoices.where(
               (choice) => choice.photoPath != null,
             ))

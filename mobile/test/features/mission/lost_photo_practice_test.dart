@@ -77,9 +77,10 @@ void main() {
           contacts: [TrustedContact(name: 'Parent')],
           safePoints: [
             SafePoint(
-              name: 'Existing pin',
-              latitude: 50.0675,
-              longitude: 19.991,
+              name: 'Home',
+              latitude: 50.0704,
+              longitude: 19.9828,
+              isDemo: true,
             ),
           ],
         ),
@@ -114,7 +115,7 @@ void main() {
       final saved = await family.load();
       expect(saved.practiceMeetingPoint!.landmarkId, _target.id);
       expect(saved.contacts.single.name, 'Parent');
-      expect(saved.safePoints.single.name, 'Existing pin');
+      expect(saved.safePoints.single.name, 'Home');
 
       await tester.pumpWidget(
         MaterialApp(
@@ -150,8 +151,24 @@ void main() {
       expect(map.position, isNull);
       expect(map.route, isEmpty);
       expect(map.selectedId, isNull);
+      final home = map.landmarks.singleWhere(
+        (place) => place.id == LostPracticeHomePoint.id,
+      );
+      expect(home.name, 'Home');
+      expect(home.isDestination, isTrue);
+      expect(home.photoAsset, 'assets/landmarks/demo-home.png');
+      expect(home.photoName, isEmpty);
+      expect(home.latitude, saved.safePoints.single.latitude);
+      expect(home.longitude, saved.safePoints.single.longitude);
       expect(find.byKey(const ValueKey('live-gps-marker')), findsNothing);
       expect(find.text('Walk here together'), findsNothing);
+      // Home is enabled as a map choice; the agreed photo remains the target.
+      await _tap(tester, find.text('Places'));
+      expect(find.text('Fictional demo place'), findsOneWidget);
+      await _tap(tester, find.text('Home'));
+      expect(find.textContaining('Home is a different place.'), findsOneWidget);
+      await _next(tester);
+      expect((await family.load()).toJson(), saved.toJson());
       // Exercise a map pin through the shared map's callback, then retry.
       map.onSelected(_other);
       await _pump(tester);
@@ -232,7 +249,7 @@ void main() {
 
   for (final missingPhoto in [true, false]) {
     testWidgets(
-      'missing ${missingPhoto ? 'photo' : 'landmark'} requires setup or explicit demo',
+      'missing ${missingPhoto ? 'photo' : 'landmark'} requires setup without substituting another place',
       (tester) async {
         final family = FamilyPlanRepository();
         await family.save(
@@ -267,9 +284,8 @@ void main() {
         );
         expect(find.text('Meeting point nearby'), findsNothing);
         expect(find.byType(LandmarkPhoto), findsNothing);
-        await _tap(tester, find.text('Use demo meeting place'));
-        expect(find.text('Demo meeting place.'), findsOneWidget);
-        expect(find.text('Meeting point nearby'), findsOneWidget);
+        expect(find.text('Use demo meeting place'), findsNothing);
+        expect(find.text('Parent setup'), findsOneWidget);
         expect((await family.load()).toJson(), before);
         await tester.pumpWidget(const SizedBox.shrink());
         await _pump(tester);
@@ -277,21 +293,31 @@ void main() {
     );
   }
 
-  testWidgets('no chosen place does not silently substitute a fountain', (
-    tester,
-  ) async {
-    await tester.pumpWidget(const MaterialApp(home: LostMissionLauncher()));
-    await _pump(tester);
-    expect(
-      find.text('Ask an adult to choose your meeting place.'),
-      findsOneWidget,
-    );
-    expect(find.text('Meeting point nearby'), findsNothing);
-    await _tap(tester, find.text('Use demo meeting place'));
-    expect(find.text('Practice meeting point: Fountain'), findsOneWidget);
-    await tester.pumpWidget(const SizedBox.shrink());
-    await _pump(tester);
-  });
+  testWidgets(
+    'saved photo lets an unconfigured install start without a setup gate',
+    (tester) async {
+      final family = FamilyPlanRepository();
+      final before = (await family.load()).toJson();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: LostMissionLauncher(
+            repository: family,
+            landmarkRepository: photos,
+          ),
+        ),
+      );
+      await _pump(tester);
+      expect(
+        find.text('Practice meeting point: Library entrance'),
+        findsOneWidget,
+      );
+      expect(find.text('Meeting point nearby'), findsOneWidget);
+      expect(find.text('Use demo meeting place'), findsNothing);
+      expect((await family.load()).toJson(), before);
+      await tester.pumpWidget(const SizedBox.shrink());
+      await _pump(tester);
+    },
+  );
 
   test('map help returns to staying nearby; selecting a pin does not confirm safety', () {
     final context = LostPracticeContext.fromFamilyPlan(

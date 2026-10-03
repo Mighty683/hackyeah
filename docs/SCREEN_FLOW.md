@@ -8,7 +8,7 @@ Solid arrows describe working navigation and actions. Loading, result and error 
 
 ```mermaid
 flowchart TD
-    BOOT["FIRST LAUNCH<br/>Seed fictional demo map; preserve saved records"]
+    BOOT["FIRST LAUNCH<br/>Seed fictional map and linked meeting place; preserve saved records"]
     BE["STARTUP ERROR<br/>Retry; saved records remain intact"]
     W["WELCOME<br/>Ask foreground location once; choose adult or child"]
     BOOT -->|Ready| W
@@ -183,7 +183,7 @@ flowchart TD
         LS["STOP<br/>Stop instead of running or leaving"]
         LO["LOOK<br/>Remember the parent-selected photo and name"]
         LP["NEARBY POINT<br/>Recognize the exact saved photo"]
-        LMAP["OUR MAP PRACTICE<br/>Find the same photo pin; drag, pinch or use Places"]
+        LMAP["OUR MAP PRACTICE<br/>Find the same photo pin; saved Home is tappable<br/>Drag, pinch or use Places"]
         LARR["STORY ARRIVAL<br/>Fictional movement; no GPS arrival claim"]
         LMISSING["MEETING PLACE UNAVAILABLE<br/>Ask for parent setup; retry or explicitly use demo"]
         LN["POINT OUT OF SIGHT<br/>Stay nearby and ask for help"]
@@ -198,11 +198,10 @@ flowchart TD
         LD["PRETEND CONFIRMATION<br/>No message was sent"]
         LRC["LOST RECALL<br/>Seven actions; no score"]
         LF["LOST COMPLETE<br/>Replay or return to practice"]
-        LL -->|Chosen photo or explicit saved demo picture| LV
-        LL -->|No chosen point, deleted photo or unavailable pin| LMISSING
+        LL -->|Chosen photo, default saved photo or legacy demo picture| LV
+        LL -->|No available photo, deleted chosen photo or unavailable pin| LMISSING
         LMISSING -->|Parent setup; reload on return| AL
         LMISSING -->|Retry| LL
-        LMISSING -->|Use demo meeting place; preserve saved details| LV
         LL -->|Read failed| LE
         LE -->|Try again| LL
         LE -->|Use pretend family| LV
@@ -333,7 +332,7 @@ flowchart TD
 
 | Screen/state | One primary task | Secondary actions |
 | --- | --- | --- |
-| First-launch loading/error | Prepare three photo landmarks and fictional Home | Retry on failure; Help prototype; existing records preserved |
+| First-launch loading/error | Prepare three photo landmarks, fictional Home and a linked meeting place | Retry on failure; Help prototype; existing records preserved |
 | Welcome | Foreground location permission once, then choose child or adult | Denial permits navigation; Help prototype, without choosing a role |
 | Child onboarding | Enter name or nickname, age, then select girl or boy | Back keeps edits; load/save errors allow retry; saved details are prefilled |
 | Activity selection | Choose Practices or Our map | Replay audio, back |
@@ -348,7 +347,7 @@ flowchart TD
 | Mission recall/completion | Read three numbered reminders with short descriptions and Dino’s “You did a great job!” | Finish practice; replay audio, Play again, Back to practice choices |
 | Lost practice loading/error | Load the current display-only family snapshot | Retry or explicitly use pretend family; back preserves saved details |
 | Lost scene selection (7+) | Choose meeting point nearby or out of sight | Replay audio, back; unavailable voice offers adult help and retry |
-| Lost decision/feedback | Recognize the chosen photo; find its pin on the shared Our map; hear calm feedback | Map drag/pinch and Places; I cannot find it returns to staying nearby; retry or advance, replay audio, exit |
+| Lost decision/feedback | Recognize the chosen photo; find its pin on the shared Our map; hear calm feedback | Map drag/pinch and Places include the saved Home practice point when inside the demo map; I cannot find it returns to staying nearby; retry or advance, replay audio, exit |
 | Lost reunion/confirmation | Tap I'M SAFE after the fictional reunion | Explicit local confirmation; no message sent |
 | Lost recall/completion | Dino praise and three numbered reminders, including meeting point only if visible nearby | Replay audio, Play again with the same snapshot/variant, Back to practice choices |
 | Parent intro | Add child details | Walk together; Skip child details, demo/privacy details, confirmed Delete all and explicit location recovery in Setup options, back |
@@ -408,9 +407,9 @@ On **It is quiet now**, the child stays inside the hallway. After either choice,
 
 The new 7+ activity has two explicit variants: the agreed meeting point is visible nearby, or it is out of sight. Both practice stopping, looking, asking at a nearby public desk, declining to leave with an unknown person, a pretend call with no answer, trying a different contact, waiting, reunion, an explicit I'M SAFE tap and a short recall. Lost and air raid share the same recap component before Finish practice and on completion: Dino’s “You did a great job!” and three numbered reminders. Lost groups the practiced actions into stopping/looking (meeting place only if visible nearby), asking for help/contacting family/waiting, and confirming after reunion. The pretend-message notice remains visible; narration reads the same praise and reminders. Wrong choices get calm feedback and retry the same decision. There is no score or timer.
 
-Parent setup selects a meeting point from the existing Walk together photo landmarks and stores its stable ID. The lesson loads the current photo/name, so renaming a landmark changes the next lesson without replacing the link. Reminder, recognition choices and story arrival show the same photo. Choices use IDs, including when names repeat. The nearby branch adds an Our map exercise using the shared map, photo pins, drag/pinch and an accessible Places list. At most three saved photo places participate in this exercise. Tapping the correct pin confirms recognition only; no GPS, route, physical movement or real arrival is inferred. I cannot find it leads to the stay-nearby branch. The out-of-sight variant retains that branch without a map exercise.
+First installation links the bundled Red corner shop photo as the initial meeting place, so lost practice opens directly to scene selection. Parent setup can select another existing Walk together photo landmark and stores its stable ID. The lesson loads the current photo/name, so renaming a landmark changes the next lesson without replacing the link. Reminder, recognition choices and story arrival show the same photo. Choices use IDs, including when names repeat. The nearby branch adds an Our map exercise using the shared map, photo pins, drag/pinch and an accessible Places list. At most three saved photo places and one saved Home practice point participate in this exercise. Home uses its saved coordinates when inside the demo map; it is tappable and gives retry feedback while the lesson asks for the meeting-place photo. Tapping the correct pin confirms recognition only; no GPS, route, physical movement or real arrival is inferred. I cannot find it leads to the stay-nearby branch. The out-of-sight variant retains that branch without a map exercise.
 
-No chosen point, a deleted landmark/photo or a pin outside the bundled map offers parent setup, retry or an explicit demo meeting place. Record read failures offer retry or explicit pretend practice. None of these actions overwrite saved records. Existing Fountain/Information desk records remain readable as labelled demo pictures with no map exercise. Generated demo photos retain their fictional label. Missing contacts still receive labelled pretend cards. Contacts contribute display labels/avatar motifs only; real phone numbers and addresses remain outside play. Calls, replies and notifications are simulated.
+When no meeting point has been chosen, the launcher uses the first available saved photo for the current practice without overwriting family details. No available photo, a deleted chosen landmark/photo or a pin outside the bundled map offers parent setup or retry. The separate Use demo meeting place button has been removed. Record read failures offer retry or explicit pretend practice. Existing Fountain/Information desk records remain readable as labelled demo pictures with no map exercise. Generated demo photos retain their fictional label. Missing contacts still receive labelled pretend cards. Contacts contribute display labels/avatar motifs only; real phone numbers and addresses remain outside play. Calls, replies and notifications are simulated.
 
 The lost selector and mission reuse offline English Android speech. Missing voice offers adult help and retry, with text retained. Leaving stops narration and returns directly to the scenario list; replay resets transient progress and keeps the selected variant/snapshot. Re-entering lost practice reloads current saved details. Training is labelled unreviewed and not for real emergencies. Contact photos, younger-child support, familiar routes and actual parent notifications remain future work for Mission 02. See [MISSION_02_IMPLEMENTATION_PLAN.md](MISSION_02_IMPLEMENTATION_PLAN.md) for scope, references and verification.
 
@@ -446,7 +445,7 @@ Pins are independent recognition points, stored separately from safe places. The
 
 **Use my location** requests one foreground position only after the parent's explicit tap. Parents always confirm the map pin. Denied permission, disabled location, timeout and positions outside the bundled TAURON Arena map keep manual placement available. The app does not request background location or record a movement history.
 
-On a fresh installation, startup automatically adds three generated fictional photos and independent fictional pins plus one **Home** practice place with a home icon and bundled fictional house photo. Existing demo Home pins at the original seed position also show that photo without rewriting their saved records. Adding personal photos to family targets remains future work. Child details and contacts stay empty. Existing installations with saved records are preserved. Interrupted seeding can retry without duplicating points; after successful initialization, deleted records stay deleted. Home retains a fictional demo flag, including after edits, and cannot be selected for real walking guidance.
+On a fresh installation, startup automatically adds three generated fictional photos and independent fictional pins plus one **Home** practice place with a home icon and bundled fictional house photo, and links the Red corner shop as the initial lost-practice meeting place. Existing demo Home pins at the original seed position also show that photo without rewriting their saved records. Adding personal photos to family targets remains future work. Child details and contacts stay empty. Existing installations with saved records are preserved. Interrupted seeding can retry without duplicating points; after successful initialization, deleted records stay deleted. Home retains a fictional demo flag, including after edits, and cannot be selected for real walking guidance. It remains tappable in the lost-practice recognition exercise.
 
 **Load demo landmarks** remains an explicit parent action to add missing generated photo landmarks: red shop, yellow slide and blue bus stop. Existing records and edited demo records are preserved; repeated imports add only missing demo IDs. Demo labels remain visible in lists, details and practice. These images do not depict the real map locations. Bundled source assets remain available after deleting saved copies, but they are not automatically restored.
 

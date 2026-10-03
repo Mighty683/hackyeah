@@ -47,6 +47,8 @@ void main() {
       expect(plan.contacts, isEmpty);
       final saved = await landmarks.load();
       expect(saved.length, 3);
+      expect(plan.practiceMeetingPoint!.landmarkId, saved.first.id);
+      expect(plan.practiceMeetingPoint!.label, saved.first.name);
       final map = await DemoMapRepository().load();
       expect(mapContainsPoint(map, plan.safePoints.single), isTrue);
       for (final landmark in saved) {
@@ -133,6 +135,7 @@ void main() {
       final restored = await landmarks.load();
       expect(restored.length, 3);
       expect(restored.first.name, 'Edited demo');
+      expect((await family.load()).practiceMeetingPoint!.label, 'Edited demo');
       expect(await storage.read(key: DemoDataSeeder.storageKey), 'complete');
     },
   );

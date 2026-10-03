@@ -52,14 +52,25 @@ class LostMeetingPointMap extends StatelessWidget {
                     padding: const EdgeInsets.all(8),
                     child: Column(
                       children: [
-                        LandmarkPhoto(
-                          fit: BoxFit.contain,
-                          path: '$photoDirectory/${place.photoName}',
-                          label: place.name,
-                          height: 100,
-                        ),
+                        if (place.hasPhoto)
+                          LandmarkPhoto(
+                            fit: BoxFit.contain,
+                            path: '$photoDirectory/${place.photoName}',
+                            assetPath: place.photoAsset,
+                            label: place.name,
+                            height: 100,
+                          ),
+                        if (place.isDestination)
+                          const BaseboundIcon(BaseboundIconName.home, size: 64),
                         Text(place.name),
-                        if (place.isDemo) const Text('Fictional demo photo'),
+                        if (place.isDemo)
+                          Text(
+                            place.isDestination
+                                ? 'Fictional demo place'
+                                : 'Fictional demo photo',
+                          ),
+                        if (place.isDestination)
+                          const Text('Practice point. Not checked for safety.'),
                       ],
                     ),
                   ),
