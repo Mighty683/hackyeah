@@ -124,7 +124,43 @@ void main() {
     expect(find.text('Hear the reply'), findsNothing);
     await _tap(tester, 'Stay here');
     await _tap(tester, 'Stay here');
-    await _tap(tester, 'Stay and wait');
+    final characterBefore = tester.widget<AnimatedPositioned>(
+      find.byKey(const ValueKey('mission-character')),
+    );
+    await _tap(tester, 'Leave now');
+    expect(find.textContaining('Stay inside your home.'), findsOneWidget);
+    expect(find.byType(BaseboundMascot), findsOneWidget);
+    expect(
+      _lastNarration(audioCalls)['text'],
+      contains('Stay inside your home.'),
+    );
+    final door = find.byWidgetPredicate(
+      (widget) => widget is Semantics && widget.properties.label == 'Leave now',
+    );
+    expect(tester.widget<Semantics>(door).properties.enabled, isFalse);
+    final doorMaterial = find.descendant(
+      of: door,
+      matching: find.byType(Material),
+    );
+    expect(
+      tester.widget<Material>(doorMaterial).color,
+      BaseboundColors.muted.withValues(alpha: .3),
+    );
+    final characterAfter = tester.widget<AnimatedPositioned>(
+      find.byKey(const ValueKey('mission-character')),
+    );
+    expect(characterAfter.left, characterBefore.left);
+    expect(characterAfter.top, characterBefore.top);
+    await _tap(tester, 'Stay and wait', advanceFeedback: false);
+    expect(
+      find.text('Good. Stay inside your home. Wait for the all-clear.'),
+      findsOneWidget,
+    );
+    expect(
+      tester.widget<Material>(doorMaterial).color,
+      BaseboundColors.muted.withValues(alpha: .3),
+    );
+    await _finishFeedback(tester);
     await _tap(tester, 'Remember the steps');
     await _tap(tester, 'Finish practice');
     expect(find.text('Practice complete'), findsOneWidget);

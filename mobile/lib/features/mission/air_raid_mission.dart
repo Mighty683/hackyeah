@@ -90,7 +90,7 @@ class MissionStep {
 /// Correct choices advance after the screen presents their spoken feedback.
 class MissionSession {
   MissionSession({required this.mode}) {
-    _steps = _buildSteps();
+    _steps = _buildSteps(mode);
     restart();
   }
 
@@ -227,7 +227,10 @@ MissionStep _outdoorNoiseStep(String? destination) => MissionStep(
   sound: 'noise',
 );
 
-Map<String, MissionStep> _buildSteps() {
+Map<String, MissionStep> _buildSteps(MissionMode mode) {
+  final stayInside = mode == MissionMode.home
+      ? 'Stay inside your home.'
+      : 'Stay inside the shelter.';
   final steps = <MissionStep>[
     const MissionStep(
       id: 'alarm',
@@ -404,14 +407,16 @@ Map<String, MissionStep> _buildSteps() {
           'Leave now',
           MissionActionIcon.leave,
           false,
-          'Quiet does not mean the danger is over. Wait for the all-clear.',
+          'Quiet does not mean the danger is over. '
+              '$stayInside '
+              'Wait for the all-clear.',
         ),
         _choice(
           'stay',
           'Stay and wait',
           MissionActionIcon.stay,
           true,
-          'Good. Stay and wait for the all-clear.',
+          'Good. $stayInside Wait for the all-clear.',
         ),
       ],
     ),

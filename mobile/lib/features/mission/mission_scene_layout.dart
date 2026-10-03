@@ -153,9 +153,6 @@ MissionSceneLayout missionSceneLayout(String? stepId, MissionVisual visual) {
       },
       childFeet: Offset(.47, .76),
       childWidth: .35,
-      destinations: {'leave': Offset(.89, .435)},
-      selectedTargets: {'leave': Rect.fromLTWH(.62, .18, .35, .13)},
-      selectedChildWidth: .18,
     ),
     'outdoor_noise' => const MissionSceneLayout(
       family: MissionVisual.street,

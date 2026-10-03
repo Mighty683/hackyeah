@@ -131,27 +131,34 @@ class MissionScene extends StatelessWidget {
     Rect target,
     MissionChoice choice,
     int index,
-  ) => Positioned(
-    left: target.left * constraints.maxWidth,
-    top: target.top * constraints.maxHeight,
-    width: target.width * constraints.maxWidth,
-    height: target.height * constraints.maxHeight,
-    child: FocusTraversalOrder(
-      order: NumericFocusOrder(index.toDouble()),
-      child: _SceneChoice(
-        choice: choice,
-        selected: selectedChoice?.id == choice.id,
-        rejected: rejectedChoiceIds.contains(choice.id),
-        onTap: onChoose == null || rejectedChoiceIds.contains(choice.id)
-            ? null
-            : () => onChoose!(choice.id),
-        showIllustration:
-            visual == MissionVisual.communication ||
-            visual == MissionVisual.getDown ||
-            visual == MissionVisual.protectHead,
+  ) {
+    final rejected =
+        rejectedChoiceIds.contains(choice.id) ||
+        (visual == MissionVisual.quiet &&
+            selectedChoice != null &&
+            choice.id == 'leave');
+    return Positioned(
+      left: target.left * constraints.maxWidth,
+      top: target.top * constraints.maxHeight,
+      width: target.width * constraints.maxWidth,
+      height: target.height * constraints.maxHeight,
+      child: FocusTraversalOrder(
+        order: NumericFocusOrder(index.toDouble()),
+        child: _SceneChoice(
+          choice: choice,
+          selected: selectedChoice?.id == choice.id,
+          rejected: rejected,
+          onTap: onChoose == null || rejected
+              ? null
+              : () => onChoose!(choice.id),
+          showIllustration:
+              visual == MissionVisual.communication ||
+              visual == MissionVisual.getDown ||
+              visual == MissionVisual.protectHead,
+        ),
       ),
-    ),
-  );
+    );
+  }
 
   Widget _character(
     BuildContext context,
