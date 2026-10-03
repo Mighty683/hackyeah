@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../ui/basebound_ui.dart';
 import 'air_raid_mission.dart';
 
 IconData missionActionIcon(MissionActionIcon action) => switch (action) {
@@ -40,40 +41,73 @@ class MissionChoiceCard extends StatelessWidget {
   final bool selected;
 
   @override
-  Widget build(BuildContext context) => Semantics(
-    button: true,
-    selected: selected,
-    label: choice.label,
-    child: ExcludeSemantics(
-      child: OutlinedButton(
-        onPressed: onPressed,
-        style: OutlinedButton.styleFrom(
-          backgroundColor: selected ? const Color(0xFFDAECE2) : Colors.white,
-          foregroundColor: const Color(0xFF213D37),
-          disabledForegroundColor: const Color(0xFF213D37),
-          side: BorderSide(
-            width: selected ? 3 : 1.5,
-            color: selected ? const Color(0xFF27634F) : const Color(0xFF8BACA0),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-          minimumSize: const Size(64, 100),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(22),
-          ),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(missionActionIcon(choice.icon), size: 42),
-            const SizedBox(height: 10),
-            Text(
-              choice.label,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+  Widget build(BuildContext context) {
+    final accent = selected
+        ? (choice.isCorrect ? BaseboundColors.green : BaseboundColors.coral)
+        : BaseboundColors.blue;
+    final surface = selected
+        ? (choice.isCorrect
+              ? BaseboundColors.greenLight
+              : BaseboundColors.coralLight)
+        : Colors.white;
+    return Semantics(
+      button: true,
+      enabled: onPressed != null,
+      onTap: onPressed,
+      selected: selected,
+      label: choice.label,
+      child: ExcludeSemantics(
+        child: OutlinedButton(
+          onPressed: onPressed,
+          style: OutlinedButton.styleFrom(
+            backgroundColor: surface,
+            disabledBackgroundColor: surface,
+            foregroundColor: BaseboundColors.ink,
+            disabledForegroundColor: BaseboundColors.ink,
+            side: BorderSide(
+              width: selected ? 3 : 1.5,
+              color: selected ? accent : BaseboundColors.border,
             ),
-          ],
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+            minimumSize: const Size(64, 100),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(26),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: selected ? accent : BaseboundColors.sky,
+                  borderRadius: BorderRadius.circular(22),
+                ),
+                child: Icon(
+                  selected
+                      ? (choice.isCorrect
+                            ? Icons.check_rounded
+                            : Icons.close_rounded)
+                      : missionActionIcon(choice.icon),
+                  size: 38,
+                  color: selected ? Colors.white : BaseboundColors.blue,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                choice.label,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 19,
+                  fontWeight: FontWeight.w800,
+                  height: 1.15,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }

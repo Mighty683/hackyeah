@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'features/welcome/welcome_screen.dart';
+import 'ui/basebound_ui.dart';
 
 class BaseboundApp extends StatelessWidget {
   const BaseboundApp({super.key});
@@ -10,14 +11,7 @@ class BaseboundApp extends StatelessWidget {
     return MaterialApp(
       title: 'Basebound',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF2B7560),
-          brightness: Brightness.light,
-        ),
-        scaffoldBackgroundColor: const Color(0xFFFBF9F1),
-      ),
+      theme: BaseboundTheme.training(),
       home: const WelcomeScreen(),
     );
   }

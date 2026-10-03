@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
-import 'mission_choice_card.dart';
+import '../../ui/basebound_ui.dart';
 import 'air_raid_mission.dart';
+import 'mission_choice_card.dart';
 
 bool missionUsesSceneChoices(MissionVisual visual) =>
     visual == MissionVisual.room || visual == MissionVisual.apartment;
@@ -25,9 +26,13 @@ class MissionScene extends StatelessWidget {
   Widget build(BuildContext context) {
     final scale = MediaQuery.textScalerOf(context).scale(1);
     return ClipRRect(
-      borderRadius: BorderRadius.circular(26),
+      borderRadius: BorderRadius.circular(32),
       child: AspectRatio(
-        aspectRatio: scale > 1.4 ? 1.05 : 1.45,
+        aspectRatio: switch (visual) {
+          MissionVisual.room when scale <= 1.25 => 1,
+          MissionVisual.alarm || MissionVisual.allClear => 1.5,
+          _ => scale > 1.4 ? 1.05 : 1.25,
+        },
         child: LayoutBuilder(
           builder: (context, constraints) => Stack(
             children: [
@@ -35,8 +40,9 @@ class MissionScene extends StatelessWidget {
                 child: Semantics(
                   label: _sceneDescription(visual, selectedChoice),
                   image: true,
-                  child: CustomPaint(
-                    painter: _MissionScenePainter(visual, selectedChoice),
+                  child: _SceneArtwork(
+                    visual: visual,
+                    selectedChoice: selectedChoice,
                   ),
                 ),
               ),
@@ -50,6 +56,9 @@ class MissionScene extends StatelessWidget {
                     height: rect.height * constraints.maxHeight,
                     child: _RoomTarget(
                       choice: choice,
+                      illustrated:
+                          visual == MissionVisual.room &&
+                          choice.icon == MissionActionIcon.interior,
                       selected: selectedChoice?.id == choice.id,
                       onTap: onChoose == null
                           ? null
@@ -65,12 +74,105 @@ class MissionScene extends StatelessWidget {
   }
 }
 
+/// Artwork is decorative; touch targets and spoken descriptions stay native.
+class _SceneArtwork extends StatelessWidget {
+  const _SceneArtwork({required this.visual, required this.selectedChoice});
+
+  final MissionVisual visual;
+  final MissionChoice? selectedChoice;
+
+  String? get _asset => switch (visual) {
+    MissionVisual.alarm ||
+    MissionVisual.allClear => 'assets/illustrations/home-practice.png',
+    MissionVisual.room =>
+      selectedChoice == null ? 'assets/illustrations/home-practice.png' : null,
+    MissionVisual.sheltered || MissionVisual.quiet =>
+      selectedChoice?.isCorrect == false
+          ? null
+          : 'assets/illustrations/hallway-practice.png',
+    _ => null,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final paintedScene = CustomPaint(
+      painter: _MissionScenePainter(visual, selectedChoice),
+    );
+    final fallback = visual == MissionVisual.room
+        ? Align(
+            alignment: Alignment.topCenter,
+            child: AspectRatio(aspectRatio: 1.5, child: paintedScene),
+          )
+        : paintedScene;
+    final asset = _asset;
+    if (asset == null) {
+      return ColoredBox(color: BaseboundColors.peach, child: fallback);
+    }
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        const DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [BaseboundColors.cream, BaseboundColors.peach],
+            ),
+          ),
+        ),
+        Image.asset(
+          asset,
+          fit: asset == 'assets/illustrations/home-practice.png'
+              ? BoxFit.contain
+              : BoxFit.cover,
+          alignment: asset == 'assets/illustrations/home-practice.png'
+              ? Alignment.topCenter
+              : Alignment.center,
+          excludeFromSemantics: true,
+          errorBuilder: (_, _, _) => fallback,
+        ),
+        if (visual != MissionVisual.room)
+          Positioned(
+            top: 18,
+            right: 18,
+            child: Container(
+              width: 66,
+              height: 66,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x220F2568),
+                    blurRadius: 18,
+                    offset: Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: Icon(
+                switch (visual) {
+                  MissionVisual.alarm => Icons.notifications_active_rounded,
+                  MissionVisual.allClear => Icons.check_circle_rounded,
+                  _ => Icons.hourglass_bottom_rounded,
+                },
+                color: visual == MissionVisual.allClear
+                    ? BaseboundColors.green
+                    : BaseboundColors.blue,
+                size: 38,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
 Rect _targetRect(MissionVisual visual, MissionActionIcon icon) {
   if (visual == MissionVisual.room) {
     return switch (icon) {
-      MissionActionIcon.window => const Rect.fromLTWH(.035, .18, .29, .49),
-      MissionActionIcon.door => const Rect.fromLTWH(.68, .18, .29, .49),
-      _ => const Rect.fromLTWH(.35, .18, .3, .49),
+      MissionActionIcon.window => const Rect.fromLTWH(.025, .67, .30, .30),
+      MissionActionIcon.door => const Rect.fromLTWH(.675, .67, .30, .30),
+      _ => const Rect.fromLTWH(.35, .67, .30, .30),
     };
   }
   return switch (icon) {
@@ -120,54 +222,148 @@ class _RoomTarget extends StatelessWidget {
     required this.choice,
     required this.selected,
     required this.onTap,
+    this.illustrated = false,
   });
 
   final MissionChoice choice;
   final bool selected;
   final VoidCallback? onTap;
+  final bool illustrated;
 
   @override
-  Widget build(BuildContext context) => Semantics(
-    button: true,
-    selected: selected,
-    label: choice.label,
-    child: ExcludeSemantics(
-      child: Material(
-        color: selected
-            ? const Color(0xFFE0EEE5)
-            : Colors.white.withValues(alpha: .9),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(
-            color: selected ? const Color(0xFF235A43) : const Color(0xFF78998D),
-            width: selected ? 3 : 1.5,
+  Widget build(BuildContext context) {
+    final accent = selected
+        ? (choice.isCorrect ? BaseboundColors.green : BaseboundColors.coral)
+        : BaseboundColors.blue;
+    return Semantics(
+      button: true,
+      enabled: onTap != null,
+      onTap: onTap,
+      selected: selected,
+      label: choice.label,
+      child: ExcludeSemantics(
+        child: Material(
+          elevation: selected ? 8 : 3,
+          shadowColor: selected
+              ? accent.withValues(alpha: .38)
+              : BaseboundColors.ink.withValues(alpha: .16),
+          color: selected
+              ? (choice.isCorrect
+                    ? BaseboundColors.greenLight
+                    : BaseboundColors.coralLight)
+              : Colors.white.withValues(alpha: .97),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(22),
+            side: BorderSide(
+              color: selected ? accent : Colors.white,
+              width: selected ? 3 : 1.5,
+            ),
           ),
-        ),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.all(6),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(missionActionIcon(choice.icon), size: 34),
-                const SizedBox(height: 6),
-                Flexible(
-                  child: Text(
-                    _shortLabel(choice),
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(22),
+            child: Padding(
+              padding: const EdgeInsets.all(6),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (illustrated)
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            Image.asset(
+                              'assets/illustrations/hallway-practice.png',
+                              fit: BoxFit.cover,
+                              excludeFromSemantics: true,
+                              errorBuilder: (_, _, _) => ColoredBox(
+                                color: BaseboundColors.cream,
+                                child: Icon(
+                                  missionActionIcon(choice.icon),
+                                  color: BaseboundColors.blue,
+                                  size: 38,
+                                ),
+                              ),
+                            ),
+                            if (!selected)
+                              Positioned(
+                                top: 4,
+                                left: 4,
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    missionActionIcon(choice.icon),
+                                    color: BaseboundColors.blue,
+                                    size: 24,
+                                  ),
+                                ),
+                              ),
+                            if (selected)
+                              Align(
+                                alignment: Alignment.topRight,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(4),
+                                  child: _selectionIcon(accent),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        color: selected ? accent : BaseboundColors.sky,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        selected
+                            ? (choice.isCorrect
+                                  ? Icons.check_rounded
+                                  : Icons.close_rounded)
+                            : missionActionIcon(choice.icon),
+                        size: 30,
+                        color: selected ? Colors.white : BaseboundColors.blue,
+                      ),
+                    ),
+                  const SizedBox(height: 6),
+                  Flexible(
+                    child: Text(
+                      _shortLabel(choice),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: BaseboundColors.ink,
+                        height: 1.1,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _selectionIcon(Color accent) => Container(
+    width: 42,
+    height: 42,
+    decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
+    child: Icon(
+      choice.isCorrect ? Icons.check_rounded : Icons.close_rounded,
+      color: Colors.white,
+      size: 30,
     ),
   );
 }
@@ -185,14 +381,14 @@ class _MissionScenePainter extends CustomPainter {
 
   final MissionVisual visual;
   final MissionChoice? selectedChoice;
-  static const ink = Color(0xFF29433F);
-  static const wall = Color(0xFF8AABA0);
+  static const ink = BaseboundColors.ink;
+  static const wall = Color(0xFFC99E73);
 
   @override
   void paint(Canvas canvas, Size size) {
     canvas.save();
     canvas.scale(size.width / 600, size.height / 400);
-    _box(canvas, const Rect.fromLTWH(0, 0, 600, 400), const Color(0xFFE9F0E6));
+    _box(canvas, const Rect.fromLTWH(0, 0, 600, 400), BaseboundColors.peach);
     switch (visual) {
       case MissionVisual.apartment:
         _apartment(canvas);

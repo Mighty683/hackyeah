@@ -52,13 +52,18 @@ class _ChildEditorScreenState extends State<ChildEditorScreen> {
       title: 'Child details',
       onSave: _save,
       children: [
-        const Text(
-          'All fields are optional. Use fictional details for the demo.',
+        const ParentEditorNote(
+          message:
+              'All fields are optional. Use fictional details for the demo.',
+          icon: Icons.info_outline_rounded,
         ),
         const SizedBox(height: 24),
         TextField(
           controller: _name,
-          decoration: const InputDecoration(labelText: 'Full name (optional)'),
+          decoration: const InputDecoration(
+            labelText: 'Full name (optional)',
+            prefixIcon: Icon(Icons.face_outlined),
+          ),
           textCapitalization: TextCapitalization.words,
           maxLength: 100,
           textInputAction: TextInputAction.next,
@@ -66,7 +71,10 @@ class _ChildEditorScreenState extends State<ChildEditorScreen> {
         const SizedBox(height: 16),
         TextField(
           controller: _age,
-          decoration: const InputDecoration(labelText: 'Age (optional)'),
+          decoration: const InputDecoration(
+            labelText: 'Age (optional)',
+            prefixIcon: Icon(Icons.cake_outlined),
+          ),
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           maxLength: 2,
@@ -75,7 +83,10 @@ class _ChildEditorScreenState extends State<ChildEditorScreen> {
         const SizedBox(height: 16),
         TextField(
           controller: _address,
-          decoration: const InputDecoration(labelText: 'Address (optional)'),
+          decoration: const InputDecoration(
+            labelText: 'Address (optional)',
+            prefixIcon: Icon(Icons.home_outlined),
+          ),
           textCapitalization: TextCapitalization.words,
           minLines: 1,
           maxLines: 3,
@@ -86,6 +97,7 @@ class _ChildEditorScreenState extends State<ChildEditorScreen> {
           controller: _notes,
           decoration: const InputDecoration(
             labelText: 'Support needs (optional)',
+            prefixIcon: Icon(Icons.favorite_border_rounded),
           ),
           textCapitalization: TextCapitalization.sentences,
           minLines: 3,

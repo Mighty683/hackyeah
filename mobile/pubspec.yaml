@@ -20,6 +20,11 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  fonts:
+    - family: Nunito
+      fonts:
+        - asset: assets/fonts/Nunito-Variable.ttf
   assets:
     - assets/maps/tauron-arena.geojson
     - assets/audio/mission01/
+    - assets/illustrations/

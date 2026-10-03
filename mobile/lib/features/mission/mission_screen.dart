@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../ui/basebound_ui.dart';
 import 'air_raid_mission.dart';
 import 'mission_audio.dart';
 import 'mission_choice_card.dart';
@@ -169,30 +170,41 @@ class _MissionScreenState extends State<MissionScreen>
     },
     child: Scaffold(
       appBar: AppBar(
+        backgroundColor: BaseboundColors.cream,
+        foregroundColor: BaseboundColors.ink,
+        centerTitle: true,
         leading: IconButton(
           tooltip: 'Leave practice',
           onPressed: _exiting ? null : () => unawaited(_exit()),
-          icon: const Icon(Icons.close),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded),
         ),
-        title: const Text('Practice · air raid'),
+        title: const Text(
+          'Practice · air raid',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(fontWeight: FontWeight.w800),
+        ),
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          controller: _scrollController,
-          padding: const EdgeInsets.fromLTRB(18, 8, 18, 28),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 640),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _audioControls(),
-                  const SizedBox(height: 16),
-                  if (_session.isComplete)
-                    ..._completion()
-                  else
-                    ..._currentStep(),
-                ],
+        child: IllustratedBackdrop(
+          warm: true,
+          child: SingleChildScrollView(
+            controller: _scrollController,
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 28),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 640),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _audioControls(),
+                    const SizedBox(height: 18),
+                    if (_session.isComplete)
+                      ..._completion()
+                    else
+                      ..._currentStep(),
+                  ],
+                ),
               ),
             ),
           ),
@@ -206,11 +218,22 @@ class _MissionScreenState extends State<MissionScreen>
     children: [
       OutlinedButton.icon(
         onPressed: _audioReady ? () => unawaited(_narrate()) : null,
-        icon: Icon(_speaking ? Icons.volume_up : Icons.replay),
+        icon: Icon(
+          _speaking ? Icons.volume_up_rounded : Icons.volume_up_outlined,
+          size: 26,
+        ),
         label: const Text('Replay audio'),
         style: OutlinedButton.styleFrom(
           minimumSize: const Size(64, 56),
-          textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+          backgroundColor: Colors.white,
+          foregroundColor: BaseboundColors.blue,
+          side: const BorderSide(color: BaseboundColors.border),
+          shape: const StadiumBorder(),
+          textStyle: const TextStyle(
+            fontFamily: 'Nunito',
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
       if (_initializingAudio)
@@ -219,9 +242,10 @@ class _MissionScreenState extends State<MissionScreen>
           child: Text('Getting the voice ready…', textAlign: TextAlign.center),
         ),
       if (!_audioReady && !_initializingAudio)
-        Card(
-          color: const Color(0xFFFFECC8),
-          child: Padding(
+        Padding(
+          padding: const EdgeInsets.only(top: 12),
+          child: SoftPanel(
+            color: BaseboundColors.cream,
             padding: const EdgeInsets.all(14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -255,17 +279,32 @@ class _MissionScreenState extends State<MissionScreen>
       Text(
         step.title,
         textAlign: TextAlign.center,
-        style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
+        style: const TextStyle(
+          fontSize: 29,
+          fontWeight: FontWeight.w800,
+          height: 1.15,
+          color: BaseboundColors.ink,
+        ),
       ),
       const SizedBox(height: 16),
+      if (!_session.hasFeedback) ...[
+        SoftPanel(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Text(
+            step.narration,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 19,
+              fontWeight: FontWeight.w600,
+              color: BaseboundColors.ink,
+              height: 1.35,
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+      ],
       _scene(visual),
       const SizedBox(height: 14),
-      if (!_session.hasFeedback)
-        Text(
-          step.narration,
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 18, height: 1.4),
-        ),
       if (step.id == 'get_down' && !_session.hasFeedback)
         const Padding(
           padding: EdgeInsets.only(top: 10),
@@ -289,9 +328,7 @@ class _MissionScreenState extends State<MissionScreen>
   Widget _scene(MissionVisual visual) {
     final scene = MissionScene(
       visual: visual,
-      choices: _useSceneChoices(visual) && !_session.hasFeedback
-          ? _session.step.choices
-          : const [],
+      choices: _useSceneChoices(visual) ? _session.step.choices : const [],
       selectedChoice: _session.selectedChoice,
       onChoose: _session.hasFeedback ? null : _choose,
     );
@@ -336,33 +373,9 @@ class _MissionScreenState extends State<MissionScreen>
 
   Widget _feedback() => Semantics(
     liveRegion: true,
-    child: Container(
-      margin: const EdgeInsets.only(top: 4),
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE6EEE3),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        children: [
-          Icon(
-            _session.selectedChoice!.isCorrect
-                ? Icons.check_circle_outline
-                : Icons.lightbulb_outline,
-            size: 36,
-          ),
-          const SizedBox(height: 10),
-          Text(
-            _session.feedback!,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 21,
-              fontWeight: FontWeight.w600,
-              height: 1.4,
-            ),
-          ),
-        ],
-      ),
+    child: BaseboundGuide(
+      message: _session.feedback!,
+      positive: _session.selectedChoice!.isCorrect,
     ),
   );
 
@@ -377,7 +390,14 @@ class _MissionScreenState extends State<MissionScreen>
       label: Text(label),
       style: FilledButton.styleFrom(
         minimumSize: const Size(64, 64),
-        textStyle: const TextStyle(fontSize: 21, fontWeight: FontWeight.w700),
+        backgroundColor: BaseboundColors.blue,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        textStyle: const TextStyle(
+          fontFamily: 'Nunito',
+          fontSize: 21,
+          fontWeight: FontWeight.w700,
+        ),
         padding: const EdgeInsets.all(18),
       ),
     );
@@ -397,20 +417,26 @@ class _MissionScreenState extends State<MissionScreen>
   };
 
   List<Widget> _completion() => [
-    const Icon(Icons.workspace_premium, size: 100, color: Color(0xFF2B7560)),
+    const Icon(
+      Icons.workspace_premium_rounded,
+      size: 100,
+      color: BaseboundColors.green,
+    ),
     const SizedBox(height: 12),
     const Text(
       'Practice complete',
       textAlign: TextAlign.center,
-      style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800),
+      style: TextStyle(
+        fontSize: 30,
+        fontWeight: FontWeight.w800,
+        color: BaseboundColors.ink,
+      ),
     ),
     const SizedBox(height: 16),
     const MissionScene(visual: MissionVisual.recall),
     const SizedBox(height: 16),
-    const Text(
-      'Move inside. Tell someone. Stay until the all-clear.',
-      textAlign: TextAlign.center,
-      style: TextStyle(fontSize: 20),
+    const BaseboundGuide(
+      message: 'Move inside. Tell someone. Stay until the all-clear.',
     ),
     const SizedBox(height: 24),
     FilledButton.icon(
@@ -419,7 +445,10 @@ class _MissionScreenState extends State<MissionScreen>
       label: const Text('Play again'),
       style: FilledButton.styleFrom(
         minimumSize: const Size(64, 64),
-        textStyle: const TextStyle(fontSize: 21),
+        backgroundColor: BaseboundColors.blue,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        textStyle: const TextStyle(fontFamily: 'Nunito', fontSize: 21),
       ),
     ),
     TextButton.icon(

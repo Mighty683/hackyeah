@@ -31,7 +31,7 @@ class NeighborhoodComponent extends PositionComponent with TapCallbacks {
   final _label = TextPaint(
     style: const TextStyle(
       color: Color(0xFF3F4C47),
-      fontFamily: 'Roboto',
+      fontFamily: 'Nunito',
       fontSize: 14,
       fontWeight: FontWeight.w700,
     ),

@@ -6,6 +6,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../../game/maps/demo_map.dart';
+import '../../ui/basebound_ui.dart';
+import '../../widgets/basebound_mascot.dart';
 import '../help/help_screen.dart';
 import '../parent/data/family_plan.dart';
 import '../parent/data/family_plan_repository.dart';
@@ -84,23 +86,45 @@ class _GameLauncherState extends State<GameLauncher> {
             ),
           ),
           body: Center(
-            child: snapshot.hasError
-                ? Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.all(24),
-                        child: Text(
-                          'Could not load practice places. Go back or try again.',
-                        ),
+            child: IllustratedBackdrop(
+              warm: true,
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 440),
+                    child: SoftPanel(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const Center(child: BaseboundMascot(size: 112)),
+                          const SizedBox(height: 24),
+                          if (snapshot.hasError) ...[
+                            const Text(
+                              'Could not load practice places. Go back or try again.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 22,
+                                height: 1.3,
+                                color: BaseboundColors.ink,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            FilledButton(
+                              onPressed: _newGame,
+                              child: const Text('Try again'),
+                            ),
+                          ] else
+                            const Center(child: CircularProgressIndicator()),
+                        ],
                       ),
-                      FilledButton(
-                        onPressed: _newGame,
-                        child: const Text('Try again'),
-                      ),
-                    ],
-                  )
-                : const CircularProgressIndicator(),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ),
         );
       },

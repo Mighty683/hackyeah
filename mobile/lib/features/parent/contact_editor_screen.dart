@@ -49,11 +49,17 @@ class _ContactEditorScreenState extends State<ContactEditorScreen> {
       title: 'Trusted contact',
       onSave: _save,
       children: [
-        const Text('All fields are optional. This screen does not make calls.'),
+        const ParentEditorNote(
+          message: 'All fields are optional. This screen does not make calls.',
+          icon: Icons.info_outline_rounded,
+        ),
         const SizedBox(height: 24),
         TextField(
           controller: _name,
-          decoration: const InputDecoration(labelText: 'Name (optional)'),
+          decoration: const InputDecoration(
+            labelText: 'Name (optional)',
+            prefixIcon: Icon(Icons.person_outline_rounded),
+          ),
           textCapitalization: TextCapitalization.words,
           maxLength: 100,
           textInputAction: TextInputAction.next,
@@ -63,6 +69,7 @@ class _ContactEditorScreenState extends State<ContactEditorScreen> {
           controller: _phone,
           decoration: const InputDecoration(
             labelText: 'Phone number (optional)',
+            prefixIcon: Icon(Icons.phone_outlined),
           ),
           keyboardType: TextInputType.phone,
           maxLength: 30,
@@ -74,6 +81,7 @@ class _ContactEditorScreenState extends State<ContactEditorScreen> {
           decoration: const InputDecoration(
             labelText: 'Relationship to child (optional)',
             hintText: 'Parent, grandparent, family friend…',
+            prefixIcon: Icon(Icons.people_outline_rounded),
           ),
           textCapitalization: TextCapitalization.words,
           maxLength: 80,

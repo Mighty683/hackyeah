@@ -5,6 +5,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../../game/neighborhood_game.dart';
+import '../../ui/basebound_ui.dart';
 import '../../widgets/basebound_mascot.dart';
 import '../help/help_screen.dart';
 import '../parent/data/family_plan.dart';
@@ -132,10 +133,13 @@ class _GameScreenState extends State<GameScreen> {
         ],
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: LayoutBuilder(
-            builder: (context, constraints) => _buildContent(constraints),
+        child: IllustratedBackdrop(
+          warm: true,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
+            child: LayoutBuilder(
+              builder: (context, constraints) => _buildContent(constraints),
+            ),
           ),
         ),
       ),
@@ -189,7 +193,8 @@ class _GameScreenState extends State<GameScreen> {
         const SizedBox(height: 6),
         const Text(
           '© OpenStreetMap contributors · ODbL',
-          style: TextStyle(fontSize: 12, color: Color(0xFF465448)),
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 12, color: BaseboundColors.muted),
         ),
       ],
     );
@@ -206,39 +211,70 @@ class _GameScreenState extends State<GameScreen> {
         : compact
         ? 'Tap ${target ?? 'the pretend base'}.'
         : 'Reach ${target ?? 'the pretend base'}';
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Semantics(
-          liveRegion: true,
-          header: true,
-          child: Text(
-            title,
-            maxLines: compact ? 2 : 3,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: compact ? 18 : 26,
-              fontWeight: FontWeight.w800,
+    return SoftPanel(
+      padding: EdgeInsets.all(compact ? 12 : 16),
+      borderColor: _arrived
+          ? BaseboundColors.greenLight
+          : _failed
+          ? BaseboundColors.coralLight
+          : Colors.white,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          if (!compact) ...[
+            const BaseboundMascot(size: 62),
+            const SizedBox(width: 14),
+          ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Semantics(
+                  liveRegion: true,
+                  header: true,
+                  child: Text(
+                    title,
+                    maxLines: compact ? 2 : 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: BaseboundColors.ink,
+                      fontSize: compact ? 18 : 24,
+                      height: 1.18,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                if (!compact) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    _failed
+                        ? 'Go back and try again.'
+                        : _arrived
+                        ? 'You guided your character to the practice target.'
+                        : 'Tap to move. Drag or pinch to explore.',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      height: 1.3,
+                      color: BaseboundColors.muted,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 6),
+                Text(
+                  compact
+                      ? 'Practice only.'
+                      : 'Practice only. Not real navigation.',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: BaseboundColors.muted,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
           ),
-        ),
-        if (!compact) ...[
-          const SizedBox(height: 4),
-          Text(
-            _failed
-                ? 'Go back and try again.'
-                : _arrived
-                ? 'You guided your character to the practice target.'
-                : 'Tap to move. Drag or pinch to explore.',
-            style: const TextStyle(fontSize: 18),
-          ),
         ],
-        const SizedBox(height: 4),
-        Text(
-          compact ? 'Practice only.' : 'Practice only. Not real navigation.',
-          style: const TextStyle(fontSize: 12),
-        ),
-      ],
+      ),
     );
   }
 
@@ -247,52 +283,95 @@ class _GameScreenState extends State<GameScreen> {
       builder: (context, constraints) {
         final side = math.min(constraints.maxWidth, constraints.maxHeight);
         return Center(
-          child: SizedBox(width: side, height: side, child: _buildMap()),
+          child: Container(
+            width: side,
+            height: side,
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x18112568),
+                  blurRadius: 18,
+                  offset: Offset(0, 6),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: _buildMap(),
+            ),
+          ),
         );
       },
     );
   }
 
   Widget _buildControls() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (_arrived) ...[
-          FilledButton.icon(
-            onPressed: _ready ? _restart : null,
-            style: FilledButton.styleFrom(padding: const EdgeInsets.all(16)),
-            icon: const Icon(Icons.replay),
-            label: const Text('Play again'),
-          ),
-          const SizedBox(height: 8),
-        ],
-        Wrap(
-          spacing: 8,
-          runSpacing: 4,
-          alignment: WrapAlignment.center,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            IconButton.outlined(
-              onPressed: _ready ? () => _zoom(1 / 1.4) : null,
-              tooltip: 'Zoom out',
-              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-              icon: const Icon(Icons.remove),
+    return SoftPanel(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (_arrived) ...[
+            FilledButton.icon(
+              onPressed: _ready ? _restart : null,
+              style: FilledButton.styleFrom(padding: const EdgeInsets.all(16)),
+              icon: const Icon(Icons.replay_rounded),
+              label: const Text('Play again'),
             ),
-            IconButton.outlined(
-              onPressed: _ready ? () => _zoom(1.4) : null,
-              tooltip: 'Zoom in',
-              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-              icon: const Icon(Icons.add),
-            ),
-            OutlinedButton.icon(
-              onPressed: _ready ? _showWholeMap : null,
-              style: OutlinedButton.styleFrom(minimumSize: const Size(48, 48)),
-              icon: const Icon(Icons.fit_screen),
-              label: const Text('Show whole map'),
-            ),
+            const SizedBox(height: 8),
           ],
-        ),
-      ],
+          Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              IconButton.outlined(
+                onPressed: _ready ? () => _zoom(1 / 1.4) : null,
+                tooltip: 'Zoom out',
+                constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                style: IconButton.styleFrom(
+                  backgroundColor: BaseboundColors.sky,
+                  foregroundColor: BaseboundColors.blue,
+                  side: BorderSide.none,
+                ),
+                icon: const Icon(Icons.remove_rounded),
+              ),
+              IconButton.outlined(
+                onPressed: _ready ? () => _zoom(1.4) : null,
+                tooltip: 'Zoom in',
+                constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                style: IconButton.styleFrom(
+                  backgroundColor: BaseboundColors.sky,
+                  foregroundColor: BaseboundColors.blue,
+                  side: BorderSide.none,
+                ),
+                icon: const Icon(Icons.add_rounded),
+              ),
+              OutlinedButton.icon(
+                onPressed: _ready ? _showWholeMap : null,
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(48, 48),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                  textStyle: const TextStyle(
+                    fontFamily: 'Nunito',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                icon: const Icon(Icons.fit_screen_rounded),
+                label: const Text('Show whole map'),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 

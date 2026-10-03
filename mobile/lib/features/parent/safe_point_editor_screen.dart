@@ -49,10 +49,12 @@ class _SafePointEditorScreenState extends State<SafePointEditorScreen> {
       onSave: _save,
       saveEnabled: selected != null,
       children: [
-        const Text(
-          'Name a place, then choose its position. '
-          'This demo covers only the TAURON Arena area in Kraków. '
-          'Places are not checked for safety or opening hours.',
+        const ParentEditorNote(
+          message:
+              'Name a place, then choose its position. '
+              'This demo covers only the TAURON Arena area in Kraków. '
+              'Places are not checked for safety or opening hours.',
+          icon: Icons.info_outline_rounded,
         ),
         const SizedBox(height: 16),
         TextField(
@@ -60,6 +62,7 @@ class _SafePointEditorScreenState extends State<SafePointEditorScreen> {
           decoration: const InputDecoration(
             labelText: 'Place name (optional)',
             hintText: 'Home, police station, family friend…',
+            prefixIcon: Icon(Icons.place_outlined),
           ),
           textCapitalization: TextCapitalization.words,
           maxLength: 60,

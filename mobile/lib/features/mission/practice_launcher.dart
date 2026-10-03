@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../ui/basebound_ui.dart';
+import '../../widgets/basebound_mascot.dart';
 import '../game/game_launcher.dart';
 import 'air_raid_mission.dart';
 import 'mission_audio.dart';
@@ -101,47 +103,64 @@ class _PracticeLauncherState extends State<PracticeLauncher>
     return Scaffold(
       appBar: AppBar(title: const Text('Practice only')),
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 480),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    title,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.headlineMedium,
-                  ),
-                  const SizedBox(height: 24),
-                  ..._choices(),
-                  const SizedBox(height: 16),
-                  OutlinedButton.icon(
-                    onPressed: _opening ? null : _speak,
-                    icon: const Icon(Icons.volume_up_outlined),
-                    label: const Text('Replay audio'),
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size(64, 56),
-                    ),
-                  ),
-                  if (!_audioAvailable)
-                    const Padding(
-                      padding: EdgeInsets.only(top: 12),
-                      child: Text(
-                        'Voice is unavailable. Ask an adult to help. '
-                        'An offline English voice is needed for spoken practice.',
+        child: IllustratedBackdrop(
+          warm: true,
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 480),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Center(child: BaseboundMascot(size: 112)),
+                    const SizedBox(height: 20),
+                    Text(
+                      title,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: BaseboundColors.ink,
+                        fontSize: 30,
+                        height: 1.15,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
-                  if (_selection != _Selection.activity)
-                    TextButton.icon(
-                      onPressed: _opening
-                          ? null
-                          : () => _select(_Selection.activity),
-                      icon: const Icon(Icons.arrow_back),
-                      label: const Text('Choose practice'),
+                    const SizedBox(height: 24),
+                    ..._choices(),
+                    const SizedBox(height: 8),
+                    OutlinedButton.icon(
+                      onPressed: _opening ? null : _speak,
+                      icon: const Icon(Icons.volume_up_rounded),
+                      label: const Text('Replay audio'),
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        minimumSize: const Size(64, 56),
+                      ),
                     ),
-                ],
+                    if (!_audioAvailable)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 12),
+                        child: SoftPanel(
+                          child: Text(
+                            'Voice is unavailable. Ask an adult to help. '
+                            'An offline English voice is needed for spoken practice.',
+                            style: TextStyle(color: BaseboundColors.muted),
+                          ),
+                        ),
+                      ),
+                    if (_selection != _Selection.activity)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: TextButton.icon(
+                          onPressed: _opening
+                              ? null
+                              : () => _select(_Selection.activity),
+                          icon: const Icon(Icons.arrow_back_rounded),
+                          label: const Text('Choose practice'),
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -154,24 +173,24 @@ class _PracticeLauncherState extends State<PracticeLauncher>
     _Selection.activity => [
       _card(
         'Alarm practice',
-        Icons.notifications_active_outlined,
+        Icons.notifications_active_rounded,
         () => _select(_Selection.mode),
       ),
       _card(
         'Map practice',
-        Icons.map_outlined,
+        Icons.map_rounded,
         () => _open(const GameLauncher()),
       ),
     ],
     _Selection.mode => [
       _card(
         'At home',
-        Icons.home_outlined,
+        Icons.home_rounded,
         () => _openMission(MissionMode.home),
       ),
       _card(
         'Outside',
-        Icons.apartment_outlined,
+        Icons.park_rounded,
         () => _openMission(MissionMode.outdoor),
       ),
     ],
@@ -179,19 +198,89 @@ class _PracticeLauncherState extends State<PracticeLauncher>
 
   Widget _card(String label, IconData icon, VoidCallback onPressed) => Padding(
     padding: const EdgeInsets.only(bottom: 16),
-    child: FilledButton.tonal(
+    child: _ActivityCard(
+      label: label,
+      icon: icon,
       onPressed: _opening ? null : onPressed,
-      style: FilledButton.styleFrom(padding: const EdgeInsets.all(24)),
-      child: Column(
-        children: [
-          Icon(icon, size: 60),
-          const SizedBox(height: 12),
-          Text(
-            label,
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
-          ),
-        ],
+    ),
+  );
+}
+
+class _ActivityCard extends StatelessWidget {
+  const _ActivityCard({
+    required this.label,
+    required this.icon,
+    required this.onPressed,
+  });
+
+  final String label;
+  final IconData icon;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    enabled: onPressed != null,
+    child: Material(
+      color: Colors.white,
+      elevation: 3,
+      shadowColor: BaseboundColors.ink.withValues(alpha: .08),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(28),
+        side: const BorderSide(color: BaseboundColors.border),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onPressed,
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: LayoutBuilder(builder: _buildContent),
+        ),
       ),
     ),
   );
+
+  Widget _buildContent(BuildContext context, BoxConstraints constraints) {
+    final illustration = Container(
+      width: 88,
+      height: 96,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [BaseboundColors.sky, BaseboundColors.cream],
+        ),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Icon(icon, size: 54, color: BaseboundColors.blue),
+    );
+    final text = Text(
+      label,
+      style: const TextStyle(
+        color: BaseboundColors.ink,
+        fontSize: 24,
+        fontWeight: FontWeight.w800,
+      ),
+    );
+    if (constraints.maxWidth < 220 ||
+        MediaQuery.textScalerOf(context).scale(24) > 32) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Center(child: illustration),
+          const SizedBox(height: 16),
+          text,
+        ],
+      );
+    }
+    return Row(
+      children: [
+        illustration,
+        const SizedBox(width: 18),
+        Expanded(child: text),
+        const SizedBox(width: 8),
+        const Icon(Icons.arrow_forward_rounded, color: BaseboundColors.blue),
+      ],
+    );
+  }
 }
