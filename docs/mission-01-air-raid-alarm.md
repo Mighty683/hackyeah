@@ -352,13 +352,15 @@ The product should feel like **civil-safety training for children**, not a war s
 
 Implemented in three parallel areas, integrated through a shared mission-state contract:
 
-1. **Scenario logic:** home scenes, two to four choices, retry/advance behavior, outdoor recovery branch, and focused flow checks.
-2. **Visual experience:** illustrated rooms/street, selected-action consequences, two-wall diagram, fictional family avatars and messages, drag-or-tap getting down, head protection, recall and completion sticker.
+1. **Scenario logic:** home scenes, two to four choices, immediate dinosaur feedback, rejected-choice retry in place, automatic advancement after correct feedback, and focused flow checks.
+2. **Visual experience:** illustrated rooms/street, movement only after correct choices, grey disabled targets for wrong choices, two-wall diagram, fictional family avatars and messages, recall and completion sticker.
 3. **Offline audio:** Android embedded English speech, replay and cancellation, official alarm/all-clear playback excerpts, and a restrained environmental sound.
 
 Integration adds narrated practice selection beside the existing map game. Both child entry and parent “Play together” lead to the same 7+ MVP: choose alarm practice, then home or outside. There is no age-selection screen or younger-child implementation; saved age does not change the mission. No age verification is claimed. Screen-flow documentation records the implemented mission separately from future missions and reviewed emergency assistance.
 
 The home scene explicitly assumes the agreed shelter cannot be reached. An internal room and two walls are a fallback, not a verified shelter or guarantee of safety. “I am away from windows” replaces the example message’s unconditional safety claim. Outdoor destinations are fictional; the nearby building represents a practice shelter. Five possible destinations are split across two decisions to keep each screen at four choices or fewer. No real messages or calls are made, and no saved contacts or practice pins are used.
+
+Wrong destination taps keep the child in the same position and grey out that target. The dinosaur explains the wrong path below the scene, and another destination can be selected immediately. Correct decisions automatically advance after narration and a minimum three-second reading pause. The optional outdoor recovery sequence described in the scenario above is no longer reached from a wrong destination; the current interaction asks the child to choose another path instead.
 
 Narration requires an installed offline English Android voice. If missing or playback fails, the app asks for adult help and retains text as a fallback; this device state does not satisfy independent play without reading. Alarm/all-clear sounds are short teaching excerpts from original Polish recordings, not the complete official-duration signal. Asset attribution and licensing are in `mobile/assets/audio/mission01/README.md`.
 

@@ -53,7 +53,6 @@ class MissionChoice {
     required this.isCorrect,
     required this.feedback,
     this.visual,
-    this.continuesAfterFeedback = false,
   });
 
   final String id;
@@ -62,9 +61,6 @@ class MissionChoice {
   final bool isCorrect;
   final String feedback;
   final MissionVisual? visual;
-
-  /// Outdoor destination mistakes lead to a guided physical-action branch.
-  final bool continuesAfterFeedback;
 }
 
 class MissionStep {
@@ -86,8 +82,8 @@ class MissionStep {
   bool get isDecision => choices.isNotEmpty;
 }
 
-/// Each decision waits for the child to acknowledge calm spoken feedback.
-/// Home mistakes can be retried; outdoor mistakes teach a recovery action.
+/// Wrong choices stay rejected until the child completes the current decision.
+/// Correct choices advance after the screen presents their spoken feedback.
 class MissionSession {
   MissionSession({required this.mode}) {
     _steps = _buildSteps();
@@ -98,6 +94,7 @@ class MissionSession {
   late final Map<String, MissionStep> _steps;
   late String _stepId;
   MissionChoice? _selectedChoice;
+  final Set<String> _rejectedChoiceIds = {};
   bool _isComplete = false;
 
   MissionStep get step => _steps[_stepId]!;
@@ -105,12 +102,15 @@ class MissionSession {
   String? get feedback => _selectedChoice?.feedback;
   bool get hasFeedback => _selectedChoice != null;
   bool get isComplete => _isComplete;
+  bool get canChoose => !_isComplete && _selectedChoice?.isCorrect != true;
+  Set<String> get rejectedChoiceIds => Set.unmodifiable(_rejectedChoiceIds);
 
   void choose(String id) {
-    if (_isComplete || hasFeedback) return;
+    if (!canChoose || _rejectedChoiceIds.contains(id)) return;
     for (final choice in step.choices) {
       if (choice.id == id) {
         _selectedChoice = choice;
+        if (!choice.isCorrect) _rejectedChoiceIds.add(id);
         return;
       }
     }
@@ -119,10 +119,7 @@ class MissionSession {
   void advance() {
     if (_isComplete) return;
     if (step.isDecision && !hasFeedback) return;
-    final choice = _selectedChoice;
-    if (choice != null && !choice.isCorrect && !choice.continuesAfterFeedback) {
-      return;
-    }
+    if (_selectedChoice?.isCorrect == false) return;
     final nextId = _nextStepId();
     if (nextId == null) {
       _isComplete = true;
@@ -130,6 +127,7 @@ class MissionSession {
     }
     _stepId = nextId;
     _selectedChoice = null;
+    _rejectedChoiceIds.clear();
   }
 
   void retry() {
@@ -140,6 +138,7 @@ class MissionSession {
   void restart() {
     _stepId = mode == MissionMode.home ? 'alarm' : 'outdoor_alarm';
     _selectedChoice = null;
+    _rejectedChoiceIds.clear();
     _isComplete = false;
   }
 
@@ -170,9 +169,9 @@ class MissionSession {
         return 'destination';
       case 'destination':
         if (_selectedChoice!.id == 'more_places') return 'outdoor_places';
-        return _selectedChoice!.isCorrect ? 'outdoor_sheltered' : 'get_down';
+        return 'outdoor_sheltered';
       case 'outdoor_places':
-        return _selectedChoice!.isCorrect ? 'outdoor_sheltered' : 'get_down';
+        return 'outdoor_sheltered';
       case 'get_down':
         return 'protect_head';
       case 'protect_head':
@@ -406,16 +405,14 @@ Map<String, MissionStep> _buildSteps() {
           'Home: far away',
           MissionActionIcon.home,
           false,
-          'Home is far away. You are still outside when a loud noise starts.',
-          continuesAfterFeedback: true,
+          'That is the wrong path. Home is too far away.',
         ),
         _choice(
           'school',
           'School: farther away',
           MissionActionIcon.school,
           false,
-          'School is farther away. You hear a loud noise outside.',
-          continuesAfterFeedback: true,
+          'That is the wrong path. School is too far away.',
         ),
         _choice(
           'shelter',
@@ -444,16 +441,14 @@ Map<String, MissionStep> _buildSteps() {
           'Park',
           MissionActionIcon.park,
           false,
-          'The open park offers little protection. You hear a loud noise.',
-          continuesAfterFeedback: true,
+          'That is the wrong path. The park offers little protection.',
         ),
         _choice(
           'bus_stop',
           'Bus stop',
           MissionActionIcon.busStop,
           false,
-          'The bus stop offers little protection. You hear a loud noise.',
-          continuesAfterFeedback: true,
+          'That is the wrong path. The bus stop offers little protection.',
         ),
         _choice(
           'shelter',
@@ -528,7 +523,6 @@ MissionChoice _choice(
   bool correct,
   String feedback, {
   MissionVisual? visual,
-  bool continuesAfterFeedback = false,
 }) => MissionChoice(
   id: id,
   label: label,
@@ -536,5 +530,4 @@ MissionChoice _choice(
   isCorrect: correct,
   feedback: feedback,
   visual: visual,
-  continuesAfterFeedback: continuesAfterFeedback,
 );

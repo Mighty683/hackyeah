@@ -67,21 +67,23 @@ void main() {
         MaterialApp(home: ChildOnboardingScreen(repository: repository)),
       );
       await tester.pumpAndSettle();
-      await _tap(tester, 'Add my age');
-      expect(find.text('Add your name or a nickname.'), findsOneWidget);
-      await tester.enterText(find.byType(TextField), 'Demo child');
-      await _tap(tester, 'Add my age');
+      await _tap(tester, 'Add my name');
+      expect(find.text('Please tell us your age to continue.'), findsOneWidget);
       await tester.enterText(find.byType(TextField), '0');
-      await _tap(tester, 'Choose my character');
-      expect(find.text('Add an age between 1 and 99.'), findsOneWidget);
+      await _tap(tester, 'Add my name');
+      expect(find.text('Please tell us your age to continue.'), findsOneWidget);
       await tester.enterText(find.byType(TextField), '9');
-      await _tap(tester, 'Choose my character');
+      await _tap(tester, 'Add my name');
       await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
       expect(
         tester.widget<TextField>(find.byType(TextField)).controller!.text,
         '9',
       );
+      await _tap(tester, 'Add my name');
+      await _tap(tester, 'Choose my character');
+      expect(find.text('Add your name or a nickname.'), findsOneWidget);
+      await tester.enterText(find.byType(TextField), 'Demo child');
       await _tap(tester, 'Choose my character');
       await _tap(tester, gender == ChildGender.boy ? 'Boy' : 'Girl');
       repository.failSave = true;
