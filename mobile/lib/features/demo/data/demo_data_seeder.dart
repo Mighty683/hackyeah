@@ -16,6 +16,53 @@ const demoHome = SafePoint(
   isDemo: true,
 );
 
+/// Complete fictional setup for a fresh install, editable like ordinary records.
+const demoFamilyPlan = FamilyPlan(
+  child: ChildProfile(
+    fullName: 'Alex Example (demo)',
+    age: 9,
+    address: '12 Example Street, Demo Town (fictional)',
+    supportNotes: 'Demo: speak slowly and give one instruction at a time.',
+    gender: ChildGender.boy,
+  ),
+  // NANPA reserves 555-0100–0199 for fictional, non-working numbers:
+  // https://nanpa.com/numbering/555-line-numbers
+  contacts: [
+    TrustedContact(
+      name: 'Demo Mum',
+      phone: '+1 202 555 0101',
+      relationship: 'Mother',
+    ),
+    TrustedContact(
+      name: 'Demo Dad',
+      phone: '+1 202 555 0102',
+      relationship: 'Father',
+    ),
+    TrustedContact(
+      name: 'Demo Grandma',
+      phone: '+1 202 555 0103',
+      relationship: 'Grandmother',
+    ),
+  ],
+  safePoints: [
+    demoHome,
+    SafePoint(
+      name: 'School (demo)',
+      icon: '🏫',
+      latitude: 50.0688,
+      longitude: 19.9950,
+      isDemo: true,
+    ),
+    SafePoint(
+      name: 'Park (demo)',
+      icon: '🌳',
+      latitude: 50.0721,
+      longitude: 19.9915,
+      isDemo: true,
+    ),
+  ],
+);
+
 /// Seeds a fresh installation once. The marker survives user data deletion;
 /// a pending marker resumes interrupted writes without resetting saved data.
 class DemoDataSeeder {
@@ -55,9 +102,8 @@ class DemoDataSeeder {
       await _storage.write(key: storageKey, value: 'pending');
     }
 
-    final plan = await _familyRepository.load();
-    if (plan.safePoints.isEmpty) {
-      await _familyRepository.save(plan.copyWith(safePoints: [demoHome]));
+    if (!await _familyRepository.hasSavedPlan()) {
+      await _familyRepository.save(demoFamilyPlan);
     }
     await _removeInterruptedPhotoCopies();
     await loadDemoLandmarks(_landmarkRepository);
