@@ -262,6 +262,7 @@ class BaseboundActionTile extends StatelessWidget {
     required this.onPressed,
     this.description,
     this.selected = false,
+    this.large = false,
   });
 
   final String label;
@@ -269,6 +270,7 @@ class BaseboundActionTile extends StatelessWidget {
   final VoidCallback? onPressed;
   final String? description;
   final bool selected;
+  final bool large;
 
   @override
   Widget build(BuildContext context) => Semantics(
@@ -276,7 +278,10 @@ class BaseboundActionTile extends StatelessWidget {
     child: OutlinedButton(
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: large ? 24 : 16,
+        ),
         backgroundColor: selected ? BaseboundColors.sky : Colors.white,
         side: BorderSide(
           color: selected ? BaseboundColors.blue : BaseboundColors.border,
@@ -285,14 +290,21 @@ class BaseboundActionTile extends StatelessWidget {
       ),
       child: Row(
         children: [
-          ExcludeSemantics(child: BaseboundIcon(icon, size: 24)),
+          ExcludeSemantics(child: BaseboundIcon(icon, size: large ? 32 : 24)),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: const TextStyle(fontSize: 18, height: 1.3)),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: large ? 22 : 18,
+                    height: 1.3,
+                    fontWeight: large ? FontWeight.w700 : null,
+                  ),
+                ),
                 if (description != null) ...[
                   const SizedBox(height: 4),
                   Text(
@@ -309,8 +321,8 @@ class BaseboundActionTile extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          const ExcludeSemantics(
-            child: BaseboundIcon(BaseboundIconName.next, size: 20),
+          ExcludeSemantics(
+            child: BaseboundIcon(BaseboundIconName.next, size: large ? 24 : 20),
           ),
         ],
       ),

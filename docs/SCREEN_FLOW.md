@@ -126,14 +126,14 @@ flowchart TD
     AL -->|Read failed| AE
     AE -->|Retry loading| AL
     AE -->|Delete all saved details| DEL
-    W -->|I'm a child| ON["CHILD ONBOARDING: NAME<br/>Name or nickname; saved details prefilled"]
-    ON -->|Add my age| OA["CHILD ONBOARDING: AGE<br/>Enter age 1–99"]
-    OA -->|Choose my character| OG["CHILD ONBOARDING: GENDER<br/>Girl or boy with character previews"]
+    W -->|I'm a child| OA["CHILD ONBOARDING: AGE<br/>Enter age 1–99; saved details prefilled"]
+    OA -->|Add my name| ON["CHILD ONBOARDING: NAME<br/>Name or nickname"]
     OG -->|Start practice: save encrypted local details| PS["ACTIVITY SELECTION<br/>Practices or Our map"]
     OG -->|Save failed: retain edits and retry| OG
-    OA -->|Back| ON
-    OG -->|Back| OA
-    ON -->|Back| W
+    ON -->|Choose my character| OG["CHILD ONBOARDING: GENDER<br/>Girl or boy with character previews"]
+    ON -->|Back| OA
+    OA -->|Back| W
+    OG -->|Back| ON
     PS -->|Our map| F
     PS -->|Practices| SC["PRACTICE SCENARIOS<br/>Alarm practice or I’m lost practice"]
     SC -->|Back| PS
@@ -371,7 +371,7 @@ The home tutorial practices alarm recognition, moving away from windows, choosin
 
 After choosing a fictional Mom, Dad or Grandparent, **How will you tell them?** keeps the repeated-calls mistake and calm retry. **Send one message** opens a pretend numeric keypad within the mission. The child practices a number from the encrypted local trusted-contact records, with digits, backspace and Clear. Any saved usable contact number matches after removing formatting such as `+`, spaces and separators; country-code digits remain required. **Need a hint?** reveals saved contact names/relationships and numbers. A correct match enables **Send pretend message**. One conversation screen then shows the outgoing “I am away from windows.” and adult reply “Good. Stay there and wait for the all-clear.” together, labelled **Practice only. Nothing was sent.** **Stay here** advances directly to the loud-noise decision. If no usable number is saved, the screen explains adult setup and offers **Continue without a number**. A failed read offers **Try loading again** or **Continue without a number**, preserving saved records. Both fallback actions open the same pretend conversation.
 
-The MVP targets children aged 7+ with two to four choices and optional fictional outdoor practice: compare nearby shelter against distant destinations and exposed places. Child onboarding collects age, but there is no younger-child branch; saved age does not change this mission. An outdoor mistake leads to getting down (drag or tap), protecting the head, and moving to shelter. Home mistakes explain the consequence and retry without punishment. Both modes finish with a visual recall and completion sticker, with no score or timer.
+The MVP targets children aged 7+ with two to four choices and optional fictional outdoor practice: compare nearby shelter against distant destinations and exposed places. Child onboarding collects age, but there is no younger-child branch; saved age does not change this mission. Every decision tap gives immediate dinosaur feedback below the scene. Wrong choices leave the character in the same position and grey out the rejected target; another choice can be tapped immediately. Correct choices show their action and explanation, then advance automatically once narration and a minimum three-second reading pause finish. No answer-confirmation or retry tap is required. Both modes finish with a visual recall and completion sticker, with no score or countdown.
 
 Instructions, feedback, and replay use an installed offline English Android speech voice. If unavailable, the app shows an adult-help message; text remains as a fallback. Short warning and all-clear playback excerpts are teaching samples, not complete alarm signals. Family avatars, messages, replies, shelter selection and movement are fictional. Saved trusted contacts are read only for local phone-number practice; typed digits are not persisted. The mission makes no calls, sends no SMS, opens no external app and uses no network or saved map pins. Matching a saved number does not verify the contact, delivery or safety. See [mission-01-air-raid-alarm.md](mission-01-air-raid-alarm.md) for the scenario and source notes.
 
@@ -389,9 +389,9 @@ The implemented screens follow [UI_GUIDELINES.md](UI_GUIDELINES.md): warm neutra
 
 Welcome, child onboarding, activity selection and practice scenarios use clear headings and calm choices. The first child activity screen has two choices: **Practices** opens a separate scenario list; **Our map** opens the familiar-place map. Alarm and lost practice return to the scenario list, whose back action returns to activities. Maps and landmark photos remain the main content of their screens, with compact controls and preserved attribution. Adult onboarding uses a field-first layout with one detail per step, a compact progress indicator and a single save/next action. Help retains its separate cool theme, no training mascot and a visible prototype notice.
 
-Mission 01 uses portrait environment backgrounds and a separate character layer. Decision targets highlight the pictured windows, doors, rooms and destinations, with readable captions and native labelled tap controls. Abstract actions and fictional contacts use separate illustrated targets within the scene. Mission 02 places selectable people, landmarks and action objects in its fictional square. Equivalent targets use the same neutral highlight before selection; feedback supplies the outcome colour and symbol. Training and adult-setup icons retain their original colours.
+Mission 01 uses portrait environment backgrounds and a separate character layer. Decision targets highlight the pictured windows, doors, rooms and destinations, with readable captions and native labelled tap controls. Abstract actions and fictional contacts use separate illustrated targets within the scene. Each fictional contact card shows one centered avatar and its name, without duplicate caption icons or placeholder text lines. Mission 02 places selectable people, landmarks and action objects in its fictional square. Equivalent targets use the same neutral highlight before selection; feedback supplies the outcome colour and symbol. Training and adult-setup icons retain their original colours.
 
-Narration and feedback stay outside the scene; next/retry actions remain below it. Narrow and large-text layouts allow scenes to grow or scroll while retaining at least 48-pixel touch targets. The hallway and two-wall explanation stays visible. Completion keeps replay and exit actions available. Narration, decisions, consequences, explanations and return paths are preserved.
+Narration and feedback stay outside the scene. Mission 01 decisions show dinosaur feedback immediately, keep wrong targets greyed out, and advance correct answers automatically; its instruction screens retain next actions. Mission 02 retains next/retry actions below the scene. Narrow and large-text layouts allow scenes to grow or scroll while retaining at least 48-pixel touch targets. The hallway and two-wall explanation stays visible during correct-answer feedback. Completion keeps replay and exit actions available.
 
 The current activity split adds a separate scenario-list route to the implemented graph. Mission content and the future graph remain unchanged. Earlier verification records in [UI_IMPLEMENTATION_PLAN.md](UI_IMPLEMENTATION_PLAN.md) are historical; the current pass has its own integration checks.
 

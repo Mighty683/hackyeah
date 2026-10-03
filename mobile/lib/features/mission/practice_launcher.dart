@@ -291,6 +291,7 @@ class _PracticeSelectionScreenState extends State<_PracticeSelectionScreen>
       label: label,
       icon: icon,
       onPressed: _opening ? null : onPressed,
+      large: _selection == _Selection.activity,
     ),
   );
 }

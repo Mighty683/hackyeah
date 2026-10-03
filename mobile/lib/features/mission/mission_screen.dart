@@ -49,6 +49,7 @@ class _MissionScreenState extends State<MissionScreen>
   bool _exiting = false;
   bool _foreground = true;
   int _audioRequest = 0;
+  int _feedbackRequest = 0;
   double _dragDistance = 0;
 
   @override
@@ -80,7 +81,7 @@ class _MissionScreenState extends State<MissionScreen>
       _audioReady = ready;
       _initializingAudio = false;
     });
-    if (ready) await _narrate();
+    if (ready) await _playCurrent();
   }
 
   String get _spokenText {
@@ -124,16 +125,42 @@ class _MissionScreenState extends State<MissionScreen>
   }
 
   void _choose(String id) {
-    if (_session.hasFeedback || _session.isComplete || _enteringPhoneNumber) {
+    if (!_session.canChoose ||
+        _session.rejectedChoiceIds.contains(id) ||
+        _enteringPhoneNumber) {
       return;
     }
     if (_session.step.id == 'communication' && id == 'message') {
+      ++_feedbackRequest;
       setState(() => _enteringPhoneNumber = true);
       unawaited(_loadPhoneContacts());
       return;
     }
     setState(() => _session.choose(id));
-    unawaited(_narrate());
+    unawaited(_respondToChoice());
+  }
+
+  Future<void> _playCurrent() => _session.hasFeedback && !_enteringPhoneNumber
+      ? _respondToChoice()
+      : _narrate();
+
+  Future<void> _respondToChoice() async {
+    final request = ++_feedbackRequest;
+    final choice = _session.selectedChoice;
+    // Keep feedback readable even if the voice is unavailable or very short.
+    final readingTime = choice?.isCorrect == true
+        ? Future<void>.delayed(const Duration(seconds: 3))
+        : Future<void>.value();
+    await _narrate();
+    await readingTime;
+    if (!mounted ||
+        _exiting ||
+        !_foreground ||
+        request != _feedbackRequest ||
+        choice?.isCorrect != true) {
+      return;
+    }
+    _next();
   }
 
   Future<void> _loadPhoneContacts() async {
@@ -187,21 +214,16 @@ class _MissionScreenState extends State<MissionScreen>
   }
 
   void _next() {
-    final choice = _session.selectedChoice;
+    ++_feedbackRequest;
     setState(() {
-      if (choice != null &&
-          !choice.isCorrect &&
-          !choice.continuesAfterFeedback) {
-        _session.retry();
-      } else {
-        _session.advance();
-      }
+      _session.advance();
       _dragDistance = 0;
     });
     unawaited(_narrate());
   }
 
   void _restart() {
+    ++_feedbackRequest;
     setState(() {
       _session.restart();
       _enteringPhoneNumber = false;
@@ -214,6 +236,7 @@ class _MissionScreenState extends State<MissionScreen>
   Future<void> _exit() async {
     if (_exiting) return;
     setState(() => _exiting = true);
+    ++_feedbackRequest;
     ++_audioRequest;
     await _audio.dispose();
     if (mounted) Navigator.of(context).pop();
@@ -222,8 +245,9 @@ class _MissionScreenState extends State<MissionScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     _foreground = state == AppLifecycleState.resumed;
+    ++_feedbackRequest;
     if (_foreground) {
-      unawaited(_narrate());
+      unawaited(_playCurrent());
       return;
     }
     if (!_initializingAudio) ++_audioRequest;
@@ -234,6 +258,7 @@ class _MissionScreenState extends State<MissionScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    ++_feedbackRequest;
     ++_audioRequest;
     unawaited(_audio.dispose());
     super.dispose();
@@ -264,10 +289,10 @@ class _MissionScreenState extends State<MissionScreen>
             label: 'Replay audio',
             button: true,
             enabled: _audioReady,
-            onTap: _audioReady ? () => unawaited(_narrate()) : null,
+            onTap: _audioReady ? () => unawaited(_playCurrent()) : null,
             child: ExcludeSemantics(
               child: IconButton(
-                onPressed: _audioReady ? () => unawaited(_narrate()) : null,
+                onPressed: _audioReady ? () => unawaited(_playCurrent()) : null,
                 tooltip: 'Replay audio',
                 icon: BaseboundIcon(
                   BaseboundIconName.speaker,
@@ -348,8 +373,10 @@ class _MissionScreenState extends State<MissionScreen>
       if (_enteringPhoneNumber) return _phonePracticeLayout();
       final step = _session.step;
       if (step.id == 'message') return _messageLayout();
-      final visual = _session.selectedChoice?.visual ?? step.visual;
-      if (step.isDecision && !_session.hasFeedback) {
+      final visual = _session.selectedChoice?.isCorrect == true
+          ? _session.selectedChoice?.visual ?? step.visual
+          : step.visual;
+      if (step.isDecision) {
         return _decisionLayout(visual, constraints);
       }
       return Column(
@@ -485,8 +512,11 @@ class _MissionScreenState extends State<MissionScreen>
       gender: widget.gender,
       stepId: _session.step.id,
       selectedChoice: _session.selectedChoice,
-      choices: _session.hasFeedback ? const [] : _session.step.choices,
-      onChoose: _session.hasFeedback ? null : _choose,
+      choices: visual == _session.step.visual
+          ? _session.step.choices
+          : const [],
+      rejectedChoiceIds: _session.rejectedChoiceIds,
+      onChoose: _session.canChoose ? _choose : null,
     );
     if (_session.step.id != 'get_down') return scene;
     return GestureDetector(
@@ -536,6 +566,10 @@ class _MissionScreenState extends State<MissionScreen>
             _decisionInstruction(),
             const SizedBox(height: 16),
             _scene(visual),
+            if (_session.hasFeedback) ...[
+              const SizedBox(height: 12),
+              _feedback(),
+            ],
           ],
         ),
       );
@@ -544,24 +578,47 @@ class _MissionScreenState extends State<MissionScreen>
       return Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(child: SingleChildScrollView(child: _decisionInstruction())),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(child: _decisionInstruction()),
+                ),
+                if (_session.hasFeedback)
+                  Flexible(child: SingleChildScrollView(child: _feedback())),
+              ],
+            ),
+          ),
           const SizedBox(width: 16),
           Expanded(child: Center(child: _scene(visual))),
         ],
       );
     }
-    // Keep the complete scene and every object target visible. Longer voice
-    // fallback instructions can scroll independently of the interactive art.
+    // Reserve the same footer before and after a tap so wrong answers do not
+    // resize the scene or shift the child's on-screen position.
+    final feedbackHeight = (constraints.maxHeight * .22).clamp(96.0, 160.0);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SizedBox(
-          height: (constraints.maxHeight - constraints.maxWidth * 1.5 - 12)
-              .clamp(64.0, constraints.maxHeight * .35),
+          height:
+              (constraints.maxHeight -
+                      constraints.maxWidth * 1.5 -
+                      feedbackHeight -
+                      24)
+                  .clamp(64.0, constraints.maxHeight * .35),
           child: SingleChildScrollView(child: _decisionInstruction()),
         ),
         const SizedBox(height: 12),
         Expanded(child: Center(child: _scene(visual))),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: feedbackHeight,
+          child: SingleChildScrollView(
+            child: _session.hasFeedback ? _feedback() : const SizedBox.shrink(),
+          ),
+        ),
       ],
     );
   }
@@ -572,46 +629,19 @@ class _MissionScreenState extends State<MissionScreen>
       color: _session.selectedChoice!.isCorrect
           ? BaseboundColors.greenLight
           : BaseboundColors.coralLight,
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          BaseboundIcon(
-            _session.selectedChoice!.isCorrect
-                ? BaseboundIconName.check
-                : BaseboundIconName.idea,
-            size: 24,
-            color: _session.selectedChoice!.isCorrect
-                ? BaseboundColors.green
-                : BaseboundColors.coral,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              _session.feedback!,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                height: 1.4,
-              ),
-            ),
-          ),
-        ],
+      padding: const EdgeInsets.all(12),
+      child: BaseboundGuide(
+        message: _session.feedback!,
+        positive: _session.selectedChoice!.isCorrect,
       ),
     ),
   );
 
   Widget _nextButton() {
-    final choice = _session.selectedChoice;
-    final retry =
-        choice != null && !choice.isCorrect && !choice.continuesAfterFeedback;
-    final label = retry ? 'Try again' : _nextLabel();
     return FilledButton.icon(
       onPressed: _next,
-      icon: BaseboundIcon(
-        retry ? BaseboundIconName.replay : BaseboundIconName.next,
-      ),
-      label: Text(label),
+      icon: const BaseboundIcon(BaseboundIconName.next),
+      label: Text(_nextLabel()),
     );
   }
 
