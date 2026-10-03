@@ -573,7 +573,7 @@ class _MissionScreenState extends State<MissionScreen>
       Text(
         _session.step.id == 'get_down' || _session.step.id == 'protect_head'
             ? 'Tap a pose to choose.'
-            : 'Tap a highlighted part of the picture.',
+            : 'Tap a highlighted object to choose.',
         style: const TextStyle(color: BaseboundColors.muted),
       ),
       _audioControls(),

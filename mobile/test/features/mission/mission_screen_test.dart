@@ -138,14 +138,11 @@ void main() {
       (widget) => widget is Semantics && widget.properties.label == 'Leave now',
     );
     expect(tester.widget<Semantics>(door).properties.enabled, isFalse);
-    final doorMaterial = find.descendant(
+    final doorTapTarget = find.descendant(
       of: door,
-      matching: find.byType(Material),
+      matching: find.byType(InkWell),
     );
-    expect(
-      tester.widget<Material>(doorMaterial).color,
-      BaseboundColors.muted.withValues(alpha: .3),
-    );
+    expect(tester.widget<InkWell>(doorTapTarget).onTap, isNull);
     final characterAfter = tester.widget<AnimatedPositioned>(
       find.byKey(const ValueKey('mission-character')),
     );
@@ -156,10 +153,7 @@ void main() {
       find.text('Good. Stay inside your home. Wait for the all-clear.'),
       findsOneWidget,
     );
-    expect(
-      tester.widget<Material>(doorMaterial).color,
-      BaseboundColors.muted.withValues(alpha: .3),
-    );
+    expect(tester.widget<InkWell>(doorTapTarget).onTap, isNull);
     await _finishFeedback(tester);
     await _tap(tester, 'Remember the steps');
     expect(find.byType(MissionScene), findsNothing);
@@ -516,14 +510,43 @@ void main() {
     await _tap(tester, 'Find a place');
     expect(tester.takeException(), isNull);
     await _tap(tester, 'Move deeper inside');
-    expect(find.text('Living room'), findsOneWidget);
-    expect(find.text('Bedroom'), findsOneWidget);
-    expect(find.text('Kitchen'), findsOneWidget);
-    expect(find.text('Inside hallway'), findsOneWidget);
+    expect(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is Semantics && widget.properties.label == 'Living room',
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.byWidgetPredicate(
+        (widget) => widget is Semantics && widget.properties.label == 'Bedroom',
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.byWidgetPredicate(
+        (widget) => widget is Semantics && widget.properties.label == 'Kitchen',
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is Semantics && widget.properties.label == 'Inside hallway',
+      ),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
     await _tap(tester, 'Inside hallway');
     await _tap(tester, 'Grandparent');
-    expect(find.text('Send one message'), findsOneWidget);
+    expect(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is Semantics &&
+            widget.properties.label == 'Send one message',
+      ),
+      findsOneWidget,
+    );
     await _tap(tester, 'Send one message');
     for (final digit in '123456789'.split('')) {
       await _tap(tester, digit);

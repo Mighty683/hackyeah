@@ -6,6 +6,7 @@ import '../../widgets/child_character.dart';
 import '../parent/data/family_plan.dart';
 import 'lost_landmarks.dart';
 import 'lost_mission.dart';
+import 'scene_object_target.dart';
 
 BaseboundIconName lostActionIcon(LostActionIcon action) => switch (action) {
   LostActionIcon.stop || LostActionIcon.stay => BaseboundIconName.stay,
@@ -24,7 +25,7 @@ BaseboundIconName lostActionIcon(LostActionIcon action) => switch (action) {
   LostActionIcon.grandparent => BaseboundIconName.grandparent,
 };
 
-/// The pictured object and its caption form one accessible scene target.
+/// The pictured object is the accessible scene target; labels are spoken only.
 class LostMissionChoiceCard extends StatelessWidget {
   const LostMissionChoiceCard({
     super.key,
@@ -38,51 +39,17 @@ class LostMissionChoiceCard extends StatelessWidget {
   final ChildGender childGender;
 
   @override
-  Widget build(BuildContext context) => Semantics(
+  Widget build(BuildContext context) => SceneObjectTarget(
     label: choice.label,
-    button: true,
-    enabled: onPressed != null,
     onTap: onPressed,
-    child: ExcludeSemantics(
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(12),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                height: 124,
-                width: double.infinity,
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  border: Border.all(color: BaseboundColors.blue),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: _illustration(),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  choice.label,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: BaseboundColors.ink,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    height: 1.2,
-                  ),
-                ),
-              ),
-            ],
-          ),
+    child: SizedBox(
+      height: 140,
+      width: double.infinity,
+      child: CustomPaint(
+        foregroundPainter: const SceneObjectHalo(),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: _illustration(),
         ),
       ),
     ),

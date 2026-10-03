@@ -28,16 +28,16 @@ class MissionSceneLayout {
 }
 
 const _homeTargets = {
-  'window': Rect.fromLTWH(.025, .16, .31, .40),
-  'door': Rect.fromLTWH(.655, .15, .32, .45),
-  'interior': Rect.fromLTWH(.355, .25, .28, .40),
+  'window': Rect.fromLTWH(0, .015, .18, .40),
+  'door': Rect.fromLTWH(.77, .10, .22, .50),
+  'interior': Rect.fromLTWH(.35, .15, .29, .44),
 };
 
 const _apartmentTargets = {
-  'living_room': Rect.fromLTWH(.07, .10, .36, .33),
-  'bedroom': Rect.fromLTWH(.58, .10, .35, .33),
-  'kitchen': Rect.fromLTWH(.07, .54, .36, .35),
-  'hallway': Rect.fromLTWH(.58, .54, .29, .34),
+  'living_room': Rect.fromLTWH(.085, .07, .335, .34),
+  'bedroom': Rect.fromLTWH(.595, .07, .305, .34),
+  'kitchen': Rect.fromLTWH(.04, .54, .38, .35),
+  'hallway': Rect.fromLTWH(.425, .44, .16, .43),
 };
 
 const _streetDestinations = {
@@ -84,7 +84,7 @@ MissionSceneLayout missionSceneLayout(String? stepId, MissionVisual visual) {
         'living_room': Offset(.25, .28),
         'bedroom': Offset(.76, .28),
         'kitchen': Offset(.25, .71),
-        'hallway': Offset(.76, .70),
+        'hallway': Offset(.505, .75),
       },
     ),
     'destination' => const MissionSceneLayout(
@@ -136,20 +136,20 @@ MissionSceneLayout missionSceneLayout(String? stepId, MissionVisual visual) {
     'noise' => const MissionSceneLayout(
       family: MissionVisual.apartment,
       targets: {
-        'window': Rect.fromLTWH(.07, .08, .36, .35),
-        'door': Rect.fromLTWH(.57, .37, .36, .18),
-        'stay': Rect.fromLTWH(.58, .59, .29, .30),
+        'window': Rect.fromLTWH(.11, .05, .30, .17),
+        'door': Rect.fromLTWH(.405, .85, .21, .135),
+        'stay': Rect.fromLTWH(.425, .56, .16, .285),
       },
-      childFeet: Offset(.76, .70),
-      childWidth: .20,
-      destinations: {'window': Offset(.25, .28), 'door': Offset(.76, .28)},
+      childFeet: Offset(.505, .75),
+      childWidth: .18,
+      destinations: {'window': Offset(.25, .28), 'door': Offset(.505, .91)},
     ),
     'quiet' => const MissionSceneLayout(
       family: MissionVisual.quiet,
       asset: 'assets/illustrations/hallway-practice-v2.png',
       targets: {
-        'leave': Rect.fromLTWH(.655, .20, .31, .40),
-        'stay': Rect.fromLTWH(.24, .66, .40, .30),
+        'leave': Rect.fromLTWH(.815, 0, .16, .68),
+        'stay': Rect.fromLTWH(.27, .51, .37, .40),
       },
       childFeet: Offset(.47, .76),
       childWidth: .35,

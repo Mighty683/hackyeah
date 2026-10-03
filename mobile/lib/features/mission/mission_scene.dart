@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../../ui/basebound_icons.dart';
@@ -5,9 +7,11 @@ import '../../widgets/child_character.dart';
 import '../parent/data/family_plan.dart';
 import '../../ui/basebound_ui.dart';
 import 'air_raid_mission.dart';
-import 'mission_choice_card.dart';
+import 'mission_home_plan.dart';
+import 'mission_object_highlights.dart';
 import 'mission_outdoor_action_scene.dart';
 import 'mission_scene_layout.dart';
+import 'scene_object_target.dart';
 
 bool missionUsesSceneChoices(MissionVisual visual) => switch (visual) {
   MissionVisual.room ||
@@ -89,6 +93,18 @@ class MissionScene extends StatelessWidget {
                 if (visual == MissionVisual.alarm ||
                     visual == MissionVisual.allClear)
                   _phoneSignal(constraints),
+                IgnorePointer(
+                  child: CustomPaint(
+                    painter: MissionObjectHighlights(
+                      layout: layout,
+                      stepId: stepId,
+                      choices: choices,
+                      selectedChoice: selectedChoice,
+                      rejectedChoiceIds: rejectedChoiceIds,
+                      visual: visual,
+                    ),
+                  ),
+                ),
                 for (var index = 0; index < choices.length; index++)
                   if (layout.targets[choices[index].id] case final target?)
                     _target(constraints, target, choices[index], index),
@@ -137,24 +153,29 @@ class MissionScene extends StatelessWidget {
         (visual == MissionVisual.quiet &&
             selectedChoice != null &&
             choice.id == 'leave');
+    final width = math.max(49.0, target.width * constraints.maxWidth);
+    final height = math.max(49.0, target.height * constraints.maxHeight);
     return Positioned(
-      left: target.left * constraints.maxWidth,
-      top: target.top * constraints.maxHeight,
-      width: target.width * constraints.maxWidth,
-      height: target.height * constraints.maxHeight,
+      left: math.min(
+        target.left * constraints.maxWidth,
+        constraints.maxWidth - width,
+      ),
+      top: math.min(
+        target.top * constraints.maxHeight,
+        constraints.maxHeight - height,
+      ),
+      width: width,
+      height: height,
       child: FocusTraversalOrder(
         order: NumericFocusOrder(index.toDouble()),
-        child: _SceneChoice(
-          choice: choice,
+        child: SceneObjectTarget(
+          label: choice.label,
           selected: selectedChoice?.id == choice.id,
           rejected: rejected,
           onTap: onChoose == null || rejected
               ? null
               : () => onChoose!(choice.id),
-          showIllustration:
-              visual == MissionVisual.communication ||
-              visual == MissionVisual.getDown ||
-              visual == MissionVisual.protectHead,
+          child: const SizedBox.expand(),
         ),
       ),
     );
@@ -212,9 +233,9 @@ class _PortraitBackdrop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fallback = CustomPaint(
-      painter: _PortraitScenePainter(layout.family, visual),
-    );
+    final fallback = layout.family == MissionVisual.apartment
+        ? const MissionHomePlan()
+        : CustomPaint(painter: _PortraitScenePainter(layout.family, visual));
     return ExcludeSemantics(
       child: layout.asset == null
           ? fallback
@@ -227,111 +248,6 @@ class _PortraitBackdrop extends StatelessWidget {
             ),
     );
   }
-}
-
-/// Every available object uses the same highlight until a choice is made.
-/// Only the small caption is opaque, so the object remains visible and tappable.
-class _SceneChoice extends StatelessWidget {
-  const _SceneChoice({
-    required this.choice,
-    required this.selected,
-    required this.rejected,
-    required this.onTap,
-    required this.showIllustration,
-  });
-
-  final MissionChoice choice;
-  final bool selected;
-  final bool rejected;
-  final VoidCallback? onTap;
-  final bool showIllustration;
-
-  @override
-  Widget build(BuildContext context) {
-    final accent = rejected
-        ? BaseboundColors.muted
-        : selected
-        ? (choice.isCorrect ? BaseboundColors.green : BaseboundColors.coral)
-        : BaseboundColors.blue;
-    return Semantics(
-      button: true,
-      enabled: onTap != null,
-      onTap: onTap,
-      selected: selected,
-      label: choice.label,
-      hint: rejected ? 'Try another choice.' : null,
-      child: ExcludeSemantics(
-        child: Material(
-          color: rejected
-              ? BaseboundColors.muted.withValues(alpha: .3)
-              : Colors.transparent,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: accent, width: 2),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: onTap,
-            focusColor: BaseboundColors.sky.withValues(alpha: .5),
-            splashColor: BaseboundColors.sky.withValues(alpha: .5),
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(4),
-                color: rejected
-                    ? BaseboundColors.border
-                    : Colors.white.withValues(alpha: .96),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (showIllustration || selected || rejected) ...[
-                      BaseboundIcon(
-                        rejected
-                            ? BaseboundIconName.cross
-                            : selected
-                            ? (choice.isCorrect
-                                  ? BaseboundIconName.check
-                                  : BaseboundIconName.cross)
-                            : missionActionIcon(choice.icon),
-                        size: 24,
-                        color: selected || rejected ? accent : null,
-                      ),
-                      const SizedBox(width: 4),
-                    ],
-                    Flexible(
-                      child: Text(
-                        _caption,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontFamily: 'Nunito',
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: BaseboundColors.ink,
-                          height: 1.15,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  String get _caption => switch (choice.id) {
-    'window' => 'Go to window',
-    'door' => choice.label == 'Go outside' ? 'Go outside' : 'Go to door',
-    'interior' => 'Go inside',
-    'living_room' => 'Living room',
-    'hallway' => 'Inside hallway',
-    'more_places' => 'More places',
-    'protect_head' => 'Cover your head',
-    _ => choice.label,
-  };
 }
 
 ChildPoseName _characterPose(
@@ -407,7 +323,7 @@ class _PortraitScenePainter extends CustomPainter {
     );
     switch (family) {
       case MissionVisual.apartment:
-        _homePlan(canvas);
+        const MissionHomePlanPainter().paint(canvas, missionSceneSize);
       case MissionVisual.street:
         _street(canvas);
       case MissionVisual.contacts:
@@ -558,71 +474,6 @@ class _PortraitScenePainter extends CustomPainter {
     }
   }
 
-  void _homePlan(Canvas canvas) {
-    _panel(
-      canvas,
-      const Rect.fromLTWH(24, 50, 352, 504),
-      Colors.white,
-      radius: 0,
-    );
-    _panel(
-      canvas,
-      const Rect.fromLTWH(24, 266, 352, 50),
-      BaseboundColors.peach,
-      radius: 0,
-    );
-    _panel(
-      canvas,
-      const Rect.fromLTWH(178, 50, 48, 504),
-      BaseboundColors.peach,
-      radius: 0,
-    );
-    _panel(
-      canvas,
-      const Rect.fromLTWH(226, 316, 128, 214),
-      BaseboundColors.peach,
-      radius: 0,
-    );
-
-    // Openings are omitted from wall segments so windows and doors read as
-    // architecture, rather than colourful objects laid over the rooms.
-    for (final segment in [
-      (const Offset(24, 50), const Offset(70, 50)),
-      (const Offset(140, 50), const Offset(260, 50)),
-      (const Offset(336, 50), const Offset(376, 50)),
-      (const Offset(24, 50), const Offset(24, 350)),
-      (const Offset(24, 424), const Offset(24, 554)),
-      (const Offset(376, 50), const Offset(376, 554)),
-      (const Offset(24, 554), const Offset(376, 554)),
-    ]) {
-      _planWall(canvas, segment.$1, segment.$2, width: 8);
-    }
-    for (final segment in [
-      (const Offset(178, 50), const Offset(178, 266)),
-      (const Offset(226, 50), const Offset(226, 266)),
-      (const Offset(24, 266), const Offset(150, 266)),
-      (const Offset(254, 266), const Offset(376, 266)),
-      (const Offset(24, 316), const Offset(150, 316)),
-      (const Offset(178, 316), const Offset(178, 554)),
-      (const Offset(226, 380), const Offset(226, 554)),
-      (const Offset(292, 316), const Offset(354, 316)),
-      (const Offset(354, 316), const Offset(354, 530)),
-      (const Offset(226, 530), const Offset(354, 530)),
-    ]) {
-      _planWall(canvas, segment.$1, segment.$2);
-    }
-    _planWindow(canvas, const Rect.fromLTWH(70, 46, 70, 8));
-    _planWindow(canvas, const Rect.fromLTWH(260, 46, 76, 8));
-    _planWindow(canvas, const Rect.fromLTWH(20, 350, 8, 74));
-    _planDoor(canvas, const Offset(150, 266), opensUp: true);
-    _planDoor(canvas, const Offset(226, 266), opensUp: true);
-    _planDoor(canvas, const Offset(150, 316), opensUp: false);
-
-    _livingRoomFurniture(canvas);
-    _bedroomFurniture(canvas);
-    _kitchenFurniture(canvas);
-  }
-
   void _planWall(Canvas canvas, Offset start, Offset end, {double width = 6}) =>
       canvas.drawLine(
         start,
@@ -632,47 +483,6 @@ class _PortraitScenePainter extends CustomPainter {
           ..strokeWidth = width
           ..strokeCap = StrokeCap.square,
       );
-
-  void _planWindow(Canvas canvas, Rect bounds) {
-    canvas.drawRect(bounds, Paint()..color = BaseboundColors.sky);
-    canvas.drawRect(
-      bounds,
-      Paint()
-        ..color = BaseboundColors.blue
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.5,
-    );
-    final horizontal = bounds.width > bounds.height;
-    _line(
-      canvas,
-      horizontal ? bounds.centerLeft : bounds.topCenter,
-      horizontal ? bounds.centerRight : bounds.bottomCenter,
-      color: BaseboundColors.blue,
-      width: 1,
-    );
-  }
-
-  void _planDoor(Canvas canvas, Offset hinge, {required bool opensUp}) {
-    const extent = 28.0;
-    final direction = opensUp ? -1.0 : 1.0;
-    _line(
-      canvas,
-      hinge,
-      Offset(hinge.dx, hinge.dy + direction * extent),
-      color: BaseboundColors.muted,
-      width: 1.5,
-    );
-    canvas.drawArc(
-      Rect.fromCircle(center: hinge, radius: extent),
-      opensUp ? -1.5708 : 0,
-      1.5708,
-      false,
-      Paint()
-        ..color = BaseboundColors.border
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.5,
-    );
-  }
 
   void _outlinedPanel(
     Canvas canvas,
@@ -689,98 +499,6 @@ class _PortraitScenePainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.5,
     );
-  }
-
-  void _livingRoomFurniture(Canvas canvas) {
-    _outlinedPanel(canvas, const Rect.fromLTWH(52, 102, 99, 50));
-    _outlinedPanel(canvas, const Rect.fromLTWH(52, 98, 99, 14));
-    _outlinedPanel(canvas, const Rect.fromLTWH(47, 110, 13, 39));
-    _outlinedPanel(canvas, const Rect.fromLTWH(143, 110, 13, 39));
-    _line(
-      canvas,
-      const Offset(101, 113),
-      const Offset(101, 146),
-      color: BaseboundColors.border,
-      width: 1.5,
-    );
-    _outlinedPanel(
-      canvas,
-      const Rect.fromLTWH(78, 195, 50, 28),
-      color: Colors.white,
-      radius: 8,
-    );
-    _line(
-      canvas,
-      const Offset(65, 77),
-      const Offset(138, 77),
-      color: BaseboundColors.muted,
-      width: 4,
-    );
-  }
-
-  void _bedroomFurniture(Canvas canvas) {
-    _outlinedPanel(canvas, const Rect.fromLTWH(246, 85, 62, 101));
-    _outlinedPanel(
-      canvas,
-      const Rect.fromLTWH(254, 92, 46, 19),
-      color: Colors.white,
-    );
-    _line(
-      canvas,
-      const Offset(247, 120),
-      const Offset(307, 120),
-      color: BaseboundColors.border,
-      width: 1.5,
-    );
-    _outlinedPanel(canvas, const Rect.fromLTWH(332, 85, 24, 110));
-    _line(
-      canvas,
-      const Offset(344, 85),
-      const Offset(344, 195),
-      color: BaseboundColors.border,
-      width: 1.5,
-    );
-    _outlinedPanel(canvas, const Rect.fromLTWH(250, 216, 38, 20));
-  }
-
-  void _kitchenFurniture(Canvas canvas) {
-    _outlinedPanel(canvas, const Rect.fromLTWH(37, 333, 32, 203));
-    _outlinedPanel(canvas, const Rect.fromLTWH(69, 509, 96, 27));
-    _outlinedPanel(
-      canvas,
-      const Rect.fromLTWH(42, 441, 22, 35),
-      color: Colors.white,
-    );
-    for (final center in [
-      const Offset(47, 355),
-      const Offset(59, 355),
-      const Offset(47, 369),
-      const Offset(59, 369),
-    ]) {
-      canvas.drawCircle(
-        center,
-        4,
-        Paint()
-          ..color = BaseboundColors.muted
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.5,
-      );
-    }
-    _outlinedPanel(
-      canvas,
-      const Rect.fromLTWH(114, 339, 49, 54),
-      color: Colors.white,
-    );
-    _line(
-      canvas,
-      const Offset(114, 355),
-      const Offset(163, 355),
-      color: BaseboundColors.border,
-      width: 1.5,
-    );
-    _outlinedPanel(canvas, const Rect.fromLTWH(117, 427, 38, 49));
-    _outlinedPanel(canvas, const Rect.fromLTWH(104, 439, 10, 24));
-    _outlinedPanel(canvas, const Rect.fromLTWH(158, 439, 10, 24));
   }
 
   void _street(Canvas canvas) {

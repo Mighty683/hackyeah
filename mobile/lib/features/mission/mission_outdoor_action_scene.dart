@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../ui/basebound_ui.dart';
 import '../parent/data/family_plan.dart';
 import 'air_raid_mission.dart';
+import 'scene_object_target.dart';
 
 enum _OutdoorPose { standing, lowered, protected }
 
@@ -49,22 +50,11 @@ class MissionOutdoorActionScene extends StatelessWidget {
       final stackChoices = width < 200;
       final targetWidth = stackChoices ? width - 32 : (width - 48) / 2;
       final poseHeight = math.min(targetWidth, 156.0);
-      final captionHeight = choices.fold<double>(48, (height, choice) {
-        final painter = TextPainter(
-          text: TextSpan(text: choice.label, style: _captionStyle),
-          textDirection: Directionality.of(context),
-          textScaler: MediaQuery.textScalerOf(context),
-        )..layout(maxWidth: math.max(1, targetWidth - 16));
-        final measuredHeight = painter.height + 24;
-        painter.dispose();
-        return math.max(height, measuredHeight);
-      });
       final contextHeight = width * .38;
       final desiredHeight = choices.isEmpty
           ? width * .93
           : contextHeight +
-                (poseHeight + captionHeight) *
-                    (stackChoices ? choices.length : 1) +
+                (poseHeight + 16) * (stackChoices ? choices.length : 1) +
                 (stackChoices ? 16 * (choices.length - 1) : 0) +
                 32;
       final height = constraints.hasBoundedHeight
@@ -120,7 +110,6 @@ class MissionOutdoorActionScene extends StatelessWidget {
                                     pose: _poseFor(choices[index].id),
                                     gender: gender,
                                     poseHeight: poseHeight,
-                                    captionHeight: captionHeight,
                                     rejected: rejectedChoiceIds.contains(
                                       choices[index].id,
                                     ),
@@ -211,21 +200,12 @@ class MissionOutdoorActionScene extends StatelessWidget {
   }
 }
 
-const _captionStyle = TextStyle(
-  fontFamily: 'Nunito',
-  fontSize: 17,
-  fontWeight: FontWeight.w700,
-  height: 1.2,
-  color: BaseboundColors.ink,
-);
-
 class _PoseChoice extends StatelessWidget {
   const _PoseChoice({
     required this.choice,
     required this.pose,
     required this.gender,
     required this.poseHeight,
-    required this.captionHeight,
     required this.onTap,
     required this.rejected,
   });
@@ -234,58 +214,22 @@ class _PoseChoice extends StatelessWidget {
   final _OutdoorPose pose;
   final ChildGender gender;
   final double poseHeight;
-  final double captionHeight;
   final VoidCallback? onTap;
   final bool rejected;
 
   @override
-  Widget build(BuildContext context) => Semantics(
-    button: true,
-    enabled: onTap != null,
-    onTap: onTap,
+  Widget build(BuildContext context) => SceneObjectTarget(
     label: choice.label,
-    hint: rejected ? 'Try another choice.' : null,
-    child: ExcludeSemantics(
-      child: Material(
-        color: rejected
-            ? BaseboundColors.border
-            : Colors.white.withValues(alpha: .92),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: BaseboundColors.border),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          focusColor: BaseboundColors.sky,
-          splashColor: BaseboundColors.sky,
-          child: Column(
-            children: [
-              SizedBox(
-                height: poseHeight,
-                width: double.infinity,
-                child: CustomPaint(painter: _OutdoorPosePainter(pose, gender)),
-              ),
-              Container(
-                constraints: BoxConstraints(minHeight: captionHeight),
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 12,
-                ),
-                decoration: const BoxDecoration(
-                  border: Border(
-                    top: BorderSide(color: BaseboundColors.border),
-                  ),
-                ),
-                child: Text(
-                  choice.label,
-                  textAlign: TextAlign.center,
-                  style: _captionStyle,
-                ),
-              ),
-            ],
-          ),
+    onTap: onTap,
+    rejected: rejected,
+    child: SizedBox(
+      height: poseHeight + 16,
+      width: double.infinity,
+      child: CustomPaint(
+        foregroundPainter: SceneObjectHalo(rejected: rejected),
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: CustomPaint(painter: _OutdoorPosePainter(pose, gender)),
         ),
       ),
     ),

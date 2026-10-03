@@ -40,8 +40,8 @@ Avoid the appearance of a mobile game advertisement.
   Avoid panels inside panels, repeated headings and competing badges.
 - Keep audio replay secondary. It must not look like the main decision.
 - Put practice choices on the pictured objects, people or destinations. Use
-  matching neutral outlines before selection, with a short readable caption
-  and a labelled touch target of at least 48 px. Keep the object visible inside
+  matching object outlines before selection, without visible choice text
+  or button surfaces. Keep an accessible label and a touch target of at least 48 px. Keep the object visible inside
   the target; use separate illustrated objects for abstract actions or contacts.
 - Keep narration and feedback outside the scene, with next/retry actions below.
   Preserve the hallway/two-wall explanation and make the scene scroll or grow

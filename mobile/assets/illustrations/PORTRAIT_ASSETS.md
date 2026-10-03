@@ -9,7 +9,7 @@ an inset corridor that looked like a doorway rising out of the floor. Its hallwa
 now opens through the rear wall on a continuous floor; destination coordinates
 were adjusted accordingly. Hallway and street use their originals as composition
 references. The apartment plan, two-wall cutaway and phone/action diagrams are
-code-native drawings in `mission_scene.dart`, with no generated labels.
+code-native drawings in `mission_scene.dart` and `mission_home_plan.dart`, with no generated labels. The revised apartment uses a transparent generated furniture sprite atlas layered over native floors and actual wall openings, preserving the original raster assets. Decision objects have outlines and no visible captions or button cards. Furniture generation and crop provenance are recorded in `INTERIOR_SPRITES.md`.
 
 ### Final prompt: home-practice-v2.png
 
