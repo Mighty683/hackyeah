@@ -8,7 +8,7 @@ Basebound is a child-focused training game for ages roughly 7–14. It helps chi
 
 Start with a welcome screen asking whether the user is an adult or a child. Keep the child's journey focused on one task per screen with minimal text and 2–4 choices on decision screens. Keep adult explanation and future family-plan setup separate from child play. Role selection is navigation, not age verification or authorization.
 
-The current Android demo implements welcome, an adult introduction, and offline character movement to a fictional base. It does not yet implement emergency decision scenarios, family-plan storage, walking navigation, or real emergency assistance. Label demo behavior clearly and never present simulated contacts or routes as working safety features. If real emergency mode is added, separate it from training and use reviewed authoritative guidance with one actionable instruction per screen.
+The current Android demo implements welcome, parent setup with encrypted local child/contact/place records, and offline character movement to a random saved practice place or a fictional base. Parent setup has no access gate; recommend fictional personal details for demos. It does not yet implement emergency decision scenarios, walking navigation, or real emergency assistance. Label demo behavior clearly and never present parent-selected places, saved contacts, or simulated routes as verified working safety features. If real emergency mode is added, separate it from training and use reviewed authoritative guidance with one actionable instruction per screen.
 
 Follow `docs/UX.md` for product principles and keep `docs/SCREEN_FLOW.md` updated as screens and actions change. Its implemented and future graphs must stay distinct.
 
@@ -42,9 +42,9 @@ Use pnpm only for JavaScript tooling. The pnpm workspace contains one package: `
 
 ## Android game
 
-The standalone Flutter + Flame Android application lives in `mobile/`, outside the pnpm workspace, and is the primary product. Run Flutter/Dart tools from `mobile/` (`flutter pub get`, `flutter analyze`, `flutter run`, `flutter build apk --debug`); pnpm does not build or run the game. The current mobile scope includes welcome, the adult introduction, and the game screen; expand it only when requested.
+The standalone Flutter + Flame Android application lives in `mobile/`, outside the pnpm workspace, and is the primary product. Run Flutter/Dart tools from `mobile/` (`flutter pub get`, `flutter analyze`, `flutter run`, `flutter build apk --debug`); pnpm does not build or run the game. The current mobile scope includes welcome, parent setup (one child, up to three contacts, named offline practice pins), and the game screen; expand it only when requested.
 
-The game bundles a real offline OpenStreetMap snapshot at `mobile/assets/maps/tauron-arena.geojson`. Preserve its attribution and license documentation in that directory. Refresh the snapshot from the workspace root with `pnpm maps:refresh`; the tool lives in `scripts/refresh-demo-map.mjs`. The fictional base and mission are demo data. Inactive survival resource indicators have been removed from the Android game screen. The game has no runtime backend dependency.
+The game bundles a real offline OpenStreetMap snapshot at `mobile/assets/maps/tauron-arena.geojson`. Preserve its attribution and license documentation in that directory. Refresh the snapshot from the workspace root with `pnpm maps:refresh`; the tool lives in `scripts/refresh-demo-map.mjs`. The fallback fictional base and mission are demo data. Saved parent-selected places are practice targets, not verified safe destinations. Online area selection remains future work. Inactive survival resource indicators have been removed from the Android game screen. The game has no runtime backend dependency.
 
 ## Ripwire context
 

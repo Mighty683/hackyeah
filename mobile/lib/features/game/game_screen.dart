@@ -4,9 +4,13 @@ import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 
 import '../../game/neighborhood_game.dart';
+import '../parent/data/family_plan.dart';
 
 class GameScreen extends StatefulWidget {
-  const GameScreen({super.key});
+  const GameScreen({this.destination, this.onNewGame, super.key});
+
+  final SafePoint? destination;
+  final VoidCallback? onNewGame;
 
   @override
   State<GameScreen> createState() => _GameScreenState();
@@ -20,6 +24,7 @@ class _GameScreenState extends State<GameScreen> {
   void initState() {
     super.initState();
     _game = NeighborhoodGame(
+      destination: widget.destination,
       onArrived: () {
         if (mounted) setState(() => _arrived = true);
       },
@@ -27,6 +32,10 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _restart() {
+    if (widget.onNewGame != null) {
+      widget.onNewGame!();
+      return;
+    }
     _game.restart();
     setState(() => _arrived = false);
   }
@@ -36,9 +45,10 @@ class _GameScreenState extends State<GameScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('About this demo'),
-        content: const Text(
+        content: Text(
           'This is a practice game, not real-world navigation. '
-          'The base is pretend. Your character can move freely.\n\n'
+          '${widget.destination == null ? 'The base is pretend.' : 'The target is a parent-selected practice place, not a verified safe destination.'} '
+          'Your character can move freely.\n\n'
           'The map shows 2 × 2 km around TAURON Arena in Kraków.\n\n'
           'Map data © OpenStreetMap contributors · ODbL 1.0.',
         ),
@@ -91,14 +101,16 @@ class _GameScreenState extends State<GameScreen> {
             liveRegion: true,
             header: true,
             child: Text(
-              _arrived ? 'You reached the base!' : 'Reach the pretend base',
+              _arrived
+                  ? 'You reached ${widget.destination?.displayName ?? 'the base'}!'
+                  : 'Reach ${widget.destination?.displayName ?? 'the pretend base'}',
               style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
             ),
           ),
           const SizedBox(height: 8),
           Text(
             _arrived
-                ? 'You guided your character to the base.'
+                ? 'You guided your character to the practice target.'
                 : 'Tap the map to move your character.',
             style: const TextStyle(fontSize: 18),
           ),

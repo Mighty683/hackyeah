@@ -4,34 +4,71 @@ Updated: 2026-10-03. Android is the application; the Slidev screens are pitch pr
 
 ## Implemented Android flow
 
-Solid arrows describe working navigation or game actions. Result, loading and error are states of the game screen. “Back” returns to the screen that opened the game. Role selection changes the journey; it is not age verification or access control.
+Solid arrows describe working navigation and actions. Loading, result and error are screen states. Role selection changes the journey; it is not age verification or access control. Parent setup is freely accessible in this demo.
 
 ```mermaid
 flowchart TD
     W["WELCOME<br/>Are you an adult or a child?"]
-    A["ADULT INTRODUCTION<br/>Explore together<br/>Practice game; not real-world navigation"]
+    A["PARENT SETUP<br/>Child details, up to 3 contacts, practice places"]
+    AL["SETUP: LOADING<br/>Read the encrypted local family plan"]
+    AE["SETUP: LOAD ERROR<br/>Retry or explicitly delete saved details"]
+    C["CHILD DETAILS<br/>Optional name, age, address, support needs"]
+    T["TRUSTED CONTACT<br/>Optional name, phone, relationship"]
+    M["PRACTICE PLACE<br/>Optional name; choose a pin on the offline map"]
+    ME["PLACE: MAP ERROR<br/>Go back and try again"]
+    SE["FORM: SAVE ERROR<br/>Keep edits and retry"]
+    DEL["DELETE CONFIRMATION<br/>Delete entry or all saved details"]
+    F["GAME: SELECT TARGET<br/>Read saved places; randomly choose a valid pin<br/>No places: use the fictional base"]
+    FE["GAME: SAVED DETAILS ERROR<br/>Retry or go back"]
     L["GAME: LOADING<br/>Load the offline map"]
-    G["GAME: PLAYING<br/>Reach the pretend base<br/>Tap the map to move your character"]
-    R["GAME: RESULT<br/>You reached the base!<br/>You guided your character to the base"]
-    E["GAME: LOAD ERROR<br/>Go back and try again"]
-    I["ABOUT THIS DEMO<br/>Pretend base, free movement and map credits"]
+    G["GAME: PLAYING<br/>Reach the named practice place or pretend base<br/>Tap the map to move your character"]
+    R["GAME: RESULT<br/>You reached the practice target"]
+    E["GAME: MAP ERROR<br/>Go back and try again"]
+    I["ABOUT THIS DEMO<br/>Practice-only movement and map credits"]
 
-    W -->|I'm a child| L
-    W -->|I'm an adult| A
-    A -->|Play together| L
+    W -->|I'm an adult| AL
+    AL -->|Details loaded| A
+    AL -->|Read failed| AE
+    AE -->|Retry loading| AL
+    AE -->|Delete all saved details| DEL
+    W -->|I'm a child| F
+    A -->|Edit child details| C
+    A -->|Add or edit contact| T
+    A -->|Add or edit practice place| M
+    C -->|Save changes| A
+    T -->|Save changes| A
+    M -->|Save changes after choosing a position| A
+    C -->|Back: discard unsaved edits| A
+    T -->|Back: discard unsaved edits| A
+    M -->|Back: discard unsaved edits| A
+    C -->|Save failed| SE
+    T -->|Save failed| SE
+    M -->|Save failed| SE
+    SE -->|Retry on the same form| A
+    M -->|Map load failed| ME
+    ME -->|Back| A
+    A -->|Delete entry or all saved details| DEL
+    DEL -->|Keep| A
+    DEL -->|Delete: persist removal| A
+    A -->|Play together| F
     A -->|Back| W
+    F -->|Target selected or fictional fallback| L
+    F -->|Read failed| FE
+    FE -->|Try again| F
     L -->|Map loaded| G
-    L -->|Map failed to load| E
+    L -->|Map load failed| E
     G -->|Tap a map point: move character| G
-    G -->|Reach the base| R
-    G -->|Start again: reset position| G
-    R -->|Play again: reset position| G
+    G -->|Reach target| R
+    G -->|Start again: choose a new random target| F
+    R -->|Play again: choose a new random target| F
     G -->|About this demo| I
     R -->|About this demo| I
-    I -->|Close: return to previous game state| P{"Previous game state"}
+    I -->|Close| P{"Previous game state"}
     P -->|Playing| G
     P -->|Result| R
-    L -->|Back| B{"Opened by"}
+    F -->|Back| B{"Opened by"}
+    FE -->|Back| B
+    L -->|Back| B
     G -->|Back| B
     R -->|Back| B
     E -->|Back| B
@@ -42,30 +79,38 @@ flowchart TD
 | Screen/state | One primary task | Secondary actions |
 | --- | --- | --- |
 | Welcome | Choose child or adult | None |
-| Adult introduction | Start playing together | Back to welcome |
-| Game loading | Wait for the map | Back |
-| Game playing | Move the character to the pretend base | Restart, demo information, back |
+| Parent setup | Choose a setup task | Play together, confirmed Delete all, back |
+| Child details | Edit optional child information | Save changes, back without saving |
+| Trusted contact | Edit one of up to three contacts | Save changes, back without saving |
+| Practice place | Name and position a practice pin | Tap or accessible centre/direction controls; save, back |
+| Setup load error | Recover saved details | Retry, confirmed Delete all, back |
+| Form save error | Retry saving without losing edits | Back without saving |
+| Game target selection | Wait for saved places | Back |
+| Game playing | Move the character to the practice target | Restart with a random target, demo information, back |
 | Game result | Read the result and replay | Demo information, back |
-| Game load error | Return and reopen the game | Back |
+| Game load error | Retry saved details or reopen the map | Back |
 | Demo information | Read optional demo details | Close |
 
-Keep the map attribution visible. Water, energy and warmth cards are removed because they do not affect this demo. There is one restart control in each game state. Detailed geography and licensing information live in the information dialog.
+### Data and demo boundaries
+
+- One child; optional full name, age, address and support notes. No photo feature.
+- Up to three trusted contacts; name, phone and relationship are optional. Saving a number does not make calls or verify it.
+- Parent-selected places are named geographic pins inside the bundled TAURON Arena area. They are not verified safe destinations, walking routes, or emergency instructions.
+- Each game launch and replay chooses a random valid saved place. Repeats are possible. No places means the original fictional base.
+- The family plan persists in `flutter_secure_storage` using Android encryption. Android cloud backup and device-transfer rules exclude app data. No sync, migration or restore is promised.
+- Encryption is not a parent gate: anyone using this unlocked app can view the records. Recommend fictional personal details for demonstrations. **Delete all saved details** removes this feature's child/contact/place record after confirmation; it does not silently reset failed reads.
+- Keep map attribution visible. Preserve the distinction between real geography and simulated movement. Emergency decision scenarios and real emergency assistance are not part of this parent-setup slice.
 
 ## Proposed future product flow — not implemented
 
-Dashed arrows describe future work, not features available in Android. Keep adult setup separate from child play. Each adult setup screen asks for one piece of information. Do not add a dashboard to the welcome screen.
+Dashed arrows describe future work. Keep adult configuration separate from child training. Online area selection, multi-device sharing and protected parent access are not available in this demo.
 
 ```mermaid
 flowchart TD
     W["WELCOME<br/>Adult or child?"]
-
-    subgraph ADULT["PLANNED: adult setup"]
-        A["Choose setup task<br/>Contact or meeting place"]
-        C["Add trusted adult contact"]
-        M["Choose agreed meeting place"]
-        V["Review this change"]
-        S["Save confirmed change"]
-    end
+    A["PARENT SETUP"]
+    MAP["PLANNED: choose an area on an online map"]
+    V["PLANNED: review and confirm family-plan changes"]
 
     subgraph CHILD["PLANNED: child training"]
         H["Child start<br/>Start practice"]
@@ -83,16 +128,9 @@ flowchart TD
         K["Contact trusted adult or emergency services<br/>When appropriate for the situation"]
     end
 
-    W -.->|I'm an adult| A
+    A -.->|Choose a different area| MAP
+    MAP -.->|Review places| V
     W -.->|I'm a child| H
-    A -.->|Edit contact| C
-    A -.->|Edit meeting place| M
-    C -.->|Review contact| V
-    M -.->|Review place| V
-    V -.->|Edit again| A
-    V -.->|Confirm| S
-    S -.->|Choose another task| A
-    A -.->|Back| W
     H -.->|Start practice| T
     T -.->|Present the decision| D
     D -.->|Choose an action| X
@@ -112,10 +150,8 @@ flowchart TD
     O -.->|Next reviewed step| O
 ```
 
-The future help entry must be reachable without completing onboarding. It must use different styling from training, omit scores and entertainment, and follow situation-specific guidance from authoritative sources. This diagram defines navigation, not emergency procedures. Help is absent from Android today; the pitch includes a simulated preview that does not assess danger or make calls.
-
-The first implementation slice is the solid-arrow Android flow. Family-plan storage, branching emergency scenarios, walking mode, real navigation and real assistance remain future work.
+The future help entry must be reachable without completing onboarding. It must use different styling from training, omit scores and entertainment, and follow authoritative situation-specific guidance. This diagram defines navigation, not emergency procedures. Help is absent from this Android branch; the pitch includes a simulated preview that does not assess danger or make calls.
 
 ## Keeping this reference useful
 
-Update the implemented graph when a screen, action or return path changes. Promote future nodes only when their behavior works. Use [UX.md](UX.md) for product principles and [UX_REVIEW.md](UX_REVIEW.md) for the review behind this simplification.
+Update the implemented graph when a screen, action or return path changes. Promote future nodes only when their behavior works. Concurrent map/help branches must reconcile their implemented flows at integration. Use [UX.md](UX.md) for product principles and [UX_REVIEW.md](UX_REVIEW.md) for the earlier simplification review.

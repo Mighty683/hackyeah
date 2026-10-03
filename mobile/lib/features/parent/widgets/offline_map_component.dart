@@ -1,39 +1,24 @@
+/// Accurate bundled OSM geometry for adult pin placement, separate from child art.
+library;
+
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
-import 'package:flame/text.dart';
 import 'package:flutter/painting.dart';
 
-import '../maps/demo_map.dart';
+import '../../../game/maps/demo_map.dart';
 
-/// Real OSM geometry with a demo destination; paths are prepared once on load.
-class NeighborhoodComponent extends PositionComponent with TapCallbacks {
-  NeighborhoodComponent({
-    required this.map,
-    required this.home,
-    required this.onDestinationSelected,
-    this.homeLabel = 'Pretend base',
-    this.showHome = true,
-  }) : super(size: Vector2(560, 420)) {
+class OfflineMapComponent extends PositionComponent with TapCallbacks {
+  OfflineMapComponent({required this.map, required this.onPointSelected})
+    : super(size: Vector2(560, 420)) {
     for (final feature in map.features) {
-      final shape = _prepareShape(feature);
-      _layers.putIfAbsent(feature.layer, () => []).add(shape);
+      _layers.putIfAbsent(feature.layer, () => []).add(_prepareShape(feature));
     }
   }
 
   final DemoMap map;
-  final Vector2 home;
-  final String homeLabel;
-  final bool showHome;
-  final void Function(Vector2 point) onDestinationSelected;
+  final void Function(Vector2) onPointSelected;
   final Map<String, List<_MapShape>> _layers = {};
   final _paint = Paint();
-  final _label = TextPaint(
-    style: const TextStyle(
-      color: Color(0xFF284D40),
-      fontSize: 10,
-      fontWeight: FontWeight.w700,
-    ),
-  );
   static const _mapRect = Rect.fromLTWH(
     DemoMap.mapLeft,
     DemoMap.mapTop,
@@ -44,7 +29,7 @@ class NeighborhoodComponent extends PositionComponent with TapCallbacks {
   @override
   void onTapDown(TapDownEvent event) {
     if (_mapRect.contains(event.localPosition.toOffset())) {
-      onDestinationSelected(event.localPosition);
+      onPointSelected(event.localPosition);
     }
   }
 
@@ -116,33 +101,14 @@ class NeighborhoodComponent extends PositionComponent with TapCallbacks {
       ..strokeWidth = 1
       ..color = const Color(0xFFB4C2AC);
     canvas.drawRect(_mapRect, _paint);
-    if (showHome) {
-      _paint
-        ..style = PaintingStyle.fill
-        ..color = const Color(0xFF2B7560);
-      canvas.drawCircle(home.toOffset(), 9, _paint);
-      _label.render(
-        canvas,
-        homeLabel,
-        home + Vector2(0, -18),
-        anchor: Anchor.center,
-      );
-    }
-    _label.render(
-      canvas,
-      'TAURON ARENA',
-      map.project(map.center) + Vector2(0, 25),
-      anchor: Anchor.center,
-    );
-    _label.render(canvas, 'N ↑', Vector2(40, 30), anchor: Anchor.center);
-    _label.render(canvas, '2 km', Vector2(280, 414), anchor: Anchor.center);
   }
 
   void _drawShape(Canvas canvas, _MapShape shape) {
     final feature = shape.feature;
-    final polygon = feature.geometryType.endsWith('Polygon');
     _paint
-      ..style = polygon ? PaintingStyle.fill : PaintingStyle.stroke
+      ..style = feature.geometryType.endsWith('Polygon')
+          ? PaintingStyle.fill
+          : PaintingStyle.stroke
       ..strokeWidth = _lineWidth(feature)
       ..strokeCap = StrokeCap.round
       ..color = _color(feature);
@@ -179,7 +145,7 @@ class NeighborhoodComponent extends PositionComponent with TapCallbacks {
 }
 
 class _MapShape {
-  _MapShape(this.feature, this.path, this.points);
+  const _MapShape(this.feature, this.path, this.points);
 
   final DemoMapFeature feature;
   final Path path;

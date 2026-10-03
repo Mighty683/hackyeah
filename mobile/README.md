@@ -31,10 +31,18 @@ Release signing is not configured; the generated release configuration uses the 
 
 ## Current scope
 
-Welcome asks whether the player is an adult or a child. Children open the game directly; adults see a short introduction before playing together. The game uses an offline OpenStreetMap snapshot of a 2 × 2 km area around TAURON Arena Kraków, rendered by Flame. The character starts at the arena and moves toward tapped points; the base in the northeast is fictional. Movement is free across the map. Inactive resource cards are removed, and optional map details live behind the info button. GPS, road routing, building collisions, Street View, family-plan setup and emergency assistance are outside this phase. See [`../docs/SCREEN_FLOW.md`](../docs/SCREEN_FLOW.md) for implemented and future journeys.
+Welcome asks whether the player is an adult or a child. Adults open parent setup; children open the practice game. Parent setup saves one child's optional full name, age, address and support notes, up to three trusted contacts (optional name, phone and relationship), and named practice places. No photo feature is included.
+
+The place editor reuses the offline OpenStreetMap snapshot of a 2 × 2 km area around TAURON Arena Kraków. Tap to select a pin, or use the arena-centre and direction buttons. Places can be edited or deleted. Each game launch/replay randomly chooses a valid saved pin; repeats are possible. With no places, the northeast fictional base remains the target. The character starts at the arena and moves toward tapped points. Movement is simulated, not a walking route, and parent-selected places are not verified safe destinations.
+
+The family plan is stored locally using `flutter_secure_storage` (Android RSA-OAEP/AES-GCM defaults, no biometric requirement). Cloud backup and device-transfer exclusions are configured in the Android manifest and XML resources; recovery/migration is not promised. Failed reads show a retry/delete option rather than silently overwriting data. **Delete all saved details** removes the family-plan record after confirmation. There is no parent lock: anyone using the app can view saved details. Use fictional personal information for demo sessions. The setup screen does not make calls.
+
+Online map area selection, GPS, road routing, Street View, multi-device sync and emergency assistance are outside this branch. Inactive resource cards remain removed; optional map details live behind the info button. See [`../docs/SCREEN_FLOW.md`](../docs/SCREEN_FLOW.md) for implemented and future journeys.
 
 - `lib/app.dart`: Flutter application and theme.
-- `lib/features/welcome/welcome_screen.dart`: role selection and adult introduction.
+- `lib/features/welcome/welcome_screen.dart`: role selection and adult setup entry.
+- `lib/features/parent/`: child/contact/place editors, local models and encrypted repository.
+- `lib/features/game/game_launcher.dart`: load saved places and randomly select a valid practice target.
 - `lib/features/game/game_screen.dart`: game screen and Flutter UI.
 - `lib/game/neighborhood_game.dart`: Flame scene and demo mission.
 - `lib/game/components/`: map rendering, touch input and player movement.
