@@ -57,7 +57,7 @@ void main() {
     );
     await _tap(tester, 'Open landmark');
     await tester.enterText(find.byType(TextField), 'Red corner shop');
-    await _tap(tester, '🏪 Shop');
+    expect(find.text('🏪 Shop'), findsNothing);
     await _tap(tester, 'Choose map position', settle: false);
     await _pumpMap(tester);
     expect(_saveButton(tester).onPressed, isNull);
@@ -68,10 +68,10 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
     await tester.pumpAndSettle();
     expect(saved?.name, 'Red corner shop');
-    expect(saved?.icon, '🏪');
-    expect(Landmark.fromJson(saved!.toJson()).icon, '🏪');
-    final legacyLandmark = saved!.toJson()..remove('icon');
-    expect(Landmark.fromJson(legacyLandmark).icon, '📍');
+    expect(saved?.icon, isEmpty);
+    expect(saved!.toJson().containsKey('icon'), isFalse);
+    final legacyLandmark = saved!.toJson()..['icon'] = '🏪';
+    expect(Landmark.fromJson(legacyLandmark).icon, isEmpty);
     expect(saved?.latitude, inInclusiveRange(50, 51));
     expect(saved?.longitude, inInclusiveRange(19, 21));
     expect(find.byType(LandmarkEditorScreen), findsNothing);
@@ -91,6 +91,7 @@ void main() {
     final landmark = Landmark(
       id: '1_1',
       name: 'Photo shop',
+      icon: '🏪', // A legacy value must not appear on a landmark marker.
       photoName: '1_1.photo',
       latitude: geography.center[1].toDouble() + .003,
       longitude: geography.center[0].toDouble() + .003,
@@ -99,7 +100,20 @@ void main() {
       tester,
       GameScreen(
         map: geography,
-        landmarks: [landmark],
+        landmarks: [
+          landmark,
+          Landmark(
+            id: 'family_place_0',
+            name: 'Home',
+            icon: '🏠',
+            isDestination: true,
+            photoAsset: 'assets/landmarks/demo-home.png',
+            photoName: '',
+            latitude: geography.center[1].toDouble() - .003,
+            longitude: geography.center[0].toDouble() - .003,
+            isDemo: true,
+          ),
+        ],
         photoDirectory: directory.path,
         location: location,
       ),
@@ -107,6 +121,22 @@ void main() {
     );
     await _pumpMap(tester);
     expect(find.byKey(const ValueKey('live-gps-marker')), findsNothing);
+    expect(find.text('🏪'), findsNothing);
+    expect(find.text('🏠'), findsOneWidget);
+    expect(
+      find.descendant(of: find.byTooltip('Home'), matching: find.byType(Image)),
+      findsOneWidget,
+    );
+    await tester.tap(find.byTooltip('Home'));
+    await tester.pump();
+    expect(find.text('🏠 Home'), findsOneWidget);
+    expect(find.text('Walk here together'), findsNothing);
+    expect(
+      tester.widget<LandmarkPhoto>(find.byType(LandmarkPhoto)).assetPath,
+      'assets/landmarks/demo-home.png',
+    );
+    await tester.tap(find.byTooltip('Close place'));
+    await tester.pump();
     await tester.tap(find.byTooltip('Photo shop'));
     await tester.pump();
     expect(find.text('Walk here together'), findsOneWidget);
@@ -326,7 +356,6 @@ void main() {
           photoName: '1_1.photo',
           latitude: latitude,
           longitude: longitude,
-          icon: '🏪',
         ),
         Landmark(
           id: '2_2',
@@ -334,7 +363,17 @@ void main() {
           photoName: '2_2.photo',
           latitude: latitude + .0003,
           longitude: longitude,
-          icon: '🛝',
+        ),
+        Landmark(
+          id: 'family_place_0',
+          name: 'Home',
+          icon: '🏠',
+          isDestination: true,
+          photoAsset: 'assets/landmarks/demo-home.png',
+          photoName: '',
+          latitude: latitude + .0001,
+          longitude: longitude,
+          isDemo: true,
         ),
       ];
       var now = DateTime.now();
@@ -369,15 +408,15 @@ void main() {
       }
 
       await move(.0001);
-      expect(find.text('🏪 Red shop'), findsOneWidget);
+      expect(find.text('Red shop'), findsOneWidget);
       expect(find.byType(LandmarkPhoto), findsOneWidget);
       expect(
         tester.widget<LandmarkPhoto>(find.byType(LandmarkPhoto)).label,
         'Red shop',
       );
       await move(.0003);
-      expect(find.text('🛝 Playground'), findsOneWidget);
-      expect(find.text('🏪 Red shop'), findsNothing);
+      expect(find.text('Playground'), findsOneWidget);
+      expect(find.text('Red shop'), findsNothing);
       // Just inside/outside 50 m north of the northern landmark.
       await move(.0003 + .00044);
       expect(find.byType(LandmarkPhoto), findsOneWidget);
@@ -392,7 +431,7 @@ void main() {
       await tester.pump();
       expect(find.byType(LandmarkPhoto), findsNothing);
       await move(0);
-      await _tap(tester, '🏪 Red shop', settle: false);
+      await _tap(tester, 'Red shop', settle: false);
       expect(find.text('Walk here together'), findsOneWidget);
       await tester.ensureVisible(find.text('Walk here together'));
       await tester.tap(find.text('Walk here together'));

@@ -63,7 +63,9 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     }
     Landmark? nearest;
     var nearestDistance = 50.0;
-    for (final place in _visible.where((place) => place.photoName.isNotEmpty)) {
+    for (final place in _visible.where(
+      (place) => !place.isDestination && place.hasPhoto,
+    )) {
       final distance = Geolocator.distanceBetween(
         position.latitude,
         position.longitude,
@@ -413,12 +415,22 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
               title: Text(place.name),
               subtitle: place.isDemo
                   ? Text(
-                      place.photoName.isEmpty
+                      place.isDestination
                           ? 'Fictional demo place · not verified safe'
                           : 'Fictional demo photo · recognition only',
                     )
                   : null,
-              leading: Text(place.icon, style: const TextStyle(fontSize: 24)),
+              leading: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (place.isDestination)
+                    Text(place.icon, style: const TextStyle(fontSize: 24)),
+                  if (place.isDestination && place.hasPhoto)
+                    const SizedBox(width: 8),
+                  if (place.hasPhoto)
+                    SizedBox(width: 48, child: _photo(place, height: 48)),
+                ],
+              ),
               onTap: () {
                 Navigator.pop(sheetContext);
                 _choose(place);
@@ -468,7 +480,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
               ),
               TextButton(
                 onPressed: () => _choose(nearby.place),
-                child: Text('${nearby.place.icon} ${nearby.place.name}'),
+                child: Text(nearby.place.name),
               ),
               if (nearby.place.isDemo)
                 const Text('Fictional demo photo · recognition only'),
@@ -514,7 +526,9 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
             children: [
               Expanded(
                 child: Text(
-                  place.name,
+                  place.isDestination
+                      ? '${place.icon} ${place.name}'
+                      : place.name,
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
@@ -528,17 +542,12 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
               ),
             ],
           ),
-          if (place.photoName.isNotEmpty)
-            LandmarkPhoto(
-              path: '${widget.photoDirectory}/${place.photoName}',
-              label: place.name,
-              height: 120,
-            ),
+          if (place.hasPhoto) _photo(place, height: 120),
           const SizedBox(height: 8),
           if (place.isDemo)
             Text(
-              place.photoName.isEmpty
-                  ? 'Fictional demo place · not a verified safe destination'
+              place.isDestination
+                  ? 'Fictional demo place${place.hasPhoto ? ' and photo' : ''} · not a verified safe destination'
                   : 'Fictional demo photo and pin · recognition only',
             )
           else if (!withinMap(widget.map, place.latitude, place.longitude))
@@ -574,13 +583,9 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
               'To ${target.name}',
               style: const TextStyle(fontWeight: FontWeight.w700),
             ),
-            if (target.photoName.isNotEmpty) ...[
+            if (target.hasPhoto) ...[
               const SizedBox(height: 8),
-              LandmarkPhoto(
-                path: '${widget.photoDirectory}/${target.photoName}',
-                label: target.name,
-                height: 80,
-              ),
+              _photo(target, height: 80),
             ],
             if (route != null) ...[
               Text('${metres(_navigation.remaining)} of mapped path remaining'),
@@ -606,4 +611,11 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       ),
     );
   }
+
+  Widget _photo(Landmark place, {required double height}) => LandmarkPhoto(
+    path: '${widget.photoDirectory}/${place.photoName}',
+    assetPath: place.photoAsset,
+    label: place.name,
+    height: height,
+  );
 }

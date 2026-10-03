@@ -208,33 +208,42 @@ class _LandmarkMapCanvasState extends State<_LandmarkMapCanvas> {
                   child: ExcludeSemantics(
                     child: Column(
                       children: [
-                        if (landmark.photoName.isNotEmpty)
+                        if (landmark.hasPhoto)
                           Expanded(
-                            child: Image.file(
-                              File(
-                                '${config.photoDirectory}/${landmark.photoName}',
+                            child: Image(
+                              image: ResizeImage(
+                                landmark.photoAsset == null
+                                    ? FileImage(
+                                        File(
+                                          '${config.photoDirectory}/${landmark.photoName}',
+                                        ),
+                                      )
+                                    : AssetImage(landmark.photoAsset!),
+                                width: 120,
                               ),
                               width: 48,
                               fit: BoxFit.cover,
-                              cacheWidth: 120,
-                              errorBuilder: (_, _, _) => const Icon(
-                                Icons.photo_outlined,
-                                color: Colors.white,
+                              errorBuilder: (_, _, _) => const Center(
+                                child: Text(
+                                  '?',
+                                  style: TextStyle(color: Colors.white),
+                                ),
                               ),
                             ),
                           ),
-                        Expanded(
-                          child: Center(
-                            child: Text(
-                              landmark.icon,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w800,
-                                fontSize: 24,
+                        if (landmark.isDestination)
+                          Expanded(
+                            child: Center(
+                              child: Text(
+                                landmark.icon,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 24,
+                                ),
                               ),
                             ),
                           ),
-                        ),
                       ],
                     ),
                   ),

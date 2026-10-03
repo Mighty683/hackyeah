@@ -2,13 +2,13 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
-import '../../../ui/basebound_icons.dart';
 import '../../../ui/basebound_ui.dart';
 
 class LandmarkPhoto extends StatelessWidget {
   const LandmarkPhoto({
     required this.path,
     required this.label,
+    this.assetPath,
     this.height = 180,
     this.fit = BoxFit.cover,
     super.key,
@@ -16,31 +16,27 @@ class LandmarkPhoto extends StatelessWidget {
 
   final String path;
   final String label;
+  final String? assetPath;
   final double height;
   final BoxFit fit;
 
   @override
   Widget build(BuildContext context) => ClipRRect(
     borderRadius: BorderRadius.circular(20),
-    child: Image.file(
-      File(path),
+    child: Image(
+      image: ResizeImage(
+        assetPath == null ? FileImage(File(path)) : AssetImage(assetPath!),
+        width: 900,
+      ),
       height: height,
       width: double.infinity,
       fit: fit,
-      cacheWidth: 900,
       semanticLabel: label,
       errorBuilder: (_, _, _) => Container(
         height: height,
         color: BaseboundColors.sky,
         alignment: Alignment.center,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const BaseboundIcon(BaseboundIconName.pin, size: 32),
-            const SizedBox(height: 8),
-            const Text('Photo unavailable'),
-          ],
-        ),
+        child: const Text('Photo unavailable'),
       ),
     ),
   );

@@ -1,6 +1,10 @@
 /// Parent-only geographic pin selection on the same bundled OSM map as the game.
 library;
 
+import 'dart:async';
+import 'dart:io';
+import 'dart:ui' as ui;
+
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +22,7 @@ class OfflinePointPicker extends StatefulWidget {
     this.initialPoint,
     this.selectionLabel = 'safe place',
     this.selectionIcon = '📍',
+    this.selectionPhotoPath,
     super.key,
   });
 
@@ -25,6 +30,7 @@ class OfflinePointPicker extends StatefulWidget {
   final SafePoint? initialPoint;
   final String selectionLabel;
   final String selectionIcon;
+  final String? selectionPhotoPath;
   final ValueChanged<SafePoint> onSelected;
 
   @override
@@ -35,6 +41,7 @@ class _OfflinePointPickerState extends State<OfflinePointPicker> {
   late final _game = _PointPickerGame(
     initialPoint: widget.initialPoint,
     selectionIcon: widget.selectionIcon,
+    selectionPhotoPath: widget.selectionPhotoPath,
     otherPoints: widget.otherPoints,
     onSelected: widget.onSelected,
   );
@@ -156,6 +163,7 @@ class _PointPickerGame extends FlameGame {
   _PointPickerGame({
     required this.initialPoint,
     required this.selectionIcon,
+    required this.selectionPhotoPath,
     required this.otherPoints,
     required this.onSelected,
   }) : super(
@@ -170,7 +178,9 @@ class _PointPickerGame extends FlameGame {
   final ValueChanged<SafePoint> onSelected;
   late final DemoMap _map;
   String selectionIcon;
-  TextComponent? _marker;
+  final String? selectionPhotoPath;
+  PositionComponent? _marker;
+  Sprite? _photo;
   bool _ready = false;
 
   @override
@@ -209,11 +219,61 @@ class _PointPickerGame extends FlameGame {
     if (initial != null) {
       _select(_map.project([initial.longitude, initial.latitude]));
     }
+    if (selectionPhotoPath != null) unawaited(_loadSelectionPhoto());
+  }
+
+  // Photo decoding must not delay map placement or the accessible controls.
+  Future<void> _loadSelectionPhoto() async {
+    try {
+      final codec = await ui.instantiateImageCodec(
+        await File(selectionPhotoPath!).readAsBytes(),
+        targetWidth: 120,
+      );
+      try {
+        _photo = Sprite((await codec.getNextFrame()).image);
+      } finally {
+        codec.dispose();
+      }
+      final marker = _marker;
+      if (marker != null) {
+        marker.removeFromParent();
+        _marker = _createMarker(marker.position.clone());
+        await world.add(_marker!);
+      }
+    } catch (_) {
+      // The form reports unavailable photos; keep manual pin placement usable.
+    }
+  }
+
+  PositionComponent _createMarker(Vector2 position) {
+    if (_photo != null) {
+      return SpriteComponent(
+        sprite: _photo,
+        size: Vector2.all(48),
+        anchor: Anchor.center,
+        position: position,
+      );
+    }
+    if (selectionPhotoPath != null) {
+      return CircleComponent(
+        radius: 8,
+        anchor: Anchor.center,
+        position: position,
+        paint: Paint()..color = BaseboundColors.blue,
+      );
+    }
+    return TextComponent(
+      text: selectionIcon,
+      anchor: Anchor.center,
+      position: position,
+      textRenderer: TextPaint(style: const TextStyle(fontSize: 24)),
+    );
   }
 
   void updateSelectionIcon(String icon) {
     selectionIcon = icon;
-    _marker?.text = icon;
+    final marker = _marker;
+    if (marker is TextComponent) marker.text = icon;
   }
 
   void selectCenter() {
@@ -238,12 +298,7 @@ class _PointPickerGame extends FlameGame {
     );
     final marker = _marker;
     if (marker == null) {
-      _marker = TextComponent(
-        text: selectionIcon,
-        anchor: Anchor.center,
-        position: point,
-        textRenderer: TextPaint(style: const TextStyle(fontSize: 24)),
-      );
+      _marker = _createMarker(point);
       world.add(_marker!);
     } else {
       marker.position = point;

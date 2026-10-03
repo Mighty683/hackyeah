@@ -3,11 +3,20 @@ import 'package:flutter/material.dart';
 import '../../game/maps/demo_map.dart';
 import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
+import '../demo/data/demo_data_seeder.dart';
 import '../help/help_screen.dart';
 import '../landmarks/data/landmark.dart';
 import '../landmarks/data/landmark_repository.dart';
 import '../parent/data/family_plan_repository.dart';
+import '../parent/data/family_plan.dart';
 import 'game_screen.dart';
+
+// Match the original seed coordinates so existing installs get the demo photo
+// without rewriting saved family records or assigning it to real destinations.
+bool _isDemoHome(SafePoint point) =>
+    point.isDemo &&
+    point.latitude == demoHome.latitude &&
+    point.longitude == demoHome.longitude;
 
 /// Opens one familiar-place map; no random destination or fictional player.
 class GameLauncher extends StatefulWidget {
@@ -41,7 +50,13 @@ class _GameLauncherState extends State<GameLauncher> {
         Landmark(
           id: 'family_place_$i',
           name: plan.safePoints[i].displayName,
-          icon: plan.safePoints[i].icon,
+          icon: _isDemoHome(plan.safePoints[i])
+              ? '🏠'
+              : plan.safePoints[i].icon,
+          isDestination: true,
+          photoAsset: _isDemoHome(plan.safePoints[i])
+              ? 'assets/landmarks/demo-home.png'
+              : null,
           photoName: '',
           latitude: plan.safePoints[i].latitude,
           longitude: plan.safePoints[i].longitude,

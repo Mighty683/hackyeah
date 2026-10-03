@@ -37,7 +37,7 @@ flowchart TD
     F["OUR MAP: LOADING<br/>Read saved photo landmarks and named parent places"]
     FE["OUR MAP: LOAD ERROR<br/>Retry without resetting saved records"]
     L["OUR MAP: LOADING<br/>Load the offline map"]
-    G["OUR MAP<br/>Independent emoji/photo pins, nearby landmarks and GPS walking guidance"]
+    G["OUR MAP<br/>Photo landmarks, destination icons/photos and GPS walking guidance"]
     R["NEAR PLACE<br/>Accurate GPS is within 20 m; child confirms recognition"]
     E["OUR MAP: MAP ERROR<br/>Go back and try again"]
     I["ABOUT OUR MAP<br/>GPS, offline route limits and map credits"]
@@ -53,7 +53,7 @@ flowchart TD
 
     LP["PARENT: WALK TOGETHER<br/>Independent photo landmarks on the offline map"]
     PHOTO["ANDROID CAMERA OR GALLERY<br/>Choose one photo; cancellation saves nothing"]
-    LN["LANDMARK NAME + ICON<br/>Name one recognisable place; choose emoji"]
+    LN["LANDMARK NAME<br/>Name one photographed place"]
     LPOINT["LANDMARK PIN<br/>Tap the map or explicitly use current GPS; confirm a demo-area pin"]
     LERR["LANDMARK LOAD ERROR<br/>Retry without resetting saved records"]
     A -->|Walk together, without completing setup| LP
@@ -368,7 +368,7 @@ flowchart TD
 | Near place | Confirm recognising the original photo place | Accurate GPS required; path endpoint alone does not confirm arrival |
 | Map information | Read optional GPS and coverage details | Close |
 | Parent landmark library | Add a photo of one familiar place | Camera/gallery choice, explicit Load demo landmarks, tap a pin for details, edit name/pin, confirmed delete or delete all, back to opener |
-| Landmark name | Name the photographed place and choose an emoji icon | Choose map position, back without saving |
+| Landmark name | Name the photographed place; photo only | Choose map position, back without saving |
 | Landmark pin | Confirm one position inside the demo map | Manual tap/accessible direction controls, optional foreground GPS, previous step; saving preserves edits on failure |
 | Landmark load error | Retry reading saved landmarks | Back; no silent deletion or reset |
 | Help prototype entry | Answer whether someone nearby can help | Yes / No one can help / I'm not sure; optional familiar-place hint, close |
@@ -428,7 +428,7 @@ The current activity split adds a separate scenario-list route to the implemente
 
 ### Child map interaction
 
-**Our map** combines independent photo landmarks, saved named parent pins, recognition and walking guidance. Opening it shows the full bundled 2 × 2 km TAURON Arena, Kraków area, without an invented player position or random destination. Pins show a saved Unicode emoji instead of a number; photo landmarks also keep their thumbnail. Tap a pin to inspect its name/photo. **Walk here together** starts guidance to that selected real place. Fictional demo pins are for recognition only and have no walking action.
+**Our map** combines independent photo landmarks, saved named parent pins, recognition and walking guidance. Opening it shows the full bundled 2 × 2 km TAURON Arena, Kraków area, without an invented player position or random destination. Landmark pins show only their photo thumbnail. Family destinations keep their saved icon; Home shows a home icon and a fictional demo photo. Tap a pin to inspect its name/photo. **Walk here together** starts guidance to that selected real place. Fictional demo pins are for recognition only and have no walking action.
 
 The welcome screen requests foreground location permission once on first launch before role navigation. Denial permits practice; explicit permission retry or Android settings access is available in parent Setup options. Welcome does not start location tracking. **Our map** starts foreground GPS automatically without requesting permission. Only received phone positions set the blue dot; the accuracy circle shows uncertainty. An accepted fix is at most 30 seconds old, and turn guidance requires reported accuracy at most 25 m. Approximate fixes may show a dot but pause directions. Old fixes remove both dot and route. Denied permission, disabled GPS, stream failure and out-of-area positions are explicit states. Out-of-area coordinates are never clamped onto the arena map. Backgrounding, leaving this screen or opening Help cancels the map's GPS subscription; returning while foreground obtains a fresh fix without another permission prompt. Help uses its own foreground subscription for the optional familiar-place hint, with the same existing grant. No background permission or location history is added.
 
@@ -440,19 +440,19 @@ Functional verification covers GPS-only movement, denied/approximate/stale/out-o
 
 ### Independent photo landmarks
 
-Parents open **Walk together** directly from the family intro or setup completion. This name describes exploring together, not a recorded walk. Camera or gallery capture opens the existing parent form style: name and emoji icon, then map position. A landmark needs a non-empty short name and confirmed geographic pin. The app copies its photo out of the camera cache when saving. Editing retains its photo while changing the name, icon or position. Existing records without an icon use 📍. Back from the name step saves nothing; back from pin placement retains the draft.
+Parents open **Walk together** directly from the family intro or setup completion. This name describes exploring together, not a recorded walk. Camera or gallery capture opens the existing parent form style: name, then map position. Landmarks use photos only; there is no icon picker. A landmark needs a non-empty short name and confirmed geographic pin. The app copies its photo out of the camera cache when saving. Editing retains its photo while changing the name or position. Legacy landmark emoji fields are ignored when loading; landmarks no longer save icons. Back from the name step saves nothing; back from pin placement retains the draft.
 
 Pins are independent recognition points, stored separately from safe places. There is no stored route, sequence, track or assumed visiting order. A child may select any real point for a route from their current GPS position. Landmark collections use the existing game geography, with photo markers, pan/pinch and accessible list selection. Camera/gallery is provided by Android rather than an invented in-app camera screen. Camera results interrupted by Android activity destruction are recovered when the parent reopens Walk together.
 
 **Use my location** requests one foreground position only after the parent's explicit tap. Parents always confirm the map pin. Denied permission, disabled location, timeout and positions outside the bundled TAURON Arena map keep manual placement available. The app does not request background location or record a movement history.
 
-On a fresh installation, startup automatically adds three generated fictional photos and independent fictional pins plus one **Home** practice place. Child details and contacts stay empty. Existing installations with saved records are preserved. Interrupted seeding can retry without duplicating points; after successful initialization, deleted records stay deleted. Home retains a fictional demo flag, including after edits, and cannot be selected for real walking guidance.
+On a fresh installation, startup automatically adds three generated fictional photos and independent fictional pins plus one **Home** practice place with a home icon and bundled fictional house photo. Existing demo Home pins at the original seed position also show that photo without rewriting their saved records. Adding personal photos to family targets remains future work. Child details and contacts stay empty. Existing installations with saved records are preserved. Interrupted seeding can retry without duplicating points; after successful initialization, deleted records stay deleted. Home retains a fictional demo flag, including after edits, and cannot be selected for real walking guidance.
 
 **Load demo landmarks** remains an explicit parent action to add missing generated photo landmarks: red shop, yellow slide and blue bus stop. Existing records and edited demo records are preserved; repeated imports add only missing demo IDs. Demo labels remain visible in lists, details and practice. These images do not depict the real map locations. Bundled source assets remain available after deleting saved copies, but they are not automatically restored.
 
-Children choose **Our map** from activity selection to explore photos and locations. The nearest photo landmark within 50 m of precise, fresh live GPS is shown with its photo, saved emoji, name and approximate straight-line distance. Tapping its name opens the existing place details. Only one nearest landmark is shown; it updates as GPS moves. The card is hidden with no nearby landmark, approximate/stale/paused GPS or a position outside coverage. Fictional demo photos retain their label. Photo recall and numbered pin choices have been removed. Offline narration and replay remain available for walking instructions; nearby landmarks do not start routes or move the GPS dot.
+Children choose **Our map** from activity selection to explore photos and locations. The nearest photo landmark within 50 m of precise, fresh live GPS is shown with its photo, name and approximate straight-line distance. Family destinations, including Home, do not appear as nearby landmarks. Tapping its name opens the existing place details. Only one nearest landmark is shown; it updates as GPS moves. The card is hidden with no nearby landmark, approximate/stale/paused GPS or a position outside coverage. Fictional demo photos retain their label. Photo recall and numbered pin choices have been removed. Offline narration and replay remain available for walking instructions; nearby landmarks do not start routes or move the GPS dot.
 
-Names, emoji icons, coordinates and photo references persist in a separate encrypted `flutter_secure_storage` record. Photos are ordinary app-private files, not encrypted by that metadata store. Parent **Delete all saved details** now removes the family record, landmark record and saved app photo copies; gallery originals remain untouched. The app has no parent lock, cloud sync or photo backup/restore promise. Live walking guidance is implemented only within the bundled map. Reviewed emergency assistance and validated pedestrian routing remain future work.
+Landmark names, coordinates and photo references persist in a separate encrypted `flutter_secure_storage` record. Photos are ordinary app-private files, not encrypted by that metadata store. Parent **Delete all saved details** now removes the family record, landmark record and saved app photo copies; gallery originals remain untouched. The app has no parent lock, cloud sync or photo backup/restore promise. Live walking guidance is implemented only within the bundled map. Reviewed emergency assistance and validated pedestrian routing remain future work.
 
 ### Data and demo boundaries
 

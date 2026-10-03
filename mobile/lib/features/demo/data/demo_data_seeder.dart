@@ -10,6 +10,7 @@ import '../../parent/data/family_plan_repository.dart';
 /// Fictional training destination, not a verified home or safe place.
 const demoHome = SafePoint(
   name: 'Home',
+  icon: '🏠',
   latitude: 50.0704,
   longitude: 19.9828,
   isDemo: true,
