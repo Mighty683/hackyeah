@@ -7,6 +7,8 @@ import '../../ui/basebound_icons.dart';
 
 import '../../ui/basebound_ui.dart';
 import '../mission/practice_launcher.dart';
+import '../landmarks/landmark_library_screen.dart';
+import '../landmarks/data/landmark_repository.dart';
 import '../mission/lost_landmarks.dart';
 import 'child_editor_screen.dart';
 import 'contact_editor_screen.dart';
@@ -118,6 +120,14 @@ class _ParentScreenState extends State<ParentScreen> {
     ),
   );
 
+  Future<void> _openLandmarks() async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) => const LandmarkLibraryScreen(parentMode: true),
+      ),
+    );
+  }
+
   void _goTo(_SetupStage stage) {
     FocusManager.instance.primaryFocus?.unfocus();
     setState(() => _stage = stage);
@@ -167,13 +177,14 @@ class _ParentScreenState extends State<ParentScreen> {
     final confirmed = await _confirm(
       all ? 'Delete all saved details?' : 'Delete this entry?',
       all
-          ? 'This removes the child details, trusted contacts, safe places, and practice meeting point from this device. It cannot be undone.'
+          ? 'This removes the child details, trusted contacts, safe places, practice meeting point, landmarks, and saved photo copies from this device. It cannot be undone.'
           : 'This removes the entry from this device.',
     );
     if (!confirmed || !mounted) return;
     setState(() => _busy = true);
     try {
       if (all) {
+        await LandmarkRepository().deleteAll();
         await _repository.deleteAll();
         if (mounted) {
           setState(() {
@@ -312,6 +323,12 @@ class _ParentScreenState extends State<ParentScreen> {
 
   List<Widget> _introduction() => [
     _heading('Set up your family plan', BaseboundIconName.family),
+    OutlinedButton.icon(
+      onPressed: _openLandmarks,
+      icon: const BaseboundIcon(BaseboundIconName.map),
+      label: const Text('Walk together'),
+    ),
+    const SizedBox(height: 16),
     const Text(
       'Add your child’s details, then contacts and safe places. One step at a time.',
       style: _subtitleStyle,
@@ -450,6 +467,12 @@ class _ParentScreenState extends State<ParentScreen> {
 
   List<Widget> _ready() => [
     _heading('Ready to practice together', BaseboundIconName.check),
+    OutlinedButton.icon(
+      onPressed: _openLandmarks,
+      icon: const BaseboundIcon(BaseboundIconName.map),
+      label: const Text('Walk together'),
+    ),
+    const SizedBox(height: 16),
     Text(
       '${_plan!.contacts.length} trusted contacts · ${_plan!.safePoints.length} safe places saved',
       style: _subtitleStyle,

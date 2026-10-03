@@ -1,4 +1,4 @@
-# Basebound screen and action reference
+# Safe Path screen and action reference
 
 Updated: 2026-10-03. Android is the application; the Slidev screens are pitch prototypes.
 
@@ -30,13 +30,54 @@ flowchart TD
     F["GAME: SELECT TARGET<br/>Read saved safe places; randomly choose a valid pin<br/>No places: use the fictional base"]
     FE["GAME: SAVED DETAILS ERROR<br/>Retry or go back"]
     L["GAME: LOADING<br/>Load the offline map"]
-    G["GAME: PLAYING<br/>Reach the named safe place or pretend base<br/>Tap the map to move your character"]
-    R["GAME: RESULT<br/>Your character reached the game destination"]
+    G["GAME: PLAYING<br/>Reach the named safe place or pretend base<br/>Follow the marked practice path to a ring near the target"]
+    R["GAME: RESULT<br/>Your character reached a path near the game destination"]
     E["GAME: MAP ERROR<br/>Go back and try again"]
-    I["ABOUT THIS DEMO<br/>Practice-only movement and map credits"]
+    I["ABOUT THIS DEMO<br/>Practice-only routes, snapping limits and map credits"]
     H["HELP PROTOTYPE<br/>Unreviewed; not for real emergencies<br/>3 situations + I don't know"]
     Q["OFFLINE HELP STEP<br/>One question or instruction<br/>112 dialler always available"]
     D["PHONE APP<br/>Explicit child tap; no automatic call or SMS"]
+
+    LP["PARENT: WALK TOGETHER<br/>Independent photo landmarks on the offline map"]
+    PHOTO["ANDROID CAMERA OR GALLERY<br/>Choose one photo; cancellation saves nothing"]
+    LN["LANDMARK NAME<br/>Name one recognisable place"]
+    LPOINT["LANDMARK PIN<br/>Tap the map or explicitly use current GPS; confirm a demo-area pin"]
+    LC["CHILD: OUR LANDMARKS<br/>Tap a photo pin or choose a saved landmark"]
+    LQ["LANDMARK PRACTICE<br/>Where is this place? Photo + 2–4 numbered map pins"]
+    LR["LANDMARK FEEDBACK<br/>Show the remembered location; no score or path"]
+    LERR["LANDMARK LOAD ERROR<br/>Retry without resetting saved records"]
+    A -->|Walk together, without completing setup| LP
+    DONE -->|Walk together| LP
+    LP -->|Load demo landmarks: add missing fictional points| LP
+    LP -->|Take a photo: choose camera or gallery| PHOTO
+    PHOTO -->|Photo chosen| LN
+    PHOTO -->|Cancel| LP
+    LP -->|Edit a saved landmark| LN
+    LN -->|Choose map position| LPOINT
+    LPOINT -->|Back: retain name and chosen pin| LN
+    LN -->|Back without saving| LP
+    LPOINT -->|Save name, photo copy and pin| LP
+    LPOINT -->|Save failed: retain edits and retry| LPOINT
+    LPOINT -->|GPS denied, unavailable or outside map: choose manually| LPOINT
+    LP -->|Photo pin: view detail; edit or confirmed delete| LP
+    LP -->|Confirmed Delete all landmarks| LP
+    LP -->|Back: return to parent opener| LRETURN{"Opened by"}
+    LRETURN -->|Introduction| A
+    LRETURN -->|Completion| DONE
+    PS -->|Landmark practice| LC
+    LC -->|Tap a photo pin or list item| LC
+    LC -->|Find the photo pin: at least two saved map landmarks| LQ
+    LQ -->|Different pin: calm feedback; retry| LQ
+    LQ -->|Correct pin| LR
+    LR -->|Try another independently chosen place| LQ
+    LQ -->|See our landmarks or Back| LC
+    LR -->|See our landmarks or Back| LC
+    LC -->|Back| PS
+    LP -->|Load failed| LERR
+    LC -->|Load failed| LERR
+    LERR -->|Retry: retain parent or child mode| LRETRY{"Opened as"}
+    LRETRY -->|Parent| LP
+    LRETRY -->|Child| LC
 
     W -->|I need help: bypass role selection| H
     F -->|I need help: defer game creation| H
@@ -70,7 +111,7 @@ flowchart TD
     W -->|I'm a child| ON["CHILD ONBOARDING: NAME<br/>Name or nickname; saved details prefilled"]
     ON -->|Add my age| OA["CHILD ONBOARDING: AGE<br/>Enter age 1–99"]
     OA -->|Choose my character| OG["CHILD ONBOARDING: GENDER<br/>Girl or boy with character previews"]
-    OG -->|Start practice: save encrypted local details| PS["PRACTICE SELECTION<br/>Alarm, lost or map practice"]
+    OG -->|Start practice: save encrypted local details| PS["PRACTICE SELECTION<br/>Alarm, lost, map or landmark practice"]
     OG -->|Save failed: retain edits and retry| OG
     OA -->|Back| ON
     OG -->|Back| OA
@@ -193,11 +234,15 @@ flowchart TD
     FE -->|Try again| F
     L -->|Map loaded| G
     L -->|Map load failed| E
-    G -->|Tap a map point: move character| G
+    G -->|Tap marked path: follow connected waypoints to that point| G
+    G -->|Follow path: character follows route to endpoint ring| G
+    G -->|Block a path: fictional circle with X; recalculate and show whole map| G
+    G -->|Clear blockage: restore routes without the fictional closure| G
+    G -->|No connected path: explain and offer Start again| G
     G -->|Drag: pan; pinch or zoom buttons: zoom 1–8×| G
     G -->|Show me: 4× view follows the character| G
     G -->|Show whole map: restore full source area| G
-    G -->|Reach target| R
+    G -->|Reach mapped path near target| R
     G -->|Start again: random target, reset character and close view| F
     R -->|Drag, pinch or zoom buttons: explore without moving character| R
     R -->|Show whole map: restore full source area| R
@@ -223,7 +268,7 @@ flowchart TD
 | --- | --- | --- |
 | Welcome | Choose child or adult | Help prototype, without choosing a role |
 | Child onboarding | Enter name or nickname, age, then select girl or boy | Back keeps edits; load/save errors allow retry; saved details are prefilled |
-| Practice selection | Choose alarm, lost or map practice | Replay audio, back |
+| Practice selection | Choose alarm, lost, map or landmark practice | Replay audio, back |
 | Mission mode (7+) | Choose home or outside | Replay audio, choose practice |
 | Mission scene | Make one visual decision or hear the situation | Replay audio, back |
 | Mission feedback | See the consequence and explanation | Retry the same decision or advance; replay audio |
@@ -233,7 +278,7 @@ flowchart TD
 | Lost decision/feedback | Make one choice; hear a calm consequence | Retry unsafe choice or advance; replay audio, exit |
 | Lost reunion/confirmation | Tap I'M SAFE after the fictional reunion | Explicit local confirmation; no message sent |
 | Lost recall/completion | Recall seven actions, including meeting point only if nearby | Replay audio, Play again with the same snapshot/variant, Back to practice choices |
-| Parent intro | Add child details | Skip child details, demo/privacy details, confirmed Delete all in Setup options, back |
+| Parent intro | Add child details | Walk together; Skip child details, demo/privacy details, confirmed Delete all in Setup options, back |
 | Child name, age, address, support needs | Enter one optional detail per screen | Next with value or empty field, previous step; final step saves child record |
 | Trusted contacts | Add or review up to three contacts | Edit or confirmed delete; Choose safe places or Skip contacts; Setup options, back to intro |
 | Contact name, phone, relationship | Enter one optional detail per screen | Next with value or empty field, previous step; final step saves contact |
@@ -241,15 +286,21 @@ flowchart TD
 | Practice landmark picture/name | Choose one bundled illustration, then an optional label | Previous step, save with retained edits on failure; back without saving |
 | Safe place name | Name one safe place | Choose position, back without saving |
 | Safe place pin | Choose one geographic position | Tap or accessible centre/direction controls; save, previous step |
-| Setup complete | Play together | Review setup returns to intro; Setup options, back to safe places |
+| Setup complete | Play together | Walk together; Review setup returns to intro; Setup options, back to safe places |
 | Setup load error | Recover saved details | Retry, confirmed Delete all in Setup options, back |
 | Form save error | Retry saving without losing edits | Back without saving |
 | Game target selection/error | Wait for saved safe places or retry | Help prototype, back |
 | Game map loading | Wait for the offline map | Help prototype, back |
-| Game playing | Move the character to the selected safe place or pretend base; edge arrow points towards an offscreen target | Help prototype, pan/zoom, Show me, Show whole map, restart with a random target, demo information, back |
+| Game playing | Follow the marked practice route to a path near the selected place; edge arrow points towards the endpoint | Follow path, fictional Block a path/Clear blockage, Help prototype, pan/zoom, Show me, Show whole map, restart with a random target, demo information, back |
 | Game result | Read the result and replay | Help prototype, pan/zoom, Show me, Show whole map, demo information, back |
 | Game load error | Retry saved details or reopen the map | Help prototype, back |
 | Demo information | Read optional demo details | Close |
+| Parent landmark library | Add a photo of one familiar place | Camera/gallery choice, explicit Load demo landmarks, tap a pin for details, edit name/pin, confirmed delete or delete all, back to opener |
+| Landmark name | Name the photographed place | Choose map position, back without saving |
+| Landmark pin | Confirm one position inside the demo map | Manual tap/accessible direction controls, optional foreground GPS, previous step; saving preserves edits on failure |
+| Child landmark library | Explore independently saved photo pins | List selection, Find the photo pin when two or more map landmarks exist, back to practice selection |
+| Landmark practice | Match one photo to one of 2–4 map pins | Audio replay, calm retry, correct-location feedback, try another place, return to landmarks |
+| Landmark load error | Retry reading saved landmarks | Back; no silent deletion or reset |
 | Help prototype entry | Choose not responding, air raid, lost, or unsure | Open 112 dialler, no-signal information, close |
 | Help step | Answer one question or read one instruction | Previous step, 112 dialler, trusted-contact dialler where offered |
 
@@ -273,7 +324,7 @@ The new 7+ activity has two explicit variants: the agreed meeting point is visib
 
 Parent setup can save a practice Fountain or Information desk illustration and optional label within the existing safe-places stage. This field is independent of geographic pins. The same registry supplies setup, reminder and recognition art; it is not a photograph or a safety assessment. Contacts contribute display labels/avatar motifs only. Calls, replies and notifications are simulated; the mission never receives real phone numbers, addresses or map coordinates. Missing details use labelled fixtures, and an unknown landmark ID becomes Pretend fountain. Failed record reads require retry or explicit fictional practice and never overwrite the record.
 
-The lost selector and mission reuse offline English Android speech. Missing voice offers adult help and retry, with text retained. Leaving stops narration and returns directly to the activity list; replay resets transient progress and keeps the selected variant/snapshot. Re-entering lost practice reloads current saved details. Training is labelled unreviewed and not for real emergencies. Photos, younger-child support, familiar routes and actual parent notifications remain future work. See [MISSION_02_IMPLEMENTATION_PLAN.md](MISSION_02_IMPLEMENTATION_PLAN.md) for scope, references and verification.
+The lost selector and mission reuse offline English Android speech. Missing voice offers adult help and retry, with text retained. Leaving stops narration and returns directly to the activity list; replay resets transient progress and keeps the selected variant/snapshot. Re-entering lost practice reloads current saved details. Training is labelled unreviewed and not for real emergencies. Meeting-point/contact photos, younger-child support, familiar routes and actual parent notifications remain future work for Mission 02. See [MISSION_02_IMPLEMENTATION_PLAN.md](MISSION_02_IMPLEMENTATION_PLAN.md) for scope, references and verification.
 
 ### Visual design system
 
@@ -289,19 +340,33 @@ This visual work preserves every screen action and return path described above. 
 
 The parent pin editor and child view share the bundled OSM geography. The child view keeps actual building footprints, local streets, paths, tram lines, green areas and water, with soft colours and illustrated landmarks. Close zoom reveals service roads, paths, small footprints and play areas; tiny details and overlapping labels are omitted. Decorative trees and landmark artwork are illustrations. This incomplete map remains practice only.
 
-The initial view is 4× zoom, covering roughly 500 × 500 metres around the character. It follows character movement within the source bounds. An edge arrow points towards an offscreen target and disappears when the target is visible or the game is complete; it shows direction, not a walking route. Dragging or pinching explores without selecting a movement destination and pauses following. Only a resolved tap moves the character and resumes following. Pinch/zoom controls allow 1–8×. **Show me** restores the 4× character view, and **Show whole map** shows the full source area without resetting progress. These controls are disabled while loading or after a load error. Instructions and attribution stay outside scrolling areas. Only secondary controls can scroll; the map has its own gesture area. Short or large-text layouts use a shorter instruction and a compact toolbar with 48-pixel touch targets, tooltips and accessibility labels. Landscape places the map beside instructions and controls. Water, energy and warmth cards remain removed. There is one restart control in each loaded game state. Restart/replay reloads the saved safe places, selects a fresh random target, and resets the character and close view; repeats are possible.
+The initial view is 4× zoom, covering roughly 500 × 500 metres around the character. It follows character movement within the source bounds. An edge arrow points towards an offscreen target and disappears when the target is visible or the game is complete; it shows direction, not a walking route. Dragging or pinching explores without selecting a movement destination and pauses following. A resolved tap along the marked route or Follow path moves the character through connected waypoints and resumes following. Block a path creates a fictional closure and shows the recalculated route; Clear blockage removes it. Pinch/zoom controls allow 1–8×. **Show me** restores the 4× character view, and **Show whole map** shows the full source area without resetting progress. These controls are disabled while loading or after a load error. Instructions and attribution stay outside scrolling areas. Only secondary controls can scroll; the map has its own gesture area. Short or large-text layouts use a shorter instruction and a compact toolbar with 48-pixel touch targets, tooltips and accessibility labels. Landscape places the map beside instructions and controls. Water, energy and warmth cards remain removed. There is one restart control in each loaded game state. Restart/replay reloads the saved safe places, selects a fresh random target, and resets the character and close view; repeats are possible.
 
 Map update checks on 2026-10-03: Flutter analysis reported no issues, all 14 existing tests passed, and the Android debug APK built. A disposable loaded Flutter rendering check verified the 4× start/nearby/reset view, 1× overview, character following, pan/pinch without movement, and the arrow appearing only for an offscreen unfinished target. Phone layouts passed at 390 × 844 and 320 × 700 with 200% text; the latter retained a 246-pixel map and all four map controls. No Android device walkthrough was performed.
 
+### Independent photo landmarks
+
+Parents open **Walk together** directly from the family intro or setup completion. This name describes exploring together, not a recorded walk. Camera or gallery capture opens the existing parent form style: name, then map position. A landmark needs a non-empty short name and confirmed geographic pin. The app copies its photo out of the camera cache when saving. Editing retains its photo while changing the name or position. Back from the name step saves nothing; back from pin placement retains the draft.
+
+Pins are independent recognition points, stored separately from safe places. There is no route, sequence, track, path between pins or assumed single way to travel. Landmark collections use the existing game geography, with photo markers, pan/pinch and accessible list selection. Camera/gallery is provided by Android rather than an invented in-app camera screen. Camera results interrupted by Android activity destruction are recovered when the parent reopens Walk together.
+
+**Use my location** requests one foreground position only after the parent's explicit tap. Parents always confirm the map pin. Denied permission, disabled location, timeout and positions outside the bundled TAURON Arena map keep manual placement available. The app does not request background location or record a movement history.
+
+**Load demo landmarks** explicitly adds three generated fictional photos and independent fictional pins: red shop, yellow slide and blue bus stop. Existing records and edited demo records are preserved; repeated imports add only missing demo IDs. Demo labels remain visible in lists, details and practice. These images do not depict the real map locations. Bundled source assets remain available after deleting saved copies, but they are not automatically restored.
+
+Children choose **Landmark practice** from practice selection to explore photos and locations. With at least two saved map landmarks, **Find the photo pin** asks “Where is this place?” and offers two to four numbered pins, with matching accessible buttons. A wrong answer gives calm feedback and retries the same question. A correct answer reveals the photo at its map location. **Try another place** samples an independent landmark, avoiding the previous target; it does not advance along a route. Offline Android narration and replay reuse the existing mission voice with an adult-help fallback. No scores, timers or navigation instructions are added.
+
+Names, coordinates and photo references persist in a separate encrypted `flutter_secure_storage` record. Photos are ordinary app-private files, not encrypted by that metadata store. Parent **Delete all saved details** now removes the family record, landmark record and saved app photo copies; gallery originals remain untouched. The app has no parent lock, cloud sync or photo backup/restore promise. Live walking navigation and validated emergency assistance remain future work.
+
 ### Data and demo boundaries
 
-- One child; optional full name, age, address and support notes, entered one detail per screen. The child record is saved after the support-needs step. No photo feature.
+- One child; optional full name, age, address and support notes, entered one detail per screen. The child record is saved after the support-needs step. Photo landmarks are separate recognition records; child-profile photographs are not collected.
 - One optional practice meeting point; a bundled landmark illustration and display label, saved separately from map pins. Existing schema-v1 records without this field still load; deleting it preserves other entries. Lost practice reads display information only and uses no real communications.
 - Up to three trusted contacts; optional name, phone and relationship, entered one detail per screen. Each completed contact and safe-place editor saves its record immediately. Back from the first editor step discards only unsaved edits. Saving a number does not make calls or verify it.
-- Safe places are parent-selected destinations, stored as named geographic pins inside the bundled TAURON Arena area. Their safety and opening hours are not checked. The current demo uses them only for simulated character movement; it provides no walking route or emergency instructions.
+- Safe places are parent-selected destinations, stored as named geographic pins inside the bundled TAURON Arena area. Their safety and opening hours are not checked. The current demo uses them only for simulated character movement; it provides a simulated pedestrian practice route to a nearby mapped path, with no verified walking route or emergency instructions.
 - Each game launch and replay chooses a random valid saved safe place. Repeats are possible. No safe places means the original fictional base.
 - The family plan persists in `flutter_secure_storage` using Android encryption. Android cloud backup and device-transfer rules exclude app data. No sync, migration or restore is promised.
-- Encryption is not a parent gate: anyone using this unlocked app can view the records. Recommend fictional personal details for demonstrations. **Delete all saved details** removes this feature's child/contact/place record after confirmation; it does not silently reset failed reads.
+- Encryption is not a parent gate: anyone using this unlocked app can view the records. Recommend fictional personal details for demonstrations. **Delete all saved details** removes child/contact/place records, independent landmarks and app photo copies after confirmation; it does not silently reset failed reads.
 - Keep map attribution visible. Preserve the distinction between real geography and simulated movement. Missions 01 and 02 implement fictional alarm and lost decision training; validated real emergency assistance remains unimplemented. The separate help prototype is unreviewed.
 
 ## Proposed future product flow — not implemented
@@ -356,6 +421,31 @@ flowchart TD
 The future help entry must be reachable without completing onboarding. It must use different styling from training, omit scores and entertainment, and follow authoritative situation-specific guidance. This diagram defines navigation, not emergency procedures. Android now has an explicitly unreviewed help prototype, not released real assistance. The pitch still includes a simulated preview that does not assess danger or make calls.
 
 Full reviewed emergency procedures, background messaging, walking mode, real navigation and validated real assistance remain future work. The implemented prototype is not a promotion of the future reviewed-help graph.
+
+## Offline practice pathfinding
+
+The Android map builds a distance-and-preference-weighted graph from bundled GeoJSON and runs A* locally. No routing service, GPS or internet connection is used. The character starts on a nearby mapped path. Shared source coordinates connect ways; visual intersections do not create connections. Line segments are subdivided for accurate nearby snapping without connecting their interior crossings. Polygons are not treated as walkable networks.
+
+| Algorithm | Fit for this demo |
+| --- | --- |
+| Breadth-first search | Finds the fewest edges, not the shortest distance when segments have different lengths. |
+| Dijkstra | Correct for positive distance costs; useful for many destinations from one start, but explores without a target heuristic. |
+| A* (implemented) | Uses weighted distance travelled plus straight-line distance to the goal. The heuristic stays admissible because all preference multipliers are at least one. Suitable for one practice target. |
+| Grid / navigation mesh | Useful for fictional terrain with authored obstacles; rasterizing this street map could invent connections or erase narrow paths. |
+
+Algorithm references: [Boost shortest-path overview](https://www.boost.org/doc/libs/latest/libs/graph/doc/html/graph/algorithms/shortest_paths/shortest_paths_overview.html), [A*](https://www.boost.org/doc/libs/latest/libs/graph/doc/html/graph/algorithms/shortest_paths/astar_search.html), [breadth-first traversal](https://www.boost.org/doc/libs/latest/libs/graph/doc/html/graph/algorithms/traversal/traversal_overview.html).
+
+The simulated emergency routing profile includes footpaths, steps and public local roads. It excludes main roads, indoor ways, construction, non-public walking access, conditional access that the offline demo cannot evaluate, and any non-`no` `hazard` tag. `foot=use_sidepath` is excluded; the router must use the separately mapped path. General access restrictions may be overridden by explicit `foot=yes/designated/permissive`; cycleways require explicit foot permission. Explicit walking one-way direction is honored; vehicle one-way rules do not apply to foot travel. This is a demo policy, not a complete pedestrian access or safety model. OSM tag meanings: [access](https://wiki.openstreetmap.org/wiki/Key:access), [foot permissions](https://wiki.openstreetmap.org/wiki/Tag:foot%3Dyes), [hazards](https://wiki.openstreetmap.org/wiki/Key:hazard).
+
+Preference costs multiply map distance: dedicated pedestrian paths 1.0, roads with an explicitly attached sidewalk 1.05, living streets 1.1, crossing paths 1.15, steps 1.2, local roads with unknown or separately mapped sidewalks 1.35, and roads explicitly lacking sidewalks 1.6. These are transparent fictional demo preferences, not seconds, risk probabilities, or validated emergency policy. A modest pedestrian detour can win; a sufficiently shorter eligible local road can also win. No route is described as fastest or safest.
+
+Block a path creates a fictional circular closure, radius 4 map units (about 20 m), around the middle waypoint of the remaining route. Every graph edge intersecting the circle is removed, including edges whose endpoints lie outside it. Blocked points cannot be snapped to. The map shows the closure with an X and its area, including when no route remains. The game recomputes an alternative while the character is stationary and shows the whole map. Clear blockage removes it; restart clears it too. There is one practice blockage at a time, no live hazard detection, and no inference about an actual emergency. If rerouting fails, Follow path is disabled and the child can clear the blockage or start again.
+
+Start and target must each be within 12 map units (about 60 m) of a graph node. The endpoint ring marks the nearby path, while the original practice-place pin remains at its saved position. No straight connector to a pin is drawn. The child reaches the path near the place, not a checked entrance. Missing/disconnected routes show a calm message and disable Follow path; Start again chooses another target. Taps advance along the marked route; taps during movement are ignored. The visible path shrinks as the character advances. Restart restores the start and computes the route again.
+
+Child presentation uses a bordered line, direction chevrons and an endpoint ring so guidance does not rely on color alone. Follow path is an explicit action moving the game character. The practice-only label stays visible. Appearance and layout verification remain with the user.
+
+The GeoJSON snapshot lacks original OSM node IDs, a validated access model, entrance connections, barrier handling and live hazards. Coordinate-based topology and nearby snapping can select the wrong path or leave a pin unreachable. More complete pedestrian topology and reviewed safety data are required before real navigation. Shortest distance never means safest route.
 
 ## Keeping this reference useful
 

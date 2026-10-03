@@ -36,8 +36,9 @@ void main() {
       await FamilyPlanRepository().save(_configuredPlan);
       await tester.pumpWidget(const MaterialApp(home: PracticeLauncher()));
       await tester.pumpAndSettle();
-      expect(find.text('Alarm practice'), findsOneWidget);
-      expect(find.text('Map practice'), findsOneWidget);
+        expect(find.text('Alarm practice'), findsOneWidget);
+        expect(find.text('Map practice'), findsOneWidget);
+        expect(find.text('Landmark practice'), findsOneWidget);
       await _tap(tester, "I'm lost practice");
       expect(
         find.text('Practice meeting point: Blue help desk'),

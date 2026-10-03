@@ -1,6 +1,6 @@
 ---
 theme: default
-title: Basebound — game demo
+title: Safe Path — game demo
 info: Clickable game prototype helping children learn their neighborhood.
 fonts:
   local: sans

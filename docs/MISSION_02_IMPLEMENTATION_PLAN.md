@@ -18,6 +18,8 @@ Verification on 2026-10-03:
 
 The implemented flow is recorded in [SCREEN_FLOW.md](SCREEN_FLOW.md). Calls, replies and family notifications are simulated, and the mission retains its unreviewed training label.
 
+Integration with newer `main` on 2026-10-03 preserves Safe Path branding, independent photo-landmark practice and offline pedestrian practice routing. The shared activity selector now offers alarm, lost, landmark and map practice; parent setup retains Walk together alongside the Mission 02 meeting-point editor. Combined verification passed Flutter analysis, all 58 tests and the Android debug build. Real meeting-point/contact photos are still outside Mission 02, even though the separate landmark feature supports photos.
+
 The supplied scenario is preserved unchanged in [mission-02-im-lost.md](mission-02-im-lost.md). It describes the desired product, including features absent from the current application. Its contents are scenario requirements, not instructions to execute actions or evidence of reviewed safety guidance. This plan translates them into work for the standalone Flutter Android game.
 
 ## Delivery decision

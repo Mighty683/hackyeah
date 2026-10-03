@@ -1,0 +1,225 @@
+import 'dart:collection';
+import 'dart:math' as math;
+
+import 'package:flame/components.dart';
+
+import 'demo_map.dart';
+
+/// Fictional blocked area used only by the practice scenario, in map units.
+class PracticeBlockage {
+  PracticeBlockage({required Vector2 center, required this.radius})
+    : center = center.clone();
+
+  final Vector2 center;
+  final double radius;
+
+  bool intersects(Vector2 start, Vector2 end) {
+    final delta = end - start;
+    final fraction = delta.length2 == 0
+        ? 0.0
+        : ((center - start).dot(delta) / delta.length2).clamp(0.0, 1.0);
+    return center.distanceTo(start + delta * fraction) <= radius;
+  }
+}
+
+/// Practice routing on bundled line geometry. This is not verified walking data.
+/// Only shared source vertices connect ways; visual crossings add no shortcuts.
+class OfflineRouter {
+  OfflineRouter(DemoMap map, {this.blockage}) {
+    final vertices = <String, int>{};
+    for (final feature in map.features.where(_allowsWalking)) {
+      final lines = feature.geometryType == 'LineString'
+          ? [feature.coordinates]
+          : feature.coordinates.cast<List>();
+      for (final line in lines) {
+        int? previous;
+        for (final coordinate in line) {
+          final pair = (coordinate as List).cast<num>();
+          final key = '${pair[0].toDouble()},${pair[1].toDouble()}';
+          final current = vertices.putIfAbsent(
+            key,
+            () => _addNode(map.project(pair)),
+          );
+          if (previous != null) {
+            _addSegment(previous, current, feature.properties);
+          }
+          previous = current;
+        }
+      }
+    }
+  }
+
+  // About 60 m in this 2 km snapshot. Snapping never draws an off-path connector.
+  static const maximumSnapDistance = 12.0;
+  final PracticeBlockage? blockage;
+  final _points = <Vector2>[];
+  final _edges = <Map<int, double>>[];
+  final _incoming = <int>{};
+
+  static bool _allowsWalking(DemoMapFeature feature) {
+    if (feature.layer != 'road' ||
+        !const {
+          'LineString',
+          'MultiLineString',
+        }.contains(feature.geometryType)) {
+      return false;
+    }
+    final tags = feature.properties;
+    final foot = tags['foot'];
+    final explicitFoot = const {
+      'yes',
+      'designated',
+      'permissive',
+    }.contains(foot);
+    if (foot != null && !explicitFoot) return false;
+    if (tags['indoor'] == 'yes' ||
+        tags.containsKey('construction') ||
+        tags.containsKey('foot:conditional') ||
+        tags.containsKey('access:conditional')) {
+      return false;
+    }
+    final hazard = tags['hazard'];
+    if (hazard != null && hazard != 'no') return false;
+    final access = tags['access'];
+    if (access != null &&
+        !const {'yes', 'permissive', 'designated'}.contains(access) &&
+        !explicitFoot) {
+      return false;
+    }
+    final highway = tags['highway'];
+    if (highway == 'cycleway') return explicitFoot;
+    return const {
+      'footway',
+      'path',
+      'pedestrian',
+      'steps',
+      'living_street',
+      'residential',
+      'service',
+      'unclassified',
+      'track',
+    }.contains(highway);
+  }
+
+  int _addNode(Vector2 point) {
+    _points.add(point);
+    _edges.add({});
+    return _points.length - 1;
+  }
+
+  // Demo preferences, not walking-time estimates or validated safety scores.
+  static double _costFactor(Map<String, dynamic> tags) {
+    if (tags['footway'] == 'crossing') return 1.15;
+    if (tags['highway'] == 'steps') return 1.2;
+    if (const {
+      'footway',
+      'path',
+      'pedestrian',
+      'cycleway',
+      'track',
+    }.contains(tags['highway'])) {
+      return 1;
+    }
+    if (tags['highway'] == 'living_street') return 1.1;
+    if (const {'yes', 'both', 'left', 'right'}.contains(tags['sidewalk']) ||
+        tags['sidewalk:left'] == 'yes' ||
+        tags['sidewalk:right'] == 'yes' ||
+        tags['sidewalk:both'] == 'yes') {
+      return 1.05;
+    }
+    return tags['sidewalk'] == 'no' || tags['sidewalk:both'] == 'no'
+        ? 1.6
+        : 1.35;
+  }
+
+  void _connect(int a, int b, Map<String, dynamic> tags) {
+    final start = _points[a];
+    final end = _points[b];
+    final length = start.distanceTo(end);
+    if (length == 0 || (blockage?.intersects(start, end) ?? false)) return;
+    final cost = length * _costFactor(tags);
+    final oneWay = tags['oneway:foot'];
+    if (oneWay != '-1') {
+      _edges[a][b] = math.min(_edges[a][b] ?? double.infinity, cost);
+      _incoming.add(b);
+    }
+    if (!const {'yes', '1', 'true'}.contains(oneWay)) {
+      _edges[b][a] = math.min(_edges[b][a] ?? double.infinity, cost);
+      _incoming.add(a);
+    }
+  }
+
+  void _addSegment(int a, int b, Map<String, dynamic> tags) {
+    // Interior samples belong only to this segment, keeping visual crossings apart.
+    final start = _points[a];
+    final end = _points[b];
+    final count = math.max(1, (start.distanceTo(end) / 2).ceil());
+    var previous = a;
+    for (var step = 1; step < count; step++) {
+      final node = _addNode(start + (end - start) * (step / count));
+      _connect(previous, node, tags);
+      previous = node;
+    }
+    _connect(previous, b, tags);
+  }
+
+  int? nearestNode(Vector2 point) {
+    if (blockage?.intersects(point, point) ?? false) return null;
+    int? result;
+    var distance = maximumSnapDistance;
+    for (var i = 0; i < _points.length; i++) {
+      if (_edges[i].isEmpty && !_incoming.contains(i)) continue;
+      if (blockage?.intersects(_points[i], _points[i]) ?? false) continue;
+      final candidate = point.distanceTo(_points[i]);
+      if (candidate <= distance) {
+        result = i;
+        distance = candidate;
+      }
+    }
+    return result;
+  }
+
+  Vector2 pointAt(int node) => _points[node].clone();
+
+  /// A* with Euclidean distance: admissible because each preference multiplier is at least one.
+  /// Returns null for distant pins or disconnected paths; no straight-line fallback.
+  List<Vector2>? route(Vector2 start, Vector2 target) {
+    final source = nearestNode(start);
+    final goal = nearestNode(target);
+    if (source == null || goal == null) return null;
+    final costs = <int, double>{source: 0};
+    final previous = <int, int>{};
+    final closed = <int>{};
+    final queue = SplayTreeMap<double, List<int>>();
+    double heuristic(int node) => _points[node].distanceTo(_points[goal]);
+    void enqueue(int node, double cost) =>
+        queue.putIfAbsent(cost + heuristic(node), () => []).add(node);
+    enqueue(source, 0);
+    while (queue.isNotEmpty) {
+      final key = queue.firstKey()!;
+      final bucket = queue[key]!;
+      final current = bucket.removeLast();
+      if (bucket.isEmpty) queue.remove(key);
+      if (!closed.add(current)) continue;
+      if (current == goal) return _reconstruct(previous, current);
+      for (final edge in _edges[current].entries) {
+        final cost = costs[current]! + edge.value;
+        if (cost >= (costs[edge.key] ?? double.infinity)) continue;
+        costs[edge.key] = cost;
+        previous[edge.key] = current;
+        enqueue(edge.key, cost);
+      }
+    }
+    return null;
+  }
+
+  List<Vector2> _reconstruct(Map<int, int> previous, int goal) {
+    final result = <Vector2>[pointAt(goal)];
+    var current = goal;
+    while (previous.containsKey(current)) {
+      current = previous[current]!;
+      result.add(pointAt(current));
+    }
+    return result.reversed.toList();
+  }
+}
