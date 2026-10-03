@@ -1,13 +1,17 @@
 import 'dart:io';
 
+import 'package:do_bazy/features/child/child_onboarding_screen.dart';
 import 'package:do_bazy/features/demo/data/demo_data_seeder.dart';
+import 'package:do_bazy/features/help/help_phone.dart';
 import 'package:do_bazy/features/landmarks/data/demo_landmarks.dart';
 import 'package:do_bazy/features/landmarks/data/landmark.dart';
 import 'package:do_bazy/features/landmarks/data/landmark_repository.dart';
 import 'package:do_bazy/features/landmarks/landmark_location.dart';
+import 'package:do_bazy/features/mission/practice_launcher.dart';
 import 'package:do_bazy/features/parent/data/family_plan.dart';
 import 'package:do_bazy/features/parent/data/family_plan_repository.dart';
 import 'package:do_bazy/game/maps/demo_map.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -37,20 +41,37 @@ void main() {
   tearDown(() async => directory.delete(recursive: true));
 
   test(
-    'fresh install has three readable photos and one fictional Home',
+    'fresh install fills the family plan and adds readable fictional photos',
     () async {
       await seeder().seed();
       final plan = await family.load();
-      expect(plan.safePoints.single.name, 'Home');
-      expect(plan.safePoints.single.isDemo, isTrue);
-      expect(plan.child.fullName, isEmpty);
-      expect(plan.contacts, isEmpty);
+      expect(plan.child.fullName, 'Alex Example (demo)');
+      expect(plan.child.age, 9);
+      expect(plan.child.address, isNotEmpty);
+      expect(plan.child.supportNotes, isNotEmpty);
+      expect(plan.child.gender, ChildGender.boy);
+      expect(plan.contacts.length, FamilyPlan.maxContacts);
+      for (final contact in plan.contacts) {
+        expect(contact.name, contains('Demo'));
+        expect(contact.relationship, isNotEmpty);
+        expect(normalizeTrustedPhone(contact.phone), isNotNull);
+      }
+      expect(plan.contacts.map((contact) => contact.phone).toSet().length, 3);
+      expect(plan.safePoints.map((point) => point.name), [
+        'Home',
+        'School (demo)',
+        'Park (demo)',
+      ]);
       final saved = await landmarks.load();
       expect(saved.length, 3);
       expect(plan.practiceMeetingPoint!.landmarkId, saved.first.id);
       expect(plan.practiceMeetingPoint!.label, saved.first.name);
       final map = await DemoMapRepository().load();
-      expect(mapContainsPoint(map, plan.safePoints.single), isTrue);
+      for (final point in plan.safePoints) {
+        expect(point.icon, isNotEmpty);
+        expect(point.isDemo, isTrue);
+        expect(mapContainsPoint(map, point), isTrue);
+      }
       for (final landmark in saved) {
         expect(landmark.isDemo, isTrue);
         expect(mapContainsPoint(map, landmark.point), isTrue);
@@ -61,10 +82,38 @@ void main() {
         expect(bytes.take(8), [137, 80, 78, 71, 13, 10, 26, 10]);
       }
       await seeder().seed();
-      expect((await family.load()).safePoints.length, 1);
+      expect((await family.load()).toJson(), plan.toJson());
       expect((await landmarks.load()).length, 3);
     },
   );
+
+  testWidgets('seeded child starts practice without entering any details', (
+    tester,
+  ) async {
+    await tester.runAsync(() => seeder().seed());
+    final original = await family.load();
+    await tester.pumpWidget(
+      MaterialApp(home: ChildOnboardingScreen(repository: family)),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<TextField>(find.byType(TextField)).controller!.text,
+      original.child.age.toString(),
+    );
+    for (final action in [
+      'Add my name',
+      'Choose my character',
+      'Start practice',
+    ]) {
+      final button = find.text(action);
+      await tester.ensureVisible(button);
+      await tester.tap(button);
+      await tester.pumpAndSettle();
+    }
+    expect(find.byType(PracticeLauncher), findsOneWidget);
+    expect((await family.load()).toJson(), original.toJson());
+    expect(tester.takeException(), isNull);
+  });
 
   test(
     'existing family details are preserved without adding demo data',
@@ -120,7 +169,16 @@ void main() {
         throwsStateError,
       );
       expect(await storage.read(key: DemoDataSeeder.storageKey), 'pending');
-      expect((await family.load()).safePoints.length, 1);
+      expect((await family.load()).safePoints.length, 3);
+      // Empty fields may be intentional edits, even before seeding finishes.
+      const editedChild = ChildProfile(fullName: 'Edited child');
+      await family.save(
+        (await family.load()).copyWith(
+          child: editedChild,
+          contacts: [],
+          safePoints: [],
+        ),
+      );
       final saved = (await landmarks.load()).single;
       await landmarks.save(
         Landmark.fromJson({...saved.toJson(), 'name': 'Edited demo'}),
@@ -131,7 +189,10 @@ void main() {
       ).writeAsBytes([1, 2, 3]);
 
       await seeder(repository: interrupted).seed();
-      expect((await family.load()).safePoints.length, 1);
+      final restoredPlan = await family.load();
+      expect(restoredPlan.child.toJson(), editedChild.toJson());
+      expect(restoredPlan.contacts, isEmpty);
+      expect(restoredPlan.safePoints, isEmpty);
       final restored = await landmarks.load();
       expect(restored.length, 3);
       expect(restored.first.name, 'Edited demo');
