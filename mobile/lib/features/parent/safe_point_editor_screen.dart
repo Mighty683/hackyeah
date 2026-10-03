@@ -3,6 +3,8 @@ library;
 
 import 'package:flutter/material.dart';
 
+import 'widgets/place_icon_picker.dart';
+
 import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
 
@@ -28,6 +30,7 @@ class SafePointEditorScreen extends StatefulWidget {
 
 class _SafePointEditorScreenState extends State<SafePointEditorScreen> {
   late final _name = TextEditingController(text: widget.point?.name ?? '');
+  late String _icon = widget.point?.icon ?? '📍';
   late SafePoint? _selected = widget.point;
 
   @override
@@ -39,6 +42,7 @@ class _SafePointEditorScreenState extends State<SafePointEditorScreen> {
   Future<void> _save() => widget.onSave(
     SafePoint(
       name: _name.text.trim(),
+      icon: _icon,
       latitude: _selected!.latitude,
       longitude: _selected!.longitude,
       isDemo: widget.point?.isDemo ?? false,
@@ -71,6 +75,11 @@ class _SafePointEditorScreenState extends State<SafePointEditorScreen> {
               maxLength: 60,
               textInputAction: TextInputAction.done,
             ),
+            const SizedBox(height: 16),
+            PlaceIconPicker(
+              selectedIcon: _icon,
+              onSelected: (icon) => setState(() => _icon = icon),
+            ),
             const SizedBox(height: 24),
             const ParentEditorNote(
               message:
@@ -90,6 +99,7 @@ class _SafePointEditorScreenState extends State<SafePointEditorScreen> {
             const SizedBox(height: 12),
             OfflinePointPicker(
               initialPoint: selected,
+              selectionIcon: _icon,
               otherPoints: widget.otherPoints,
               onSelected: (point) {
                 if (mounted) setState(() => _selected = point);

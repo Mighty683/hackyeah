@@ -140,6 +140,7 @@ void main() {
       );
       await _tap(tester, 'Open editor');
       expect(find.byType(TextField), findsOneWidget);
+      await _tap(tester, '🏠 Home');
       await _tap(tester, 'Choose map location', settle: false);
       await _pumpMap(tester);
       expect(find.byType(TextField), findsNothing);
@@ -171,6 +172,10 @@ void main() {
       expect(find.byType(SafePointEditorScreen), findsNothing);
       expect(saved, isNotNull);
       expect(saved!.name, 'Demo meeting place');
+      expect(saved!.icon, '🏠');
+      expect(SafePoint.fromJson(saved!.toJson()).icon, '🏠');
+      final legacyPoint = saved!.toJson()..remove('icon');
+      expect(SafePoint.fromJson(legacyPoint).icon, '📍');
       expect(saved!.latitude, inInclusiveRange(50, 51));
       expect(saved!.longitude, inInclusiveRange(19, 21));
       expect(tester.takeException(), isNull);

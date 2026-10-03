@@ -41,6 +41,7 @@ class _GameLauncherState extends State<GameLauncher> {
         Landmark(
           id: 'family_place_$i',
           name: plan.safePoints[i].displayName,
+          icon: plan.safePoints[i].icon,
           photoName: '',
           latitude: plan.safePoints[i].latitude,
           longitude: plan.safePoints[i].longitude,

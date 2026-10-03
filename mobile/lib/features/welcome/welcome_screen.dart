@@ -106,7 +106,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                   onHelp: _openHelp,
                   rolesEnabled: !_checkingLocation,
                   locationMessage: _checkingLocation
-                      ? 'An adult can allow location for the map’s blue dot. GPS runs only while the map is open.'
+                      ? 'An adult can allow location for the map and nearby-place hints in Help. GPS runs only while these screens are open.'
                       : _locationStatus == LocationPermissionStatus.granted
                       ? null
                       : 'Photos and practice still work without location. An adult can enable it in Family setup.',

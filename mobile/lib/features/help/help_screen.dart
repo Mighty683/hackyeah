@@ -2,6 +2,8 @@
 /// verified routing, or claims that a call/message connected or was delivered.
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../ui/basebound_ui.dart';
@@ -9,6 +11,7 @@ import '../../ui/basebound_icons.dart';
 import '../parent/data/family_plan.dart';
 import 'help_flow.dart';
 import 'help_phone.dart';
+import 'help_context.dart';
 
 class HelpEntryButton extends StatelessWidget {
   const HelpEntryButton({super.key, this.onPressed});
@@ -28,31 +31,128 @@ Future<void> openHelpScreen(BuildContext context) =>
         .push(MaterialPageRoute<void>(builder: (_) => const HelpScreen()));
 
 class HelpScreen extends StatefulWidget {
-  const HelpScreen({super.key, this.phone});
+  const HelpScreen({super.key, this.phone, this.helpContext});
 
   final HelpPhone? phone;
+  final HelpContext? helpContext;
 
   @override
   State<HelpScreen> createState() => _HelpScreenState();
 }
 
-class _HelpScreenState extends State<HelpScreen> {
-  final _history = <HelpPage>[HelpPage.situations];
+class _HelpScreenState extends State<HelpScreen> with WidgetsBindingObserver {
+  final _history = <HelpPage>[HelpPage.helpers];
   late final HelpPhone _phone = widget.phone ?? HelpPhone();
+  late final HelpContext _helpContext = widget.helpContext ?? HelpContext();
+  StreamSubscription<HelpPhoneService>? _serviceSubscription;
+  int _serviceRevision = 0;
+  bool _foreground = true;
+  HelpPhoneService _service = HelpPhoneService.unknown;
+  List<TrustedContact> _contacts = const [];
+  bool _contactsUnavailable = false;
   bool _loadingContacts = false;
   int _contactRequest = 0;
   bool _openingDialler = false;
-  bool _noSignal = false;
   String? _phoneStatus;
 
-  HelpStep get _step => helpSteps[_history.last]!;
+  HelpStep get _step {
+    if (_history.last == HelpPage.unresponsive && !_service.canOfferEmergency) {
+      return helpSteps[HelpPage.unresponsiveOffline]!;
+    }
+    return helpSteps[_history.last]!;
+  }
+
+  bool get _withoutHelper => _history.contains(HelpPage.situations);
+  bool get _showEmergency =>
+      _withoutHelper && _step.offerEmergency && _service.canOfferEmergency;
+  bool get _showContact =>
+      _withoutHelper &&
+      _step.offerContact &&
+      _service.canOfferContact &&
+      _contacts.isNotEmpty;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _helpContext.addListener(_contextChanged);
+    unawaited(_helpContext.start());
+    _watchService();
+    unawaited(_readContacts());
+  }
+
+  void _contextChanged() {
+    if (mounted) setState(() {});
+  }
+
+  void _watchService() {
+    if (_serviceSubscription != null) return;
+    final revision = ++_serviceRevision;
+    _serviceSubscription = _phone.serviceStates().listen(
+      (service) {
+        if (mounted && revision == _serviceRevision) {
+          setState(() => _service = service);
+        }
+      },
+      onError: (Object _) {
+        if (mounted && revision == _serviceRevision) {
+          setState(() => _service = HelpPhoneService.unknown);
+        }
+      },
+      onDone: () {
+        if (mounted && revision == _serviceRevision) {
+          setState(() => _service = HelpPhoneService.unknown);
+        }
+      },
+    );
+  }
+
+  Future<void> _readContacts() async {
+    try {
+      final contacts = await _phone.loadContacts();
+      if (mounted) setState(() => _contacts = contacts);
+    } catch (_) {
+      if (mounted) setState(() => _contactsUnavailable = true);
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final foreground = state == AppLifecycleState.resumed;
+    if (_foreground == foreground) return;
+    _foreground = foreground;
+    if (foreground) {
+      unawaited(_helpContext.resume());
+      _watchService();
+      return;
+    }
+    _helpContext.pause();
+    _serviceRevision++;
+    unawaited(_serviceSubscription?.cancel());
+    _serviceSubscription = null;
+    if (mounted) setState(() => _service = HelpPhoneService.unknown);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _serviceRevision++;
+    unawaited(_serviceSubscription?.cancel());
+    _helpContext.removeListener(_contextChanged);
+    _helpContext.dispose();
+    super.dispose();
+  }
 
   void _choose(HelpPage page) {
     setState(() {
       _history.add(page);
       _contactRequest++;
       _loadingContacts = false;
-      if (page == HelpPage.unresponsiveOffline) _noSignal = true;
+      if (page == HelpPage.withHelper) {
+        _history
+          ..clear()
+          ..addAll([HelpPage.helpers, HelpPage.withHelper]);
+      }
       _phoneStatus = null;
     });
   }
@@ -72,6 +172,7 @@ class _HelpScreenState extends State<HelpScreen> {
 
   Future<void> _dial(String phone) async {
     if (_openingDialler) return;
+    if (phone == '112' ? !_showEmergency : !_showContact) return;
     setState(() {
       if (phone == '112') {
         _contactRequest++;
@@ -84,16 +185,20 @@ class _HelpScreenState extends State<HelpScreen> {
       final opened = await _phone.openDialler(phone);
       if (!mounted) return;
       setState(() {
-        _phoneStatus = opened
+        _phoneStatus = phone == '112'
+            ? opened
+                  ? 'Demo popup opened. No real call is made.'
+                  : 'The demo popup could not open. No call was made.'
+            : opened
             ? 'Phone app opened. This does not mean a call connected.'
             : 'The phone app could not open. Keep using the offline steps.';
       });
     } catch (_) {
       if (!mounted) return;
       setState(() {
-        _phoneStatus =
-            'The phone app could not open. '
-            'Keep using the offline steps.';
+        _phoneStatus = phone == '112'
+            ? 'The demo popup could not open. No call was made.'
+            : 'The phone app could not open. Keep using the offline steps.';
       });
     } finally {
       if (mounted) setState(() => _openingDialler = false);
@@ -105,7 +210,7 @@ class _HelpScreenState extends State<HelpScreen> {
     final request = ++_contactRequest;
     setState(() => _loadingContacts = true);
     try {
-      final contacts = await _phone.loadContacts();
+      final contacts = _contacts;
       if (!mounted || request != _contactRequest) return;
       if (contacts.isEmpty) {
         setState(() {
@@ -133,7 +238,7 @@ class _HelpScreenState extends State<HelpScreen> {
       setState(() {
         _phoneStatus =
             'Saved contacts could not be read. '
-            'The offline steps and 112 button are still available.';
+            'You can still use the offline steps.';
       });
     } finally {
       if (mounted && request == _contactRequest) {
@@ -183,7 +288,7 @@ class _HelpScreenState extends State<HelpScreen> {
           child: _buildInstruction(),
         ),
       ),
-      _buildPhoneActions(),
+      if (_showEmergency) _buildPhoneActions(),
     ],
   );
 
@@ -214,30 +319,35 @@ class _HelpScreenState extends State<HelpScreen> {
           ),
         ),
       ],
+      if (_helpContext.nearbyPlaceName case final String place) ...[
+        const SizedBox(height: 12),
+        Text(
+          'You may be near $place. This is a saved place.',
+          style: const TextStyle(color: BaseboundColors.muted, fontSize: 16),
+        ),
+      ],
       const SizedBox(height: 24),
       for (final choice in _step.choices) ...[
         _buildChoice(choice),
         const SizedBox(height: 12),
       ],
-      if (_step.offerContact) ...[
-        OutlinedButton.icon(
+      if (_showContact) ...[
+        FilledButton.icon(
           onPressed: _loadingContacts || _openingDialler ? null : _contactAdult,
-          icon: const BaseboundIcon(BaseboundIconName.phone, calm: true),
+          icon: const BaseboundIcon(
+            BaseboundIconName.phone,
+            color: Colors.white,
+            calm: true,
+          ),
           label: Text(
             _loadingContacts ? 'Reading saved contacts…' : 'Call trusted adult',
           ),
         ),
       ],
-      const SizedBox(height: 12),
-      const Text(
-        '112 is for urgent help. The button opens your phone app. '
-        'No automatic call or SMS.',
-        style: TextStyle(
-          color: BaseboundColors.muted,
-          fontSize: 16,
-          height: 1.4,
-        ),
-      ),
+      if (_step.offerContact && _contactsUnavailable) ...[
+        const SizedBox(height: 12),
+        const Text('Saved contacts could not be read. These steps still work.'),
+      ],
       if (_phoneStatus != null) ...[
         const SizedBox(height: 12),
         Semantics(
@@ -245,22 +355,22 @@ class _HelpScreenState extends State<HelpScreen> {
           child: _HelpInformation(message: _phoneStatus!),
         ),
       ],
-      if (_noSignal) ...[
+      if (_withoutHelper &&
+          !_service.canOfferEmergency &&
+          (_step.offerContact || _step.urgent)) ...[
         const SizedBox(height: 12),
         const _HelpInformation(
-          message:
-              'Without phone service, calls and messages cannot connect. '
-              'The steps stay available.',
+          message: 'Phone service is not confirmed. These steps work offline.',
         ),
       ],
-      if (!_noSignal && _history.last != HelpPage.unresponsive)
+      if (_withoutHelper && _step.choices.length < 3)
         Align(
           alignment: Alignment.centerLeft,
           child: TextButton.icon(
             style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
-            onPressed: () => setState(() => _noSignal = true),
-            icon: const BaseboundIcon(BaseboundIconName.noSignal, calm: true),
-            label: const Text('No phone signal'),
+            onPressed: () => _choose(HelpPage.withHelper),
+            icon: const BaseboundIcon(BaseboundIconName.adult, calm: true),
+            label: const Text('Someone can help now'),
           ),
         ),
     ],
@@ -297,7 +407,7 @@ class _HelpScreenState extends State<HelpScreen> {
   BaseboundIconName _situationIcon(HelpPage page) => switch (page) {
     HelpPage.unresponsive => BaseboundIconName.unresponsive,
     HelpPage.airLocation => BaseboundIconName.alarm,
-    HelpPage.lostAdult => BaseboundIconName.lost,
+    HelpPage.lostNoAdult => BaseboundIconName.lost,
     _ => BaseboundIconName.unsure,
   };
 
@@ -310,18 +420,25 @@ class _HelpScreenState extends State<HelpScreen> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        FilledButton.icon(
-          onPressed: _openingDialler ? null : () => _dial('112'),
-          icon: const BaseboundIcon(
-            BaseboundIconName.phone,
-            color: Colors.white,
-            calm: true,
+        if (_showContact)
+          OutlinedButton.icon(
+            onPressed: _openingDialler ? null : () => _dial('112'),
+            icon: const BaseboundIcon(BaseboundIconName.phone, calm: true),
+            label: const Text('Call 112'),
+          )
+        else
+          FilledButton.icon(
+            onPressed: _openingDialler ? null : () => _dial('112'),
+            icon: const BaseboundIcon(
+              BaseboundIconName.phone,
+              color: Colors.white,
+              calm: true,
+            ),
+            label: Text(_step.urgent ? 'Call 112 now' : 'Call 112'),
           ),
-          label: Text(_step.urgent ? 'Call 112 now' : 'Call 112'),
-        ),
         const SizedBox(height: 8),
         const Text(
-          'Opens phone app.',
+          'Demo only. Opens a popup. No real call.',
           style: TextStyle(color: BaseboundColors.muted, fontSize: 14),
         ),
       ],

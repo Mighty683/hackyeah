@@ -172,7 +172,7 @@ class _ParentScreenState extends State<ParentScreen> {
   }
 
   String _locationMessage(LocationPermissionStatus status) => switch (status) {
-    LocationPermissionStatus.granted => 'Location is allowed. Turn on phone location to show the blue dot. GPS runs only while Our map is open; no track is saved.',
+    LocationPermissionStatus.granted => 'Location is allowed. The map and Help can use GPS while open; no track is saved.',
     LocationPermissionStatus.denied => 'Location is off. Allow it to show the map’s blue dot. Photos and practice work without it.',
     LocationPermissionStatus.settingsRequired => 'Android requires app settings to allow location. Choose location access while using the app. Photos and practice work without it.',
     LocationPermissionStatus.unavailable => 'Could not check location permission. You can retry; photos and practice still work.',
