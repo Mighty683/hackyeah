@@ -9,7 +9,7 @@ class BaseboundApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Basebound',
+      title: 'Safe Path',
       debugShowCheckedModeBanner: false,
       theme: BaseboundTheme.training(),
       home: const WelcomeScreen(),

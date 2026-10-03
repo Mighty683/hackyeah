@@ -43,7 +43,7 @@ class _WelcomeChoices extends StatelessWidget {
         const Center(child: _WelcomeIllustration()),
         const SizedBox(height: 24),
         const Text(
-          'Welcome to Basebound',
+          'Welcome to Safe Path',
           textAlign: TextAlign.center,
           style: TextStyle(
             color: BaseboundColors.ink,

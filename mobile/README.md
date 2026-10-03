@@ -1,4 +1,4 @@
-# Basebound — Android game
+# Safe Path — Android game
 
 Standalone Flutter + Flame application and the primary product. The pnpm workspace contains only the Slidev presentation; this app uses Flutter/Dart tooling separately.
 
