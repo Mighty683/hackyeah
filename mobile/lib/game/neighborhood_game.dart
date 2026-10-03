@@ -6,24 +6,38 @@ import 'package:flame/game.dart';
 import '../features/parent/data/family_plan.dart';
 import 'components/neighborhood_component.dart';
 import 'components/player_component.dart';
+import 'components/practice_route_component.dart';
 import 'components/target_indicator_component.dart';
 import 'maps/demo_map.dart';
+import 'maps/offline_router.dart';
 
 /// Offline arena neighborhood with a touch-controlled demo mission.
 class NeighborhoodGame extends FlameGame {
-  NeighborhoodGame({required this.onArrived, this.destination})
-    : super(
-        camera: CameraComponent.withFixedResolution(
-          width: DemoMap.mapSize,
-          height: DemoMap.mapSize,
-        ),
-      );
+  NeighborhoodGame({
+    required this.onArrived,
+    this.destination,
+    this.onRouteChanged,
+  }) : super(
+         camera: CameraComponent.withFixedResolution(
+           width: DemoMap.mapSize,
+           height: DemoMap.mapSize,
+         ),
+       );
 
   final VoidCallback onArrived;
   final SafePoint? destination;
+  final void Function(bool available, String? message)? onRouteChanged;
+  late OfflineRouter _router;
+  late final DemoMap _map;
+  PracticeBlockage? _blockage;
+  bool get hasPracticeBlockage => _blockage != null;
+  bool get isCharacterMoving => _initialized && _player.isMoving;
+  List<Vector2> _guide = [];
+  List<Vector2> _tail = [];
+  Vector2? _routeGoal;
+  bool get hasRoute => _guide.isNotEmpty;
   static const nearbyZoom = 4.0;
   static const maximumZoom = 8.0;
-  static const arrivalRadius = 8.0;
   late final Vector2 _start;
   late final Vector2 _home;
   late final PlayerComponent _player;
@@ -46,7 +60,11 @@ class NeighborhoodGame extends FlameGame {
     camera.viewfinder.anchor = Anchor.center;
     _showWholeMap();
     final map = await DemoMapRepository().load();
-    _start = map.project(map.center);
+    _map = map;
+    _router = OfflineRouter(map);
+    final center = map.project(map.center);
+    final startNode = _router.nearestNode(center);
+    _start = startNode == null ? center : _router.pointAt(startNode);
     final target = destination;
     _home = map.project(
       target == null ? [20.0013, 50.0730] : [target.longitude, target.latitude],
@@ -61,12 +79,24 @@ class NeighborhoodGame extends FlameGame {
         onDestinationSelected: (_) {},
       ),
     );
+    await world.add(
+      PracticeRouteComponent(
+        blockage: () => _blockage,
+        points: () => _completed
+            ? []
+            : _player.isMoving
+            ? [..._player.remainingPath, ..._tail.skip(1)]
+            : _guide,
+      ),
+    );
     await world.add(_player);
+    _refreshRoute();
     await camera.viewport.add(
       TargetIndicatorComponent(
         camera: camera,
-        target: _home,
-        isActive: () => _initialized && !_completed && !_unavailable,
+        target: _routeGoal ?? _home,
+        isActive: () =>
+            _initialized && hasRoute && !_completed && !_unavailable,
       ),
     );
     _initialized = true;
@@ -83,7 +113,24 @@ class NeighborhoodGame extends FlameGame {
         point.y > DemoMap.mapTop + DemoMap.mapSize) {
       return;
     }
-    _movePlayer(point);
+    if (_player.isMoving || _guide.isEmpty) return;
+    var nearest = 0;
+    var distance = double.infinity;
+    for (var i = 0; i < _guide.length; i++) {
+      final candidate = point.distanceTo(_guide[i]);
+      if (candidate < distance) {
+        distance = candidate;
+        nearest = i;
+      }
+    }
+    if (distance > 16 / mapZoom) {
+      onRouteChanged?.call(hasRoute, 'Tap the marked path to move.');
+      return;
+    }
+    _followPlayer = true;
+    _tail = _guide.sublist(nearest);
+    _player.followPath(_guide.sublist(0, nearest + 1));
+    onRouteChanged?.call(hasRoute, null);
   }
 
   void beginMapGesture(Offset focalPoint) {
@@ -170,24 +217,51 @@ class NeighborhoodGame extends FlameGame {
     endMapGesture();
   }
 
-  void _movePlayer(Vector2 point) {
-    if (!isMapReady || _completed) return;
-    // A move resumes following; dragging/pinching remains free exploration.
-    _followPlayer = true;
-    _player.moveTo(
-      Vector2(
-        point.x
-            .clamp(DemoMap.mapLeft + 2, DemoMap.mapLeft + DemoMap.mapSize - 2)
-            .toDouble(),
-        point.y
-            .clamp(DemoMap.mapTop + 2, DemoMap.mapTop + DemoMap.mapSize - 2)
-            .toDouble(),
-      ),
+  void _refreshRoute() {
+    _guide = _router.route(_player.position, _home) ?? [];
+    _tail = [];
+    _routeGoal = _guide.isEmpty ? null : _guide.last.clone();
+    onRouteChanged?.call(
+      hasRoute,
+      hasRoute
+          ? _blockage == null
+                ? null
+                : 'A path is blocked. Follow the new route.'
+          : _blockage == null
+          ? 'No practice path here. Try another place.'
+          : 'No path around this blockage. Clear it or start again.',
     );
+  }
+
+  /// Toggle a fictional blockage while stationary; no live hazard is inferred.
+  void togglePracticeBlockage() {
+    if (!isMapReady || _completed || isCharacterMoving) return;
+    if (_blockage != null) {
+      _blockage = null;
+    } else {
+      if (_guide.length < 3) return;
+      _blockage = PracticeBlockage(
+        center: _guide[_guide.length ~/ 2],
+        radius: 4,
+      );
+    }
+    _router = OfflineRouter(_map, blockage: _blockage);
+    _refreshRoute();
+    showWholeMap();
+  }
+
+  /// Move only the game character, after an explicit child action.
+  void followPracticePath() {
+    if (!isMapReady || _completed || _player.isMoving || !hasRoute) return;
+    _followPlayer = true;
+    _tail = [];
+    _player.followPath(_guide);
+    onRouteChanged?.call(true, null);
   }
 
   @override
   void update(double dt) {
+    final wasMoving = _initialized && _player.isMoving;
     super.update(dt);
     if (!isMapReady) return;
     if (_followPlayer) {
@@ -195,7 +269,11 @@ class NeighborhoodGame extends FlameGame {
       _clampCamera();
     }
     if (_completed) return;
-    if (_player.position.distanceTo(_home) < arrivalRadius) {
+    if (wasMoving && !_player.isMoving) _refreshRoute();
+    final goal = _routeGoal;
+    if (goal != null &&
+        !_player.isMoving &&
+        _player.position.distanceTo(goal) < .01) {
       _completed = true;
       onArrived();
     }
@@ -205,6 +283,9 @@ class NeighborhoodGame extends FlameGame {
     if (!isMapReady) return;
     _completed = false;
     _player.reset(_start);
+    _blockage = null;
+    _router = OfflineRouter(_map);
+    _refreshRoute();
     showNearby();
   }
 }

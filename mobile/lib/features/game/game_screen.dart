@@ -24,6 +24,8 @@ class GameScreen extends StatefulWidget {
 class _GameScreenState extends State<GameScreen> {
   late final NeighborhoodGame _game;
   bool _arrived = false;
+  bool _hasRoute = false;
+  String? _routeMessage;
   bool _ready = false;
   bool _failed = false;
   bool _tapBlocked = false;
@@ -51,6 +53,14 @@ class _GameScreenState extends State<GameScreen> {
     super.initState();
     _game = NeighborhoodGame(
       destination: widget.destination,
+      onRouteChanged: (available, message) {
+        if (mounted) {
+          setState(() {
+            _hasRoute = available;
+            _routeMessage = message;
+          });
+        }
+      },
       onArrived: () {
         if (mounted) setState(() => _arrived = true);
       },
@@ -80,13 +90,18 @@ class _GameScreenState extends State<GameScreen> {
         content: Text(
           'This is a practice game, not real-world navigation. '
           '${widget.destination == null ? 'The base is pretend.' : 'The target is a parent-selected safe place. Its safety has not been checked.'} '
-          'Your character can move freely.\n\n'
+          'Your character follows a practice path on the map. '
+          'Routes prefer pedestrian paths but may use public local roads. '
+          'These preferences are demo rules, not safety ratings.\n\n'
+          'Block a path creates one fictional blockage and tries another route. '
+          'There is no live hazard information.\n\n'
           'Streets, paths, buildings, parks and water use bundled map shapes. '
           'Colours and landmarks are simplified for practice. '
           'Some details are missing, and decorative trees are illustrations.\n\n'
           'The source map covers 2 × 2 km around TAURON Arena in Kraków. '
           'The close view follows your character. An edge arrow points towards '
-          'a target outside the view; it does not show a walking route. '
+          'a target outside the view. The marked path ends at a nearby mapped path, '
+          'not at a verified entrance. It is not a real walking route. '
           'Show me returns to your character. '
           'Show whole map restores all of it.\n\n'
           'Map data © OpenStreetMap contributors · ODbL 1.0.',
@@ -221,7 +236,7 @@ class _GameScreenState extends State<GameScreen> {
               ? 'Go back and try again.'
               : 'The map could not load'
         : _arrived
-        ? 'You reached ${target ?? 'the base'}!'
+        ? 'You reached the path near ${target ?? 'the base'}!'
         : compact
         ? 'Reach ${target ?? 'the pretend base'}.'
         : 'Reach ${target ?? 'the pretend base'}';
@@ -267,9 +282,10 @@ class _GameScreenState extends State<GameScreen> {
                         ? 'Go back and try again.'
                         : _arrived
                         ? widget.destination == null
-                              ? 'Your character reached the pretend base.'
-                              : 'Your character reached the safe place in this game.'
-                        : 'Tap nearby to move. The arrow points towards your target.',
+                              ? 'Your character reached a path near the pretend base.'
+                              : 'Your character reached a path near the practice place.'
+                        : _routeMessage ??
+                              'Follow the marked path to the ring.',
                     style: const TextStyle(
                       fontSize: 16,
                       height: 1.3,
@@ -279,9 +295,9 @@ class _GameScreenState extends State<GameScreen> {
                 ],
                 if (compact && !_arrived && !_failed) ...[
                   const SizedBox(height: 4),
-                  const Text(
-                    'Tap to move.',
-                    style: TextStyle(fontSize: 14, height: 1.2),
+                  Text(
+                    _routeMessage ?? 'Follow the marked path to the ring.',
+                    style: const TextStyle(fontSize: 14, height: 1.2),
                   ),
                 ],
                 const SizedBox(height: 6),
@@ -339,6 +355,28 @@ class _GameScreenState extends State<GameScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (!_arrived) ...[
+            FilledButton.icon(
+              onPressed: _ready && _hasRoute && !_game.isCharacterMoving
+                  ? _game.followPracticePath
+                  : null,
+              icon: const Icon(Icons.route),
+              label: const Text('Follow path'),
+            ),
+            TextButton.icon(
+              onPressed:
+                  _ready &&
+                      !_game.isCharacterMoving &&
+                      (_hasRoute || _game.hasPracticeBlockage)
+                  ? _game.togglePracticeBlockage
+                  : null,
+              icon: const Icon(Icons.block),
+              label: Text(
+                _game.hasPracticeBlockage ? 'Clear blockage' : 'Block a path',
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
           if (_arrived) ...[
             FilledButton.icon(
               onPressed: _ready ? _restart : null,

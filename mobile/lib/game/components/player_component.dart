@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:math' as math;
 import 'dart:ui';
 
@@ -17,31 +18,38 @@ class PlayerComponent extends PositionComponent {
   // A close view needs time to recognise nearby landmarks while moving.
   static const speed = 30.0;
   final _paint = Paint();
-  Vector2? _destination;
+  final _waypoints = Queue<Vector2>();
 
-  void moveTo(Vector2 destination) {
-    _destination = destination.clone();
+  bool get isMoving => _waypoints.isNotEmpty;
+  List<Vector2> get remainingPath => [position.clone(), ..._waypoints];
+
+  void followPath(List<Vector2> points) {
+    _waypoints
+      ..clear()
+      ..addAll(points.skip(1).map((point) => point.clone()));
   }
 
   void reset(Vector2 startPosition) {
     position.setFrom(startPosition);
-    _destination = null;
+    _waypoints.clear();
   }
 
   @override
   void update(double dt) {
     super.update(dt);
-    final destination = _destination;
-    if (destination == null) return;
-
-    final distance = destination - position;
-    final step = speed * dt;
-    if (distance.length <= step) {
-      position.setFrom(destination);
-      _destination = null;
-      return;
+    var remaining = speed * dt;
+    while (_waypoints.isNotEmpty && remaining > 0) {
+      final destination = _waypoints.first;
+      final delta = destination - position;
+      if (delta.length <= remaining) {
+        remaining -= delta.length;
+        position.setFrom(destination);
+        _waypoints.removeFirst();
+        continue;
+      }
+      position.add(delta.normalized() * remaining);
+      remaining = 0;
     }
-    position.add(distance.normalized() * step);
   }
 
   /// Drawn bounds only: movement, component size and arrival stay unchanged.
