@@ -4,6 +4,8 @@ This is an **unreviewed prototype, not for real emergencies**. The UI states thi
 
 ## Implemented scope
 
+See [“I need help” decision diagram](I_NEED_HELP_DECISION_DIAGRAM.md) for the implemented helper, situation, air-raid and phone-action branches.
+
 The separate help screen is reachable from welcome without role selection, startup/loading errors, and the map's loading/error/active states. Opening it from the map pauses map GPS and narration; closing it restores the opener and starts a fresh map position request when foreground. During map loading, help remains available and defers creation of the map until help closes. Help has its own calm theme and visible prototype notice, without a training mascot, scores, countdowns, sirens, forced speech, or claims that someone is monitoring the child.
 
 All help text is bundled and works without internet or telephone service. Every entry first asks **“Can someone nearby help you?”**, including when the child would later choose not responding:
