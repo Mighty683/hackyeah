@@ -6,6 +6,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../../game/maps/demo_map.dart';
+import '../help/help_screen.dart';
 import '../parent/data/family_plan.dart';
 import '../parent/data/family_plan_repository.dart';
 import 'game_screen.dart';
@@ -22,6 +23,17 @@ class _GameLauncherState extends State<GameLauncher> {
   final _random = Random();
   late Future<SafePoint?> _destination = _chooseDestination();
   int _round = 0;
+  bool _helpOpen = false;
+
+  Future<void> _openHelp() async {
+    if (_helpOpen) return;
+    setState(() => _helpOpen = true);
+    try {
+      await openHelpScreen(context);
+    } finally {
+      if (mounted) setState(() => _helpOpen = false);
+    }
+  }
 
   Future<SafePoint?> _chooseDestination() async {
     final plan = await _repository.load();
@@ -54,7 +66,8 @@ class _GameLauncherState extends State<GameLauncher> {
       future: _destination,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done &&
-            !snapshot.hasError) {
+            !snapshot.hasError &&
+            !_helpOpen) {
           return GameScreen(
             key: ValueKey(_round),
             destination: snapshot.data,
@@ -63,6 +76,13 @@ class _GameLauncherState extends State<GameLauncher> {
         }
         return Scaffold(
           appBar: AppBar(title: const Text('Practice game')),
+          bottomNavigationBar: SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+              child: HelpEntryButton(onPressed: _openHelp),
+            ),
+          ),
           body: Center(
             child: snapshot.hasError
                 ? Column(

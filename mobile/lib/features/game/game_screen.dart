@@ -5,6 +5,8 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../../game/neighborhood_game.dart';
+import '../../widgets/basebound_mascot.dart';
+import '../help/help_screen.dart';
 import '../parent/data/family_plan.dart';
 
 class GameScreen extends StatefulWidget {
@@ -24,6 +26,23 @@ class _GameScreenState extends State<GameScreen> {
   bool _failed = false;
   bool _tapBlocked = false;
   final Map<int, Offset> _pointerStarts = {};
+  bool _helpOpen = false;
+
+  Future<void> _openHelp() async {
+    if (_helpOpen) return;
+    _helpOpen = true;
+    _tapBlocked = true;
+    _pointerStarts.clear();
+    _game.endMapGesture();
+    final wasPaused = _game.paused;
+    _game.pauseEngine();
+    try {
+      await openHelpScreen(context);
+    } finally {
+      _helpOpen = false;
+      if (mounted && !wasPaused) _game.resumeEngine();
+    }
+  }
 
   @override
   void initState() {
@@ -80,12 +99,25 @@ class _GameScreenState extends State<GameScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Practice game',
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
+        title: const Row(
+          children: [
+            BaseboundMascot(size: 32),
+            SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Practice game',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
         ),
         actions: [
+          IconButton(
+            onPressed: _openHelp,
+            icon: const Icon(Icons.support_outlined),
+            tooltip: 'I need help · prototype',
+          ),
           if (!_arrived)
             IconButton(
               onPressed: _ready ? _restart : null,

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../game/game_launcher.dart';
+import '../../widgets/basebound_mascot.dart';
+import '../mission/practice_launcher.dart';
+import '../help/help_screen.dart';
 import '../parent/parent_screen.dart';
 
 /// Role selection keeps adult information out of the child's first screen.
@@ -33,7 +35,7 @@ class _WelcomeChoices extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Icon(Icons.home_outlined, size: 64),
+        const Center(child: BaseboundMascot()),
         const SizedBox(height: 16),
         const Text(
           'Welcome to Basebound',
@@ -52,7 +54,7 @@ class _WelcomeChoices extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             textStyle: const TextStyle(fontSize: 20),
           ),
-          onPressed: () => _openScreen(context, const GameLauncher()),
+          onPressed: () => _openScreen(context, const PracticeLauncher()),
           icon: const Icon(Icons.face_outlined),
           label: const Text("I'm a child"),
         ),
@@ -66,6 +68,8 @@ class _WelcomeChoices extends StatelessWidget {
           icon: const Icon(Icons.person_outline),
           label: const Text("I'm an adult"),
         ),
+        const SizedBox(height: 24),
+        const HelpEntryButton(),
       ],
     );
   }

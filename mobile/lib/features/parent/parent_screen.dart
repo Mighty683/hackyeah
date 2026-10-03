@@ -3,7 +3,7 @@ library;
 
 import 'package:flutter/material.dart';
 
-import '../game/game_launcher.dart';
+import '../mission/practice_launcher.dart';
 import 'child_editor_screen.dart';
 import 'contact_editor_screen.dart';
 import 'data/family_plan.dart';
@@ -266,7 +266,7 @@ class _ParentScreenState extends State<ParentScreen> {
       ),
       const SizedBox(height: 24),
       FilledButton.icon(
-        onPressed: _busy ? null : () => _open(const GameLauncher()),
+        onPressed: _busy ? null : () => _open(const PracticeLauncher()),
         style: FilledButton.styleFrom(padding: const EdgeInsets.all(18)),
         icon: const Icon(Icons.play_arrow),
         label: const Text('Play together'),

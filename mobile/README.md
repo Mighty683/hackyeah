@@ -23,6 +23,7 @@ flutter run -d <android-device-id>
 ```sh
 dart format lib
 flutter analyze
+flutter test
 flutter build apk --debug
 ```
 
@@ -31,13 +32,19 @@ Release signing is not configured; the generated release configuration uses the 
 
 ## Current scope
 
-Welcome asks whether the player is an adult or a child. Adults open parent setup; children open the practice game. Parent setup saves one child's optional full name, age, address and support notes, up to three trusted contacts (optional name, phone and relationship), and named practice places. No photo feature is included.
+Welcome asks whether the player is an adult or a child. Adults open parent setup; children choose alarm practice or the map game. Parent setup saves one child's optional full name, age, address and support notes, up to three trusted contacts (optional name, phone and relationship), and named practice places. No photo feature is included.
+
+Mission 01 is fictional air-raid-alarm practice for ages 7+, with a home tutorial and an outdoor simulation using two to four visual choices per decision. The MVP has no younger-child branch or age selection. The home premise is an interior fallback when the agreed shelter cannot be reached, not a guarantee that a home is safe. Children practice moving away from windows, choosing an interior place, sending a pretend message, staying through noise and silence, and waiting for an explicit all-clear. Outdoor mistakes teach getting down and protecting the head. Wrong choices get calm feedback and retries; the reward is for completion, with no score or timer.
+
+Android narration requires an installed **offline English TTS voice**. Instructions play automatically and have a Replay audio control. Voice initialization/playback failure displays an adult-help message rather than silently claiming narration works. Official Polish warning/all-clear recordings play as short teaching excerpts at restrained volume; the complete source files are bundled unchanged. See [`assets/audio/mission01/README.md`](assets/audio/mission01/README.md) for attribution and licensing. The scene and message exchange are fictional and never use real contact numbers, send messages, or verify shelters. No network is needed once the speech voice is installed.
 
 The place editor reuses the offline OpenStreetMap snapshot of a 2 × 2 km area around TAURON Arena Kraków. Tap to select a pin, or use the arena-centre and direction buttons. Places can be edited or deleted. Each game launch/replay randomly chooses a valid saved pin; repeats are possible. With no places, the northeast fictional base remains the target. The character starts at the arena and moves toward tapped points. Movement is simulated, not a walking route, and parent-selected places are not verified safe destinations.
 
 The family plan is stored locally using `flutter_secure_storage` (Android RSA-OAEP/AES-GCM defaults, no biometric requirement). Cloud backup and device-transfer exclusions are configured in the Android manifest and XML resources; recovery/migration is not promised. Failed reads show a retry/delete option rather than silently overwriting data. **Delete all saved details** removes the family-plan record after confirmation. There is no parent lock: anyone using the app can view saved details. Use fictional personal information for demo sessions. The setup screen does not make calls.
 
-Online map area selection, GPS, road routing, Street View, multi-device sync and emergency assistance are outside this branch. Inactive resource cards remain removed; optional map details live behind the info button. See [`../docs/SCREEN_FLOW.md`](../docs/SCREEN_FLOW.md) for implemented and future journeys.
+A separate offline help prototype covers someone not responding, air raid, and being lost, with an unsure fallback. It is explicitly unreviewed and not for real emergencies. An explicit tap opens the phone app for 112 or an adult-configured trusted contact; no call is automatic and no connection or SMS delivery is claimed. The welcome and game screens offer help, including target/map loading and errors. Help reads the same encrypted family record as parent setup.
+
+Online map area selection, GPS, road routing, Street View, multi-device sync and validated emergency assistance are outside this branch. Inactive resource cards remain removed; optional map details live behind the info button. See [`../docs/SCREEN_FLOW.md`](../docs/SCREEN_FLOW.md) for implemented and future journeys.
 
 The child map is a custom schematic, not an OSM image or detailed street-map style. It uses the same geographic extent and projected locations, but keeps only broad park/pond/river outlines and a few major roads. Arena, shop and base are illustrated landmarks; trees are decorative, not surveyed positions. Small streets, building footprints and POIs are omitted even when zoomed in. Secondary labels are hidden in very small overviews or when they would overlap; zooming reveals them. This intentionally incomplete diagram is for practice, never real navigation.
 
@@ -47,14 +54,19 @@ Map controls: tap to move the character; drag to pan; pinch or use the zoom butt
 - `lib/features/welcome/welcome_screen.dart`: role selection and adult setup entry.
 - `lib/features/parent/`: child/contact/place editors, local models and encrypted repository.
 - `lib/features/game/game_launcher.dart`: load saved places and randomly select a valid practice target.
-- `lib/features/game/game_screen.dart`: game screen and Flutter UI.
+- `lib/features/mission/`: practice selection, air-raid scenario state, illustrated decisions and offline Android audio.
+- `lib/features/game/game_screen.dart`: game screen and Flutter UI; help pauses the game.
+- `lib/features/help/`: separate offline help prototype and explicit dialler handoff.
+- `lib/widgets/basebound_mascot.dart`: static guide shared by welcome, game and help.
 - `lib/game/neighborhood_game.dart`: Flame scene and demo mission.
 - `lib/game/components/`: map rendering and player movement.
 - `lib/game/maps/demo_map.dart`: offline map provider and geographic projection.
 - `lib/game/maps/schematic_map_scene.dart`: curated geography, simplified outlines and custom landmark artwork.
 - `assets/maps/tauron-arena.geojson`: real geography bundled for offline play.
 
-Dependencies are locked in `pubspec.lock`. No API keys or network permissions are needed by the game scene.
+Dependencies are locked in `pubspec.lock`. No API keys or network permissions are needed by the game scene. Help uses `url_launcher` to open the phone app and reads contacts through `flutter_secure_storage`. It requests neither direct-call nor SMS permission. Content remains available with no internet or telephone service; dialler launch is not evidence of network availability. Background SMS, automatic escalation, verified shelter routes and complete offline first aid are **not implemented**.
+
+See [`../docs/EMERGENCY_HELP.md`](../docs/EMERGENCY_HELP.md) for primary sources, limitations and required review. Do not make test calls to emergency numbers.
 
 Map data © OpenStreetMap contributors, ODbL 1.0. See [`assets/maps/README.md`](assets/maps/README.md) for the area, license and refresh command. The game has no runtime backend dependency.
 

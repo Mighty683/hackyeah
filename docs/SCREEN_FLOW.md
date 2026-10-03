@@ -25,13 +25,53 @@ flowchart TD
     R["GAME: RESULT<br/>You reached the practice target"]
     E["GAME: MAP ERROR<br/>Go back and try again"]
     I["ABOUT THIS DEMO<br/>Practice-only movement and map credits"]
+    H["HELP PROTOTYPE<br/>Unreviewed; not for real emergencies<br/>3 situations + I don't know"]
+    Q["OFFLINE HELP STEP<br/>One question or instruction<br/>112 dialler always available"]
+    D["PHONE APP<br/>Explicit child tap; no automatic call or SMS"]
 
+    W -->|I need help: bypass role selection| H
+    F -->|I need help: defer game creation| H
+    FE -->|I need help| H
+    L -->|I need help: pause game| H
+    G -->|I need help: pause game| H
+    R -->|I need help: pause game| H
+    E -->|I need help: pause game| H
+    H -->|Select situation| Q
+    Q -->|Answer or next instruction| Q
+    Q -->|Back: previous instruction| Q
+    Q -->|Back from first step| H
+    H -->|Close: restore opener and prior pause state| HP{"Help opened by"}
+    HP -->|Welcome| W
+    HP -->|Target selection| F
+    HP -->|Saved-details error| FE
+    HP -->|Map loading| L
+    HP -->|Playing| G
+    HP -->|Result| R
+    HP -->|Map error| E
+    H -->|Open 112 dialler| D
+    Q -->|Explicit 112 or saved trusted-contact action| D
+    D -->|Return: no connection assumed| DP{"Previous help screen"}
+    DP -->|Situation selector| H
+    DP -->|Instruction| Q
     W -->|I'm an adult| AL
     AL -->|Details loaded| A
     AL -->|Read failed| AE
     AE -->|Retry loading| AL
     AE -->|Delete all saved details| DEL
-    W -->|I'm a child| F
+    W -->|I'm a child| PS["PRACTICE SELECTION<br/>Alarm practice or map practice"]
+    PS -->|Map practice| F
+    PS -->|Alarm practice: ages 7+| MODE["CHOOSE SCENE<br/>At home or outside"]
+    MODE -->|At home| HOME["HOME ALARM TUTORIAL"]
+    MODE -->|Outside| OUT["OUTDOOR ALARM SIMULATION"]
+    HOME --> MR["MISSION RECALL<br/>Completion sticker; no score"]
+    OUT --> MR
+    MR -->|Replay| RE{"Selected mission mode"}
+    RE -->|Home| HOME
+    RE -->|Outside| OUT
+    HOME -->|Back| PS
+    OUT -->|Back| PS
+    MR -->|Choose practice| PS
+    PS -->|Back| B
     A -->|Edit child details| C
     A -->|Add or edit contact| T
     A -->|Add or edit practice place| M
@@ -50,7 +90,7 @@ flowchart TD
     A -->|Delete entry or all saved details| DEL
     DEL -->|Keep| A
     DEL -->|Delete: persist removal| A
-    A -->|Play together| F
+    A -->|Play together| PS
     A -->|Back| W
     F -->|Target selected or fictional fallback| L
     F -->|Read failed| FE
@@ -76,24 +116,43 @@ flowchart TD
     G -->|Back| B
     R -->|Back| B
     E -->|Back| B
-    B -->|Child| W
-    B -->|Adult| A
+    B -->|Map game| PS
+    B -->|Practice opened by child| W
+    B -->|Practice opened by adult| A
 ```
 
 | Screen/state | One primary task | Secondary actions |
 | --- | --- | --- |
-| Welcome | Choose child or adult | None |
+| Welcome | Choose child or adult | Help prototype, without choosing a role |
+| Practice selection | Choose alarm or map practice | Replay audio, back |
+| Mission mode (7+) | Choose home or outside | Replay audio, choose practice |
+| Mission scene | Make one visual decision or hear the situation | Replay audio, back |
+| Mission feedback | See the consequence and explanation | Retry the same decision or advance; replay audio |
+| Mission recall | See the six learned actions and completion sticker | Replay audio, replay mission, choose practice |
 | Parent setup | Choose a setup task | Play together, confirmed Delete all, back |
 | Child details | Edit optional child information | Save changes, back without saving |
 | Trusted contact | Edit one of up to three contacts | Save changes, back without saving |
 | Practice place | Name and position a practice pin | Tap or accessible centre/direction controls; save, back |
 | Setup load error | Recover saved details | Retry, confirmed Delete all, back |
 | Form save error | Retry saving without losing edits | Back without saving |
-| Game target selection | Wait for saved places | Back |
-| Game playing | Move the character to the practice target | Pan/zoom, show whole map, restart with a random target, demo information, back |
-| Game result | Read the result and replay | Pan/zoom, show whole map, demo information, back |
-| Game load error | Retry saved details or reopen the map | Back |
+| Game target selection/error | Wait for saved places or retry | Help prototype, back |
+| Game map loading | Wait for the offline map | Help prototype, back |
+| Game playing | Move the character to the practice target | Help prototype, pan/zoom, show whole map, restart with a random target, demo information, back |
+| Game result | Read the result and replay | Help prototype, pan/zoom, show whole map, demo information, back |
+| Game load error | Retry saved details or reopen the map | Help prototype, back |
 | Demo information | Read optional demo details | Close |
+| Help prototype entry | Choose not responding, air raid, lost, or unsure | Open 112 dialler, no-signal information, close |
+| Help step | Answer one question or read one instruction | Previous step, 112 dialler, trusted-contact dialler where offered |
+
+Help content is bundled. Phone-app launch is real, but no call, connection, rescue, SMS delivery or verified route is inferred. Not-responding skips parent contact and offers 112 immediately. The air-raid flow does not offer routine parent voice calls. No-signal medical guidance is incomplete. See [EMERGENCY_HELP.md](EMERGENCY_HELP.md) for sources and the review required before real use. Adult setup configures contacts; help only reads its encrypted local record. Opening help during target selection defers creation of the game until help closes.
+
+### Mission 01 — air-raid alarm practice
+
+The home tutorial practices alarm recognition, moving away from windows, choosing an interior hallway, messaging a fictional trusted adult, staying after a noise, waiting through silence, and following an explicit all-clear. The premise is a fallback when the agreed shelter cannot be reached. An interior area and two walls offer some protection; the game does not certify a home as safe.
+
+The MVP targets children aged 7+ with two to four choices and optional fictional outdoor practice: compare nearby shelter against distant destinations and exposed places. There is no younger-child branch or age-selection screen; saved age does not change this mission. An outdoor mistake leads to getting down (drag or tap), protecting the head, and moving to shelter. Home mistakes explain the consequence and retry without punishment. Both modes finish with a visual recall and completion sticker, with no score or timer.
+
+Instructions, feedback, and replay use an installed offline English Android speech voice. If unavailable, the app shows an adult-help message; text remains as a fallback. Short warning and all-clear playback excerpts are teaching samples, not complete alarm signals. Contacts, messages, replies, shelter selection and movement are fictional; this mission neither calls nor sends messages nor uses saved personal contacts or map pins. See [mission-01-air-raid-alarm.md](mission-01-air-raid-alarm.md) for the scenario and source notes.
 
 ### Child map interaction
 
@@ -107,7 +166,7 @@ The parent pin editor shows accurate bundled OSM geometry; the child view is del
 - Each game launch and replay chooses a random valid saved place. Repeats are possible. No places means the original fictional base.
 - The family plan persists in `flutter_secure_storage` using Android encryption. Android cloud backup and device-transfer rules exclude app data. No sync, migration or restore is promised.
 - Encryption is not a parent gate: anyone using this unlocked app can view the records. Recommend fictional personal details for demonstrations. **Delete all saved details** removes this feature's child/contact/place record after confirmation; it does not silently reset failed reads.
-- Keep map attribution visible. Preserve the distinction between real geography and simulated movement. Emergency decision scenarios and real emergency assistance are not part of this parent-setup slice.
+- Keep map attribution visible. Preserve the distinction between real geography and simulated movement. Mission 01 implements fictional alarm decision training; validated real emergency assistance remains unimplemented. The separate help prototype is unreviewed.
 
 ## Proposed future product flow — not implemented
 
@@ -120,7 +179,7 @@ flowchart TD
     MAP["PLANNED: choose an area on an online map"]
     V["PLANNED: review and confirm family-plan changes"]
 
-    subgraph CHILD["PLANNED: child training"]
+    subgraph CHILD["PLANNED: additional child training missions"]
         H["Child start<br/>Start practice"]
         T["Situation<br/>One concrete event"]
         D["Decision<br/>2–4 plausible action choices"]
@@ -130,7 +189,7 @@ flowchart TD
         R["Result<br/>One thing learned"]
     end
 
-    subgraph HELP["FUTURE ONLY: help outside the game"]
+    subgraph HELP["FUTURE ONLY: reviewed real-help release"]
         Q["What is happening?<br/>Include an unsure option"]
         O["One actionable instruction<br/>Reviewed official guidance"]
         K["Contact trusted adult or emergency services<br/>When appropriate for the situation"]
@@ -158,7 +217,9 @@ flowchart TD
     O -.->|Next reviewed step| O
 ```
 
-The future help entry must be reachable without completing onboarding. It must use different styling from training, omit scores and entertainment, and follow authoritative situation-specific guidance. This diagram defines navigation, not emergency procedures. Help is absent from this Android branch; the pitch includes a simulated preview that does not assess danger or make calls.
+The future help entry must be reachable without completing onboarding. It must use different styling from training, omit scores and entertainment, and follow authoritative situation-specific guidance. This diagram defines navigation, not emergency procedures. Android now has an explicitly unreviewed help prototype, not released real assistance. The pitch still includes a simulated preview that does not assess danger or make calls.
+
+Full reviewed emergency procedures, background messaging, walking mode, real navigation and validated real assistance remain future work. The implemented prototype is not a promotion of the future reviewed-help graph.
 
 ## Keeping this reference useful
 
