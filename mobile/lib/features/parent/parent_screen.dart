@@ -4,6 +4,7 @@ library;
 import 'package:flutter/material.dart';
 
 import '../../ui/basebound_ui.dart';
+import '../../ui/basebound_icons.dart';
 import '../mission/practice_launcher.dart';
 import 'child_editor_screen.dart';
 import 'contact_editor_screen.dart';
@@ -177,7 +178,10 @@ class _ParentScreenState extends State<ParentScreen> {
     return Theme(
       data: parentSetupTheme(),
       child: Scaffold(
-        appBar: AppBar(title: const Text('Parent setup')),
+        appBar: AppBar(
+          leading: const BaseboundBackButton(),
+          title: const Text('Parent setup'),
+        ),
         body: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
@@ -192,6 +196,14 @@ class _ParentScreenState extends State<ParentScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: BaseboundIcon(
+                              BaseboundIconName.family,
+                              size: 58,
+                            ),
+                          ),
+                          SizedBox(height: 12),
                           Text(
                             'Set up practice together',
                             style: TextStyle(
@@ -207,7 +219,7 @@ class _ParentScreenState extends State<ParentScreen> {
                             message:
                                 'Use fictional personal details for this demo. Saved details are encrypted on this device, '
                                 'but anyone using the app can open them. There is no parent lock or cloud sync.',
-                            icon: Icons.lock_outline_rounded,
+                            icon: BaseboundIconName.lock,
                           ),
                         ],
                       ),
@@ -227,13 +239,13 @@ class _ParentScreenState extends State<ParentScreen> {
                         liveRegion: true,
                         child: ParentEditorNote(
                           message: _error!,
-                          icon: Icons.error_outline_rounded,
+                          icon: BaseboundIconName.alert,
                         ),
                       ),
                       const SizedBox(height: 8),
                       OutlinedButton.icon(
                         onPressed: _busy ? null : _load,
-                        icon: const Icon(Icons.refresh_rounded),
+                        icon: const BaseboundIcon(BaseboundIconName.replay),
                         label: const Text('Retry loading'),
                       ),
                     ],
@@ -246,7 +258,10 @@ class _ParentScreenState extends State<ParentScreen> {
                         side: const BorderSide(color: BaseboundColors.coral),
                         minimumSize: const Size(48, 56),
                       ),
-                      icon: const Icon(Icons.delete_outline),
+                      icon: const BaseboundIcon(
+                        BaseboundIconName.delete,
+                        color: BaseboundColors.coral,
+                      ),
                       label: const Text('Delete all saved details'),
                     ),
                     const SizedBox(height: 16),
@@ -272,18 +287,18 @@ class _ParentScreenState extends State<ParentScreen> {
   List<Widget> _setupSections() {
     final plan = _plan!;
     return [
-      _sectionTitle('Child', Icons.face_outlined),
+      _sectionTitle('Child', BaseboundIconName.child),
       _setupCard(
         child: ListTile(
           contentPadding: const EdgeInsets.all(16),
-          leading: _entryIcon(Icons.face_outlined),
+          leading: _entryIcon(BaseboundIconName.child),
           title: Text(
             plan.child.fullName.isEmpty ? 'Child details' : plan.child.fullName,
           ),
           subtitle: const Text(
             'Name, age, address, and support needs — optional',
           ),
-          trailing: const Icon(Icons.edit_outlined),
+          trailing: const BaseboundIcon(BaseboundIconName.edit),
           titleTextStyle: _entryTitleStyle,
           subtitleTextStyle: _entrySubtitleStyle,
           onTap: _busy ? null : _editChild,
@@ -291,7 +306,7 @@ class _ParentScreenState extends State<ParentScreen> {
       ),
       _sectionTitle(
         'Trusted contacts (${plan.contacts.length}/3)',
-        Icons.people_outline_rounded,
+        BaseboundIconName.family,
       ),
       for (var index = 0; index < plan.contacts.length; index++)
         _entry(
@@ -304,15 +319,15 @@ class _ParentScreenState extends State<ParentScreen> {
           ].where((value) => value.isNotEmpty).join(' · '),
           onEdit: () => _editContact(index),
           onDelete: () => _delete(contact: index),
-          icon: Icons.person_outline_rounded,
+          icon: BaseboundIconName.adult,
         ),
       if (plan.contacts.length < FamilyPlan.maxContacts)
         OutlinedButton.icon(
           onPressed: _busy ? null : _editContact,
-          icon: const Icon(Icons.person_add_outlined),
+          icon: const BaseboundIcon(BaseboundIconName.addAdult),
           label: const Text('Add trusted contact'),
         ),
-      _sectionTitle('Practice places', Icons.place_outlined),
+      _sectionTitle('Practice places', BaseboundIconName.pin),
       const Text(
         'Choose named pins in the offline Kraków demo area. Each new game randomly picks one.',
         style: TextStyle(
@@ -331,11 +346,11 @@ class _ParentScreenState extends State<ParentScreen> {
               '${plan.safePoints[index].longitude.toStringAsFixed(5)}',
           onEdit: () => _editPlace(index),
           onDelete: () => _delete(place: index),
-          icon: Icons.place_outlined,
+          icon: BaseboundIconName.pin,
         ),
       OutlinedButton.icon(
         onPressed: _busy ? null : _editPlace,
-        icon: const Icon(Icons.add_location_alt_outlined),
+        icon: const BaseboundIcon(BaseboundIconName.addPlace),
         label: const Text('Add a practice place'),
       ),
       const SizedBox(height: 24),
@@ -347,17 +362,17 @@ class _ParentScreenState extends State<ParentScreen> {
           minimumSize: const Size(48, 58),
           padding: const EdgeInsets.all(18),
         ),
-        icon: const Icon(Icons.play_arrow),
+        icon: const BaseboundIcon(BaseboundIconName.play, color: Colors.white),
         label: const Text('Play together'),
       ),
     ];
   }
 
-  Widget _sectionTitle(String title, IconData icon) => Padding(
+  Widget _sectionTitle(String title, BaseboundIconName icon) => Padding(
     padding: const EdgeInsets.only(top: 26, bottom: 12),
     child: Row(
       children: [
-        Icon(icon, size: 24, color: BaseboundColors.ink),
+        BaseboundIcon(icon, size: 26),
         const SizedBox(width: 10),
         Expanded(
           child: Text(
@@ -388,14 +403,14 @@ class _ParentScreenState extends State<ParentScreen> {
     height: 1.4,
   );
 
-  Widget _entryIcon(IconData icon) => Container(
+  Widget _entryIcon(BaseboundIconName icon) => Container(
     width: 44,
     height: 44,
     decoration: BoxDecoration(
       color: BaseboundColors.sky,
       borderRadius: BorderRadius.circular(14),
     ),
-    child: Icon(icon, color: BaseboundColors.ink, size: 24),
+    child: BaseboundIcon(icon, size: 27),
   );
 
   Widget _setupCard({required Widget child}) => Card(
@@ -415,7 +430,7 @@ class _ParentScreenState extends State<ParentScreen> {
     required String subtitle,
     required VoidCallback onEdit,
     required VoidCallback onDelete,
-    required IconData icon,
+    required BaseboundIconName icon,
   }) => _setupCard(
     child: ListTile(
       contentPadding: const EdgeInsets.all(16),
@@ -428,7 +443,10 @@ class _ParentScreenState extends State<ParentScreen> {
       trailing: IconButton(
         onPressed: _busy ? null : onDelete,
         color: BaseboundColors.muted,
-        icon: const Icon(Icons.delete_outline),
+        icon: const BaseboundIcon(
+          BaseboundIconName.delete,
+          color: BaseboundColors.muted,
+        ),
         tooltip: 'Delete $title',
       ),
     ),

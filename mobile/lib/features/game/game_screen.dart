@@ -5,6 +5,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../../game/neighborhood_game.dart';
+import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
 import '../../widgets/basebound_mascot.dart';
 import '../help/help_screen.dart';
@@ -100,9 +101,11 @@ class _GameScreenState extends State<GameScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: Navigator.canPop(context) ? const BaseboundBackButton() : null,
         title: const Row(
           children: [
-            BaseboundMascot(size: 32),
+            BaseboundMascot(size: 32, pose: DinoPose.point),
             SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -116,18 +119,23 @@ class _GameScreenState extends State<GameScreen> {
         actions: [
           IconButton(
             onPressed: _openHelp,
-            icon: const Icon(Icons.support_outlined),
+            icon: const BaseboundIcon(BaseboundIconName.help),
             tooltip: 'I need help · prototype',
           ),
           if (!_arrived)
             IconButton(
               onPressed: _ready ? _restart : null,
-              icon: const Icon(Icons.replay),
+              icon: BaseboundIcon(
+                BaseboundIconName.replay,
+                color: _ready
+                    ? null
+                    : BaseboundColors.muted.withValues(alpha: .4),
+              ),
               tooltip: 'Start again',
             ),
           IconButton(
             onPressed: _showDemoInfo,
-            icon: const Icon(Icons.info_outline),
+            icon: const BaseboundIcon(BaseboundIconName.info),
             tooltip: 'About this demo',
           ),
         ],
@@ -211,18 +219,20 @@ class _GameScreenState extends State<GameScreen> {
         : compact
         ? 'Tap ${target ?? 'the pretend base'}.'
         : 'Reach ${target ?? 'the pretend base'}';
-    return SoftPanel(
+    return Padding(
       padding: EdgeInsets.all(compact ? 12 : 16),
-      borderColor: _arrived
-          ? BaseboundColors.greenLight
-          : _failed
-          ? BaseboundColors.coralLight
-          : Colors.white,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           if (!compact) ...[
-            const BaseboundMascot(size: 62),
+            BaseboundMascot(
+              size: 62,
+              pose: _failed
+                  ? DinoPose.calm
+                  : _arrived
+                  ? DinoPose.celebrate
+                  : DinoPose.point,
+            ),
             const SizedBox(width: 14),
           ],
           Expanded(
@@ -318,7 +328,10 @@ class _GameScreenState extends State<GameScreen> {
             FilledButton.icon(
               onPressed: _ready ? _restart : null,
               style: FilledButton.styleFrom(padding: const EdgeInsets.all(16)),
-              icon: const Icon(Icons.replay_rounded),
+              icon: const BaseboundIcon(
+                BaseboundIconName.replay,
+                color: Colors.white,
+              ),
               label: const Text('Play again'),
             ),
             const SizedBox(height: 8),
@@ -338,7 +351,12 @@ class _GameScreenState extends State<GameScreen> {
                   foregroundColor: BaseboundColors.blue,
                   side: BorderSide.none,
                 ),
-                icon: const Icon(Icons.remove_rounded),
+                icon: BaseboundIcon(
+                  BaseboundIconName.minus,
+                  color: _ready
+                      ? BaseboundColors.blue
+                      : BaseboundColors.muted.withValues(alpha: .4),
+                ),
               ),
               IconButton.outlined(
                 onPressed: _ready ? () => _zoom(1.4) : null,
@@ -349,7 +367,12 @@ class _GameScreenState extends State<GameScreen> {
                   foregroundColor: BaseboundColors.blue,
                   side: BorderSide.none,
                 ),
-                icon: const Icon(Icons.add_rounded),
+                icon: BaseboundIcon(
+                  BaseboundIconName.plus,
+                  color: _ready
+                      ? BaseboundColors.blue
+                      : BaseboundColors.muted.withValues(alpha: .4),
+                ),
               ),
               OutlinedButton.icon(
                 onPressed: _ready ? _showWholeMap : null,
@@ -365,7 +388,12 @@ class _GameScreenState extends State<GameScreen> {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                icon: const Icon(Icons.fit_screen_rounded),
+                icon: BaseboundIcon(
+                  BaseboundIconName.fitMap,
+                  color: _ready
+                      ? null
+                      : BaseboundColors.muted.withValues(alpha: .4),
+                ),
                 label: const Text('Show whole map'),
               ),
             ],
@@ -414,6 +442,21 @@ class _GameScreenState extends State<GameScreen> {
     }
   }
 
+  Widget _buildMapLoading(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) => Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (constraints.maxHeight >= 160 && constraints.maxWidth >= 88) ...[
+            const BaseboundMascot(size: 88, pose: DinoPose.listen),
+            const SizedBox(height: 12),
+          ],
+          const CircularProgressIndicator(),
+        ],
+      ),
+    ),
+  );
+
   Widget _buildMap() {
     return ClipRect(
       child: Listener(
@@ -442,11 +485,12 @@ class _GameScreenState extends State<GameScreen> {
           child: IgnorePointer(
             child: GameWidget<NeighborhoodGame>(
               game: _game,
-              loadingBuilder: (_) =>
-                  const Center(child: CircularProgressIndicator()),
+              loadingBuilder: _buildMapLoading,
               errorBuilder: (_, error) {
                 _mapError();
-                return const Center(child: Icon(Icons.map_outlined, size: 48));
+                return const Center(
+                  child: BaseboundIcon(BaseboundIconName.map, size: 48),
+                );
               },
             ),
           ),

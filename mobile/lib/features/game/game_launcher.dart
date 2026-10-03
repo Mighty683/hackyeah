@@ -6,6 +6,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../../game/maps/demo_map.dart';
+import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
 import '../../widgets/basebound_mascot.dart';
 import '../help/help_screen.dart';
@@ -77,7 +78,13 @@ class _GameLauncherState extends State<GameLauncher> {
           );
         }
         return Scaffold(
-          appBar: AppBar(title: const Text('Practice game')),
+          appBar: AppBar(
+            automaticallyImplyLeading: false,
+            leading: Navigator.canPop(context)
+                ? const BaseboundBackButton()
+                : null,
+            title: const Text('Practice game'),
+          ),
           bottomNavigationBar: SafeArea(
             top: false,
             child: Padding(
@@ -93,12 +100,23 @@ class _GameLauncherState extends State<GameLauncher> {
                   padding: const EdgeInsets.all(24),
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 440),
-                    child: SoftPanel(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          const Center(child: BaseboundMascot(size: 112)),
+                          Align(
+                            alignment: snapshot.hasError
+                                ? Alignment.centerLeft
+                                : Alignment.center,
+                            child: BaseboundMascot(
+                              size: snapshot.hasError ? 104 : 132,
+                              pose: snapshot.hasError
+                                  ? DinoPose.calm
+                                  : DinoPose.listen,
+                            ),
+                          ),
                           const SizedBox(height: 24),
                           if (snapshot.hasError) ...[
                             const Text(

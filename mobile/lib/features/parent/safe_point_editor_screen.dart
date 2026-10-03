@@ -3,6 +3,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../ui/basebound_icons.dart';
 import 'data/family_plan.dart';
 import 'widgets/offline_point_picker.dart';
 import 'widgets/parent_editor_scaffold.dart';
@@ -47,6 +48,7 @@ class _SafePointEditorScreenState extends State<SafePointEditorScreen> {
     return ParentEditorScaffold(
       title: widget.point == null ? 'Add a place' : 'Edit a place',
       onSave: _save,
+      illustration: ParentEditorArt.place,
       saveEnabled: selected != null,
       children: [
         const ParentEditorNote(
@@ -54,7 +56,7 @@ class _SafePointEditorScreenState extends State<SafePointEditorScreen> {
               'Name a place, then choose its position. '
               'This demo covers only the TAURON Arena area in Kraków. '
               'Places are not checked for safety or opening hours.',
-          icon: Icons.info_outline_rounded,
+          icon: BaseboundIconName.info,
         ),
         const SizedBox(height: 16),
         TextField(
@@ -62,7 +64,7 @@ class _SafePointEditorScreenState extends State<SafePointEditorScreen> {
           decoration: const InputDecoration(
             labelText: 'Place name (optional)',
             hintText: 'Home, police station, family friend…',
-            prefixIcon: Icon(Icons.place_outlined),
+            prefixIcon: BaseboundIcon(BaseboundIconName.pin),
           ),
           textCapitalization: TextCapitalization.words,
           maxLength: 60,

@@ -174,4 +174,30 @@ Future<void> _tap(WidgetTester tester, String label) async {
   await tester.ensureVisible(target);
   await tester.tap(target);
   await tester.pumpAndSettle();
+  _expectSceneChoicesAreUsable(tester);
+}
+
+// Scene choices must remain attached to the illustration and independently
+// actionable as the journey changes between room, phone and outdoor scenes.
+void _expectSceneChoicesAreUsable(WidgetTester tester) {
+  final sceneFinder = find.byType(MissionScene);
+  if (sceneFinder.evaluate().isEmpty) return;
+  final scene = tester.widget<MissionScene>(sceneFinder);
+  if (scene.selectedChoice != null) return;
+  final bounds = tester.getRect(sceneFinder).inflate(.5);
+  for (final choice in scene.choices) {
+    final target = find.byWidgetPredicate(
+      (widget) =>
+          widget is Semantics && widget.properties.label == choice.label,
+    );
+    expect(target, findsOneWidget);
+    final rect = tester.getRect(target);
+    expect(bounds.contains(rect.topLeft), isTrue, reason: choice.label);
+    expect(bounds.contains(rect.bottomRight), isTrue, reason: choice.label);
+    expect(rect.width, greaterThanOrEqualTo(48), reason: choice.label);
+    expect(rect.height, greaterThanOrEqualTo(48), reason: choice.label);
+    final semantics = tester.widget<Semantics>(target).properties;
+    expect(semantics.onTap, isNotNull, reason: choice.label);
+    expect(semantics.enabled, isTrue, reason: choice.label);
+  }
 }

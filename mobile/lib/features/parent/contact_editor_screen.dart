@@ -3,6 +3,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../ui/basebound_icons.dart';
 import 'data/family_plan.dart';
 import 'widgets/parent_editor_scaffold.dart';
 
@@ -48,17 +49,18 @@ class _ContactEditorScreenState extends State<ContactEditorScreen> {
     return ParentEditorScaffold(
       title: 'Trusted contact',
       onSave: _save,
+      illustration: ParentEditorArt.contact,
       children: [
         const ParentEditorNote(
           message: 'All fields are optional. This screen does not make calls.',
-          icon: Icons.info_outline_rounded,
+          icon: BaseboundIconName.info,
         ),
         const SizedBox(height: 24),
         TextField(
           controller: _name,
           decoration: const InputDecoration(
             labelText: 'Name (optional)',
-            prefixIcon: Icon(Icons.person_outline_rounded),
+            prefixIcon: BaseboundIcon(BaseboundIconName.adult),
           ),
           textCapitalization: TextCapitalization.words,
           maxLength: 100,
@@ -69,7 +71,7 @@ class _ContactEditorScreenState extends State<ContactEditorScreen> {
           controller: _phone,
           decoration: const InputDecoration(
             labelText: 'Phone number (optional)',
-            prefixIcon: Icon(Icons.phone_outlined),
+            prefixIcon: BaseboundIcon(BaseboundIconName.phone),
           ),
           keyboardType: TextInputType.phone,
           maxLength: 30,
@@ -81,7 +83,7 @@ class _ContactEditorScreenState extends State<ContactEditorScreen> {
           decoration: const InputDecoration(
             labelText: 'Relationship to child (optional)',
             hintText: 'Parent, grandparent, family friend…',
-            prefixIcon: Icon(Icons.people_outline_rounded),
+            prefixIcon: BaseboundIcon(BaseboundIconName.family),
           ),
           textCapitalization: TextCapitalization.words,
           maxLength: 80,

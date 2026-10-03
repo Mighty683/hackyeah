@@ -156,7 +156,13 @@ Instructions, feedback, and replay use an installed offline English Android spee
 
 ### Visual design system
 
-The implemented screens share rounded Nunito typography, navy text, blue actions and white panels. Training uses warm or sky-tinted backdrops, a decorative green guide and bundled fictional room/hallway illustrations. Parent setup uses calmer form panels. Help retains a distinct flat cool theme and visible prototype notice. The visual redesign preserves all screen actions and return paths described above; see [UI_IMPLEMENTATION_PLAN.md](UI_IMPLEMENTATION_PLAN.md) for shared components and parallel ownership.
+The implemented screens share rounded Nunito typography, navy text, blue actions and white panels. The current visual refinement adds a bespoke colourful vector icon family and six decorative dinosaur poses: wave, point, think, listen, celebrate and calm. Custom icons cover navigation, narration/replay, map controls, forms, mission choices and help; mission Canvas drawings and default back/close controls also use the family instead of Material font glyphs. Labels, tooltips, focus and disabled state remain on the native controls.
+
+The compositions differ by task. Welcome has a grounded waving hero and role cards. Practice uses a pointing guide beside its heading and separate activity cards. Loading uses listen; recoverable errors use calm. The map uses a compact pointing instruction guide and a celebrating arrival state, with controls and credit outside its gesture area. Adult setup keeps compact illustrations and calm form panels. Help retains a distinct flat cool theme, restrained icons, no training mascot and the visible prototype notice.
+
+Mission presentation is being refined around portrait 2:3 environment backgrounds, a separate scene-character pose sheet and native per-step choices anchored to the pictured objects. The dinosaur remains an editable vector guide. Backgrounds supply no interactive labels; the current step supplies character placement, target rectangles and its existing two to four actions. Narrow and large-text layouts retain accessible choice cards. The latest combined asset, layout and interaction checks are pending integrator verification; passing checks for the earlier visual baseline are recorded separately in [UI_IMPLEMENTATION_PLAN.md](UI_IMPLEMENTATION_PLAN.md).
+
+This visual work preserves every screen action and return path described above. Neither the implemented graph nor the future graph changes, and no new mission content or real emergency assistance is introduced.
 
 ### Child map interaction
 

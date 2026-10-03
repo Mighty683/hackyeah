@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
+import '../../widgets/basebound_mascot.dart';
 import 'air_raid_mission.dart';
 import 'mission_audio.dart';
 import 'mission_choice_card.dart';
@@ -173,17 +175,35 @@ class _MissionScreenState extends State<MissionScreen>
         backgroundColor: BaseboundColors.cream,
         foregroundColor: BaseboundColors.ink,
         centerTitle: true,
-        leading: IconButton(
+        leading: BaseboundBackButton(
+          enabled: !_exiting,
           tooltip: 'Leave practice',
           onPressed: _exiting ? null : () => unawaited(_exit()),
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
         ),
-        title: const Text(
-          'Practice · air raid',
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(fontWeight: FontWeight.w800),
-        ),
+        title: _headerTitle(),
+        actions: [
+          Semantics(
+            label: 'Replay audio',
+            button: true,
+            enabled: _audioReady,
+            onTap: _audioReady ? () => unawaited(_narrate()) : null,
+            child: ExcludeSemantics(
+              child: IconButton(
+                onPressed: _audioReady ? () => unawaited(_narrate()) : null,
+                tooltip: 'Replay audio',
+                style: IconButton.styleFrom(
+                  backgroundColor: BaseboundColors.sky,
+                ),
+                icon: BaseboundIcon(
+                  BaseboundIconName.speaker,
+                  size: 28,
+                  color: _speaking ? BaseboundColors.blue : BaseboundColors.ink,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+        ],
       ),
       body: SafeArea(
         child: IllustratedBackdrop(
@@ -198,7 +218,6 @@ class _MissionScreenState extends State<MissionScreen>
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     _audioControls(),
-                    const SizedBox(height: 18),
                     if (_session.isComplete)
                       ..._completion()
                     else
@@ -213,29 +232,44 @@ class _MissionScreenState extends State<MissionScreen>
     ),
   );
 
+  bool get _needsChoiceList =>
+      MediaQuery.sizeOf(context).width < 360 ||
+      MediaQuery.textScalerOf(context).scale(1) > 1.1;
+
+  Widget _headerTitle() {
+    if (_needsChoiceList || _session.isComplete) {
+      return const Text(
+        'Practice · air raid',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      );
+    }
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Text(
+          'Practice · air raid',
+          style: TextStyle(fontSize: 11, color: BaseboundColors.muted),
+        ),
+        Text(
+          _session.step.title,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w800,
+            height: 1.1,
+            color: BaseboundColors.ink,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _audioControls() => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
-      OutlinedButton.icon(
-        onPressed: _audioReady ? () => unawaited(_narrate()) : null,
-        icon: Icon(
-          _speaking ? Icons.volume_up_rounded : Icons.volume_up_outlined,
-          size: 26,
-        ),
-        label: const Text('Replay audio'),
-        style: OutlinedButton.styleFrom(
-          minimumSize: const Size(64, 56),
-          backgroundColor: Colors.white,
-          foregroundColor: BaseboundColors.blue,
-          side: const BorderSide(color: BaseboundColors.border),
-          shape: const StadiumBorder(),
-          textStyle: const TextStyle(
-            fontFamily: 'Nunito',
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ),
       if (_initializingAudio)
         const Padding(
           padding: EdgeInsets.only(top: 10),
@@ -250,7 +284,7 @@ class _MissionScreenState extends State<MissionScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Icon(Icons.record_voice_over, size: 30),
+                const BaseboundIcon(BaseboundIconName.speaker, size: 30),
                 const SizedBox(height: 8),
                 const Text(
                   'The voice is unavailable. Ask an adult to read each step with you.',
@@ -259,7 +293,7 @@ class _MissionScreenState extends State<MissionScreen>
                 ),
                 TextButton.icon(
                   onPressed: () => unawaited(_initializeAudio(retry: true)),
-                  icon: const Icon(Icons.refresh),
+                  icon: const BaseboundIcon(BaseboundIconName.replay),
                   label: const Text('Try the voice again'),
                   style: TextButton.styleFrom(minimumSize: const Size(64, 52)),
                 ),
@@ -276,32 +310,34 @@ class _MissionScreenState extends State<MissionScreen>
     final visual = choice?.visual ?? step.visual;
     final sceneChoices = _useSceneChoices(visual);
     return [
-      Text(
-        step.title,
-        textAlign: TextAlign.center,
-        style: const TextStyle(
-          fontSize: 29,
-          fontWeight: FontWeight.w800,
-          height: 1.15,
-          color: BaseboundColors.ink,
+      if (_needsChoiceList) ...[
+        Text(
+          step.title,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.w800,
+            height: 1.15,
+            color: BaseboundColors.ink,
+          ),
         ),
-      ),
-      const SizedBox(height: 16),
+        const SizedBox(height: 12),
+      ],
       if (!_session.hasFeedback) ...[
         SoftPanel(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 11),
           child: Text(
             step.narration,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              fontSize: 19,
-              fontWeight: FontWeight.w600,
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
               color: BaseboundColors.ink,
-              height: 1.35,
+              height: 1.25,
             ),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
       ],
       _scene(visual),
       const SizedBox(height: 14),
@@ -328,7 +364,12 @@ class _MissionScreenState extends State<MissionScreen>
   Widget _scene(MissionVisual visual) {
     final scene = MissionScene(
       visual: visual,
-      choices: _useSceneChoices(visual) ? _session.step.choices : const [],
+      stepId: _session.step.id,
+      choices: _useSceneChoices(visual)
+          ? (_session.hasFeedback
+                ? [_session.selectedChoice!]
+                : _session.step.choices)
+          : const [],
       selectedChoice: _session.selectedChoice,
       onChoose: _session.hasFeedback ? null : _choose,
     );
@@ -346,7 +387,7 @@ class _MissionScreenState extends State<MissionScreen>
   bool _useSceneChoices(MissionVisual visual) =>
       missionUsesSceneChoices(visual) &&
       MediaQuery.sizeOf(context).width >= 360 &&
-      MediaQuery.textScalerOf(context).scale(1) <= 1.25;
+      MediaQuery.textScalerOf(context).scale(1) <= 1.1;
 
   Widget _choiceGrid(List<MissionChoice> choices) => LayoutBuilder(
     builder: (context, constraints) {
@@ -376,6 +417,9 @@ class _MissionScreenState extends State<MissionScreen>
     child: BaseboundGuide(
       message: _session.feedback!,
       positive: _session.selectedChoice!.isCorrect,
+      pose: _session.selectedChoice!.isCorrect
+          ? DinoPose.celebrate
+          : DinoPose.think,
     ),
   );
 
@@ -386,7 +430,9 @@ class _MissionScreenState extends State<MissionScreen>
     final label = retry ? 'Try again' : _nextLabel();
     return FilledButton.icon(
       onPressed: _next,
-      icon: Icon(retry ? Icons.replay : Icons.arrow_forward),
+      icon: BaseboundIcon(
+        retry ? BaseboundIconName.replay : BaseboundIconName.next,
+      ),
       label: Text(label),
       style: FilledButton.styleFrom(
         minimumSize: const Size(64, 64),
@@ -417,8 +463,8 @@ class _MissionScreenState extends State<MissionScreen>
   };
 
   List<Widget> _completion() => [
-    const Icon(
-      Icons.workspace_premium_rounded,
+    const BaseboundIcon(
+      BaseboundIconName.badge,
       size: 100,
       color: BaseboundColors.green,
     ),
@@ -441,7 +487,7 @@ class _MissionScreenState extends State<MissionScreen>
     const SizedBox(height: 24),
     FilledButton.icon(
       onPressed: _restart,
-      icon: const Icon(Icons.replay),
+      icon: const BaseboundIcon(BaseboundIconName.replay),
       label: const Text('Play again'),
       style: FilledButton.styleFrom(
         minimumSize: const Size(64, 64),
@@ -453,7 +499,7 @@ class _MissionScreenState extends State<MissionScreen>
     ),
     TextButton.icon(
       onPressed: () => unawaited(_exit()),
-      icon: const Icon(Icons.home),
+      icon: const BaseboundIcon(BaseboundIconName.home),
       label: const Text('Back to practice choices'),
       style: TextButton.styleFrom(minimumSize: const Size(64, 56)),
     ),

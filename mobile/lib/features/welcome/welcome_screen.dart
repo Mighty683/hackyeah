@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
 import '../../widgets/basebound_mascot.dart';
 import '../mission/practice_launcher.dart';
@@ -60,7 +61,7 @@ class _WelcomeChoices extends StatelessWidget {
         const SizedBox(height: 28),
         _RoleCard(
           label: "I'm a child",
-          icon: Icons.face_rounded,
+          icon: BaseboundIconName.child,
           color: BaseboundColors.blue,
           tint: BaseboundColors.sky,
           onPressed: () => _openScreen(context, const PracticeLauncher()),
@@ -68,7 +69,7 @@ class _WelcomeChoices extends StatelessWidget {
         const SizedBox(height: 16),
         _RoleCard(
           label: "I'm an adult",
-          icon: Icons.person_outline_rounded,
+          icon: BaseboundIconName.adult,
           color: BaseboundColors.ink,
           tint: BaseboundColors.cream,
           onPressed: () => _openScreen(context, const AdultScreen()),
@@ -91,36 +92,21 @@ class _WelcomeIllustration extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          Positioned(
-            bottom: 0,
-            child: Container(
-              width: 220,
-              height: 80,
-              decoration: const BoxDecoration(
-                color: BaseboundColors.greenLight,
-                borderRadius: BorderRadius.all(Radius.elliptical(110, 40)),
-              ),
-            ),
-          ),
           const Positioned(
             top: 0,
             left: 10,
-            child: Icon(
-              Icons.wb_sunny_rounded,
-              size: 42,
-              color: Color(0xFFF2BE46),
-            ),
+            child: BaseboundIcon(BaseboundIconName.sun, size: 42),
           ),
           const Positioned(
             right: 0,
             bottom: 28,
-            child: Icon(
-              Icons.home_rounded,
-              size: 72,
-              color: BaseboundColors.peach,
-            ),
+            child: BaseboundIcon(BaseboundIconName.home, size: 72),
           ),
-          const BaseboundMascot(size: 156),
+          const Positioned(
+            left: 26,
+            bottom: 0,
+            child: BaseboundMascot(size: 166, pose: DinoPose.wave),
+          ),
         ],
       ),
     ),
@@ -137,7 +123,7 @@ class _RoleCard extends StatelessWidget {
   });
 
   final String label;
-  final IconData icon;
+  final BaseboundIconName icon;
   final Color color;
   final Color tint;
   final VoidCallback onPressed;
@@ -163,7 +149,7 @@ class _RoleCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(color: tint, shape: BoxShape.circle),
-                child: Icon(icon, color: color, size: 34),
+                child: BaseboundIcon(icon, size: 34),
               ),
               const SizedBox(width: 18),
               Expanded(
@@ -177,7 +163,7 @@ class _RoleCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Icon(Icons.arrow_forward_rounded, color: color),
+              BaseboundIcon(BaseboundIconName.next, color: color),
             ],
           ),
         ),

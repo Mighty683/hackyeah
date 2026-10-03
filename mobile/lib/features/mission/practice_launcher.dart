@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
 import '../../widgets/basebound_mascot.dart';
 import '../game/game_launcher.dart';
@@ -101,7 +102,11 @@ class _PracticeLauncherState extends State<PracticeLauncher>
       _Selection.mode => 'Where shall we practice?',
     };
     return Scaffold(
-      appBar: AppBar(title: const Text('Practice only')),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: Navigator.canPop(context) ? const BaseboundBackButton() : null,
+        title: const Text('Practice only'),
+      ),
       body: SafeArea(
         child: IllustratedBackdrop(
           warm: true,
@@ -113,24 +118,13 @@ class _PracticeLauncherState extends State<PracticeLauncher>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Center(child: BaseboundMascot(size: 112)),
-                    const SizedBox(height: 20),
-                    Text(
-                      title,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: BaseboundColors.ink,
-                        fontSize: 30,
-                        height: 1.15,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
+                    _PracticeHeading(title: title),
                     const SizedBox(height: 24),
                     ..._choices(),
                     const SizedBox(height: 8),
                     OutlinedButton.icon(
                       onPressed: _opening ? null : _speak,
-                      icon: const Icon(Icons.volume_up_rounded),
+                      icon: const BaseboundIcon(BaseboundIconName.speaker),
                       label: const Text('Replay audio'),
                       style: OutlinedButton.styleFrom(
                         backgroundColor: Colors.white,
@@ -155,7 +149,7 @@ class _PracticeLauncherState extends State<PracticeLauncher>
                           onPressed: _opening
                               ? null
                               : () => _select(_Selection.activity),
-                          icon: const Icon(Icons.arrow_back_rounded),
+                          icon: const BaseboundIcon(BaseboundIconName.back),
                           label: const Text('Choose practice'),
                         ),
                       ),
@@ -173,35 +167,75 @@ class _PracticeLauncherState extends State<PracticeLauncher>
     _Selection.activity => [
       _card(
         'Alarm practice',
-        Icons.notifications_active_rounded,
+        BaseboundIconName.alarm,
         () => _select(_Selection.mode),
       ),
       _card(
         'Map practice',
-        Icons.map_rounded,
+        BaseboundIconName.map,
         () => _open(const GameLauncher()),
       ),
     ],
     _Selection.mode => [
       _card(
         'At home',
-        Icons.home_rounded,
+        BaseboundIconName.home,
         () => _openMission(MissionMode.home),
       ),
       _card(
         'Outside',
-        Icons.park_rounded,
+        BaseboundIconName.park,
         () => _openMission(MissionMode.outdoor),
       ),
     ],
   };
 
-  Widget _card(String label, IconData icon, VoidCallback onPressed) => Padding(
-    padding: const EdgeInsets.only(bottom: 16),
-    child: _ActivityCard(
-      label: label,
-      icon: icon,
-      onPressed: _opening ? null : onPressed,
+  Widget _card(String label, BaseboundIconName icon, VoidCallback onPressed) =>
+      Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: _ActivityCard(
+          label: label,
+          icon: icon,
+          onPressed: _opening ? null : onPressed,
+        ),
+      );
+}
+
+class _PracticeHeading extends StatelessWidget {
+  const _PracticeHeading({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+    child: LayoutBuilder(
+      builder: (context, constraints) {
+        final heading = Text(
+          title,
+          style: const TextStyle(
+            color: BaseboundColors.ink,
+            fontSize: 28,
+            height: 1.15,
+            fontWeight: FontWeight.w800,
+          ),
+        );
+        const guide = BaseboundMascot(size: 96, pose: DinoPose.point);
+        if (constraints.maxWidth < 260 ||
+            MediaQuery.textScalerOf(context).scale(28) > 38) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [guide, const SizedBox(height: 8), heading],
+          );
+        }
+        return Row(
+          children: [
+            guide,
+            const SizedBox(width: 16),
+            Expanded(child: heading),
+          ],
+        );
+      },
     ),
   );
 }
@@ -214,7 +248,7 @@ class _ActivityCard extends StatelessWidget {
   });
 
   final String label;
-  final IconData icon;
+  final BaseboundIconName icon;
   final VoidCallback? onPressed;
 
   @override
@@ -252,7 +286,7 @@ class _ActivityCard extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(24),
       ),
-      child: Icon(icon, size: 54, color: BaseboundColors.blue),
+      child: Center(child: BaseboundIcon(icon, size: 54)),
     );
     final text = Text(
       label,
@@ -279,7 +313,7 @@ class _ActivityCard extends StatelessWidget {
         const SizedBox(width: 18),
         Expanded(child: text),
         const SizedBox(width: 8),
-        const Icon(Icons.arrow_forward_rounded, color: BaseboundColors.blue),
+        const BaseboundIcon(BaseboundIconName.next),
       ],
     );
   }

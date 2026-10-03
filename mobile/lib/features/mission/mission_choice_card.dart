@@ -1,31 +1,35 @@
 import 'package:flutter/material.dart';
 
+import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
 import 'air_raid_mission.dart';
 
-IconData missionActionIcon(MissionActionIcon action) => switch (action) {
-  MissionActionIcon.window => Icons.window,
-  MissionActionIcon.door || MissionActionIcon.leave => Icons.door_front_door,
-  MissionActionIcon.interior || MissionActionIcon.hallway => Icons.meeting_room,
-  MissionActionIcon.livingRoom => Icons.weekend,
-  MissionActionIcon.bedroom => Icons.bed,
-  MissionActionIcon.kitchen => Icons.countertops,
-  MissionActionIcon.mom => Icons.face_3,
-  MissionActionIcon.dad => Icons.face_6,
-  MissionActionIcon.grandparent => Icons.elderly,
-  MissionActionIcon.call => Icons.phone_in_talk,
-  MissionActionIcon.message => Icons.chat_bubble_outline,
-  MissionActionIcon.stay => Icons.self_improvement,
-  MissionActionIcon.home => Icons.home,
-  MissionActionIcon.school => Icons.school,
-  MissionActionIcon.shelter => Icons.apartment,
-  MissionActionIcon.park => Icons.park,
-  MissionActionIcon.busStop => Icons.directions_bus,
-  MissionActionIcon.down => Icons.arrow_downward,
-  MissionActionIcon.protectHead => Icons.health_and_safety_outlined,
-  MissionActionIcon.next => Icons.arrow_forward,
-  MissionActionIcon.replay => Icons.replay,
-};
+BaseboundIconName missionActionIcon(MissionActionIcon action) =>
+    switch (action) {
+      MissionActionIcon.window => BaseboundIconName.window,
+      MissionActionIcon.door ||
+      MissionActionIcon.leave => BaseboundIconName.door,
+      MissionActionIcon.interior ||
+      MissionActionIcon.hallway => BaseboundIconName.hallway,
+      MissionActionIcon.livingRoom => BaseboundIconName.livingRoom,
+      MissionActionIcon.bedroom => BaseboundIconName.bedroom,
+      MissionActionIcon.kitchen => BaseboundIconName.kitchen,
+      MissionActionIcon.mom => BaseboundIconName.mother,
+      MissionActionIcon.dad => BaseboundIconName.father,
+      MissionActionIcon.grandparent => BaseboundIconName.grandparent,
+      MissionActionIcon.call => BaseboundIconName.phone,
+      MissionActionIcon.message => BaseboundIconName.message,
+      MissionActionIcon.stay => BaseboundIconName.stay,
+      MissionActionIcon.home => BaseboundIconName.home,
+      MissionActionIcon.school => BaseboundIconName.school,
+      MissionActionIcon.shelter => BaseboundIconName.shelter,
+      MissionActionIcon.park => BaseboundIconName.park,
+      MissionActionIcon.busStop => BaseboundIconName.busStop,
+      MissionActionIcon.down => BaseboundIconName.down,
+      MissionActionIcon.protectHead => BaseboundIconName.protectHead,
+      MissionActionIcon.next => BaseboundIconName.next,
+      MissionActionIcon.replay => BaseboundIconName.replay,
+    };
 
 /// A large pictured action; its spoken instruction never depends on its label.
 class MissionChoiceCard extends StatelessWidget {
@@ -84,14 +88,14 @@ class MissionChoiceCard extends StatelessWidget {
                   color: selected ? accent : BaseboundColors.sky,
                   borderRadius: BorderRadius.circular(22),
                 ),
-                child: Icon(
+                child: BaseboundIcon(
                   selected
                       ? (choice.isCorrect
-                            ? Icons.check_rounded
-                            : Icons.close_rounded)
+                            ? BaseboundIconName.check
+                            : BaseboundIconName.cross)
                       : missionActionIcon(choice.icon),
                   size: 38,
-                  color: selected ? Colors.white : BaseboundColors.blue,
+                  color: selected ? Colors.white : null,
                 ),
               ),
               const SizedBox(height: 12),

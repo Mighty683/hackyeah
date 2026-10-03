@@ -6,6 +6,8 @@ import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 
 import '../../../game/maps/demo_map.dart';
+import '../../../ui/basebound_icons.dart';
+import '../../../ui/basebound_ui.dart';
 import '../data/family_plan.dart';
 import 'offline_map_component.dart';
 
@@ -58,7 +60,7 @@ class _OfflinePointPickerState extends State<OfflinePointPicker> {
         const SizedBox(height: 8),
         const Text(
           'Map data © OpenStreetMap contributors · ODbL 1.0',
-          style: TextStyle(fontSize: 12),
+          style: TextStyle(fontSize: 12, color: BaseboundColors.muted),
         ),
         const SizedBox(height: 8),
         Wrap(
@@ -70,22 +72,22 @@ class _OfflinePointPickerState extends State<OfflinePointPicker> {
             ),
             IconButton(
               onPressed: () => _game.nudge(0, -12),
-              icon: const Icon(Icons.arrow_upward),
+              icon: const BaseboundIcon(BaseboundIconName.up),
               tooltip: 'Move pin north',
             ),
             IconButton(
               onPressed: () => _game.nudge(0, 12),
-              icon: const Icon(Icons.arrow_downward),
+              icon: const BaseboundIcon(BaseboundIconName.down),
               tooltip: 'Move pin south',
             ),
             IconButton(
               onPressed: () => _game.nudge(-12, 0),
-              icon: const Icon(Icons.arrow_back),
+              icon: const BaseboundIcon(BaseboundIconName.back),
               tooltip: 'Move pin west',
             ),
             IconButton(
               onPressed: () => _game.nudge(12, 0),
-              icon: const Icon(Icons.arrow_forward),
+              icon: const BaseboundIcon(BaseboundIconName.next),
               tooltip: 'Move pin east',
             ),
           ],

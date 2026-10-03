@@ -3,21 +3,36 @@ library;
 
 import 'package:flutter/material.dart';
 
+/// Decorative poses support the current activity without conveying instructions.
+enum DinoPose { wave, point, think, listen, celebrate, calm }
+
 class BaseboundMascot extends StatelessWidget {
-  const BaseboundMascot({super.key, this.size = 72});
+  const BaseboundMascot({
+    super.key,
+    this.size = 72,
+    this.pose = DinoPose.wave,
+    this.faceLeft = false,
+  });
 
   final double size;
+  final DinoPose pose;
+  final bool faceLeft;
 
   @override
   Widget build(BuildContext context) => ExcludeSemantics(
     child: SizedBox.square(
       dimension: size,
-      child: CustomPaint(painter: _MascotPainter()),
+      child: CustomPaint(painter: _MascotPainter(pose, faceLeft)),
     ),
   );
 }
 
 class _MascotPainter extends CustomPainter {
+  const _MascotPainter(this.pose, this.faceLeft);
+
+  final DinoPose pose;
+  final bool faceLeft;
+
   static const green = Color(0xFF66D649);
   static const darkGreen = Color(0xFF14974E);
   static const ink = Color(0xFF123C38);
@@ -25,17 +40,38 @@ class _MascotPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     canvas.scale(size.width / 120, size.height / 120);
-    canvas.drawOval(
-      const Rect.fromLTWH(22, 105, 86, 9),
-      Paint()..color = const Color(0x130D3760),
-    );
+    if (faceLeft) {
+      canvas.translate(120, 0);
+      canvas.scale(-1, 1);
+    }
+    canvas.save();
+    if (pose == DinoPose.celebrate) canvas.translate(0, -6);
+    _drawTail(canvas);
+    _drawBody(canvas);
+    _drawLegs(canvas);
+    _drawHead(canvas);
+    _drawArms(canvas);
+    _drawPoseAccents(canvas);
+    canvas.restore();
+  }
+
+  void _drawTail(Canvas canvas) {
+    final tip = switch (pose) {
+      DinoPose.celebrate => const Offset(8, 55),
+      DinoPose.think => const Offset(14, 79),
+      DinoPose.calm => const Offset(10, 86),
+      _ => const Offset(11, 65),
+    };
     final tail = Path()
       ..moveTo(45, 76)
-      ..quadraticBezierTo(15, 98, 11, 65)
+      ..quadraticBezierTo(15, 98, tip.dx, tip.dy)
       ..quadraticBezierTo(2, 90, 25, 99)
       ..quadraticBezierTo(42, 103, 56, 89)
       ..close();
     canvas.drawPath(tail, Paint()..color = darkGreen);
+  }
+
+  void _drawBody(Canvas canvas) {
     final body = Rect.fromLTWH(37, 53, 53, 53);
     canvas.drawOval(
       body,
@@ -55,6 +91,33 @@ class _MascotPainter extends CustomPainter {
       ..strokeWidth = 2;
     canvas.drawLine(const Offset(53, 80), const Offset(80, 80), bellyLines);
     canvas.drawLine(const Offset(54, 88), const Offset(79, 88), bellyLines);
+  }
+
+  void _drawLegs(Canvas canvas) {
+    final (leftFoot, rightFoot) = pose == DinoPose.celebrate
+        ? (const Offset(34, 103), const Offset(92, 102))
+        : (const Offset(43, 108), const Offset(83, 108));
+    _limb(canvas, const Offset(48, 96), leftFoot, width: 17);
+    _limb(canvas, const Offset(78, 97), rightFoot, width: 17);
+    for (final foot in [leftFoot, rightFoot]) {
+      canvas.drawOval(
+        Rect.fromCenter(center: foot, width: 23, height: 10),
+        Paint()..color = darkGreen,
+      );
+    }
+  }
+
+  void _drawHead(Canvas canvas) {
+    final tilt = switch (pose) {
+      DinoPose.think => -.12,
+      DinoPose.listen => .10,
+      DinoPose.point => .05,
+      _ => 0.0,
+    };
+    canvas.save();
+    canvas.translate(64, 43);
+    canvas.rotate(tilt);
+    canvas.translate(-64, -43);
     for (final spike in [
       const Offset(42, 22),
       const Offset(53, 13),
@@ -79,30 +142,33 @@ class _MascotPainter extends CustomPainter {
           end: Alignment.bottomRight,
         ).createShader(head.outerRect),
     );
-    _limb(canvas, const Offset(42, 68), const Offset(29, 77));
-    _limb(canvas, const Offset(88, 68), const Offset(104, 55));
-    _limb(canvas, const Offset(48, 96), const Offset(43, 108), width: 17);
-    _limb(canvas, const Offset(78, 97), const Offset(83, 108), width: 17);
-    canvas.drawOval(
-      const Rect.fromLTWH(31, 103, 23, 10),
-      Paint()..color = darkGreen,
-    );
-    canvas.drawOval(
-      const Rect.fromLTWH(74, 103, 24, 10),
-      Paint()..color = darkGreen,
-    );
+    _drawFace(canvas);
+    canvas.restore();
+  }
+
+  void _drawFace(Canvas canvas) {
     final face = Paint()
       ..color = ink
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3.5
       ..strokeCap = StrokeCap.round;
+    final joyful = pose == DinoPose.wave || pose == DinoPose.celebrate;
     for (final x in [49.0, 79.0]) {
-      canvas.drawPath(
-        Path()
-          ..moveTo(x - 5, 43)
-          ..quadraticBezierTo(x, 35, x + 5, 43),
-        face,
-      );
+      if (joyful) {
+        canvas.drawPath(
+          Path()
+            ..moveTo(x - 5, 43)
+            ..quadraticBezierTo(x, 35, x + 5, 43),
+          face,
+        );
+      } else {
+        canvas.drawOval(
+          Rect.fromCenter(center: Offset(x, 42), width: 10, height: 13),
+          Paint()..color = Colors.white,
+        );
+        final look = pose == DinoPose.point ? 2.0 : 0.0;
+        canvas.drawCircle(Offset(x + look, 43), 3.1, Paint()..color = ink);
+      }
     }
     canvas.drawOval(
       const Rect.fromLTWH(37, 45, 13, 9),
@@ -112,6 +178,18 @@ class _MascotPainter extends CustomPainter {
       const Rect.fromLTWH(79, 45, 13, 9),
       Paint()..color = const Color(0xFFFFAD91),
     );
+    if (!joyful) {
+      canvas.drawPath(
+        Path()
+          ..moveTo(56, 54)
+          ..quadraticBezierTo(65, pose == DinoPose.think ? 58 : 63, 74, 54),
+        face..strokeWidth = 2.8,
+      );
+      if (pose == DinoPose.think) {
+        canvas.drawLine(const Offset(72, 31), const Offset(84, 33), face);
+      }
+      return;
+    }
     final mouth = Path()
       ..moveTo(53, 50)
       ..quadraticBezierTo(65, 60, 76, 50)
@@ -132,6 +210,137 @@ class _MascotPainter extends CustomPainter {
     );
   }
 
+  void _drawArms(Canvas canvas) {
+    final (leftElbow, leftHand, rightElbow, rightHand) = switch (pose) {
+      DinoPose.wave => (
+        const Offset(32, 76),
+        const Offset(27, 80),
+        const Offset(101, 59),
+        const Offset(103, 39),
+      ),
+      DinoPose.point => (
+        const Offset(37, 79),
+        const Offset(43, 86),
+        const Offset(101, 71),
+        const Offset(111, 69),
+      ),
+      DinoPose.think => (
+        const Offset(34, 78),
+        const Offset(51, 84),
+        const Offset(95, 77),
+        const Offset(75, 62),
+      ),
+      DinoPose.listen => (
+        const Offset(33, 80),
+        const Offset(27, 79),
+        const Offset(104, 61),
+        const Offset(102, 42),
+      ),
+      DinoPose.celebrate => (
+        const Offset(28, 57),
+        const Offset(21, 37),
+        const Offset(103, 52),
+        const Offset(106, 30),
+      ),
+      DinoPose.calm => (
+        const Offset(37, 82),
+        const Offset(53, 88),
+        const Offset(95, 82),
+        const Offset(81, 88),
+      ),
+    };
+    _arm(canvas, const Offset(42, 68), leftElbow, leftHand);
+    _arm(canvas, const Offset(88, 68), rightElbow, rightHand);
+    if (pose == DinoPose.wave || pose == DinoPose.celebrate) {
+      _openHand(canvas, rightHand);
+    }
+    if (pose == DinoPose.celebrate) _openHand(canvas, leftHand);
+    if (pose == DinoPose.point) {
+      _limb(canvas, rightHand, const Offset(117, 65), width: 5);
+    }
+    if (pose == DinoPose.listen) {
+      canvas.drawArc(
+        const Rect.fromLTWH(94, 34, 13, 18),
+        -1.6,
+        3.2,
+        false,
+        Paint()
+          ..color = darkGreen
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.5
+          ..strokeCap = StrokeCap.round,
+      );
+    }
+  }
+
+  void _arm(Canvas canvas, Offset shoulder, Offset elbow, Offset hand) {
+    canvas.drawPath(
+      Path()
+        ..moveTo(shoulder.dx, shoulder.dy)
+        ..lineTo(elbow.dx, elbow.dy)
+        ..lineTo(hand.dx, hand.dy),
+      Paint()
+        ..color = green
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 11
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+    canvas.drawCircle(hand, 6.5, Paint()..color = green);
+  }
+
+  void _openHand(Canvas canvas, Offset center) {
+    for (final finger in [
+      const Offset(-6, -9),
+      const Offset(0, -12),
+      const Offset(6, -9),
+    ]) {
+      _limb(canvas, center, center + finger, width: 4.5);
+    }
+  }
+
+  void _drawPoseAccents(Canvas canvas) {
+    if (pose == DinoPose.think) {
+      for (final (center, radius) in [
+        (const Offset(102, 22), 2.5),
+        (const Offset(109, 15), 4.0),
+      ]) {
+        canvas.drawCircle(
+          center,
+          radius,
+          Paint()..color = const Color(0xFF97C5EF),
+        );
+      }
+    }
+    if (pose == DinoPose.listen) {
+      final sound = Paint()
+        ..color = const Color(0xFF0967DA)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.5
+        ..strokeCap = StrokeCap.round;
+      canvas.drawArc(const Rect.fromLTWH(105, 27, 8, 23), -1, 2, false, sound);
+      canvas.drawArc(const Rect.fromLTWH(109, 22, 9, 33), -1, 2, false, sound);
+    }
+    if (pose == DinoPose.celebrate) {
+      _sparkle(canvas, const Offset(15, 18), 6);
+      _sparkle(canvas, const Offset(109, 13), 5);
+    }
+  }
+
+  void _sparkle(Canvas canvas, Offset center, double radius) {
+    final star = Path()
+      ..moveTo(center.dx, center.dy - radius)
+      ..lineTo(center.dx + 2, center.dy - 2)
+      ..lineTo(center.dx + radius, center.dy)
+      ..lineTo(center.dx + 2, center.dy + 2)
+      ..lineTo(center.dx, center.dy + radius)
+      ..lineTo(center.dx - 2, center.dy + 2)
+      ..lineTo(center.dx - radius, center.dy)
+      ..lineTo(center.dx - 2, center.dy - 2)
+      ..close();
+    canvas.drawPath(star, Paint()..color = const Color(0xFFF4C44E));
+  }
+
   void _limb(Canvas canvas, Offset start, Offset end, {double width = 12}) {
     canvas.drawLine(
       start,
@@ -145,5 +354,6 @@ class _MascotPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _MascotPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _MascotPainter oldDelegate) =>
+      oldDelegate.pose != pose || oldDelegate.faceLeft != faceLeft;
 }

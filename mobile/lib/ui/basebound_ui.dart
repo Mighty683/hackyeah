@@ -4,6 +4,7 @@ library;
 import 'package:flutter/material.dart';
 
 import '../widgets/basebound_mascot.dart';
+import 'basebound_icons.dart';
 
 abstract final class BaseboundColors {
   static const ink = Color(0xFF112568);
@@ -52,6 +53,12 @@ abstract final class BaseboundTheme {
       displayColor: BaseboundColors.ink,
     );
     return base.copyWith(
+      actionIconTheme: ActionIconThemeData(
+        backButtonIconBuilder: (_) =>
+            const BaseboundIcon(BaseboundIconName.back),
+        closeButtonIconBuilder: (_) =>
+            const BaseboundIcon(BaseboundIconName.cross),
+      ),
       scaffoldBackgroundColor: help
           ? const Color(0xFFF3F6FA)
           : BaseboundColors.cream,
@@ -231,7 +238,7 @@ class BaseboundBadge extends StatelessWidget {
   });
 
   final String label;
-  final IconData? icon;
+  final BaseboundIconName? icon;
   final Color color;
 
   @override
@@ -245,7 +252,7 @@ class BaseboundBadge extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         if (icon != null) ...[
-          Icon(icon, size: 18, color: color),
+          BaseboundIcon(icon!, size: 18, color: color),
           const SizedBox(width: 6),
         ],
         Flexible(
@@ -269,34 +276,38 @@ class BaseboundGuide extends StatelessWidget {
     super.key,
     required this.message,
     this.positive = true,
+    this.pose,
+    this.mascotOnRight = false,
   });
 
   final String message;
   final bool positive;
+  final DinoPose? pose;
+  final bool mascotOnRight;
 
   @override
-  Widget build(BuildContext context) => SoftPanel(
-    borderColor: positive ? BaseboundColors.greenLight : BaseboundColors.peach,
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
     child: LayoutBuilder(
       builder: (context, constraints) => Row(
+        textDirection: mascotOnRight ? TextDirection.rtl : TextDirection.ltr,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           if (constraints.maxWidth >= 220 &&
               MediaQuery.textScalerOf(context).scale(1) < 1.6) ...[
-            const BaseboundMascot(size: 76),
+            BaseboundMascot(
+              size: 76,
+              pose: pose ?? (positive ? DinoPose.celebrate : DinoPose.calm),
+              faceLeft: mascotOnRight,
+            ),
             const SizedBox(width: 16),
           ],
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  positive
-                      ? Icons.check_circle_rounded
-                      : Icons.lightbulb_rounded,
-                  color: positive
-                      ? BaseboundColors.green
-                      : const Color(0xFF9A5C00),
+                BaseboundIcon(
+                  positive ? BaseboundIconName.check : BaseboundIconName.idea,
                   size: 26,
                 ),
                 const SizedBox(height: 6),

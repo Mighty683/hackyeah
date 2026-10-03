@@ -38,9 +38,18 @@ void main() {
         tester.widget<MissionScene>(find.byType(MissionScene)).choices.length,
         3,
       );
-      expect(find.byIcon(Icons.window), findsOneWidget);
-      expect(find.byIcon(Icons.door_front_door), findsOneWidget);
-      expect(find.byIcon(Icons.meeting_room), findsOneWidget);
+      for (final label in [
+        'Go to the window',
+        'Go outside',
+        'Move deeper inside',
+      ]) {
+        expect(
+          find.byWidgetPredicate(
+            (widget) => widget is Semantics && widget.properties.label == label,
+          ),
+          findsOneWidget,
+        );
+      }
 
       await tester.tap(find.byTooltip('Leave practice'));
       await tester.pumpAndSettle();

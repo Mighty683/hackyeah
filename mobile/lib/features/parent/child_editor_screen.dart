@@ -4,6 +4,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../ui/basebound_icons.dart';
 import 'data/family_plan.dart';
 import 'widgets/parent_editor_scaffold.dart';
 
@@ -51,18 +52,19 @@ class _ChildEditorScreenState extends State<ChildEditorScreen> {
     return ParentEditorScaffold(
       title: 'Child details',
       onSave: _save,
+      illustration: ParentEditorArt.child,
       children: [
         const ParentEditorNote(
           message:
               'All fields are optional. Use fictional details for the demo.',
-          icon: Icons.info_outline_rounded,
+          icon: BaseboundIconName.info,
         ),
         const SizedBox(height: 24),
         TextField(
           controller: _name,
           decoration: const InputDecoration(
             labelText: 'Full name (optional)',
-            prefixIcon: Icon(Icons.face_outlined),
+            prefixIcon: BaseboundIcon(BaseboundIconName.child),
           ),
           textCapitalization: TextCapitalization.words,
           maxLength: 100,
@@ -73,7 +75,7 @@ class _ChildEditorScreenState extends State<ChildEditorScreen> {
           controller: _age,
           decoration: const InputDecoration(
             labelText: 'Age (optional)',
-            prefixIcon: Icon(Icons.cake_outlined),
+            prefixIcon: BaseboundIcon(BaseboundIconName.birthday),
           ),
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -85,7 +87,7 @@ class _ChildEditorScreenState extends State<ChildEditorScreen> {
           controller: _address,
           decoration: const InputDecoration(
             labelText: 'Address (optional)',
-            prefixIcon: Icon(Icons.home_outlined),
+            prefixIcon: BaseboundIcon(BaseboundIconName.home),
           ),
           textCapitalization: TextCapitalization.words,
           minLines: 1,
@@ -97,7 +99,7 @@ class _ChildEditorScreenState extends State<ChildEditorScreen> {
           controller: _notes,
           decoration: const InputDecoration(
             labelText: 'Support needs (optional)',
-            prefixIcon: Icon(Icons.favorite_border_rounded),
+            prefixIcon: BaseboundIcon(BaseboundIconName.heart),
           ),
           textCapitalization: TextCapitalization.sentences,
           minLines: 3,

@@ -5,6 +5,7 @@ library;
 import 'package:flutter/material.dart';
 
 import '../../ui/basebound_ui.dart';
+import '../../ui/basebound_icons.dart';
 import '../parent/data/family_plan.dart';
 import 'help_flow.dart';
 import 'help_phone.dart';
@@ -30,7 +31,7 @@ class HelpEntryButton extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
     ),
     onPressed: onPressed ?? () => openHelpScreen(context),
-    icon: const Icon(Icons.support_outlined),
+    icon: const BaseboundIcon(BaseboundIconName.help, calm: true),
     label: const Text('I need help · prototype'),
   );
 }
@@ -167,7 +168,7 @@ class _HelpScreenState extends State<HelpScreen> {
           appBar: AppBar(
             leading: IconButton(
               onPressed: _back,
-              icon: const Icon(Icons.arrow_back),
+              icon: const BaseboundIcon(BaseboundIconName.back, calm: true),
               tooltip: _history.length == 1 ? 'Close help' : 'Previous step',
             ),
             title: const Text('Help · prototype'),
@@ -269,12 +270,16 @@ class _HelpScreenState extends State<HelpScreen> {
           child: Row(
             children: [
               if (_history.last == HelpPage.situations) ...[
-                Icon(_situationIcon(choice.next), size: 24),
+                BaseboundIcon(
+                  _situationIcon(choice.next),
+                  size: 26,
+                  calm: true,
+                ),
                 const SizedBox(width: 14),
               ],
               Expanded(child: Text(choice.label)),
               const SizedBox(width: 8),
-              const Icon(Icons.chevron_right_rounded, size: 24),
+              const BaseboundIcon(BaseboundIconName.next, calm: true),
             ],
           ),
         ),
@@ -298,7 +303,7 @@ class _HelpScreenState extends State<HelpScreen> {
             ),
           ),
           onPressed: _loadingContacts || _openingDialler ? null : _contactAdult,
-          icon: const Icon(Icons.phone_outlined),
+          icon: const BaseboundIcon(BaseboundIconName.phone, calm: true),
           label: Text(
             _loadingContacts ? 'Reading saved contacts…' : 'Call trusted adult',
           ),
@@ -335,18 +340,18 @@ class _HelpScreenState extends State<HelpScreen> {
           child: TextButton.icon(
             style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
             onPressed: () => setState(() => _noSignal = true),
-            icon: const Icon(Icons.signal_cellular_off),
+            icon: const BaseboundIcon(BaseboundIconName.noSignal, calm: true),
             label: const Text('No phone signal'),
           ),
         ),
     ],
   );
 
-  IconData _situationIcon(HelpPage page) => switch (page) {
-    HelpPage.unresponsive => Icons.personal_injury_outlined,
-    HelpPage.airLocation => Icons.campaign_outlined,
-    HelpPage.lostAdult => Icons.location_searching_rounded,
-    _ => Icons.help_outline_rounded,
+  BaseboundIconName _situationIcon(HelpPage page) => switch (page) {
+    HelpPage.unresponsive => BaseboundIconName.unresponsive,
+    HelpPage.airLocation => BaseboundIconName.alarm,
+    HelpPage.lostAdult => BaseboundIconName.lost,
+    _ => BaseboundIconName.unsure,
   };
 
   Widget _buildPhoneActions() => Container(
@@ -374,7 +379,11 @@ class _HelpScreenState extends State<HelpScreen> {
             ),
           ),
           onPressed: _openingDialler ? null : () => _dial('112'),
-          icon: const Icon(Icons.phone_outlined),
+          icon: const BaseboundIcon(
+            BaseboundIconName.phone,
+            color: Colors.white,
+            calm: true,
+          ),
           label: Text(_step.urgent ? 'Call 112 now' : 'Call 112'),
         ),
         const SizedBox(height: 6),
@@ -398,7 +407,12 @@ class _PrototypeNotice extends StatelessWidget {
     child: const Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(Icons.info_outline_rounded, color: BaseboundColors.ink, size: 20),
+        BaseboundIcon(
+          BaseboundIconName.info,
+          color: BaseboundColors.ink,
+          size: 20,
+          calm: true,
+        ),
         SizedBox(width: 10),
         Expanded(
           child: Text(
