@@ -414,7 +414,9 @@ class _ParentScreenState extends State<ParentScreen> {
       _SetupStage.ready => (
         'Play together',
         () => Navigator.of(context).push<void>(
-          MaterialPageRoute<void>(builder: (_) => const PracticeLauncher()),
+          MaterialPageRoute<void>(
+            builder: (_) => PracticeLauncher(child: _plan!.child),
+          ),
         ),
       ),
     };

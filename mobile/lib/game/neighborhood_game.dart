@@ -11,13 +11,18 @@ import 'maps/demo_map.dart';
 
 /// Offline arena neighborhood with a touch-controlled demo mission.
 class NeighborhoodGame extends FlameGame {
-  NeighborhoodGame({required this.onArrived, this.destination})
-    : super(
-        camera: CameraComponent.withFixedResolution(
-          width: DemoMap.mapSize,
-          height: DemoMap.mapSize,
-        ),
-      );
+  NeighborhoodGame({
+    required this.onArrived,
+    this.destination,
+    this.gender = ChildGender.girl,
+  }) : super(
+         camera: CameraComponent.withFixedResolution(
+           width: DemoMap.mapSize,
+           height: DemoMap.mapSize,
+         ),
+       );
+
+  final ChildGender gender;
 
   final VoidCallback onArrived;
   final SafePoint? destination;
@@ -51,7 +56,7 @@ class NeighborhoodGame extends FlameGame {
     _home = map.project(
       target == null ? [20.0013, 50.0730] : [target.longitude, target.latitude],
     );
-    _player = PlayerComponent(startPosition: _start.clone());
+    _player = PlayerComponent(startPosition: _start.clone(), gender: gender);
     await world.add(
       NeighborhoodComponent(
         map: map,

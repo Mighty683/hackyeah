@@ -1,18 +1,24 @@
 import 'dart:math' as math;
 import 'dart:ui';
 
+import '../../features/parent/data/family_plan.dart';
+
 import 'package:flame/components.dart';
 
 import '../maps/demo_map.dart';
 
 /// Demo character moving toward a point selected on the neighborhood map.
 class PlayerComponent extends PositionComponent {
-  PlayerComponent({required Vector2 startPosition})
-    : super(
-        position: startPosition,
-        size: Vector2.all(34),
-        anchor: Anchor.center,
-      );
+  PlayerComponent({
+    required Vector2 startPosition,
+    this.gender = ChildGender.girl,
+  }) : super(
+         position: startPosition,
+         size: Vector2.all(34),
+         anchor: Anchor.center,
+       );
+
+  final ChildGender gender;
 
   // A close view needs time to recognise nearby landmarks while moving.
   static const speed = 30.0;
@@ -89,6 +95,10 @@ class PlayerComponent extends PositionComponent {
     canvas.drawCircle(Offset.zero, 15, _paint);
     _paint.color = const Color(0xFF315D77);
     canvas.drawCircle(Offset.zero, 13.5, _paint);
+    if (gender == ChildGender.girl) {
+      _paint.color = const Color(0xFF724127);
+      canvas.drawOval(const Rect.fromLTWH(-7, -10, 14, 16), _paint);
+    }
     // A face and shoulders read as a person, not another destination pin.
     _paint.color = const Color(0xFFF2C79D);
     canvas.drawCircle(const Offset(0, -4), 5.5, _paint);
@@ -100,7 +110,9 @@ class PlayerComponent extends PositionComponent {
       true,
       _paint,
     );
-    _paint.color = const Color(0xFFFFF4D5);
+    _paint.color = gender == ChildGender.boy
+        ? const Color(0xFF299F9B)
+        : const Color(0xFFB961BE);
     canvas.drawRRect(
       RRect.fromRectAndRadius(
         const Rect.fromLTRB(-8, 3, 8, 11),

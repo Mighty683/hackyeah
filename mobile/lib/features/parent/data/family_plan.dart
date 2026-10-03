@@ -51,12 +51,15 @@ class FamilyPlan {
   };
 }
 
+enum ChildGender { girl, boy }
+
 class ChildProfile {
   const ChildProfile({
     this.fullName = '',
     this.age,
     this.address = '',
     this.supportNotes = '',
+    this.gender,
   });
 
   factory ChildProfile.fromJson(Map<String, dynamic> json) => ChildProfile(
@@ -64,18 +67,25 @@ class ChildProfile {
     age: json['age'] as int?,
     address: json['address'] as String,
     supportNotes: json['supportNotes'] as String,
+    gender: switch (json['gender']) {
+      'boy' => ChildGender.boy,
+      'girl' => ChildGender.girl,
+      _ => null,
+    },
   );
 
   final String fullName;
   final int? age;
   final String address;
   final String supportNotes;
+  final ChildGender? gender;
 
   Map<String, dynamic> toJson() => {
     'fullName': fullName,
     'age': age,
     'address': address,
     'supportNotes': supportNotes,
+    'gender': gender?.name,
   };
 }
 

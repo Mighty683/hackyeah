@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import '../parent/data/family_plan.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -13,10 +15,17 @@ import 'mission_scene.dart';
 
 /// An explicitly fictional training session, separate from the help prototype.
 class MissionScreen extends StatefulWidget {
-  const MissionScreen({super.key, required this.mode, this.audio});
+  const MissionScreen({
+    super.key,
+    required this.mode,
+    this.audio,
+    this.gender = ChildGender.girl,
+  });
 
   final MissionMode mode;
   final MissionAudio? audio;
+
+  final ChildGender gender;
 
   @override
   State<MissionScreen> createState() => _MissionScreenState();
@@ -364,6 +373,7 @@ class _MissionScreenState extends State<MissionScreen>
   Widget _scene(MissionVisual visual) {
     final scene = MissionScene(
       visual: visual,
+      gender: widget.gender,
       stepId: _session.step.id,
       choices: _useSceneChoices(visual)
           ? (_session.hasFeedback

@@ -67,7 +67,14 @@ flowchart TD
     AL -->|Read failed| AE
     AE -->|Retry loading| AL
     AE -->|Delete all saved details| DEL
-    W -->|I'm a child| PS["PRACTICE SELECTION<br/>Alarm practice or map practice"]
+    W -->|I'm a child| ON["CHILD ONBOARDING: NAME<br/>Name or nickname; saved details prefilled"]
+    ON -->|Add my age| OA["CHILD ONBOARDING: AGE<br/>Enter age 1–99"]
+    OA -->|Choose my character| OG["CHILD ONBOARDING: GENDER<br/>Girl or boy with character previews"]
+    OG -->|Start practice: save encrypted local details| PS["PRACTICE SELECTION<br/>Alarm practice or map practice"]
+    OG -->|Save failed: retain edits and retry| OG
+    OA -->|Back| ON
+    OG -->|Back| OA
+    ON -->|Back| W
     PS -->|Map practice| F
     PS -->|Alarm practice: ages 7+| MODE["CHOOSE SCENE<br/>At home or outside"]
     MODE -->|At home| HOME["HOME ALARM TUTORIAL"]
@@ -164,6 +171,7 @@ flowchart TD
 | Screen/state | One primary task | Secondary actions |
 | --- | --- | --- |
 | Welcome | Choose child or adult | Help prototype, without choosing a role |
+| Child onboarding | Enter name or nickname, age, then select girl or boy | Back keeps edits; load/save errors allow retry; saved details are prefilled |
 | Practice selection | Choose alarm or map practice | Replay audio, back |
 | Mission mode (7+) | Choose home or outside | Replay audio, choose practice |
 | Mission scene | Make one visual decision or hear the situation | Replay audio, back |
@@ -188,6 +196,8 @@ flowchart TD
 | Help prototype entry | Choose not responding, air raid, lost, or unsure | Open 112 dialler, no-signal information, close |
 | Help step | Answer one question or read one instruction | Previous step, 112 dialler, trusted-contact dialler where offered |
 
+Child onboarding stores name, age and optional serialized gender in the existing encrypted family record, preserving address, support notes, contacts and practice places. Older records without gender still load. The selected girl or boy appears in mission poses and the map marker; adult Play together also uses the saved character. Age entry is personalization, not age verification. Returning to the child route allows editing the three steps.
+
 Each parent stage offers **Setup options → Delete all saved details**, with confirmation. Completed child, contact and safe-place editors save their records before returning; completing onboarding launches practice without an additional bulk save. **Review setup** returns to the intro and preserves saved records.
 
 Help content is bundled. Phone-app launch is real, but no call, connection, rescue, SMS delivery or verified route is inferred. Not-responding skips parent contact and offers 112 immediately. The air-raid flow does not offer routine parent voice calls. No-signal medical guidance is incomplete. See [EMERGENCY_HELP.md](EMERGENCY_HELP.md) for sources and the review required before real use. Adult setup configures contacts; help only reads its encrypted local record. Opening help during target selection defers creation of the game until help closes.
@@ -196,7 +206,7 @@ Help content is bundled. Phone-app launch is real, but no call, connection, resc
 
 The home tutorial practices alarm recognition, moving away from windows, choosing an interior hallway, messaging a fictional trusted adult, staying after a noise, waiting through silence, and following an explicit all-clear. The premise is a fallback when the agreed shelter cannot be reached. An interior area and two walls offer some protection; the game does not certify a home as safe.
 
-The MVP targets children aged 7+ with two to four choices and optional fictional outdoor practice: compare nearby shelter against distant destinations and exposed places. There is no younger-child branch or age-selection screen; saved age does not change this mission. An outdoor mistake leads to getting down (drag or tap), protecting the head, and moving to shelter. Home mistakes explain the consequence and retry without punishment. Both modes finish with a visual recall and completion sticker, with no score or timer.
+The MVP targets children aged 7+ with two to four choices and optional fictional outdoor practice: compare nearby shelter against distant destinations and exposed places. Child onboarding collects age, but there is no younger-child branch; saved age does not change this mission. An outdoor mistake leads to getting down (drag or tap), protecting the head, and moving to shelter. Home mistakes explain the consequence and retry without punishment. Both modes finish with a visual recall and completion sticker, with no score or timer.
 
 Instructions, feedback, and replay use an installed offline English Android speech voice. If unavailable, the app shows an adult-help message; text remains as a fallback. Short warning and all-clear playback excerpts are teaching samples, not complete alarm signals. Contacts, messages, replies, shelter selection and movement are fictional; this mission neither calls nor sends messages nor uses saved personal contacts or map pins. See [mission-01-air-raid-alarm.md](mission-01-air-raid-alarm.md) for the scenario and source notes.
 
