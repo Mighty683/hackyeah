@@ -56,7 +56,7 @@ LostMissionSceneLayout lostMissionSceneLayout(
       LostSceneMotif.square => 'A child stops in a fictional public square.',
       LostSceneMotif.landmark =>
         'Practice landmark: ${context.meetingPointLabel}. '
-            '${resolveLostLandmark(context.meetingPoint.presetId).description} '
+            '${context.photoMeetingPoint == null ? resolveLostLandmark(context.meetingPoint.presetId).description : 'The saved photo of your meeting place.'} '
             '${arriving ? 'The child moves nearby in the story.' : 'Remember its picture.'}',
       LostSceneMotif.helper =>
         'A child stays near a visible public help desk in the story.',

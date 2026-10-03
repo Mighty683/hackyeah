@@ -10,6 +10,8 @@ import '../game/location_permission_setup.dart';
 import '../mission/practice_launcher.dart';
 import '../landmarks/landmark_library_screen.dart';
 import '../landmarks/data/landmark_repository.dart';
+import '../landmarks/data/landmark.dart';
+import '../landmarks/widgets/landmark_photo.dart';
 import '../mission/lost_landmarks.dart';
 import 'child_editor_screen.dart';
 import 'contact_editor_screen.dart';
@@ -129,6 +131,7 @@ class _ParentScreenState extends State<ParentScreen> {
     await Navigator.of(context).push<void>(
       MaterialPageRoute(builder: (_) => const LandmarkLibraryScreen()),
     );
+    if (mounted) setState(() {});
   }
 
   Future<void> _configureLocation() async {
@@ -489,16 +492,18 @@ class _ParentScreenState extends State<ParentScreen> {
     return [
       _heading('A meeting point for lost practice', BaseboundIconName.pin),
       const Text(
-        'Choose an illustration and a name your child can recognize. '
-        'This is separate from map pins.',
+        'Choose a saved photo place. Your child will recognize the same '
+        'photo and find its pin on Our map.',
         style: _subtitleStyle,
       ),
       const SizedBox(height: 16),
       if (point == null)
         const ParentEditorNote(
-          message: 'No practice meeting point saved. Lost practice uses a pretend Fountain.',
+          message: 'No meeting point chosen. Choose a saved photo place, or explicitly use a demo picture.',
           icon: BaseboundIconName.info,
         )
+      else if (point.landmarkId != null)
+        _savedPhotoMeetingPoint(point)
       else ...[
         Center(
           child: LostLandmarkIllustration(presetId: point.presetId, size: 80),
@@ -510,7 +515,7 @@ class _ParentScreenState extends State<ParentScreen> {
               : point.label.trim().isEmpty
               ? preset.label
               : point.label,
-          subtitle: 'Bundled practice picture. Tap to edit.',
+          subtitle: 'Pretend practice picture. Tap to choose a photo place.',
           onEdit: _editPracticeMeetingPoint,
           onDelete: () => _delete(practiceMeetingPoint: true),
           icon: BaseboundIconName.pin,
@@ -534,6 +539,52 @@ class _ParentScreenState extends State<ParentScreen> {
     ];
   }
 
+  Future<({Landmark? place, String directory})> _readMeetingPointPhoto(
+    String id,
+  ) async {
+    final repository = LandmarkRepository();
+    final places = await repository.load();
+    final directory = await repository.photoDirectory();
+    return (
+      place: places.where((place) => place.id == id).firstOrNull,
+      directory: directory.path,
+    );
+  }
+
+  Widget _savedPhotoMeetingPoint(PracticeMeetingPoint point) =>
+      FutureBuilder<({Landmark? place, String directory})>(
+        future: _readMeetingPointPhoto(point.landmarkId!),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState != ConnectionState.done) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          final place = snapshot.data?.place;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (place != null)
+                LandmarkPhoto(
+                  fit: BoxFit.contain,
+                  path: '${snapshot.data!.directory}/${place.photoName}',
+                  label: place.name,
+                  height: 140,
+                ),
+              _entry(
+                title: place?.name ?? 'Meeting photo unavailable',
+                subtitle: place == null
+                    ? 'Choose a saved photo place again.'
+                    : place.isDemo
+                    ? 'Fictional demo photo and pin.'
+                    : 'Saved photo and pin for lost practice.',
+                onEdit: _editPracticeMeetingPoint,
+                onDelete: () => _delete(practiceMeetingPoint: true),
+                icon: BaseboundIconName.pin,
+              ),
+            ],
+          );
+        },
+      );
+
   List<Widget> _ready() => [
     _heading('Ready to practice together', BaseboundIconName.check),
     Text(
@@ -554,7 +605,7 @@ class _ParentScreenState extends State<ParentScreen> {
     ),
     const SizedBox(height: 16),
     const Text(
-      'Lost practice uses a saved landmark or a pretend Fountain. '
+      'Lost practice teaches your selected photo place and its pin on Our map. '
       'Calls, replies and safety confirmation are simulated. No message is sent.',
       style: _subtitleStyle,
     ),

@@ -55,7 +55,7 @@ void main() {
       expect(context.gender, ChildGender.boy);
       expect(context.meetingPointLabel, 'Our help desk');
       expect(context.meetingPoint.presetId, 'information_desk');
-      expect(context.usesFictionalDetails, isFalse);
+      expect(context.fictionalMeetingPoint, isTrue);
       expect(context.contacts.map((contact) => contact.label), [
         'Emma',
         'Sam',

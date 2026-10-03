@@ -5,10 +5,14 @@ import 'package:flutter/material.dart';
 import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
 import '../../widgets/basebound_mascot.dart';
+import '../../game/maps/demo_map.dart';
+import '../landmarks/data/landmark.dart';
 import 'data/lost_practice_context.dart';
+import 'lost_meeting_point_map.dart';
 import 'lost_mission.dart';
 import 'lost_mission_scene.dart';
 import 'mission_audio.dart';
+import 'practice_recap.dart';
 
 /// Offline decision practice; calls and safety confirmation are pretend.
 class LostMissionScreen extends StatefulWidget {
@@ -17,11 +21,17 @@ class LostMissionScreen extends StatefulWidget {
     required this.variant,
     required this.practiceContext,
     this.audio,
+    this.map,
+    this.mapLandmarks = const [],
+    this.photoDirectory = '',
   });
 
   final LostPracticeVariant variant;
   final LostPracticeContext practiceContext;
   final MissionAudio? audio;
+  final DemoMap? map;
+  final List<Landmark> mapLandmarks;
+  final String photoDirectory;
 
   @override
   State<LostMissionScreen> createState() => _LostMissionScreenState();
@@ -75,12 +85,7 @@ class _LostMissionScreenState extends State<LostMissionScreen>
   }
 
   String get _spokenText {
-    if (_session.isComplete) {
-      return 'Practice complete. No message was sent. Stop. Look around. '
-          'Use your family meeting point only if it is nearby. '
-          'Ask for help in a public place. Contact family. Stay and wait. '
-          'After you reunite in the story, press I am safe.';
-    }
+    if (_session.isComplete) return LostPracticeRecap.narration;
     if (_session.hasFeedback) return _session.feedback!;
     final step = _session.step;
     if (!step.isDecision) return step.narration;
@@ -133,6 +138,13 @@ class _LostMissionScreenState extends State<LostMissionScreen>
   void _restart() {
     if (_exiting) return;
     setState(_session.restart);
+    _returnToTop();
+    unawaited(_narrate());
+  }
+
+  void _mapHelp() {
+    if (_exiting) return;
+    setState(_session.useMapHelp);
     _returnToTop();
     unawaited(_narrate());
   }
@@ -227,7 +239,10 @@ class _LostMissionScreenState extends State<LostMissionScreen>
     ),
   );
 
-  Widget _practice() => Column(
+  Widget _practice() =>
+      _session.step.id == 'recall' ? _recall() : _practiceSteps();
+
+  Widget _practiceSteps() => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       Expanded(
@@ -251,7 +266,23 @@ class _LostMissionScreenState extends State<LostMissionScreen>
               const SizedBox(height: 10),
               _instruction(),
               const SizedBox(height: 12),
-              if (_session.step.isDecision && !_session.hasFeedback)
+              if (_session.step.id == 'map_meeting_point' &&
+                  !_session.hasFeedback)
+                LostMeetingPointMap(
+                  map: widget.map,
+                  target: widget.practiceContext.photoMeetingPoint!,
+                  photoDirectory: widget.photoDirectory,
+                  landmarks: widget.mapLandmarks
+                      .where(
+                        (place) => _session.step.choices.any(
+                          (choice) => choice.id == place.id,
+                        ),
+                      )
+                      .toList(),
+                  onSelected: _choose,
+                  onHelp: _mapHelp,
+                )
+              else if (_session.step.isDecision && !_session.hasFeedback)
                 LostMissionScene(
                   step: _session.step,
                   practiceContext: widget.practiceContext,
@@ -290,11 +321,17 @@ class _LostMissionScreenState extends State<LostMissionScreen>
         textAlign: TextAlign.center,
         style: TextStyle(fontSize: 13, color: BaseboundColors.muted),
       ),
-      if (widget.practiceContext.usesFictionalDetails)
+      if (widget.practiceContext.fictionalMeetingPoint)
+        const Text(
+          'Demo meeting place.',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 13, color: BaseboundColors.muted),
+        ),
+      if (widget.practiceContext.contacts.any((contact) => contact.isFictional))
         const Padding(
           padding: EdgeInsets.only(top: 5),
           child: Text(
-            'Some family details are pretend.',
+            'Some contacts are pretend.',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 13, color: BaseboundColors.muted),
           ),
@@ -304,14 +341,26 @@ class _LostMissionScreenState extends State<LostMissionScreen>
 
   Widget _instruction() => SoftPanel(
     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-    child: Text(
-      _session.step.narration,
-      textAlign: TextAlign.center,
-      style: const TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.w700,
-        height: 1.3,
-      ),
+    child: Column(
+      children: [
+        Text(
+          _session.step.narration,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            height: 1.3,
+          ),
+        ),
+        if (_session.step.choices.any((choice) => choice.isDemoPhoto))
+          const Padding(
+            padding: EdgeInsets.only(top: 8),
+            child: Text(
+              'Fictional demo photo',
+              style: TextStyle(fontSize: 13, color: BaseboundColors.muted),
+            ),
+          ),
+      ],
     ),
   );
 
@@ -385,43 +434,49 @@ class _LostMissionScreenState extends State<LostMissionScreen>
     );
   }
 
+  Widget _summaryContent(String title) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      _practiceNotice(),
+      const SizedBox(height: 12),
+      PracticeRecap(
+        title: title,
+        titleKey: const ValueKey('lost-step-title'),
+        praise: LostPracticeRecap.praise,
+        points: LostPracticeRecap.points,
+      ),
+      const Text(
+        LostPracticeRecap.notice,
+        style: TextStyle(fontSize: 16, color: BaseboundColors.muted),
+      ),
+      _audioControls(),
+    ],
+  );
+
+  Widget _recall() => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Expanded(
+        child: SingleChildScrollView(
+          controller: _scroll,
+          child: _summaryContent(_session.step.title),
+        ),
+      ),
+      const SizedBox(height: 16),
+      _primaryAction(),
+    ],
+  );
+
   Widget _completion() => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       Expanded(
         child: SingleChildScrollView(
           controller: _scroll,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _practiceNotice(),
-              _audioControls(),
-              const SizedBox(height: 18),
-              const Text(
-                'Practice complete',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                height: 240,
-                child: LostMissionScene(
-                  step: _session.step,
-                  practiceContext: widget.practiceContext,
-                ),
-              ),
-              const BaseboundGuide(
-                message: 'Stop. Look. Ask for help. Stay and wait.',
-              ),
-              const Text(
-                'No message was sent.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-              ),
-            ],
-          ),
+          child: _summaryContent('Practice complete'),
         ),
       ),
+      const SizedBox(height: 16),
       FilledButton.icon(
         key: const ValueKey('lost-restart'),
         onPressed: _exiting ? null : _restart,

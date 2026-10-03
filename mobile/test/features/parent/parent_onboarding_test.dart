@@ -235,8 +235,8 @@ void main() {
     await _tap(tester, 'Skip child details');
     await _tap(tester, 'Choose safe places');
     await _tap(tester, 'Add a practice meeting point');
+    await _tap(tester, 'Use a pretend picture');
     await _tap(tester, 'Information desk');
-    await _tap(tester, 'Name this meeting point');
     await tester.enterText(find.byType(TextField), 'Demo help desk');
     await _tap(tester, 'Save practice meeting point');
 
@@ -283,7 +283,6 @@ void main() {
       findsOneWidget,
     );
     await _tap(tester, 'Information desk');
-    await _tap(tester, 'Name this meeting point');
     expect(_fieldText(tester), 'Old custom label');
     await tester.enterText(find.byType(TextField), 'Retained meeting label');
     await _tap(tester, 'Save practice meeting point');

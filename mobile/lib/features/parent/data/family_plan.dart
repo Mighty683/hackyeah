@@ -66,20 +66,30 @@ class FamilyPlan {
   };
 }
 
-/// A parent-selected illustration for practice, independent of geographic pins.
+/// Links practice to a saved photo landmark; presets remain demo-only options.
 class PracticeMeetingPoint {
-  const PracticeMeetingPoint({required this.presetId, required this.label});
+  const PracticeMeetingPoint({
+    this.presetId = 'fountain',
+    this.label = '',
+    this.landmarkId,
+  });
 
   factory PracticeMeetingPoint.fromJson(Map<String, dynamic> json) =>
       PracticeMeetingPoint(
-        presetId: json['presetId'] as String,
-        label: json['label'] as String,
+        presetId: json['presetId'] as String? ?? 'fountain',
+        label: json['label'] as String? ?? '',
+        landmarkId: json['landmarkId'] as String?,
       );
 
   final String presetId;
   final String label;
+  final String? landmarkId;
 
-  Map<String, dynamic> toJson() => {'presetId': presetId, 'label': label};
+  Map<String, dynamic> toJson() => {
+    'presetId': presetId,
+    'label': label,
+    if (landmarkId != null) 'landmarkId': landmarkId,
+  };
 }
 
 enum ChildGender { girl, boy }

@@ -1,12 +1,19 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 
 import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
 import '../../widgets/basebound_mascot.dart';
+import '../../game/maps/demo_map.dart';
+import '../landmarks/data/landmark.dart';
+import '../landmarks/data/landmark_repository.dart';
+import '../landmarks/landmark_location.dart';
+import '../landmarks/widgets/landmark_photo.dart';
 import '../parent/data/family_plan.dart';
 import '../parent/data/family_plan_repository.dart';
+import '../parent/parent_screen.dart';
 import 'data/lost_practice_context.dart';
 import 'lost_landmarks.dart';
 import 'lost_mission.dart';
@@ -19,11 +26,13 @@ class LostMissionLauncher extends StatefulWidget {
     super.key,
     this.child = const ChildProfile(),
     this.repository,
+    this.landmarkRepository,
     this.audio,
   });
 
   final ChildProfile child;
   final FamilyPlanRepository? repository;
+  final LandmarkRepository? landmarkRepository;
   final MissionAudio? audio;
 
   @override
@@ -33,6 +42,8 @@ class LostMissionLauncher extends StatefulWidget {
 class _LostMissionLauncherState extends State<LostMissionLauncher>
     with WidgetsBindingObserver {
   late final _repository = widget.repository ?? FamilyPlanRepository();
+  late final _landmarkRepository =
+      widget.landmarkRepository ?? LandmarkRepository();
   late final _audio = widget.audio ?? MissionAudio();
   LostPracticeContext? _practiceContext;
   LostPracticeVariant? _variant;
@@ -41,6 +52,12 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
   bool _audioAvailable = true;
   bool _opening = false;
   bool _foreground = true;
+  bool _setupOpen = false;
+  bool _needsMeetingPoint = false;
+  FamilyPlan? _savedPlan;
+  DemoMap? _map;
+  List<Landmark> _mapLandmarks = [];
+  String _photoDirectory = '';
   int _audioRevision = 0;
 
   @override
@@ -57,12 +74,47 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
     });
     try {
       final plan = await _repository.load();
+      final photoPlaces = <LostPracticePlace>[];
+      final mapLandmarks = <Landmark>[];
+      DemoMap? map;
+      var photoDirectory = '';
+      if (plan.practiceMeetingPoint?.landmarkId != null) {
+        final landmarks = await _landmarkRepository.load();
+        final directory = await _landmarkRepository.photoDirectory();
+        photoDirectory = directory.path;
+        map = await DemoMapRepository().load();
+        for (final place in landmarks) {
+          final photoPath = '$photoDirectory/${place.photoName}';
+          if (!mapContainsPoint(map, place.point) ||
+              !await File(photoPath).exists()) {
+            continue;
+          }
+          mapLandmarks.add(place);
+          photoPlaces.add(
+            LostPracticePlace(
+              id: place.id,
+              label: place.name,
+              photoPath: photoPath,
+              isDemo: place.isDemo,
+            ),
+          );
+        }
+      }
+      final practice = LostPracticeContext.fromFamilyPlan(
+        plan,
+        fallbackChild: widget.child,
+        photoPlaces: photoPlaces,
+      );
       if (!mounted) return;
       setState(() {
-        _practiceContext = LostPracticeContext.fromFamilyPlan(
-          plan,
-          fallbackChild: widget.child,
-        );
+        _savedPlan = plan;
+        _practiceContext = practice;
+        _map = map;
+        _mapLandmarks = mapLandmarks;
+        _photoDirectory = photoDirectory;
+        _needsMeetingPoint =
+            plan.practiceMeetingPoint == null ||
+            practice.meetingPointUnavailable;
         _loading = false;
       });
     } catch (_) {
@@ -80,6 +132,10 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
       return 'Your saved details could not be read. '
           'Try again, or use a pretend family for practice.';
     }
+    if (_needsMeetingPoint) {
+      return 'Ask an adult to choose your meeting place and photo. '
+          'You can also use a demo meeting place for pretend practice.';
+    }
     final detail = _practiceContext?.usesFictionalDetails == true
         ? 'Some family details are pretend. '
         : '';
@@ -90,11 +146,15 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
   }
 
   Future<void> _speak() async {
-    if (_loading || _opening || !_foreground) return;
+    if (_loading || _opening || _setupOpen || !_foreground) return;
     final revision = ++_audioRevision;
     try {
       final available = await _audio.initialize();
-      if (!mounted || _opening || !_foreground || revision != _audioRevision) {
+      if (!mounted ||
+          _opening ||
+          _setupOpen ||
+          !_foreground ||
+          revision != _audioRevision) {
         return;
       }
       setState(() => _audioAvailable = available);
@@ -108,10 +168,28 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
 
   void _useFictionalFamily() {
     setState(() {
-      _practiceContext = LostPracticeContext.fictional(child: widget.child);
+      _practiceContext = _loadFailed || _savedPlan == null
+          ? LostPracticeContext.fictional(child: widget.child)
+          : LostPracticeContext.fromFamilyPlan(
+              _savedPlan!.copyWith(clearPracticeMeetingPoint: true),
+              fallbackChild: widget.child,
+            );
       _loadFailed = false;
+      _needsMeetingPoint = false;
     });
     unawaited(_speak());
+  }
+
+  Future<void> _openParentSetup() async {
+    if (_setupOpen) return;
+    _setupOpen = true;
+    ++_audioRevision;
+    await _audio.stop();
+    if (!mounted) return;
+    await Navigator.of(context)
+        .push<void>(MaterialPageRoute(builder: (_) => const ParentScreen()));
+    _setupOpen = false;
+    if (mounted) await _load();
   }
 
   Future<void> _openVariant(LostPracticeVariant variant) async {
@@ -150,6 +228,9 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
       return LostMissionScreen(
         variant: variant,
         practiceContext: _practiceContext!,
+        map: _map,
+        mapLandmarks: _mapLandmarks,
+        photoDirectory: _photoDirectory,
       );
     }
     return Scaffold(
@@ -195,7 +276,12 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 20),
-        if (_loadFailed) ..._errorContent() else ..._variantContent(),
+        if (_loadFailed)
+          ..._errorContent()
+        else if (_needsMeetingPoint)
+          ..._missingPointContent()
+        else
+          ..._variantContent(),
         const SizedBox(height: 16),
         OutlinedButton.icon(
           onPressed: _opening ? null : _speak,
@@ -236,19 +322,27 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
   List<Widget> _variantContent() {
     final practice = _practiceContext!;
     return [
-      LostLandmarkIllustration(presetId: practice.meetingPoint.presetId),
+      if (practice.photoMeetingPoint case final place?)
+        LandmarkPhoto(
+          fit: BoxFit.contain,
+          path: place.photoPath,
+          label: place.label,
+        )
+      else
+        LostLandmarkIllustration(presetId: practice.meetingPoint.presetId),
       const SizedBox(height: 12),
       Text(
         'Practice meeting point: ${practice.meetingPointLabel}',
         textAlign: TextAlign.center,
         style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
       ),
-      if (practice.usesFictionalDetails) ...[
+      if (practice.fictionalMeetingPoint) ...[
         const SizedBox(height: 8),
-        const Text(
-          'Some family details are pretend.',
-          textAlign: TextAlign.center,
-        ),
+        const Text('Demo meeting place.', textAlign: TextAlign.center),
+      ],
+      if (practice.contacts.any((contact) => contact.isFictional)) ...[
+        const SizedBox(height: 8),
+        const Text('Some contacts are pretend.', textAlign: TextAlign.center),
       ],
       const SizedBox(height: 24),
       const Text(
@@ -273,4 +367,26 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
       ),
     ];
   }
+
+  List<Widget> _missingPointContent() => [
+    const SizedBox(height: 12),
+    Text(
+      _practiceContext?.meetingPointUnavailable == true
+          ? 'Your meeting place or photo is unavailable.'
+          : 'Ask an adult to choose your meeting place.',
+      textAlign: TextAlign.center,
+    ),
+    const SizedBox(height: 16),
+    FilledButton(
+      onPressed: _openParentSetup,
+      child: const Text('Parent setup'),
+    ),
+    const SizedBox(height: 12),
+    OutlinedButton(onPressed: _load, child: const Text('Try again')),
+    const SizedBox(height: 12),
+    OutlinedButton(
+      onPressed: _useFictionalFamily,
+      child: const Text('Use demo meeting place'),
+    ),
+  ];
 }
