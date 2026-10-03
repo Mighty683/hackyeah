@@ -1,5 +1,6 @@
 import 'package:do_bazy/features/mission/air_raid_mission.dart';
 import 'package:do_bazy/features/mission/mission_audio.dart';
+import 'package:do_bazy/features/mission/mission_choice_card.dart';
 import 'package:do_bazy/features/mission/mission_scene.dart';
 import 'package:do_bazy/features/mission/mission_screen.dart';
 import 'package:flutter/material.dart';
@@ -28,6 +29,10 @@ void main() {
   testWidgets('home practice retries, speaks, finishes and replays', (
     tester,
   ) async {
+    tester.view.physicalSize = const Size(430, 932);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     await _showMission(tester, audioChannel, MissionMode.home);
     expect(find.text('An alarm at home'), findsOneWidget);
     final firstNarration = audioCalls.lastWhere(
@@ -91,6 +96,10 @@ void main() {
   testWidgets('outdoor destination mistake supports drag and head protection', (
     tester,
   ) async {
+    tester.view.physicalSize = const Size(430, 932);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     await _showMission(tester, audioChannel, MissionMode.outdoor);
     await _tap(tester, 'Choose where to go');
     await _tap(tester, 'Home: far away');
@@ -110,6 +119,55 @@ void main() {
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();
+  });
+
+  testWidgets('short quiz screens keep choices and next button in view', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    for (final size in [
+      const Size(320, 640),
+      const Size(390, 844),
+      const Size(800, 480),
+    ]) {
+      tester.view.physicalSize = size;
+      await _showMission(tester, audioChannel, MissionMode.home);
+      for (final label in [
+        'Find a place',
+        'Move deeper inside',
+        'Next step',
+        'Inside hallway',
+        'Next step',
+        'Mom',
+        'Tell them',
+      ]) {
+        final action = find.byWidgetPredicate(
+          (widget) => widget is Semantics && widget.properties.label == label,
+        );
+        final target = action.evaluate().isEmpty ? find.text(label) : action;
+        for (final card in tester.widgetList<MissionChoiceCard>(
+          find.byType(MissionChoiceCard),
+        )) {
+          final choice = find.byWidgetPredicate(
+            (widget) =>
+                widget is Semantics &&
+                widget.properties.label == card.choice.label,
+          );
+          final bounds = tester.getRect(choice);
+          expect(bounds.top, greaterThanOrEqualTo(0));
+          expect(bounds.bottom, lessThanOrEqualTo(size.height));
+          expect(choice.hitTestable(), findsOneWidget);
+        }
+        expect(target.hitTestable(), findsOneWidget, reason: '$size: $label');
+        await tester.tap(target);
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull, reason: '$size: $label');
+      }
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pumpAndSettle();
+    }
   });
 
   testWidgets('narrow screens and large text keep room targets usable', (
@@ -171,7 +229,12 @@ Future<void> _tap(WidgetTester tester, String label) async {
       ? find.text(label)
       : accessibleAction;
   expect(target, findsOneWidget);
-  await tester.ensureVisible(target);
+  final context = tester.element(find.byType(MissionScreen));
+  if (MediaQuery.textScalerOf(context).scale(1) <= 1.1) {
+    expect(target.hitTestable(), findsOneWidget, reason: label);
+  } else {
+    await tester.ensureVisible(target);
+  }
   await tester.tap(target);
   await tester.pumpAndSettle();
   _expectSceneChoicesAreUsable(tester);
