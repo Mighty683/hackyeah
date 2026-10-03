@@ -30,10 +30,10 @@ flowchart TD
     F["GAME: SELECT TARGET<br/>Read saved safe places; randomly choose a valid pin<br/>No places: use the fictional base"]
     FE["GAME: SAVED DETAILS ERROR<br/>Retry or go back"]
     L["GAME: LOADING<br/>Load the offline map"]
-    G["GAME: PLAYING<br/>Reach the named safe place or pretend base<br/>Tap the map to move your character"]
-    R["GAME: RESULT<br/>Your character reached the game destination"]
+    G["GAME: PLAYING<br/>Reach the named safe place or pretend base<br/>Follow the marked practice path to a ring near the target"]
+    R["GAME: RESULT<br/>Your character reached a path near the game destination"]
     E["GAME: MAP ERROR<br/>Go back and try again"]
-    I["ABOUT THIS DEMO<br/>Practice-only movement and map credits"]
+    I["ABOUT THIS DEMO<br/>Practice-only routes, snapping limits and map credits"]
     H["HELP PROTOTYPE<br/>Unreviewed; not for real emergencies<br/>3 situations + I don't know"]
     Q["OFFLINE HELP STEP<br/>One question or instruction<br/>112 dialler always available"]
     D["PHONE APP<br/>Explicit child tap; no automatic call or SMS"]
@@ -183,11 +183,15 @@ flowchart TD
     FE -->|Try again| F
     L -->|Map loaded| G
     L -->|Map load failed| E
-    G -->|Tap a map point: move character| G
+    G -->|Tap marked path: follow connected waypoints to that point| G
+    G -->|Follow path: character follows route to endpoint ring| G
+    G -->|Block a path: fictional circle with X; recalculate and show whole map| G
+    G -->|Clear blockage: restore routes without the fictional closure| G
+    G -->|No connected path: explain and offer Start again| G
     G -->|Drag: pan; pinch or zoom buttons: zoom 1–8×| G
     G -->|Show me: 4× view follows the character| G
     G -->|Show whole map: restore full source area| G
-    G -->|Reach target| R
+    G -->|Reach mapped path near target| R
     G -->|Start again: random target, reset character and close view| F
     R -->|Drag, pinch or zoom buttons: explore without moving character| R
     R -->|Show whole map: restore full source area| R
@@ -230,7 +234,7 @@ flowchart TD
 | Form save error | Retry saving without losing edits | Back without saving |
 | Game target selection/error | Wait for saved safe places or retry | Help prototype, back |
 | Game map loading | Wait for the offline map | Help prototype, back |
-| Game playing | Move the character to the selected safe place or pretend base; edge arrow points towards an offscreen target | Help prototype, pan/zoom, Show me, Show whole map, restart with a random target, demo information, back |
+| Game playing | Follow the marked practice route to a path near the selected place; edge arrow points towards the endpoint | Follow path, fictional Block a path/Clear blockage, Help prototype, pan/zoom, Show me, Show whole map, restart with a random target, demo information, back |
 | Game result | Read the result and replay | Help prototype, pan/zoom, Show me, Show whole map, demo information, back |
 | Game load error | Retry saved details or reopen the map | Help prototype, back |
 | Demo information | Read optional demo details | Close |
@@ -271,7 +275,7 @@ This visual work preserves every screen action and return path described above. 
 
 The parent pin editor and child view share the bundled OSM geography. The child view keeps actual building footprints, local streets, paths, tram lines, green areas and water, with soft colours and illustrated landmarks. Close zoom reveals service roads, paths, small footprints and play areas; tiny details and overlapping labels are omitted. Decorative trees and landmark artwork are illustrations. This incomplete map remains practice only.
 
-The initial view is 4× zoom, covering roughly 500 × 500 metres around the character. It follows character movement within the source bounds. An edge arrow points towards an offscreen target and disappears when the target is visible or the game is complete; it shows direction, not a walking route. Dragging or pinching explores without selecting a movement destination and pauses following. Only a resolved tap moves the character and resumes following. Pinch/zoom controls allow 1–8×. **Show me** restores the 4× character view, and **Show whole map** shows the full source area without resetting progress. These controls are disabled while loading or after a load error. Instructions and attribution stay outside scrolling areas. Only secondary controls can scroll; the map has its own gesture area. Short or large-text layouts use a shorter instruction and a compact toolbar with 48-pixel touch targets, tooltips and accessibility labels. Landscape places the map beside instructions and controls. Water, energy and warmth cards remain removed. There is one restart control in each loaded game state. Restart/replay reloads the saved safe places, selects a fresh random target, and resets the character and close view; repeats are possible.
+The initial view is 4× zoom, covering roughly 500 × 500 metres around the character. It follows character movement within the source bounds. An edge arrow points towards an offscreen target and disappears when the target is visible or the game is complete; it shows direction, not a walking route. Dragging or pinching explores without selecting a movement destination and pauses following. A resolved tap along the marked route or Follow path moves the character through connected waypoints and resumes following. Block a path creates a fictional closure and shows the recalculated route; Clear blockage removes it. Pinch/zoom controls allow 1–8×. **Show me** restores the 4× character view, and **Show whole map** shows the full source area without resetting progress. These controls are disabled while loading or after a load error. Instructions and attribution stay outside scrolling areas. Only secondary controls can scroll; the map has its own gesture area. Short or large-text layouts use a shorter instruction and a compact toolbar with 48-pixel touch targets, tooltips and accessibility labels. Landscape places the map beside instructions and controls. Water, energy and warmth cards remain removed. There is one restart control in each loaded game state. Restart/replay reloads the saved safe places, selects a fresh random target, and resets the character and close view; repeats are possible.
 
 Map update checks on 2026-10-03: Flutter analysis reported no issues, all 14 existing tests passed, and the Android debug APK built. A disposable loaded Flutter rendering check verified the 4× start/nearby/reset view, 1× overview, character following, pan/pinch without movement, and the arrow appearing only for an offscreen unfinished target. Phone layouts passed at 390 × 844 and 320 × 700 with 200% text; the latter retained a 246-pixel map and all four map controls. No Android device walkthrough was performed.
 
@@ -293,7 +297,7 @@ Names, coordinates and photo references persist in a separate encrypted `flutter
 
 - One child; optional full name, age, address and support notes, entered one detail per screen. The child record is saved after the support-needs step. Photo landmarks are separate recognition records; child-profile photographs are not collected.
 - Up to three trusted contacts; optional name, phone and relationship, entered one detail per screen. Each completed contact and safe-place editor saves its record immediately. Back from the first editor step discards only unsaved edits. Saving a number does not make calls or verify it.
-- Safe places are parent-selected destinations, stored as named geographic pins inside the bundled TAURON Arena area. Their safety and opening hours are not checked. The current demo uses them only for simulated character movement; it provides no walking route or emergency instructions.
+- Safe places are parent-selected destinations, stored as named geographic pins inside the bundled TAURON Arena area. Their safety and opening hours are not checked. The current demo uses them only for simulated character movement; it provides a simulated pedestrian practice route to a nearby mapped path, with no verified walking route or emergency instructions.
 - Each game launch and replay chooses a random valid saved safe place. Repeats are possible. No safe places means the original fictional base.
 - The family plan persists in `flutter_secure_storage` using Android encryption. Android cloud backup and device-transfer rules exclude app data. No sync, migration or restore is promised.
 - Encryption is not a parent gate: anyone using this unlocked app can view the records. Recommend fictional personal details for demonstrations. **Delete all saved details** removes child/contact/place records, independent landmarks and app photo copies after confirmation; it does not silently reset failed reads.
@@ -351,6 +355,31 @@ flowchart TD
 The future help entry must be reachable without completing onboarding. It must use different styling from training, omit scores and entertainment, and follow authoritative situation-specific guidance. This diagram defines navigation, not emergency procedures. Android now has an explicitly unreviewed help prototype, not released real assistance. The pitch still includes a simulated preview that does not assess danger or make calls.
 
 Full reviewed emergency procedures, background messaging, walking mode, real navigation and validated real assistance remain future work. The implemented prototype is not a promotion of the future reviewed-help graph.
+
+## Offline practice pathfinding
+
+The Android map builds a distance-and-preference-weighted graph from bundled GeoJSON and runs A* locally. No routing service, GPS or internet connection is used. The character starts on a nearby mapped path. Shared source coordinates connect ways; visual intersections do not create connections. Line segments are subdivided for accurate nearby snapping without connecting their interior crossings. Polygons are not treated as walkable networks.
+
+| Algorithm | Fit for this demo |
+| --- | --- |
+| Breadth-first search | Finds the fewest edges, not the shortest distance when segments have different lengths. |
+| Dijkstra | Correct for positive distance costs; useful for many destinations from one start, but explores without a target heuristic. |
+| A* (implemented) | Uses weighted distance travelled plus straight-line distance to the goal. The heuristic stays admissible because all preference multipliers are at least one. Suitable for one practice target. |
+| Grid / navigation mesh | Useful for fictional terrain with authored obstacles; rasterizing this street map could invent connections or erase narrow paths. |
+
+Algorithm references: [Boost shortest-path overview](https://www.boost.org/doc/libs/latest/libs/graph/doc/html/graph/algorithms/shortest_paths/shortest_paths_overview.html), [A*](https://www.boost.org/doc/libs/latest/libs/graph/doc/html/graph/algorithms/shortest_paths/astar_search.html), [breadth-first traversal](https://www.boost.org/doc/libs/latest/libs/graph/doc/html/graph/algorithms/traversal/traversal_overview.html).
+
+The simulated emergency routing profile includes footpaths, steps and public local roads. It excludes main roads, indoor ways, construction, non-public walking access, conditional access that the offline demo cannot evaluate, and any non-`no` `hazard` tag. `foot=use_sidepath` is excluded; the router must use the separately mapped path. General access restrictions may be overridden by explicit `foot=yes/designated/permissive`; cycleways require explicit foot permission. Explicit walking one-way direction is honored; vehicle one-way rules do not apply to foot travel. This is a demo policy, not a complete pedestrian access or safety model. OSM tag meanings: [access](https://wiki.openstreetmap.org/wiki/Key:access), [foot permissions](https://wiki.openstreetmap.org/wiki/Tag:foot%3Dyes), [hazards](https://wiki.openstreetmap.org/wiki/Key:hazard).
+
+Preference costs multiply map distance: dedicated pedestrian paths 1.0, roads with an explicitly attached sidewalk 1.05, living streets 1.1, crossing paths 1.15, steps 1.2, local roads with unknown or separately mapped sidewalks 1.35, and roads explicitly lacking sidewalks 1.6. These are transparent fictional demo preferences, not seconds, risk probabilities, or validated emergency policy. A modest pedestrian detour can win; a sufficiently shorter eligible local road can also win. No route is described as fastest or safest.
+
+Block a path creates a fictional circular closure, radius 4 map units (about 20 m), around the middle waypoint of the remaining route. Every graph edge intersecting the circle is removed, including edges whose endpoints lie outside it. Blocked points cannot be snapped to. The map shows the closure with an X and its area, including when no route remains. The game recomputes an alternative while the character is stationary and shows the whole map. Clear blockage removes it; restart clears it too. There is one practice blockage at a time, no live hazard detection, and no inference about an actual emergency. If rerouting fails, Follow path is disabled and the child can clear the blockage or start again.
+
+Start and target must each be within 12 map units (about 60 m) of a graph node. The endpoint ring marks the nearby path, while the original practice-place pin remains at its saved position. No straight connector to a pin is drawn. The child reaches the path near the place, not a checked entrance. Missing/disconnected routes show a calm message and disable Follow path; Start again chooses another target. Taps advance along the marked route; taps during movement are ignored. The visible path shrinks as the character advances. Restart restores the start and computes the route again.
+
+Child presentation uses a bordered line, direction chevrons and an endpoint ring so guidance does not rely on color alone. Follow path is an explicit action moving the game character. The practice-only label stays visible. Appearance and layout verification remain with the user.
+
+The GeoJSON snapshot lacks original OSM node IDs, a validated access model, entrance connections, barrier handling and live hazards. Coordinate-based topology and nearby snapping can select the wrong path or leave a pin unreachable. More complete pedestrian topology and reviewed safety data are required before real navigation. Shortest distance never means safest route.
 
 ## Keeping this reference useful
 
