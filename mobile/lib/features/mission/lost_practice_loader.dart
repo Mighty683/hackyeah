@@ -86,6 +86,8 @@ class LostPracticeLoader {
             latitude: home.latitude,
             longitude: home.longitude,
             icon: '🏠',
+            isDestination: true,
+            photoAsset: home.isDemo ? 'assets/landmarks/demo-home.png' : null,
             isDemo: home.isDemo,
           ),
         );

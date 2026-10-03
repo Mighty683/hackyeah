@@ -11,7 +11,9 @@ class Landmark {
     required this.latitude,
     required this.longitude,
     this.isDemo = false,
-    this.icon = '📍',
+    this.icon = '',
+    this.isDestination = false,
+    this.photoAsset,
   });
 
   static String newId() =>
@@ -27,7 +29,6 @@ class Landmark {
     return Landmark(
       id: id,
       name: point.name,
-      icon: point.icon,
       photoName: photoName,
       latitude: point.latitude,
       longitude: point.longitude,
@@ -43,11 +44,17 @@ class Landmark {
   final bool isDemo;
   final String icon;
 
+  /// Family targets are adapted for the shared map; landmarks use photos only.
+  final bool isDestination;
+  final String? photoAsset;
+
+  bool get hasPhoto => photoName.isNotEmpty || photoAsset != null;
+
   SafePoint get point => SafePoint(
     name: name,
     latitude: latitude,
     longitude: longitude,
-    icon: icon,
+    icon: isDestination ? icon : '',
   );
 
   Map<String, dynamic> toJson() => {
@@ -57,6 +64,5 @@ class Landmark {
     'latitude': latitude,
     'longitude': longitude,
     'isDemo': isDemo,
-    'icon': icon,
   };
 }

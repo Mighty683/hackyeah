@@ -89,6 +89,8 @@ class MissionSession {
       case 'contacts':
         return 'communication';
       case 'communication':
+        return 'sms';
+      case 'sms':
         return 'message';
       case 'message':
         return 'noise';

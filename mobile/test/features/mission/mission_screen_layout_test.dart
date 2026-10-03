@@ -169,12 +169,12 @@ void main() {
     expect(
       find.byWidgetPredicate(
         (widget) =>
-            widget is Semantics &&
-            widget.properties.label == 'Send one message',
+            widget is Semantics && widget.properties.label == 'Try one call',
       ),
       findsOneWidget,
     );
-    await tapMissionAction(tester, 'Send one message');
+    await tapMissionAction(tester, 'Try one call');
+    await tapMissionAction(tester, 'Send an SMS');
     for (final digit in '123456789'.split('')) {
       await tapMissionAction(tester, digit);
     }

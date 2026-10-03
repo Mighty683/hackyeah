@@ -89,7 +89,9 @@ class _MissionScreenState extends State<MissionScreen>
     if (_session.isComplete) return 'success';
     final choice = _session.selectedChoice;
     if (choice == null) return _session.step.sound;
-    if (choice.continuesAfterFeedback || choice.id == 'more_places') {
+    if (choice.continuesAfterFeedback ||
+        choice.id == 'more_places' ||
+        (_session.step.id == 'communication' && choice.id == 'call')) {
       return 'select';
     }
     if (!choice.isCorrect) return 'retry';
@@ -127,7 +129,7 @@ class _MissionScreenState extends State<MissionScreen>
         _enteringPhoneNumber) {
       return;
     }
-    if (_session.step.id == 'communication' && id == 'message') {
+    if (_session.step.id == 'sms' && id == 'message') {
       ++_feedbackRequest;
       setState(() => _enteringPhoneNumber = true);
       unawaited(_loadPhoneContacts());
@@ -559,7 +561,8 @@ class _MissionScreenState extends State<MissionScreen>
     'outdoor_recover' => 'Follow the adult',
     'outdoor_sheltered' => 'Tell a trusted adult',
     'contacts' => 'Tell them',
-    'communication' => 'Hear the reply',
+    'communication' => 'Send an SMS',
+    'sms' => 'Hear the reply',
     'message' => 'Stay here',
     'noise' => 'Keep waiting',
     'quiet' => 'Wait for the all-clear',

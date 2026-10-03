@@ -82,8 +82,17 @@ void main() {
     );
     await finishMissionFeedback(tester);
     await tapMissionAction(tester, 'Mom');
-    await tapMissionAction(tester, 'Keep calling');
-    await tapMissionAction(tester, 'Send one message');
+    expect(find.text('Send an SMS'), findsNothing);
+    await tapMissionAction(tester, 'Try one call', advanceFeedback: false);
+    expect(
+      find.text('No answer in this practice. Try one short SMS.'),
+      findsOneWidget,
+    );
+    expect(find.text('Send an SMS'), findsNothing);
+    expect(lastMissionNarration(audioCalls)['text'], contains('No answer'));
+    await finishMissionFeedback(tester);
+    expect(find.text('No answer? Send an SMS'), findsOneWidget);
+    await tapMissionAction(tester, 'Send an SMS');
     expect(find.byType(PracticePhoneKeypad), findsOneWidget);
     expect(find.text('987 654 321'), findsNothing);
     await tapMissionAction(tester, '1');
@@ -243,7 +252,8 @@ void main() {
         'Move deeper inside',
         'Inside hallway',
         'Mom',
-        'Send one message',
+        'Try one call',
+        'Send an SMS',
       ]) {
         await tapMissionAction(tester, label);
       }

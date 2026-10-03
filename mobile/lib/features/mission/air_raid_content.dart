@@ -128,20 +128,28 @@ Map<String, MissionStep> buildAirRaidSteps(MissionMode mode) {
     ),
     MissionStep(
       id: 'communication',
-      title: 'How will you tell them?',
-      narration: 'Send one short message to your trusted adult.',
+      title: 'First, try one call',
+      narration: 'Try one pretend call to your trusted adult.',
       visual: MissionVisual.communication,
       choices: [
         _choice(
           'call',
-          'Keep calling',
+          'Try one call',
           MissionActionIcon.call,
-          false,
-          'Repeated calls can keep lines busy. Try one short message.',
+          true,
+          'No answer in this practice. Try one short SMS.',
         ),
+      ],
+    ),
+    MissionStep(
+      id: 'sms',
+      title: 'No answer? Send an SMS',
+      narration: 'There was no answer. Send one short SMS with your location.',
+      visual: MissionVisual.communication,
+      choices: [
         _choice(
           'message',
-          'Send one message',
+          'Send an SMS',
           MissionActionIcon.message,
           true,
           'Your pretend message says: I am away from windows.',

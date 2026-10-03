@@ -12,7 +12,7 @@ abstract final class AirRaidPracticeRecap {
     ),
     (
       title: 'Tell a trusted adult',
-      description: 'Send one message to tell them where you are.',
+      description: 'Try one call. If there is no answer, send an SMS.',
     ),
     (
       title: 'Wait for the all-clear',

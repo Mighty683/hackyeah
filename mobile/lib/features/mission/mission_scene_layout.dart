@@ -127,10 +127,12 @@ MissionSceneLayout missionSceneLayout(String? stepId, MissionVisual visual) {
     ),
     'communication' => const MissionSceneLayout(
       family: MissionVisual.communication,
-      targets: {
-        'call': Rect.fromLTWH(.21, .28, .58, .28),
-        'message': Rect.fromLTWH(.21, .60, .58, .28),
-      },
+      targets: {'call': Rect.fromLTWH(.21, .37, .58, .20)},
+      childWidth: 0,
+    ),
+    'sms' => const MissionSceneLayout(
+      family: MissionVisual.communication,
+      targets: {'message': Rect.fromLTWH(.21, .37, .58, .20)},
       childWidth: 0,
     ),
     'noise' => const MissionSceneLayout(

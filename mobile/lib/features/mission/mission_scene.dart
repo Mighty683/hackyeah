@@ -79,7 +79,7 @@ class MissionScene extends StatelessWidget {
                   _character(context, constraints, layout),
                 if (visual == MissionVisual.alarm ||
                     visual == MissionVisual.allClear)
-                  _phoneSignal(constraints),
+                  _sceneSignal(constraints),
                 IgnorePointer(
                   child: CustomPaint(
                     painter: MissionObjectHighlights(
@@ -103,11 +103,11 @@ class MissionScene extends StatelessWidget {
     );
   }
 
-  Widget _phoneSignal(BoxConstraints constraints) => Positioned(
-    left: constraints.maxWidth * .405,
-    top: constraints.maxHeight * .20,
-    width: constraints.maxWidth * .19,
-    height: constraints.maxHeight * .16,
+  Widget _sceneSignal(BoxConstraints constraints) => Positioned(
+    left: constraints.maxWidth * (visual == MissionVisual.alarm ? .07 : .405),
+    top: constraints.maxHeight * (visual == MissionVisual.alarm ? .19 : .20),
+    width: constraints.maxWidth * (visual == MissionVisual.alarm ? .11 : .19),
+    height: constraints.maxHeight * (visual == MissionVisual.alarm ? .10 : .16),
     child: ExcludeSemantics(
       child: Container(
         padding: const EdgeInsets.all(6),
@@ -162,7 +162,24 @@ class MissionScene extends StatelessWidget {
           onTap: onChoose == null || rejected
               ? null
               : () => onChoose!(choice.id),
-          child: const SizedBox.expand(),
+          child:
+              visual == MissionVisual.contacts ||
+                  visual == MissionVisual.communication
+              ? Padding(
+                  padding: EdgeInsets.only(left: width * .31, right: 12),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      choice.label,
+                      style: const TextStyle(
+                        color: BaseboundColors.ink,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                )
+              : const SizedBox.expand(),
         ),
       ),
     );
@@ -235,13 +252,15 @@ String _sceneDescription(MissionVisual visual, MissionChoice? choice) {
     return 'The child has moved toward the door.';
   }
   return switch (visual) {
-    MissionVisual.alarm => 'A child playing at home. A phone shows an alarm.',
+    MissionVisual.alarm =>
+      'A child playing at home. An alarm sounds outside the window.',
     MissionVisual.room => 'A room with a window, an inside area, and a door.',
     MissionVisual.apartment => 'A home seen from above. Three rooms have windows. The hallway is inside.',
     MissionVisual.twoWalls =>
       'The child, one wall, another wall, then outside.',
     MissionVisual.contacts => 'Pretend family faces on the child’s phone.',
-    MissionVisual.communication => 'A pretend phone with a call and a message.',
+    MissionVisual.communication =>
+      'A pretend phone. Try one call, then an SMS if there is no answer.',
     MissionVisual.message => 'A pretend message and a reply from an adult.',
     MissionVisual.sheltered ||
     MissionVisual.quiet => 'The child is waiting in an inside room.',

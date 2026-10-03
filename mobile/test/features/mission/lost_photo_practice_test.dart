@@ -154,6 +154,8 @@ void main() {
         (place) => place.id == LostPracticeHomePoint.id,
       );
       expect(home.name, 'Home');
+      expect(home.isDestination, isTrue);
+      expect(home.photoAsset, 'assets/landmarks/demo-home.png');
       expect(home.photoName, isEmpty);
       expect(home.latitude, saved.safePoints.single.latitude);
       expect(home.longitude, saved.safePoints.single.longitude);

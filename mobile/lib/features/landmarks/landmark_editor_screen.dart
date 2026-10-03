@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../parent/widgets/place_icon_picker.dart';
-
 import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
 import '../parent/data/family_plan.dart';
@@ -32,7 +30,6 @@ class LandmarkEditorScreen extends StatefulWidget {
 class _LandmarkEditorScreenState extends State<LandmarkEditorScreen> {
   late final _name = TextEditingController(text: widget.landmark?.name ?? '');
   late final _id = widget.landmark?.id ?? Landmark.newId();
-  late String _icon = widget.landmark?.icon ?? '📍';
   late SafePoint? _selected = widget.landmark?.point;
   bool _locating = false;
   int _pinRevision = 0;
@@ -83,7 +80,6 @@ class _LandmarkEditorScreenState extends State<LandmarkEditorScreen> {
     Landmark(
       id: _id,
       name: _name.text.trim(),
-      icon: _icon,
       photoName: '$_id.photo',
       latitude: _selected!.latitude,
       longitude: _selected!.longitude,
@@ -122,11 +118,6 @@ class _LandmarkEditorScreenState extends State<LandmarkEditorScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          PlaceIconPicker(
-            selectedIcon: _icon,
-            onSelected: (icon) => setState(() => _icon = icon),
-          ),
-          const SizedBox(height: 16),
           const ParentEditorNote(
             message: 'Use a name your child knows.',
             icon: BaseboundIconName.idea,
@@ -153,7 +144,7 @@ class _LandmarkEditorScreenState extends State<LandmarkEditorScreen> {
           OfflinePointPicker(
             key: ValueKey(_pinRevision),
             initialPoint: _selected,
-            selectionIcon: _icon,
+            selectionPhotoPath: widget.photoPath,
             selectionLabel: 'landmark',
             otherPoints: widget.otherPoints,
             onSelected: (point) {

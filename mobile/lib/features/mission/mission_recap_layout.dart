@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../ui/basebound_icons.dart';
+
 import 'air_raid_models.dart';
 import 'practice_recap.dart';
 
@@ -28,6 +30,11 @@ class MissionRecapLayout extends StatelessWidget {
                 title: title,
                 praise: AirRaidPracticeRecap.praise,
                 points: AirRaidPracticeRecap.points,
+                pointIcons: const [
+                  BaseboundIconName.hallway,
+                  BaseboundIconName.phone,
+                  BaseboundIconName.wait,
+                ],
               ),
               audioControls,
             ],

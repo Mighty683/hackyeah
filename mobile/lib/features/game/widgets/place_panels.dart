@@ -34,7 +34,9 @@ class SelectedPlacePanel extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  place.name,
+                  place.isDestination
+                      ? '${place.icon} ${place.name}'
+                      : place.name,
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
@@ -48,17 +50,18 @@ class SelectedPlacePanel extends StatelessWidget {
               ),
             ],
           ),
-          if (place.photoName.isNotEmpty)
+          if (place.hasPhoto)
             LandmarkPhoto(
               path: '$photoDirectory/${place.photoName}',
+              assetPath: place.photoAsset,
               label: place.name,
               height: 120,
             ),
           const SizedBox(height: 8),
           if (place.isDemo)
             Text(
-              place.photoName.isEmpty
-                  ? 'Fictional demo place · not a verified safe destination'
+              place.isDestination
+                  ? 'Fictional demo place${place.hasPhoto ? ' and photo' : ''} · not a verified safe destination'
                   : 'Fictional demo photo and pin · recognition only',
             )
           else if (!map.contains(place.latitude, place.longitude))
@@ -114,10 +117,11 @@ class WalkingRoutePanel extends StatelessWidget {
             'To ${target.name}',
             style: const TextStyle(fontWeight: FontWeight.w700),
           ),
-          if (target.photoName.isNotEmpty) ...[
+          if (target.hasPhoto) ...[
             const SizedBox(height: 8),
             LandmarkPhoto(
               path: '$photoDirectory/${target.photoName}',
+              assetPath: target.photoAsset,
               label: target.name,
               height: 80,
             ),

@@ -25,6 +25,7 @@ class SelectedLandmarkCard extends StatelessWidget {
         children: [
           LandmarkPhoto(
             path: '$photoDirectory/${entry.photoName}',
+            assetPath: entry.photoAsset,
             label: entry.name,
           ),
           const SizedBox(height: 12),
@@ -80,6 +81,7 @@ class LandmarkLibraryEntry extends StatelessWidget {
           width: 64,
           child: LandmarkPhoto(
             path: '$photoDirectory/${entry.photoName}',
+            assetPath: entry.photoAsset,
             label: entry.name,
             height: 56,
           ),

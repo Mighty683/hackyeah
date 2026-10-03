@@ -25,7 +25,13 @@ class MissionSceneBackdrop extends StatelessWidget {
     final fallback = layout.family == MissionVisual.apartment
         ? const MissionHomePlan()
         : CustomPaint(
-            painter: MissionSceneBackdropPainter(layout.family, visual),
+            painter: MissionSceneBackdropPainter(
+              layout.family,
+              visual,
+              phoneAction: layout.targets.containsKey('message')
+                  ? MissionActionIcon.message
+                  : MissionActionIcon.call,
+            ),
           );
     return ExcludeSemantics(
       child: layout.asset == null
@@ -43,10 +49,15 @@ class MissionSceneBackdrop extends StatelessWidget {
 
 /// Native portrait fallback also supplies phone and home-plan scenes.
 class MissionSceneBackdropPainter extends CustomPainter {
-  MissionSceneBackdropPainter(this.family, this.visual);
+  MissionSceneBackdropPainter(
+    this.family,
+    this.visual, {
+    required this.phoneAction,
+  });
 
   final MissionVisual family;
   final MissionVisual visual;
+  final MissionActionIcon phoneAction;
   static const wood = Color(0xFFC99A68);
 
   @override
@@ -191,7 +202,7 @@ class MissionSceneBackdropPainter extends CustomPainter {
       const Color(0xFFFFCE78),
       radius: 20,
     );
-    if (visual == MissionVisual.alarm || visual == MissionVisual.allClear) {
+    if (visual == MissionVisual.allClear) {
       _panel(
         canvas,
         const Rect.fromLTWH(151, 144, 92, 110),
@@ -200,9 +211,7 @@ class MissionSceneBackdropPainter extends CustomPainter {
       );
       _symbol(
         canvas,
-        visual == MissionVisual.alarm
-            ? BaseboundIconName.alarm
-            : BaseboundIconName.check,
+        BaseboundIconName.check,
         const Rect.fromLTWH(170, 163, 55, 55),
       );
     }
@@ -352,32 +361,20 @@ class MissionSceneBackdropPainter extends CustomPainter {
       for (var index = 0; index < contacts.length; index++) {
         final top = 124.0 + index * 126;
         canvas.drawCircle(
-          Offset(200, top + 42),
+          Offset(122, top + 42),
           25,
           Paint()..color = BaseboundColors.peach,
         );
-        _symbol(canvas, contacts[index], Rect.fromLTWH(183, top + 24, 34, 36));
+        _symbol(canvas, contacts[index], Rect.fromLTWH(105, top + 24, 34, 36));
       }
     } else {
       _symbol(
         canvas,
-        BaseboundIconName.phone,
-        const Rect.fromLTWH(99, 190, 34, 36),
+        phoneAction == MissionActionIcon.call
+            ? BaseboundIconName.phone
+            : BaseboundIconName.message,
+        const Rect.fromLTWH(105, 262, 34, 36),
       );
-      _phoneTextLines(canvas, const Offset(162, 200), width: 136);
-      _line(
-        canvas,
-        const Offset(83, 283),
-        const Offset(317, 283),
-        color: BaseboundColors.border,
-        width: 1,
-      );
-      _symbol(
-        canvas,
-        BaseboundIconName.message,
-        const Rect.fromLTWH(99, 351, 34, 36),
-      );
-      _phoneTextLines(canvas, const Offset(162, 361), width: 136);
     }
     _line(
       canvas,
@@ -560,5 +557,7 @@ class MissionSceneBackdropPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(MissionSceneBackdropPainter oldDelegate) =>
-      family != oldDelegate.family || visual != oldDelegate.visual;
+      family != oldDelegate.family ||
+      visual != oldDelegate.visual ||
+      phoneAction != oldDelegate.phoneAction;
 }
