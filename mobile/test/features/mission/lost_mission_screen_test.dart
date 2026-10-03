@@ -7,6 +7,8 @@ import 'package:do_bazy/features/mission/lost_mission_choice_card.dart';
 import 'package:do_bazy/features/mission/lost_mission_scene.dart';
 import 'package:do_bazy/features/mission/lost_mission_screen.dart';
 import 'package:do_bazy/features/mission/mission_audio.dart';
+import 'package:do_bazy/features/mission/practice_recap.dart';
+import 'package:do_bazy/widgets/basebound_mascot.dart';
 import 'package:do_bazy/features/parent/data/family_plan.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -130,10 +132,17 @@ void main() {
           findsOneWidget,
         );
         await _next(tester);
-        expect(_stepId(tester), 'recall');
+        expect(find.text('Remember what you practiced'), findsOneWidget);
+        expect(find.byType(LostMissionScene), findsNothing);
+        _expectRecap(tester);
+        expect(_lastNarration(audioCalls), LostPracticeRecap.narration);
+        await tester.tap(find.byTooltip('Replay audio'));
+        await tester.pumpAndSettle();
+        expect(_lastNarration(audioCalls), LostPracticeRecap.narration);
         await _next(tester);
         expect(find.text('Practice complete'), findsOneWidget);
-        expect(find.text('No message was sent.'), findsOneWidget);
+        _expectRecap(tester);
+        expect(_lastNarration(audioCalls), LostPracticeRecap.narration);
         expect(
           audioCalls
               .where((call) => call.method == 'narrate')
@@ -293,6 +302,20 @@ void main() {
       expect(tester.takeException(), isNull);
       await _remove(tester);
     },
+  );
+}
+
+void _expectRecap(WidgetTester tester) {
+  expect(find.byType(PracticeRecap), findsOneWidget);
+  expect(find.text(LostPracticeRecap.praise), findsOneWidget);
+  expect(find.text(LostPracticeRecap.notice), findsOneWidget);
+  for (final point in LostPracticeRecap.points) {
+    expect(find.text(point.title), findsOneWidget);
+    expect(find.text(point.description), findsOneWidget);
+  }
+  expect(
+    tester.widget<BaseboundMascot>(find.byType(BaseboundMascot)).pose,
+    DinoPose.celebrate,
   );
 }
 

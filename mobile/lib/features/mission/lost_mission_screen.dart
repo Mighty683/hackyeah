@@ -12,6 +12,7 @@ import 'lost_meeting_point_map.dart';
 import 'lost_mission.dart';
 import 'lost_mission_scene.dart';
 import 'mission_audio.dart';
+import 'practice_recap.dart';
 
 /// Offline decision practice; calls and safety confirmation are pretend.
 class LostMissionScreen extends StatefulWidget {
@@ -84,12 +85,7 @@ class _LostMissionScreenState extends State<LostMissionScreen>
   }
 
   String get _spokenText {
-    if (_session.isComplete) {
-      return 'Practice complete. No message was sent. Stop. Look around. '
-          'Use your family meeting point only if it is nearby. '
-          'Ask for help in a public place. Contact family. Stay and wait. '
-          'After you reunite in the story, press I am safe.';
-    }
+    if (_session.isComplete) return LostPracticeRecap.narration;
     if (_session.hasFeedback) return _session.feedback!;
     final step = _session.step;
     if (!step.isDecision) return step.narration;
@@ -243,7 +239,10 @@ class _LostMissionScreenState extends State<LostMissionScreen>
     ),
   );
 
-  Widget _practice() => Column(
+  Widget _practice() =>
+      _session.step.id == 'recall' ? _recall() : _practiceSteps();
+
+  Widget _practiceSteps() => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       Expanded(
@@ -423,43 +422,49 @@ class _LostMissionScreenState extends State<LostMissionScreen>
     );
   }
 
+  Widget _summaryContent(String title) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      _practiceNotice(),
+      const SizedBox(height: 12),
+      PracticeRecap(
+        title: title,
+        titleKey: const ValueKey('lost-step-title'),
+        praise: LostPracticeRecap.praise,
+        points: LostPracticeRecap.points,
+      ),
+      const Text(
+        LostPracticeRecap.notice,
+        style: TextStyle(fontSize: 16, color: BaseboundColors.muted),
+      ),
+      _audioControls(),
+    ],
+  );
+
+  Widget _recall() => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Expanded(
+        child: SingleChildScrollView(
+          controller: _scroll,
+          child: _summaryContent(_session.step.title),
+        ),
+      ),
+      const SizedBox(height: 16),
+      _primaryAction(),
+    ],
+  );
+
   Widget _completion() => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       Expanded(
         child: SingleChildScrollView(
           controller: _scroll,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _practiceNotice(),
-              _audioControls(),
-              const SizedBox(height: 18),
-              const Text(
-                'Practice complete',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                height: 240,
-                child: LostMissionScene(
-                  step: _session.step,
-                  practiceContext: widget.practiceContext,
-                ),
-              ),
-              const BaseboundGuide(
-                message: 'Stop. Look. Ask for help. Stay and wait.',
-              ),
-              const Text(
-                'No message was sent.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-              ),
-            ],
-          ),
+          child: _summaryContent('Practice complete'),
         ),
       ),
+      const SizedBox(height: 16),
       FilledButton.icon(
         key: const ValueKey('lost-restart'),
         onPressed: _exiting ? null : _restart,
