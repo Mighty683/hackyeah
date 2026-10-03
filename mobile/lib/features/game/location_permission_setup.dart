@@ -5,7 +5,7 @@ import 'navigation_location.dart';
 
 enum LocationPermissionStatus { granted, denied, settingsRequired, unavailable }
 
-/// Permission setup never subscribes to positions. Only the visible map does.
+/// Permission setup never tracks positions. The visible map and help can.
 class LocationPermissionSetup {
   LocationPermissionSetup({
     LocationSource? source,

@@ -1,6 +1,9 @@
 /// Offline orientation content, not medical triage or reviewed safety advice.
 /// Source passages and release limitations are recorded in docs/EMERGENCY_HELP.md.
 enum HelpPage {
+  helpers,
+  checkHelper,
+  withHelper,
   situations,
   unresponsive,
   unresponsiveOffline,
@@ -12,10 +15,6 @@ enum HelpPage {
   airUnknown,
   airStairs,
   airStay,
-  lostAdult,
-  lostStay,
-  lostNearby,
-  lostStaff,
   lostNoAdult,
   unsure,
 }
@@ -34,6 +33,7 @@ class HelpStep {
     this.choices = const [],
     this.urgent = false,
     this.offerContact = false,
+    this.offerEmergency = false,
   });
 
   final String title;
@@ -41,15 +41,40 @@ class HelpStep {
   final List<HelpChoice> choices;
   final bool urgent;
   final bool offerContact;
+
+  /// Offered only after no helper is confirmed and phone service is reported.
+  final bool offerEmergency;
 }
 
 const helpSteps = <HelpPage, HelpStep>{
+  HelpPage.helpers: HelpStep(
+    title: 'Can someone nearby help you?',
+    note: 'A trusted adult, police officer or shop worker.',
+    choices: [
+      HelpChoice('Yes', HelpPage.withHelper),
+      HelpChoice('No one can help', HelpPage.situations),
+      HelpChoice('I’m not sure', HelpPage.checkHelper),
+    ],
+  ),
+  HelpPage.checkHelper: HelpStep(
+    title: 'Is a trusted adult or helper already nearby?',
+    note: 'You do not need to walk around to answer.',
+    choices: [
+      HelpChoice('Someone can help', HelpPage.withHelper),
+      HelpChoice('No one can help', HelpPage.situations),
+    ],
+  ),
+  HelpPage.withHelper: HelpStep(
+    title: 'Tell that adult what happened.',
+    note: 'Do not leave with someone you do not know.',
+    choices: [HelpChoice('They cannot help', HelpPage.situations)],
+  ),
   HelpPage.situations: HelpStep(
     title: 'What is happening?',
     choices: [
       HelpChoice('Someone is not responding', HelpPage.unresponsive),
       HelpChoice('Air raid', HelpPage.airLocation),
-      HelpChoice('I am lost', HelpPage.lostAdult),
+      HelpChoice('I am lost', HelpPage.lostNoAdult),
       HelpChoice('I don’t know', HelpPage.unsure),
     ],
   ),
@@ -57,10 +82,8 @@ const helpSteps = <HelpPage, HelpStep>{
     title: 'Call 112 now.',
     note: 'Do not wait for a parent to answer.',
     urgent: true,
-    choices: [
-      HelpChoice('No phone signal', HelpPage.unresponsiveOffline),
-      HelpChoice('The call connected', HelpPage.operator),
-    ],
+    offerEmergency: true,
+    choices: [HelpChoice('Practise the next step', HelpPage.operator)],
   ),
   HelpPage.unresponsiveOffline: HelpStep(
     title: 'Shout for an adult’s help.',
@@ -68,7 +91,6 @@ const helpSteps = <HelpPage, HelpStep>{
         'Do not approach if the place is dangerous. '
         'This app cannot provide complete first-aid instructions.',
     urgent: true,
-    choices: [HelpChoice('Try the phone again', HelpPage.unresponsive)],
   ),
   HelpPage.operator: HelpStep(
     title: 'Follow the emergency operator’s instructions.',
@@ -113,46 +135,16 @@ const helpSteps = <HelpPage, HelpStep>{
   HelpPage.airStay: HelpStep(
     title: 'Stay in shelter and follow official instructions.',
   ),
-  HelpPage.lostAdult: HelpStep(
-    title: 'Is a trusted adult with you?',
-    choices: [
-      HelpChoice('Yes', HelpPage.lostStaff),
-      HelpChoice('No', HelpPage.lostStay),
-      HelpChoice('I don’t know', HelpPage.lostStay),
-    ],
-    offerContact: true,
-  ),
-  HelpPage.lostStay: HelpStep(
-    title: 'Stay where you are, unless there is danger.',
-    note: 'Do not leave with someone you do not know.',
-    choices: [HelpChoice('Look at nearby helpers', HelpPage.lostNearby)],
-    offerContact: true,
-  ),
-  HelpPage.lostNearby: HelpStep(
-    title: 'Who is already nearby?',
-    note: 'You do not need to walk around to answer.',
-    choices: [
-      HelpChoice('Police officer or shop worker', HelpPage.lostStaff),
-      HelpChoice('No one', HelpPage.lostNoAdult),
-      HelpChoice('I don’t know', HelpPage.lostNoAdult),
-    ],
-    offerContact: true,
-  ),
-  HelpPage.lostStaff: HelpStep(
-    title: 'Ask that adult to help contact your family.',
-    note: 'Do not leave with someone you do not know.',
-    offerContact: true,
-  ),
   HelpPage.lostNoAdult: HelpStep(
     title: 'Stay here unless there is danger.',
-    note:
-        'Without phone service, stay where you are unless there is danger. '
-        'Do not leave with someone you do not know.',
+    note: 'Do not leave with someone you do not know.',
     offerContact: true,
+    offerEmergency: true,
   ),
   HelpPage.unsure: HelpStep(
-    title: 'Ask a trusted adult nearby for help.',
+    title: 'Call out for an adult’s help.',
     note: 'You do not need to investigate what happened.',
     offerContact: true,
+    offerEmergency: true,
   ),
 };

@@ -41,8 +41,14 @@ flowchart TD
     R["NEAR PLACE<br/>Accurate GPS is within 20 m; child confirms recognition"]
     E["OUR MAP: MAP ERROR<br/>Go back and try again"]
     I["ABOUT OUR MAP<br/>GPS, offline route limits and map credits"]
-    H["HELP PROTOTYPE<br/>Unreviewed; not for real emergencies<br/>3 situations + I don't know"]
-    Q["OFFLINE HELP STEP<br/>One question or instruction<br/>112 dialler always available"]
+    H["HELP PROTOTYPE<br/>Can someone nearby help?<br/>Unreviewed; not for real emergencies"]
+    HC["HELPER CLARIFICATION<br/>Is a trusted adult or helper already nearby?"]
+    HA["ADULT SUPPORT<br/>Tell that adult what happened"]
+    HS["NO HELPER: SITUATIONS<br/>Not responding, air raid, lost, or unsure"]
+    Q["NO-HELPER INSTRUCTION<br/>Not responding, lost, or unsure<br/>Offline fallback if phone service unconfirmed"]
+    HQ["AIR-RAID STEPS<br/>Child answers inside/outside/unsure<br/>No call actions"]
+    HO["OPERATOR PRACTICE<br/>Follow the operator's instructions<br/>No call connection inferred"]
+    MOCK["NATIVE ANDROID DEMO POPUP<br/>Pretend 112 call; no dialler or real call"]
     D["PHONE APP<br/>Explicit child tap; no automatic call or SMS"]
 
     LP["PARENT: WALK TOGETHER<br/>Independent photo landmarks on the offline map"]
@@ -82,29 +88,49 @@ flowchart TD
     LERR -->|Retry| LP
 
     W -->|I need help: bypass role selection| H
-    F -->|I need help: defer game creation| H
+    F -->|I need help: defer map creation| H
     FE -->|I need help| H
-    L -->|I need help: pause GPS and narration| H
-    G -->|I need help: pause GPS and narration| H
-    R -->|I need help: pause GPS and narration| H
-    E -->|I need help: pause GPS and narration| H
-    H -->|Select situation| Q
-    Q -->|Answer or next instruction| Q
-    Q -->|Back: previous instruction| Q
-    Q -->|Back from first step| H
-    H -->|Close: restore opener; fresh GPS if enabled| HP{"Help opened by"}
+    L -->|I need help: pause map GPS and narration| H
+    G -->|I need help: pause map GPS and narration| H
+    R -->|I need help: pause map GPS and narration| H
+    E -->|I need help: pause map GPS and narration| H
+    H -->|Yes| HA
+    H -->|No one can help| HS
+    H -->|I'm not sure| HC
+    HC -->|Someone can help| HA
+    HC -->|No one can help| HS
+    HC -->|Back| H
+    HA -->|They cannot help| HS
+    HA -->|Back| H
+    HS -->|Not responding, lost, or unsure| Q
+    HS -->|Air raid| HQ
+    HS -->|Back| HB{"Previous helper screen"}
+    HB -->|Entry| H
+    HB -->|Clarification| HC
+    HB -->|Adult support| HA
+    Q -->|Back| HS
+    HQ -->|Answer or next instruction| HQ
+    HQ -->|Back: previous air-raid instruction| HQ
+    HQ -->|Back from first air-raid question| HS
+    Q -->|Not responding with reported service: Practise the next step| HO
+    HO -->|Back| Q
+    Q -->|Someone can help now: clear no-helper answer| HA
+    HQ -->|Instruction: Someone can help now; clear no-helper answer| HA
+    HO -->|Someone can help now: clear no-helper answer| HA
+    H -->|Close: stop help GPS; restore opener| HP{"Help opened by"}
+    HP -->|First-launch loading| BOOT
+    HP -->|Startup error| BE
     HP -->|Welcome| W
-    HP -->|Target selection| F
+    HP -->|Saved-place loading| F
     HP -->|Saved-details error| FE
     HP -->|Map loading| L
-    HP -->|Playing| G
-    HP -->|Result| R
+    HP -->|Map: obtain fresh GPS| G
+    HP -->|Near place: obtain fresh GPS| R
     HP -->|Map error| E
-    H -->|Open 112 dialler| D
-    Q -->|Explicit 112 or saved trusted-contact action| D
-    D -->|Return: no connection assumed| DP{"Previous help screen"}
-    DP -->|Situation selector| H
-    DP -->|Instruction| Q
+    Q -->|No helper + normal or emergency-only service; tap 112| MOCK
+    MOCK -->|Close or dismiss: same instruction| Q
+    Q -->|Lost/unsure + normal service + usable saved contact; explicit tap| D
+    D -->|Return to instruction; refresh service and GPS; no connection assumed| Q
     W -->|I'm an adult| AL
     AL -->|Details loaded| A
     AL -->|Read failed| AE
@@ -258,7 +284,7 @@ flowchart TD
     G -->|About our map| I
     R -->|About our map| I
     I -->|Close| G
-    NAV -->|I need help: pause GPS and narration| H
+    NAV -->|I need help: pause map GPS and narration| H
     HP -->|Walking guidance: obtain a fresh GPS fix| G
     F -->|Back| B{"Opened by"}
     FE -->|Back| B
@@ -308,14 +334,26 @@ flowchart TD
 | Landmark pin | Confirm one position inside the demo map | Manual tap/accessible direction controls, optional foreground GPS, previous step; saving preserves edits on failure |
 | Our map photo recall | Match one photo to one of 2–4 map pins | Shared map and unchanged GPS dot, audio replay, calm retry, correct-location feedback, another photo, return to exploration |
 | Landmark load error | Retry reading saved landmarks | Back; no silent deletion or reset |
-| Help prototype entry | Choose not responding, air raid, lost, or unsure | Open 112 dialler, no-signal information, close |
-| Help step | Answer one question or read one instruction | Previous step, 112 dialler, trusted-contact dialler where offered |
+| Help prototype entry | Answer whether someone nearby can help | Yes / No one can help / I'm not sure; optional familiar-place hint, close |
+| Helper clarification | Confirm whether a trusted adult, police officer or shop worker is already nearby | Someone can help / No one can help; previous step |
+| Adult support | Tell that adult what happened | They cannot help; back to helper entry; no call actions |
+| No-helper situation selection | Choose not responding, air raid, lost, or unsure | Someone can help now resets to adult support; previous helper step |
+| Not responding | With reported service: 112 mock action; otherwise offline adult-help instruction | Practise operator step only with reported service; someone can help now; back |
+| Lost / unsure instruction | Stay unless in danger / call out for an adult | Conditional 112 mock action and trusted-contact dialler; someone can help now; back; no repeated helper questions |
+| Air-raid step | Answer inside/outside/unsure, then read one instruction | Previous/next step; someone can help now; no call actions |
+| Operator practice | Read the operator-led instruction | Previous step; someone can help now; no call-connection claim |
 
 Child onboarding stores name, age and optional serialized gender in the existing encrypted family record, preserving address, support notes, contacts and practice places. Older records without gender still load. The selected girl or boy appears in mission poses; the map uses a blue GPS dot; adult Play together also uses the saved character. Age entry is personalization, not age verification. Returning to the child route allows editing the three steps.
 
 Each parent stage offers **Setup options → Delete all saved details**, with confirmation. Completed child, contact and safe-place editors save their records before returning; completing onboarding launches practice without an additional bulk save. **Review setup** returns to the intro and preserves saved records.
 
-Help content is bundled. Phone-app launch is real, but no call, connection, rescue, SMS delivery or verified route is inferred. Not-responding skips parent contact and offers 112 immediately. The air-raid flow does not offer routine parent voice calls. No-signal medical guidance is incomplete. See [EMERGENCY_HELP.md](EMERGENCY_HELP.md) for sources and the review required before real use. Adult setup configures contacts; help only reads its encrypted local record. Opening help during target selection defers creation of the game until help closes.
+Help content is bundled. **Every help entry asks about a nearby helper first, including before not responding.** Yes leads to adult support; no one can help leads to four situation choices; unsure receives one short clarification. Lost reuses that answer instead of asking again. **Someone can help now** clears the no-helper state and returns to adult support. Back follows help history, while back from its first screen restores the opener. Opening help during map loading defers map creation until help closes.
+
+The 112 action is conditional, with no permanent footer: it appears only on no-helper not-responding/lost/unsure instructions while Android reports normal or emergency-only telephone service. Unknown/unavailable service keeps offline guidance and hides calling actions. A service change updates the current instruction without another question. The 112 tap opens a native Android pretend-call popup without opening the dialler or placing a call. **Practise the next step** opens operator guidance and does not report a connected call. Air-raid and helper screens have no call actions. Trusted-contact dialler handoff is real and is offered only for lost/unsure, normal service and at least one usable saved number. No call, connection, rescue, SMS delivery or verified route is inferred.
+
+Telephone service comes from a foreground native stream for Android's default subscription; unsupported or restricted reports stay unknown. It does not check internet access, all SIMs or whether a call would connect, and adds no dangerous phone permissions. Backgrounding/exiting cancels the stream; returning refreshes it. See [Android ServiceStateListener](https://developer.android.com/reference/android/telephony/TelephonyCallback.ServiceStateListener) and [ServiceState](https://developer.android.com/reference/android/telephony/ServiceState) for the platform reports. The helper-first sequence and service-based visibility are an MVP demo policy, **not a validated medical protocol**. No-service medical guidance remains incomplete. [EMERGENCY_HELP.md](EMERGENCY_HELP.md) records the safety sources and review required before real use.
+
+Help also reads named non-demo saved family pins and independently uses foreground GPS with the existing permission grant, without another prompt or delaying the first instruction. A familiar-place hint requires a fix at most 30 seconds old, accuracy at most 25 m, and distance plus reported accuracy at most 50 m. The nearest qualifying pin yields “You may be near [name]. This is a saved place.” Fictional Home/demo pins, missing permission, stale/poor fixes and unreadable records yield no hint. It never proves safety, indoor location or helper presence, chooses a situation, or directs the child to a pin. The air-raid inside/outside question remains explicit. Help GPS stops on background/exit and requires a fresh fix on return; no location track is retained.
 
 ### Mission 01 — air-raid alarm practice
 
@@ -349,7 +387,7 @@ The current activity split adds a separate scenario-list route to the implemente
 
 **Our map** combines independent photo landmarks, saved named parent pins, recognition and walking guidance. Opening it shows the full bundled 2 × 2 km TAURON Arena, Kraków area, without an invented player position or random destination. Tap a pin to inspect its name/photo. **Walk here together** starts guidance to that selected real place. Fictional demo pins are for recognition only and have no walking action.
 
-The welcome screen requests foreground location permission once on first launch before role navigation. Denial permits practice; explicit permission retry or Android settings access is available in parent Setup options. Welcome does not start location tracking. **Our map** starts foreground GPS automatically without requesting permission. Only received phone positions set the blue dot; the accuracy circle shows uncertainty. An accepted fix is at most 30 seconds old, and turn guidance requires reported accuracy at most 25 m. Approximate fixes may show a dot but pause directions. Old fixes remove both dot and route. Denied permission, disabled GPS, stream failure and out-of-area positions are explicit states. Out-of-area coordinates are never clamped onto the arena map. Backgrounding, leaving this screen or opening Help cancels GPS; returning while foreground obtains a fresh fix without another permission prompt. No background permission or location history is added.
+The welcome screen requests foreground location permission once on first launch before role navigation. Denial permits practice; explicit permission retry or Android settings access is available in parent Setup options. Welcome does not start location tracking. **Our map** starts foreground GPS automatically without requesting permission. Only received phone positions set the blue dot; the accuracy circle shows uncertainty. An accepted fix is at most 30 seconds old, and turn guidance requires reported accuracy at most 25 m. Approximate fixes may show a dot but pause directions. Old fixes remove both dot and route. Denied permission, disabled GPS, stream failure and out-of-area positions are explicit states. Out-of-area coordinates are never clamped onto the arena map. Backgrounding, leaving this screen or opening Help cancels the map's GPS subscription; returning while foreground obtains a fresh fix without another permission prompt. Help uses its own foreground subscription for the optional familiar-place hint, with the same existing grant. No background permission or location history is added.
 
 The map stays north-up and starts with the whole area visible. Dragging and pinching are the only camera controls, with 1–8× zoom. GPS updates the dot and route without recentering or zooming. There are no GPS-toggle, zoom, recenter or overview buttons. An accessible **Places** selector opens on demand; one contextual panel shows exploration, the selected place, walking guidance or photo recall. Photo markers retain a 48-pixel touch target at each zoom. Directions, map attribution and scrolling secondary controls remain outside the map gesture area. Landscape places controls beside the map. Appearance verification remains with the user.
 
@@ -456,7 +494,7 @@ Preference costs multiply map distance: dedicated pedestrian paths 1.0, roads wi
 
 Start and target must each be within 12 map units (about 60 m) of a graph node. The route starts/ends on nearby mapped paths, with no invented connectors to GPS or a photo pin. A start more than 15 m from the route asks the child to find the path with their adult. Missing/disconnected paths show a calm message. The pin and the endpoint ring remain separate.
 
-GPS fixes drive progress along the directed route. Significant geometry bends produce left/right/back cues; OSM names, steps and crossings enrich the instructions. Turn cues use route direction, not device orientation. Accurate positions more than 25 m off the mapped line trigger a new A* route. Narration plays on route creation and approaching turns; Replay audio reads the current instruction. GPS and turn guidance pause outside coverage, on stale/approximate fixes and while Help is open.
+GPS fixes drive progress along the directed route. Significant geometry bends produce left/right/back cues; OSM names, steps and crossings enrich the instructions. Turn cues use route direction, not device orientation. Accurate positions more than 25 m off the mapped line trigger a new A* route. Narration plays on route creation and approaching turns; Replay audio reads the current instruction. Turn guidance pauses outside coverage or on stale/approximate fixes. Opening Help pauses map GPS and guidance; Help independently uses foreground GPS only for its familiar-place hint.
 
 The snapshot lacks original OSM node IDs, validated access, entrance connections, barrier handling and live hazards. Coordinate-based topology and nearby snapping can select the wrong path or leave a pin unreachable. Live GPS does not validate those limitations. Routes must not be described as fastest, safest, verified shelter access or real emergency guidance. The application keeps the adult-accompaniment instruction visible.
 
