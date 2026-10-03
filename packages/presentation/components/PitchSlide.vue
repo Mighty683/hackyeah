@@ -1,21 +1,26 @@
 <script setup lang="ts">
-withDefaults(defineProps<{
-  number: string
-  label?: string
+import { computed } from 'vue'
+import content from '../content.json'
+
+const props = defineProps<{
+  slide: keyof typeof content.slides
   dark?: boolean
-}>(), { label: 'Safe Path', dark: false })
+}>()
+const copy = computed(() => content.slides[props.slide])
+const slideIds = Object.keys(content.slides)
+const number = computed(() => String(slideIds.indexOf(props.slide) + 1).padStart(2, '0'))
 </script>
 
 <template>
   <section class="pitch-slide" :class="{ 'pitch-dark': dark }">
     <header class="pitch-header">
-      <span>{{ label }}</span>
-      <span>HackYeah 2026 · Defence</span>
+      <span>{{ copy.label }}</span>
+      <span>{{ content.shared.event }}</span>
     </header>
-    <main class="pitch-content"><slot /></main>
+    <main class="pitch-content"><slot :copy="copy" /></main>
     <footer class="pitch-footer">
-      <span><slot name="footer">Child-focused safety training</slot></span>
-      <span>{{ number }} / 10</span>
+      <span>{{ copy.footer }}</span>
+      <span>{{ number }} / {{ slideIds.length }}</span>
     </footer>
   </section>
 </template>

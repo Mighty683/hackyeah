@@ -40,7 +40,7 @@ pnpm install
 pnpm dev
 ```
 
-Open http://localhost:3030. `pnpm dev:presentation` also starts Slidev. Edit `packages/presentation/slides.md`; the existing components, styles, and demo slides live alongside it. Turborepo orchestrates the presentation workspace tasks.
+Open http://localhost:3030. `pnpm dev:presentation` also starts Slidev. Edit `packages/presentation/content.json` for pitch text and speaker notes, and `packages/presentation/slides.md` for layout. Components, styles, and the historical concept demo live alongside them. Turborepo orchestrates the presentation workspace tasks.
 
 ```sh
 pnpm build

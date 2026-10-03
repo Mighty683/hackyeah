@@ -2,6 +2,12 @@
 
 The main deck is [`slides.md`](slides.md): ten slides in English, with speaker notes for an approximately four-minute pitch including a 45-second recording. The recording is a placeholder until the team captures the Android app. [`prototype.md`](prototype.md) preserves the earlier interactive concept demo separately.
 
+## Editing text
+
+Edit [`content.json`](content.json) for all pitch wording. `metadata` contains the deck title and description, `shared` contains the event label, `recording` contains video/placeholder and accessibility labels, and `slides` contains each slide's copy, footer and native speaker notes. Notes are arrays of paragraphs; `\n` preserves deliberate line breaks in visible copy. The JSON contains plain text, not HTML.
+
+`slides.md` controls slide order and layout. Keep its slide IDs and `@notes:` references aligned with the keys in `content.json`. JSON edits refresh both the visible slides and native presenter notes; the same content is used for builds and exports. Edit notes in JSON rather than Slidev's inline notes editor. The separate historical concept demo retains its own copy.
+
 ## Pitch analysis
 
 The Defence brief asks for a specific security or resilience problem, a clearly identified user, and a demonstration that remains credible when information or services are limited. Safe Path addresses **children's preparedness**: practising the next decision before a stressful situation, with familiar places and family context.
@@ -44,7 +50,7 @@ The family record and landmark metadata use local encrypted storage; photo copie
 1. Record roughly 45 seconds: enter alarm practice → make one choice → show calm feedback → retry successfully. Keep the focus on the child's decision, rather than touring every feature.
 2. Use fictional personal details. Do not trigger real phone actions or include identifying information.
 3. Save the clip as `public/demo/safe-path-demo.mp4` inside this package.
-4. Set the demo component in `slides.md` to `<DemoRecording src="/demo/safe-path-demo.mp4" />` and update the slide's placeholder footer. Omitting `src` retains the placeholder; a failed video load shows a fallback message.
+4. Set the demo component in `slides.md` to `<DemoRecording src="/demo/safe-path-demo.mp4" />` and update `slides.demo.footer` in `content.json`. Omitting `src` retains the placeholder; a failed video load shows a fallback message.
 5. Rehearse playback locally and keep the MP4 available separately. A PDF cannot play the recording; retain the slide's explanatory text and provide a demo link with the submission if available.
 
 ## Run and submit

@@ -24,6 +24,7 @@
   line-height: 1.35;
 }
 .pitch-slide * { box-sizing: border-box; }
+.pitch-slide .copy-lines { white-space: pre-line; }
 .pitch-slide.pitch-dark {
   --pitch-ink: #f7f5f0;
   --pitch-blue: #b4cdea;
