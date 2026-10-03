@@ -1,4 +1,4 @@
-/// Loads saved practice places and picks a fresh target for each game/replay.
+/// Loads saved safe places and picks a fresh target for each practice game.
 library;
 
 import 'dart:math';
@@ -120,7 +120,7 @@ class _GameLauncherState extends State<GameLauncher> {
                           const SizedBox(height: 24),
                           if (snapshot.hasError) ...[
                             const Text(
-                              'Could not load practice places. Go back or try again.',
+                              'Could not load safe places. Go back or try again.',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 22,

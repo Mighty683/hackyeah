@@ -1,10 +1,11 @@
-/// Adult-only setup navigation for a device-local demo family plan.
+/// Guided adult setup for a device-local demo family plan.
 library;
 
 import 'package:flutter/material.dart';
 
-import '../../ui/basebound_ui.dart';
 import '../../ui/basebound_icons.dart';
+
+import '../../ui/basebound_ui.dart';
 import '../mission/practice_launcher.dart';
 import 'child_editor_screen.dart';
 import 'contact_editor_screen.dart';
@@ -12,6 +13,8 @@ import 'data/family_plan.dart';
 import 'data/family_plan_repository.dart';
 import 'safe_point_editor_screen.dart';
 import 'widgets/parent_editor_scaffold.dart';
+
+enum _SetupStage { introduction, contacts, safePlaces, ready }
 
 class ParentScreen extends StatefulWidget {
   const ParentScreen({super.key});
@@ -23,6 +26,7 @@ class ParentScreen extends StatefulWidget {
 class _ParentScreenState extends State<ParentScreen> {
   final _repository = FamilyPlanRepository();
   FamilyPlan? _plan;
+  _SetupStage _stage = _SetupStage.introduction;
   bool _busy = false;
   String? _error;
 
@@ -42,9 +46,7 @@ class _ParentScreenState extends State<ParentScreen> {
       if (mounted) setState(() => _plan = plan);
     } catch (_) {
       if (mounted) {
-        setState(
-          () => _error = 'Could not read saved details. Retry, or delete them to start fresh.',
-        );
+        setState(() => _error = 'Could not read saved details. Try again.');
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -56,41 +58,38 @@ class _ParentScreenState extends State<ParentScreen> {
     if (mounted) setState(() => _plan = plan);
   }
 
-  void _open(Widget screen) {
-    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => screen));
-  }
+  Future<bool?> _openEditor(Widget screen) =>
+      Navigator.of(context)
+          .push<bool>(MaterialPageRoute<bool>(builder: (_) => screen));
 
-  void _editChild() {
-    _open(
+  Future<void> _editChild() async {
+    final saved = await _openEditor(
       ChildEditorScreen(
         child: _plan!.child,
         onSave: (child) => _save(_plan!.copyWith(child: child)),
       ),
     );
+    if (saved == true && mounted) _goTo(_SetupStage.contacts);
   }
 
-  void _editContact([int? index]) {
-    _open(
-      ContactEditorScreen(
-        contact: index == null
-            ? const TrustedContact()
-            : _plan!.contacts[index],
-        onSave: (contact) {
-          final contacts = [..._plan!.contacts];
-          if (index == null) {
-            contacts.add(contact);
-          } else {
-            contacts[index] = contact;
-          }
-          return _save(_plan!.copyWith(contacts: contacts));
-        },
-      ),
-    );
-  }
+  Future<void> _editContact([int? index]) => _openEditor(
+    ContactEditorScreen(
+      contact: index == null ? const TrustedContact() : _plan!.contacts[index],
+      onSave: (contact) {
+        final contacts = [..._plan!.contacts];
+        if (index == null) {
+          contacts.add(contact);
+        } else {
+          contacts[index] = contact;
+        }
+        return _save(_plan!.copyWith(contacts: contacts));
+      },
+    ),
+  );
 
-  void _editPlace([int? index]) {
+  Future<void> _editPlace([int? index]) {
     final points = _plan!.safePoints;
-    _open(
+    return _openEditor(
       SafePointEditorScreen(
         point: index == null ? null : points[index],
         otherPoints: [
@@ -110,38 +109,51 @@ class _ParentScreenState extends State<ParentScreen> {
     );
   }
 
-  Future<bool> _confirm(String title, String message) async {
-    return await showDialog<bool>(
-          context: context,
-          builder: (context) => Theme(
-            data: parentSetupTheme(),
-            child: AlertDialog(
-              title: Text(title),
-              content: Text(message),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: const Text('Keep'),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  style: TextButton.styleFrom(
-                    foregroundColor: BaseboundColors.coral,
-                  ),
-                  child: const Text('Delete'),
-                ),
-              ],
-            ),
-          ),
-        ) ??
-        false;
+  void _goTo(_SetupStage stage) {
+    FocusManager.instance.primaryFocus?.unfocus();
+    setState(() => _stage = stage);
   }
+
+  void _back() {
+    if (_busy) return;
+    if (_stage == _SetupStage.introduction) {
+      Navigator.of(context).maybePop();
+      return;
+    }
+    _goTo(_SetupStage.values[_stage.index - 1]);
+  }
+
+  Future<bool> _confirm(String title, String message) async =>
+      await showDialog<bool>(
+        context: context,
+        builder: (context) => Theme(
+          data: parentSetupTheme(),
+          child: AlertDialog(
+            title: Text(title),
+            content: Text(message),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Keep'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: TextButton.styleFrom(
+                  foregroundColor: BaseboundColors.coral,
+                ),
+                child: const Text('Delete'),
+              ),
+            ],
+          ),
+        ),
+      ) ??
+      false;
 
   Future<void> _delete({int? contact, int? place, bool all = false}) async {
     final confirmed = await _confirm(
       all ? 'Delete all saved details?' : 'Delete this entry?',
       all
-          ? 'This removes the child details, trusted contacts, and places from this device. It cannot be undone.'
+          ? 'This removes the child details, trusted contacts, and safe places from this device. It cannot be undone.'
           : 'This removes the entry from this device.',
     );
     if (!confirmed || !mounted) return;
@@ -152,6 +164,7 @@ class _ParentScreenState extends State<ParentScreen> {
         if (mounted) {
           setState(() {
             _plan = const FamilyPlan();
+            _stage = _SetupStage.introduction;
             _error = null;
           });
         }
@@ -174,214 +187,284 @@ class _ParentScreenState extends State<ParentScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Theme(
-      data: parentSetupTheme(),
+  Widget build(BuildContext context) => Theme(
+    data: parentSetupTheme(),
+    child: PopScope(
+      canPop: !_busy && _stage == _SetupStage.introduction,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _back();
+      },
       child: Scaffold(
-        appBar: AppBar(
-          leading: const BaseboundBackButton(),
-          title: const Text('Parent setup'),
-        ),
-        body: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 640),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SoftPanel(
-                      borderColor: BaseboundColors.border,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: BaseboundIcon(
-                              BaseboundIconName.family,
-                              size: 58,
-                            ),
-                          ),
-                          SizedBox(height: 12),
-                          Text(
-                            'Set up practice together',
-                            style: TextStyle(
-                              fontFamily: 'Nunito',
-                              color: BaseboundColors.ink,
-                              fontSize: 28,
-                              height: 1.15,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          SizedBox(height: 18),
-                          ParentEditorNote(
-                            message:
-                                'Use fictional personal details for this demo. Saved details are encrypted on this device, '
-                                'but anyone using the app can open them. There is no parent lock or cloud sync.',
-                            icon: BaseboundIconName.lock,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    if (_busy)
-                      const ClipRRect(
-                        borderRadius: BorderRadius.all(Radius.circular(8)),
-                        child: LinearProgressIndicator(
-                          minHeight: 6,
-                          color: BaseboundColors.blue,
-                          backgroundColor: BaseboundColors.sky,
-                        ),
-                      ),
-                    if (_error != null) ...[
-                      Semantics(
-                        liveRegion: true,
-                        child: ParentEditorNote(
-                          message: _error!,
-                          icon: BaseboundIconName.alert,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      OutlinedButton.icon(
-                        onPressed: _busy ? null : _load,
-                        icon: const BaseboundIcon(BaseboundIconName.replay),
-                        label: const Text('Retry loading'),
-                      ),
-                    ],
-                    if (_plan != null) ..._setupSections(),
-                    const SizedBox(height: 24),
-                    OutlinedButton.icon(
-                      onPressed: _busy ? null : () => _delete(all: true),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: BaseboundColors.coral,
-                        side: const BorderSide(color: BaseboundColors.coral),
-                        minimumSize: const Size(48, 56),
-                      ),
-                      icon: const BaseboundIcon(
-                        BaseboundIconName.delete,
-                        color: BaseboundColors.coral,
-                      ),
-                      label: const Text('Delete all saved details'),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Practice only. No real routes, verified safe places, or emergency assistance.',
-                      style: TextStyle(
-                        fontFamily: 'Nunito',
-                        color: BaseboundColors.muted,
-                        fontSize: 14,
-                        height: 1.4,
-                      ),
-                    ),
-                  ],
-                ),
+        appBar: _appBar(),
+        body: SafeArea(child: _body()),
+        bottomNavigationBar: _plan != null && _error == null && !_busy
+            ? _footer()
+            : null,
+      ),
+    ),
+  );
+
+  AppBar _appBar() => AppBar(
+    title: const Text('Family setup'),
+    leading: IconButton(
+      onPressed: _busy ? null : _back,
+      icon: const BaseboundIcon(BaseboundIconName.back),
+      tooltip: 'Back',
+    ),
+    actions: [
+      PopupMenuButton<String>(
+        enabled: !_busy,
+        tooltip: 'Setup options',
+        onSelected: (_) => _delete(all: true),
+        itemBuilder: (_) => const [
+          PopupMenuItem(
+            value: 'delete',
+            child: Text('Delete all saved details'),
+          ),
+        ],
+      ),
+    ],
+  );
+
+  Widget _body() {
+    if (_busy) return const Center(child: CircularProgressIndicator());
+    if (_error != null) return _loadError();
+    if (_plan == null) return const SizedBox.shrink();
+    return SingleChildScrollView(
+      key: ValueKey(_stage),
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 640),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Family setup · ${_stage.index + 1} of 4',
+                style: _subtitleStyle,
               ),
-            ),
+              const SizedBox(height: 8),
+              LinearProgressIndicator(
+                value: (_stage.index + 1) / 4,
+                semanticsLabel: 'Family setup, step ${_stage.index + 1} of 4',
+              ),
+              const SizedBox(height: 24),
+              ..._stageContent(),
+            ],
           ),
         ),
       ),
     );
   }
 
-  List<Widget> _setupSections() {
-    final plan = _plan!;
+  Widget _loadError() => Center(
+    child: Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Semantics(
+            liveRegion: true,
+            child: ParentEditorNote(
+              message: _error!,
+              icon: BaseboundIconName.alert,
+            ),
+          ),
+          const SizedBox(height: 16),
+          OutlinedButton.icon(
+            onPressed: _load,
+            icon: const BaseboundIcon(BaseboundIconName.replay),
+            label: const Text('Retry loading'),
+          ),
+          const SizedBox(height: 8),
+          const Text('You can delete saved details from Setup options.'),
+        ],
+      ),
+    ),
+  );
+
+  List<Widget> _stageContent() => switch (_stage) {
+    _SetupStage.introduction => _introduction(),
+    _SetupStage.contacts => _contacts(),
+    _SetupStage.safePlaces => _safePlaces(),
+    _SetupStage.ready => _ready(),
+  };
+
+  List<Widget> _introduction() => [
+    _heading('Set up your family plan', BaseboundIconName.family),
+    const Text(
+      'Add your child’s details, then contacts and safe places. One step at a time.',
+      style: _subtitleStyle,
+    ),
+    const SizedBox(height: 24),
+    const ParentEditorNote(
+      message: 'Use fictional personal details for this demo. All details are optional.',
+      icon: BaseboundIconName.info,
+    ),
+    const SizedBox(height: 16),
+    const Text(
+      'Saved details are encrypted on this device. Anyone using this app can open them. No parent lock or cloud sync.',
+      style: _subtitleStyle,
+    ),
+  ];
+
+  List<Widget> _contacts() {
+    final contacts = _plan!.contacts;
     return [
-      _sectionTitle('Child', BaseboundIconName.child),
-      _setupCard(
-        child: ListTile(
-          contentPadding: const EdgeInsets.all(16),
-          leading: _entryIcon(BaseboundIconName.child),
-          title: Text(
-            plan.child.fullName.isEmpty ? 'Child details' : plan.child.fullName,
-          ),
-          subtitle: const Text(
-            'Name, age, address, and support needs — optional',
-          ),
-          trailing: const BaseboundIcon(BaseboundIconName.edit),
-          titleTextStyle: _entryTitleStyle,
-          subtitleTextStyle: _entrySubtitleStyle,
-          onTap: _busy ? null : _editChild,
-        ),
+      _heading('Who can your child contact?', BaseboundIconName.family),
+      Text(
+        'Add up to three trusted adults. ${contacts.length}/3 saved.',
+        style: _subtitleStyle,
       ),
-      _sectionTitle(
-        'Trusted contacts (${plan.contacts.length}/3)',
-        BaseboundIconName.family,
-      ),
-      for (var index = 0; index < plan.contacts.length; index++)
+      const SizedBox(height: 20),
+      for (var index = 0; index < contacts.length; index++)
         _entry(
-          title: plan.contacts[index].name.isEmpty
+          title: contacts[index].name.isEmpty
               ? 'Contact ${index + 1}'
-              : plan.contacts[index].name,
+              : contacts[index].name,
           subtitle: [
-            plan.contacts[index].relationship,
-            plan.contacts[index].phone,
+            contacts[index].relationship,
+            contacts[index].phone,
           ].where((value) => value.isNotEmpty).join(' · '),
           onEdit: () => _editContact(index),
           onDelete: () => _delete(contact: index),
           icon: BaseboundIconName.adult,
         ),
-      if (plan.contacts.length < FamilyPlan.maxContacts)
+      if (contacts.length < FamilyPlan.maxContacts)
         OutlinedButton.icon(
-          onPressed: _busy ? null : _editContact,
+          onPressed: _editContact,
           icon: const BaseboundIcon(BaseboundIconName.addAdult),
-          label: const Text('Add trusted contact'),
+          label: const Text('Add a trusted contact'),
         ),
-      _sectionTitle('Practice places', BaseboundIconName.pin),
+      const SizedBox(height: 20),
       const Text(
-        'Choose named pins in the offline Kraków demo area. Each new game randomly picks one.',
-        style: TextStyle(
-          fontFamily: 'Nunito',
-          color: BaseboundColors.muted,
-          fontSize: 16,
-          height: 1.4,
-        ),
+        'Saving a contact does not call or verify the number.',
+        style: _subtitleStyle,
       ),
-      const SizedBox(height: 10),
-      for (var index = 0; index < plan.safePoints.length; index++)
+    ];
+  }
+
+  List<Widget> _safePlaces() {
+    final points = _plan!.safePoints;
+    return [
+      _heading('Choose your child’s safe places', BaseboundIconName.pin),
+      const Text(
+        'Choose destinations for your family’s emergency plan.',
+        style: _subtitleStyle,
+      ),
+      const SizedBox(height: 16),
+      const ParentEditorNote(
+        message: 'This demo stores map pins only. It does not check safety or provide real emergency routes.',
+        icon: BaseboundIconName.info,
+      ),
+      const SizedBox(height: 20),
+      for (var index = 0; index < points.length; index++)
         _entry(
-          title: plan.safePoints[index].displayName,
-          subtitle:
-              '${plan.safePoints[index].latitude.toStringAsFixed(5)}, '
-              '${plan.safePoints[index].longitude.toStringAsFixed(5)}',
+          title: points[index].displayName,
+          subtitle: 'Tap to edit this safe place.',
           onEdit: () => _editPlace(index),
           onDelete: () => _delete(place: index),
           icon: BaseboundIconName.pin,
         ),
       OutlinedButton.icon(
-        onPressed: _busy ? null : _editPlace,
+        onPressed: _editPlace,
         icon: const BaseboundIcon(BaseboundIconName.addPlace),
-        label: const Text('Add a practice place'),
-      ),
-      const SizedBox(height: 24),
-      FilledButton.icon(
-        onPressed: _busy ? null : () => _open(const PracticeLauncher()),
-        style: FilledButton.styleFrom(
-          backgroundColor: BaseboundColors.blue,
-          foregroundColor: Colors.white,
-          minimumSize: const Size(48, 58),
-          padding: const EdgeInsets.all(18),
-        ),
-        icon: const BaseboundIcon(BaseboundIconName.play, color: Colors.white),
-        label: const Text('Play together'),
+        label: const Text('Add a safe place'),
       ),
     ];
   }
 
-  Widget _sectionTitle(String title, BaseboundIconName icon) => Padding(
-    padding: const EdgeInsets.only(top: 26, bottom: 12),
+  List<Widget> _ready() => [
+    _heading('Ready to practice together', BaseboundIconName.check),
+    Text(
+      '${_plan!.contacts.length} trusted contacts · ${_plan!.safePoints.length} safe places saved',
+      style: _subtitleStyle,
+    ),
+    const SizedBox(height: 24),
+    ParentEditorNote(
+      message: _plan!.safePoints.isEmpty
+          ? 'No safe place chosen. The map game uses a pretend base.'
+          : 'The map game picks one saved safe place at random for training.',
+      icon: BaseboundIconName.play,
+    ),
+    const SizedBox(height: 16),
+    const Text(
+      'Training only. Saved safe places are not verified. No real emergency navigation or assistance.',
+      style: _subtitleStyle,
+    ),
+    const SizedBox(height: 24),
+    OutlinedButton.icon(
+      onPressed: () => _goTo(_SetupStage.introduction),
+      icon: const BaseboundIcon(BaseboundIconName.edit),
+      label: const Text('Review setup'),
+    ),
+  ];
+
+  Widget _footer() {
+    final (label, action) = switch (_stage) {
+      _SetupStage.introduction => ('Add child details', _editChild),
+      _SetupStage.contacts => (
+        _plan!.contacts.isEmpty ? 'Skip contacts' : 'Choose safe places',
+        () => _goTo(_SetupStage.safePlaces),
+      ),
+      _SetupStage.safePlaces => (
+        _plan!.safePoints.isEmpty ? 'Skip safe places' : 'Finish setup',
+        () => _goTo(_SetupStage.ready),
+      ),
+      _SetupStage.ready => (
+        'Play together',
+        () => Navigator.of(context).push<void>(
+          MaterialPageRoute<void>(builder: (_) => const PracticeLauncher()),
+        ),
+      ),
+    };
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            FilledButton.icon(
+              onPressed: action,
+              style: FilledButton.styleFrom(minimumSize: const Size(48, 58)),
+              icon: BaseboundIcon(
+                _stage == _SetupStage.ready
+                    ? BaseboundIconName.play
+                    : BaseboundIconName.next,
+                color: Colors.white,
+              ),
+              label: Text(label),
+            ),
+            if (_stage == _SetupStage.introduction)
+              TextButton(
+                onPressed: () => _goTo(_SetupStage.contacts),
+                child: const Text('Skip child details'),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _heading(String title, BaseboundIconName icon) => Padding(
+    padding: const EdgeInsets.only(bottom: 16),
     child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        BaseboundIcon(icon, size: 26),
-        const SizedBox(width: 10),
+        BaseboundIcon(icon, size: 32, color: BaseboundColors.blue),
+        const SizedBox(width: 12),
         Expanded(
-          child: Text(
-            title,
-            style: const TextStyle(
-              fontFamily: 'Nunito',
-              color: BaseboundColors.ink,
-              fontSize: 21,
-              fontWeight: FontWeight.w800,
+          child: Semantics(
+            header: true,
+            child: Text(
+              title,
+              style: const TextStyle(
+                fontSize: 28,
+                height: 1.2,
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ),
         ),
@@ -389,40 +472,11 @@ class _ParentScreenState extends State<ParentScreen> {
     ),
   );
 
-  static const _entryTitleStyle = TextStyle(
-    fontFamily: 'Nunito',
-    color: BaseboundColors.ink,
-    fontSize: 18,
-    fontWeight: FontWeight.w700,
-  );
-
-  static const _entrySubtitleStyle = TextStyle(
+  static const _subtitleStyle = TextStyle(
     fontFamily: 'Nunito',
     color: BaseboundColors.muted,
-    fontSize: 14,
+    fontSize: 16,
     height: 1.4,
-  );
-
-  Widget _entryIcon(BaseboundIconName icon) => Container(
-    width: 44,
-    height: 44,
-    decoration: BoxDecoration(
-      color: BaseboundColors.sky,
-      borderRadius: BorderRadius.circular(14),
-    ),
-    child: BaseboundIcon(icon, size: 27),
-  );
-
-  Widget _setupCard({required Widget child}) => Card(
-    color: Colors.white,
-    elevation: 0,
-    margin: const EdgeInsets.only(bottom: 12),
-    clipBehavior: Clip.antiAlias,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(22),
-      side: const BorderSide(color: BaseboundColors.border),
-    ),
-    child: child,
   );
 
   Widget _entry({
@@ -431,22 +485,18 @@ class _ParentScreenState extends State<ParentScreen> {
     required VoidCallback onEdit,
     required VoidCallback onDelete,
     required BaseboundIconName icon,
-  }) => _setupCard(
+  }) => Card(
+    elevation: 0,
+    margin: const EdgeInsets.only(bottom: 12),
     child: ListTile(
       contentPadding: const EdgeInsets.all(16),
-      leading: _entryIcon(icon),
-      title: Text(title),
+      leading: BaseboundIcon(icon, color: BaseboundColors.blue),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
       subtitle: subtitle.isEmpty ? null : Text(subtitle),
-      titleTextStyle: _entryTitleStyle,
-      subtitleTextStyle: _entrySubtitleStyle,
-      onTap: _busy ? null : onEdit,
+      onTap: onEdit,
       trailing: IconButton(
-        onPressed: _busy ? null : onDelete,
-        color: BaseboundColors.muted,
-        icon: const BaseboundIcon(
-          BaseboundIconName.delete,
-          color: BaseboundColors.muted,
-        ),
+        onPressed: onDelete,
+        icon: const BaseboundIcon(BaseboundIconName.delete),
         tooltip: 'Delete $title',
       ),
     ),

@@ -4,25 +4,34 @@ Updated: 2026-10-03. Android is the application; the Slidev screens are pitch pr
 
 ## Implemented Android flow
 
-Solid arrows describe working navigation and actions. Loading, result and error are screen states. Role selection changes the journey; it is not age verification or access control. Parent setup is freely accessible in this demo.
+Solid arrows describe working navigation and actions. Loading, result and error are screen states. Role selection changes the journey; it is not age verification or access control. Parent onboarding is freely accessible in this demo. It asks for one action or piece of information per screen.
 
 ```mermaid
 flowchart TD
     W["WELCOME<br/>Are you an adult or a child?"]
-    A["PARENT SETUP<br/>Child details, up to 3 contacts, practice places"]
+    A["PARENT INTRO<br/>Set up a family plan; demo details"]
     AL["SETUP: LOADING<br/>Read the encrypted local family plan"]
     AE["SETUP: LOAD ERROR<br/>Retry or explicitly delete saved details"]
-    C["CHILD DETAILS<br/>Optional name, age, address, support needs"]
-    T["TRUSTED CONTACT<br/>Optional name, phone, relationship"]
-    M["PRACTICE PLACE<br/>Optional name; choose a pin on the offline map"]
+    CN["CHILD NAME<br/>Optional full name"]
+    CA["CHILD AGE<br/>Optional age"]
+    CD["CHILD ADDRESS<br/>Optional address"]
+    CS["CHILD SUPPORT NEEDS<br/>Optional notes; save child record"]
+    CT["TRUSTED CONTACTS<br/>Add or review up to 3 contacts"]
+    T["CONTACT NAME<br/>Optional name"]
+    TP["CONTACT PHONE<br/>Optional phone number"]
+    TR["CONTACT RELATIONSHIP<br/>Optional relationship; save contact"]
+    SP["SAFE PLACES<br/>Add or review optional destinations"]
+    M["SAFE PLACE NAME<br/>Optional name"]
+    MP["SAFE PLACE PIN<br/>Choose a position on the offline map; save place"]
     ME["PLACE: MAP ERROR<br/>Go back and try again"]
-    SE["FORM: SAVE ERROR<br/>Keep edits and retry"]
+    DONE["SETUP COMPLETE<br/>Start practice or review family details"]
+    SE["FORM: SAVE ERROR<br/>Keep edits and retry on the same step"]
     DEL["DELETE CONFIRMATION<br/>Delete entry or all saved details"]
-    F["GAME: SELECT TARGET<br/>Read saved places; randomly choose a valid pin<br/>No places: use the fictional base"]
+    F["GAME: SELECT TARGET<br/>Read saved safe places; randomly choose a valid pin<br/>No places: use the fictional base"]
     FE["GAME: SAVED DETAILS ERROR<br/>Retry or go back"]
     L["GAME: LOADING<br/>Load the offline map"]
-    G["GAME: PLAYING<br/>Reach the named practice place or pretend base<br/>Tap the map to move your character"]
-    R["GAME: RESULT<br/>You reached the practice target"]
+    G["GAME: PLAYING<br/>Reach the named safe place or pretend base<br/>Tap the map to move your character"]
+    R["GAME: RESULT<br/>Your character reached the game destination"]
     E["GAME: MAP ERROR<br/>Go back and try again"]
     I["ABOUT THIS DEMO<br/>Practice-only movement and map credits"]
     H["HELP PROTOTYPE<br/>Unreviewed; not for real emergencies<br/>3 situations + I don't know"]
@@ -72,25 +81,54 @@ flowchart TD
     OUT -->|Back| PS
     MR -->|Choose practice| PS
     PS -->|Back| B
-    A -->|Edit child details| C
-    A -->|Add or edit contact| T
-    A -->|Add or edit practice place| M
-    C -->|Save changes| A
-    T -->|Save changes| A
-    M -->|Save changes after choosing a position| A
-    C -->|Back: discard unsaved edits| A
-    T -->|Back: discard unsaved edits| A
-    M -->|Back: discard unsaved edits| A
-    C -->|Save failed| SE
-    T -->|Save failed| SE
-    M -->|Save failed| SE
-    SE -->|Retry successfully on the same form| A
-    M -->|Map load failed| ME
-    ME -->|Back| A
-    A -->|Delete entry or all saved details| DEL
-    DEL -->|Keep| A
-    DEL -->|Delete: persist removal| A
-    A -->|Play together| PS
+    A -->|Add child details| CN
+    A -->|Skip child details| CT
+    CN -->|Next: may leave empty| CA
+    CA -->|Next: may leave empty| CD
+    CD -->|Next: may leave empty| CS
+    CS -->|Save child record| CT
+    CT -->|Add or edit contact| T
+    T -->|Next: may leave empty| TP
+    TP -->|Next: may leave empty| TR
+    TR -->|Save contact| CT
+    CT -->|Choose safe places or Skip contacts| SP
+    SP -->|Add or edit safe place| M
+    M -->|Choose position| MP
+    MP -->|Save safe place after choosing a pin| SP
+    SP -->|Finish setup or Skip safe places| DONE
+    DONE -->|Play together| PS
+    DONE -->|Review setup| A
+    CA -->|Back| CN
+    CD -->|Back| CA
+    CS -->|Back| CD
+    CN -->|Back: discard unsaved child edits| A
+    TP -->|Back| T
+    TR -->|Back| TP
+    T -->|Back: discard unsaved contact edits| CT
+    MP -->|Back| M
+    M -->|Back: discard unsaved place edits| SP
+    CT -->|Back| A
+    SP -->|Back| CT
+    DONE -->|Back| SP
+    CS -->|Save failed| SE
+    TR -->|Save failed| SE
+    MP -->|Save failed| SE
+    SE -->|Retry from retained editor step| RETRY{"Editor being saved"}
+    RETRY -->|Child| CS
+    RETRY -->|Contact| TR
+    RETRY -->|Safe place| MP
+    MP -->|Map load failed| ME
+    ME -->|Back| M
+    CT -->|Delete contact or all saved details| DEL
+    SP -->|Delete safe place or all saved details| DEL
+    A -->|Delete all saved details| DEL
+    DONE -->|Delete all saved details| DEL
+    DEL -->|Keep or persist entry removal| RETURN{"Previous onboarding step"}
+    RETURN -->|Intro| A
+    RETURN -->|Contacts| CT
+    RETURN -->|Safe places| SP
+    RETURN -->|Completion| DONE
+    DEL -->|Delete all: persist removal| A
     A -->|Back| W
     F -->|Target selected or fictional fallback| L
     F -->|Read failed| FE
@@ -118,7 +156,7 @@ flowchart TD
     E -->|Back| B
     B -->|Map game| PS
     B -->|Practice opened by child| W
-    B -->|Practice opened by adult| A
+    B -->|Practice opened by adult| DONE
 ```
 
 | Screen/state | One primary task | Secondary actions |
@@ -129,20 +167,26 @@ flowchart TD
 | Mission scene | Make one visual decision or hear the situation | Replay audio, back |
 | Mission feedback | See the consequence and explanation | Retry the same decision or advance; replay audio |
 | Mission recall | See the six learned actions and completion sticker | Replay audio, replay mission, choose practice |
-| Parent setup | Choose a setup task | Play together, confirmed Delete all, back |
-| Child details | Edit optional child information | Save changes, back without saving |
-| Trusted contact | Edit one of up to three contacts | Save changes, back without saving |
-| Practice place | Name and position a practice pin | Tap or accessible centre/direction controls; save, back |
-| Setup load error | Recover saved details | Retry, confirmed Delete all, back |
+| Parent intro | Add child details | Skip child details, demo/privacy details, confirmed Delete all in Setup options, back |
+| Child name, age, address, support needs | Enter one optional detail per screen | Next with value or empty field, previous step; final step saves child record |
+| Trusted contacts | Add or review up to three contacts | Edit or confirmed delete; Choose safe places or Skip contacts; Setup options, back to intro |
+| Contact name, phone, relationship | Enter one optional detail per screen | Next with value or empty field, previous step; final step saves contact |
+| Safe places | Add or review optional safe places | Edit or confirmed delete; Finish setup or Skip safe places; Setup options, back to contacts |
+| Safe place name | Name one safe place | Choose position, back without saving |
+| Safe place pin | Choose one geographic position | Tap or accessible centre/direction controls; save, previous step |
+| Setup complete | Play together | Review setup returns to intro; Setup options, back to safe places |
+| Setup load error | Recover saved details | Retry, confirmed Delete all in Setup options, back |
 | Form save error | Retry saving without losing edits | Back without saving |
-| Game target selection/error | Wait for saved places or retry | Help prototype, back |
+| Game target selection/error | Wait for saved safe places or retry | Help prototype, back |
 | Game map loading | Wait for the offline map | Help prototype, back |
-| Game playing | Move the character to the practice target | Help prototype, pan/zoom, show whole map, restart with a random target, demo information, back |
+| Game playing | Move the character to the selected safe place or pretend base | Help prototype, pan/zoom, show whole map, restart with a random target, demo information, back |
 | Game result | Read the result and replay | Help prototype, pan/zoom, show whole map, demo information, back |
 | Game load error | Retry saved details or reopen the map | Help prototype, back |
 | Demo information | Read optional demo details | Close |
 | Help prototype entry | Choose not responding, air raid, lost, or unsure | Open 112 dialler, no-signal information, close |
 | Help step | Answer one question or read one instruction | Previous step, 112 dialler, trusted-contact dialler where offered |
+
+Each parent stage offers **Setup options → Delete all saved details**, with confirmation. Completed child, contact and safe-place editors save their records before returning; completing onboarding launches practice without an additional bulk save. **Review setup** returns to the intro and preserves saved records.
 
 Help content is bundled. Phone-app launch is real, but no call, connection, rescue, SMS delivery or verified route is inferred. Not-responding skips parent contact and offers 112 immediately. The air-raid flow does not offer routine parent voice calls. No-signal medical guidance is incomplete. See [EMERGENCY_HELP.md](EMERGENCY_HELP.md) for sources and the review required before real use. Adult setup configures contacts; help only reads its encrypted local record. Opening help during target selection defers creation of the game until help closes.
 
@@ -158,7 +202,7 @@ Instructions, feedback, and replay use an installed offline English Android spee
 
 The implemented screens share rounded Nunito typography, navy text, blue actions and white panels. The current visual refinement adds a bespoke colourful vector icon family and six decorative dinosaur poses: wave, point, think, listen, celebrate and calm. Custom icons cover navigation, narration/replay, map controls, forms, mission choices and help; mission Canvas drawings and default back/close controls also use the family instead of Material font glyphs. Labels, tooltips, focus and disabled state remain on the native controls.
 
-The compositions differ by task. Welcome has a grounded waving hero and role cards. Practice uses a pointing guide beside its heading and separate activity cards. Loading uses listen; recoverable errors use calm. The map uses a compact pointing instruction guide and a celebrating arrival state, with controls and credit outside its gesture area. Adult setup keeps compact illustrations and calm form panels. Help retains a distinct flat cool theme, restrained icons, no training mascot and the visible prototype notice.
+The compositions differ by task. Welcome has a grounded waving hero and role cards. Practice uses a pointing guide beside its heading and separate activity cards. Loading uses listen; recoverable errors use calm. The map uses a compact pointing instruction guide and a celebrating arrival state, with controls and credit outside its gesture area. Adult onboarding keeps compact illustrations and calm form panels, with one detail per screen and a visible step indicator. Help retains a distinct flat cool theme, restrained icons, no training mascot and the visible prototype notice.
 
 Mission presentation is being refined around portrait 2:3 environment backgrounds, a separate scene-character pose sheet and native per-step choices anchored to the pictured objects. The dinosaur remains an editable vector guide. Backgrounds supply no interactive labels; the current step supplies character placement, target rectangles and its existing two to four actions. Narrow and large-text layouts retain accessible choice cards. The latest combined asset, layout and interaction checks are pending integrator verification; passing checks for the earlier visual baseline are recorded separately in [UI_IMPLEMENTATION_PLAN.md](UI_IMPLEMENTATION_PLAN.md).
 
@@ -166,14 +210,14 @@ This visual work preserves every screen action and return path described above. 
 
 ### Child map interaction
 
-The parent pin editor shows accurate bundled OSM geometry; the child view is deliberately schematic. The square overview covers the same geographic extent as the offline source, but minor streets/buildings/POIs are omitted. Decorative trees and illustrated buildings are not exact real-world positions or outlines. Dragging or pinching explores without selecting a movement destination; only a resolved tap moves the character. Zoom buttons and Show whole map are secondary controls, disabled while loading or after a load error. Instructions and attribution stay outside scrolling areas. Only secondary controls can scroll; the map has its own gesture area. Short or large-text layouts use a shorter instruction, and landscape places the map beside instructions and controls. Water, energy and warmth cards remain removed. There is one restart control in each loaded game state. Restart/replay reloads the saved places, selects a fresh random target, and resets character and overview; repeats are possible.
+The parent pin editor shows accurate bundled OSM geometry; the child view is deliberately schematic. The square overview covers the same geographic extent as the offline source, but minor streets/buildings/POIs are omitted. Decorative trees and illustrated buildings are not exact real-world positions or outlines. Dragging or pinching explores without selecting a movement destination; only a resolved tap moves the character. Zoom buttons and Show whole map are secondary controls, disabled while loading or after a load error. Instructions and attribution stay outside scrolling areas. Only secondary controls can scroll; the map has its own gesture area. Short or large-text layouts use a shorter instruction, and landscape places the map beside instructions and controls. Water, energy and warmth cards remain removed. There is one restart control in each loaded game state. Restart/replay reloads the saved safe places, selects a fresh random target, and resets character and overview; repeats are possible.
 
 ### Data and demo boundaries
 
-- One child; optional full name, age, address and support notes. No photo feature.
-- Up to three trusted contacts; name, phone and relationship are optional. Saving a number does not make calls or verify it.
-- Parent-selected places are named geographic pins inside the bundled TAURON Arena area. They are not verified safe destinations, walking routes, or emergency instructions.
-- Each game launch and replay chooses a random valid saved place. Repeats are possible. No places means the original fictional base.
+- One child; optional full name, age, address and support notes, entered one detail per screen. The child record is saved after the support-needs step. No photo feature.
+- Up to three trusted contacts; optional name, phone and relationship, entered one detail per screen. Each completed contact and safe-place editor saves its record immediately. Back from the first editor step discards only unsaved edits. Saving a number does not make calls or verify it.
+- Safe places are parent-selected destinations, stored as named geographic pins inside the bundled TAURON Arena area. Their safety and opening hours are not checked. The current demo uses them only for simulated character movement; it provides no walking route or emergency instructions.
+- Each game launch and replay chooses a random valid saved safe place. Repeats are possible. No safe places means the original fictional base.
 - The family plan persists in `flutter_secure_storage` using Android encryption. Android cloud backup and device-transfer rules exclude app data. No sync, migration or restore is promised.
 - Encryption is not a parent gate: anyone using this unlocked app can view the records. Recommend fictional personal details for demonstrations. **Delete all saved details** removes this feature's child/contact/place record after confirmation; it does not silently reset failed reads.
 - Keep map attribution visible. Preserve the distinction between real geography and simulated movement. Mission 01 implements fictional alarm decision training; validated real emergency assistance remains unimplemented. The separate help prototype is unreviewed.

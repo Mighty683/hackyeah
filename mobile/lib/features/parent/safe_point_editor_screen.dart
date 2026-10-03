@@ -1,9 +1,10 @@
-/// Named parent-selected practice places, restricted to the offline demo area.
+/// Family-chosen safe places, shown only as unverified demo targets.
 library;
 
 import 'package:flutter/material.dart';
 
 import '../../ui/basebound_icons.dart';
+
 import 'data/family_plan.dart';
 import 'widgets/offline_point_picker.dart';
 import 'widgets/parent_editor_scaffold.dart';
@@ -46,52 +47,76 @@ class _SafePointEditorScreenState extends State<SafePointEditorScreen> {
   Widget build(BuildContext context) {
     final selected = _selected;
     return ParentEditorScaffold(
-      title: widget.point == null ? 'Add a place' : 'Edit a place',
+      title: widget.point == null ? 'Add a safe place' : 'Edit a safe place',
       onSave: _save,
       illustration: ParentEditorArt.place,
+      saveLabel: 'Save safe place',
       saveEnabled: selected != null,
-      children: [
-        const ParentEditorNote(
-          message:
-              'Name a place, then choose its position. '
-              'This demo covers only the TAURON Arena area in Kraków. '
-              'Places are not checked for safety or opening hours.',
-          icon: BaseboundIconName.info,
+      steps: [
+        ParentEditorStep(
+          title: 'What is your safe place called?',
+          nextLabel: 'Choose map location',
+          children: [
+            const ParentEditorNote(
+              message:
+                  'A safe place is a destination your family chooses for its '
+                  'emergency plan. This demo cannot verify its safety.',
+              icon: BaseboundIconName.info,
+            ),
+            const SizedBox(height: 24),
+            TextField(
+              controller: _name,
+              decoration: const InputDecoration(
+                labelText: 'Safe place name (optional)',
+                hintText: 'Family meeting place…',
+                prefixIcon: BaseboundIcon(BaseboundIconName.pin),
+              ),
+              textCapitalization: TextCapitalization.words,
+              maxLength: 60,
+              textInputAction: TextInputAction.done,
+            ),
+          ],
         ),
-        const SizedBox(height: 16),
-        TextField(
-          controller: _name,
-          decoration: const InputDecoration(
-            labelText: 'Place name (optional)',
-            hintText: 'Home, police station, family friend…',
-            prefixIcon: BaseboundIcon(BaseboundIconName.pin),
-          ),
-          textCapitalization: TextCapitalization.words,
-          maxLength: 60,
-        ),
-        const SizedBox(height: 16),
-        const Text('Tap the map to place or move the pin.'),
-        const SizedBox(height: 8),
-        OfflinePointPicker(
-          initialPoint: widget.point,
-          otherPoints: widget.otherPoints,
-          onSelected: (point) {
-            if (mounted) setState(() => _selected = point);
-          },
-        ),
-        const SizedBox(height: 8),
-        Semantics(
-          liveRegion: true,
-          child: Text(
-            selected == null
-                ? 'Choose a position before saving.'
-                : 'Selected: ${selected.latitude.toStringAsFixed(5)}, '
-                      '${selected.longitude.toStringAsFixed(5)}',
-          ),
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          'Each new game randomly picks one saved place as a practice target.',
+        ParentEditorStep(
+          title: 'Where is your safe place?',
+          children: [
+            const ParentEditorNote(
+              message:
+                  'Choose a demo pin near TAURON Arena in Kraków. '
+                  'The demo cannot verify safety or real routes.',
+              icon: BaseboundIconName.map,
+            ),
+            const SizedBox(height: 24),
+            const Text('Tap the map to place or move the pin.'),
+            const SizedBox(height: 8),
+            OfflinePointPicker(
+              initialPoint: selected,
+              otherPoints: widget.otherPoints,
+              onSelected: (point) {
+                if (mounted) setState(() => _selected = point);
+              },
+            ),
+            const SizedBox(height: 8),
+            Semantics(
+              liveRegion: true,
+              label: 'Safe place location',
+              value: selected == null
+                  ? 'No location selected'
+                  : 'Latitude ${selected.latitude.toStringAsFixed(5)}, '
+                        'longitude ${selected.longitude.toStringAsFixed(5)}',
+              child: ExcludeSemantics(
+                child: Text(
+                  selected == null
+                      ? 'Choose a location before saving.'
+                      : 'Location selected. You can move the pin.',
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Each demo game chooses one saved safe place for training.',
+            ),
+          ],
         ),
       ],
     );

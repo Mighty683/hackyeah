@@ -1,4 +1,4 @@
-/// Parent-entered demo records. Places are practice targets, not verified safety.
+/// Parent-entered demo records. Safe places have not been checked for safety.
 class FamilyPlan {
   const FamilyPlan({
     this.child = const ChildProfile(),
@@ -130,7 +130,7 @@ class SafePoint {
   final double latitude;
   final double longitude;
 
-  String get displayName => name.trim().isEmpty ? 'Practice place' : name;
+  String get displayName => name.trim().isEmpty ? 'Safe place' : name;
 
   Map<String, dynamic> toJson() => {
     'name': name,

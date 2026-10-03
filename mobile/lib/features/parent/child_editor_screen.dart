@@ -2,9 +2,11 @@
 library;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../../ui/basebound_icons.dart';
+
+import 'package:flutter/services.dart';
+
 import 'data/family_plan.dart';
 import 'widgets/parent_editor_scaffold.dart';
 
@@ -53,58 +55,78 @@ class _ChildEditorScreenState extends State<ChildEditorScreen> {
       title: 'Child details',
       onSave: _save,
       illustration: ParentEditorArt.child,
-      children: [
-        const ParentEditorNote(
-          message:
-              'All fields are optional. Use fictional details for the demo.',
-          icon: BaseboundIconName.info,
+      saveLabel: 'Save child details',
+      steps: [
+        ParentEditorStep(
+          title: "What is your child's name?",
+          nextLabel: "Add child's age",
+          children: [
+            const ParentEditorNote(
+              message: 'All details are optional. Use fictional details for the demo.',
+              icon: BaseboundIconName.info,
+            ),
+            const SizedBox(height: 24),
+            TextField(
+              controller: _name,
+              decoration: const InputDecoration(
+                labelText: 'Full name (optional)',
+                prefixIcon: BaseboundIcon(BaseboundIconName.child),
+              ),
+              textCapitalization: TextCapitalization.words,
+              maxLength: 100,
+              textInputAction: TextInputAction.done,
+            ),
+          ],
         ),
-        const SizedBox(height: 24),
-        TextField(
-          controller: _name,
-          decoration: const InputDecoration(
-            labelText: 'Full name (optional)',
-            prefixIcon: BaseboundIcon(BaseboundIconName.child),
-          ),
-          textCapitalization: TextCapitalization.words,
-          maxLength: 100,
-          textInputAction: TextInputAction.next,
+        ParentEditorStep(
+          title: 'How old is your child?',
+          nextLabel: 'Add home address',
+          children: [
+            TextField(
+              controller: _age,
+              decoration: const InputDecoration(
+                labelText: 'Age (optional)',
+                prefixIcon: BaseboundIcon(BaseboundIconName.birthday),
+              ),
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              maxLength: 2,
+              textInputAction: TextInputAction.done,
+            ),
+          ],
         ),
-        const SizedBox(height: 16),
-        TextField(
-          controller: _age,
-          decoration: const InputDecoration(
-            labelText: 'Age (optional)',
-            prefixIcon: BaseboundIcon(BaseboundIconName.birthday),
-          ),
-          keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          maxLength: 2,
-          textInputAction: TextInputAction.next,
+        ParentEditorStep(
+          title: "What is your child's home address?",
+          nextLabel: 'Add support needs',
+          children: [
+            TextField(
+              controller: _address,
+              decoration: const InputDecoration(
+                labelText: 'Address (optional)',
+                prefixIcon: BaseboundIcon(BaseboundIconName.home),
+              ),
+              textCapitalization: TextCapitalization.words,
+              minLines: 1,
+              maxLines: 3,
+              maxLength: 250,
+            ),
+          ],
         ),
-        const SizedBox(height: 16),
-        TextField(
-          controller: _address,
-          decoration: const InputDecoration(
-            labelText: 'Address (optional)',
-            prefixIcon: BaseboundIcon(BaseboundIconName.home),
-          ),
-          textCapitalization: TextCapitalization.words,
-          minLines: 1,
-          maxLines: 3,
-          maxLength: 250,
-        ),
-        const SizedBox(height: 16),
-        TextField(
-          controller: _notes,
-          decoration: const InputDecoration(
-            labelText: 'Support needs (optional)',
-            prefixIcon: BaseboundIcon(BaseboundIconName.heart),
-          ),
-          textCapitalization: TextCapitalization.sentences,
-          minLines: 3,
-          maxLines: 5,
-          maxLength: 500,
+        ParentEditorStep(
+          title: 'What support does your child need?',
+          children: [
+            TextField(
+              controller: _notes,
+              decoration: const InputDecoration(
+                labelText: 'Support needs (optional)',
+                prefixIcon: BaseboundIcon(BaseboundIconName.heart),
+              ),
+              textCapitalization: TextCapitalization.sentences,
+              minLines: 3,
+              maxLines: 5,
+              maxLength: 500,
+            ),
+          ],
         ),
       ],
     );
