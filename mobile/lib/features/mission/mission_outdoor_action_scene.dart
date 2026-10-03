@@ -18,6 +18,7 @@ class MissionOutdoorActionScene extends StatelessWidget {
     required this.gender,
     required this.choices,
     required this.selectedChoice,
+    required this.rejectedChoiceIds,
     required this.onChoose,
     required this.backdrop,
   });
@@ -27,6 +28,7 @@ class MissionOutdoorActionScene extends StatelessWidget {
   final ChildGender gender;
   final List<MissionChoice> choices;
   final MissionChoice? selectedChoice;
+  final Set<String> rejectedChoiceIds;
   final ValueChanged<String>? onChoose;
   final Widget backdrop;
 
@@ -119,7 +121,14 @@ class MissionOutdoorActionScene extends StatelessWidget {
                                     gender: gender,
                                     poseHeight: poseHeight,
                                     captionHeight: captionHeight,
-                                    onTap: onChoose == null
+                                    rejected: rejectedChoiceIds.contains(
+                                      choices[index].id,
+                                    ),
+                                    onTap:
+                                        onChoose == null ||
+                                            rejectedChoiceIds.contains(
+                                              choices[index].id,
+                                            )
                                         ? null
                                         : () => onChoose!(choices[index].id),
                                   ),
@@ -218,6 +227,7 @@ class _PoseChoice extends StatelessWidget {
     required this.poseHeight,
     required this.captionHeight,
     required this.onTap,
+    required this.rejected,
   });
 
   final MissionChoice choice;
@@ -226,6 +236,7 @@ class _PoseChoice extends StatelessWidget {
   final double poseHeight;
   final double captionHeight;
   final VoidCallback? onTap;
+  final bool rejected;
 
   @override
   Widget build(BuildContext context) => Semantics(
@@ -233,9 +244,12 @@ class _PoseChoice extends StatelessWidget {
     enabled: onTap != null,
     onTap: onTap,
     label: choice.label,
+    hint: rejected ? 'Try another choice.' : null,
     child: ExcludeSemantics(
       child: Material(
-        color: Colors.white.withValues(alpha: .92),
+        color: rejected
+            ? BaseboundColors.border
+            : Colors.white.withValues(alpha: .92),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
           side: const BorderSide(color: BaseboundColors.border),

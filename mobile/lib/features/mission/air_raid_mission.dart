@@ -63,7 +63,7 @@ class MissionChoice {
   final String feedback;
   final MissionVisual? visual;
 
-  /// Outdoor destination mistakes lead to a guided physical-action branch.
+  /// A destination consequence leads into the guided outdoor recovery story.
   final bool continuesAfterFeedback;
 }
 
@@ -86,8 +86,8 @@ class MissionStep {
   bool get isDecision => choices.isNotEmpty;
 }
 
-/// Each decision waits for the child to acknowledge calm spoken feedback.
-/// Home mistakes can be retried; outdoor mistakes teach a recovery action.
+/// Wrong choices stay rejected until the child completes the current decision.
+/// Correct choices advance after the screen presents their spoken feedback.
 class MissionSession {
   MissionSession({required this.mode}) {
     _steps = _buildSteps();
@@ -99,6 +99,7 @@ class MissionSession {
   late String _stepId;
   MissionChoice? _selectedChoice;
   String? _outdoorDestination;
+  final Set<String> _rejectedChoiceIds = {};
   bool _isComplete = false;
 
   MissionStep get step => _stepId == 'outdoor_noise'
@@ -108,15 +109,23 @@ class MissionSession {
   String? get feedback => _selectedChoice?.feedback;
   bool get hasFeedback => _selectedChoice != null;
   bool get isComplete => _isComplete;
+  bool get canChoose =>
+      !_isComplete &&
+      _selectedChoice?.isCorrect != true &&
+      _selectedChoice?.continuesAfterFeedback != true;
+  Set<String> get rejectedChoiceIds => Set.unmodifiable(_rejectedChoiceIds);
 
   void choose(String id) {
-    if (_isComplete || hasFeedback) return;
+    if (!canChoose || _rejectedChoiceIds.contains(id)) return;
     for (final choice in step.choices) {
       if (choice.id == id) {
         _selectedChoice = choice;
         if ((_stepId == 'destination' || _stepId == 'outdoor_places') &&
             !choice.isCorrect) {
           _outdoorDestination = choice.id;
+        }
+        if (!choice.isCorrect && !choice.continuesAfterFeedback) {
+          _rejectedChoiceIds.add(id);
         }
         return;
       }
@@ -126,8 +135,8 @@ class MissionSession {
   void advance() {
     if (_isComplete) return;
     if (step.isDecision && !hasFeedback) return;
-    final choice = _selectedChoice;
-    if (choice != null && !choice.isCorrect && !choice.continuesAfterFeedback) {
+    if (_selectedChoice?.isCorrect == false &&
+        _selectedChoice?.continuesAfterFeedback != true) {
       return;
     }
     final nextId = _nextStepId();
@@ -137,6 +146,7 @@ class MissionSession {
     }
     _stepId = nextId;
     _selectedChoice = null;
+    _rejectedChoiceIds.clear();
   }
 
   void retry() {
@@ -148,6 +158,7 @@ class MissionSession {
     _stepId = mode == MissionMode.home ? 'alarm' : 'outdoor_alarm';
     _selectedChoice = null;
     _outdoorDestination = null;
+    _rejectedChoiceIds.clear();
     _isComplete = false;
   }
 
@@ -552,8 +563,7 @@ Map<String, MissionStep> _buildSteps() {
     const MissionStep(
       id: 'outdoor_sheltered',
       title: 'Inside the practice shelter',
-      narration:
-          'You are now inside the practice shelter, away from windows.',
+      narration: 'You are now inside the practice shelter, away from windows.',
       visual: MissionVisual.sheltered,
     ),
   ];

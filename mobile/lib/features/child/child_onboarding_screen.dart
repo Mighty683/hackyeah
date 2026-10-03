@@ -73,9 +73,9 @@ class _ChildOnboardingScreenState extends State<ChildOnboardingScreen> {
     if (_busy) return;
     final age = int.tryParse(_age.text);
     final error = switch (_step) {
-      0 when _name.text.trim().isEmpty => 'Add your name or a nickname.',
-      1 when age == null || age < 1 || age > 99 =>
-        'Add an age between 1 and 99.',
+      0 when age == null || age < 1 || age > 99 =>
+        'Please tell us your age to continue.',
+      1 when _name.text.trim().isEmpty => 'Add your name or a nickname.',
       2 when _gender == null => 'Choose girl or boy.',
       _ => null,
     };
@@ -183,8 +183,8 @@ class _ChildOnboardingScreenState extends State<ChildOnboardingScreen> {
         const SizedBox(height: 8),
         Text(
           [
-            'What is your name?',
             'How old are you?',
+            'What is your name?',
             'What is your gender?',
           ][_step],
           style: Theme.of(context).textTheme.headlineMedium
@@ -192,6 +192,19 @@ class _ChildOnboardingScreenState extends State<ChildOnboardingScreen> {
         ),
         const SizedBox(height: 24),
         if (_step == 0) ...[
+          TextField(
+            key: const ValueKey('child-age'),
+            controller: _age,
+            enabled: !_busy,
+            maxLength: 2,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            decoration: const InputDecoration(labelText: 'Your age'),
+            textInputAction: TextInputAction.done,
+            onSubmitted: (_) => _next(),
+          ),
+        ],
+        if (_step == 1) ...[
           const Text('A nickname is fine.'),
           const SizedBox(height: 12),
           TextField(
@@ -205,18 +218,6 @@ class _ChildOnboardingScreenState extends State<ChildOnboardingScreen> {
             onSubmitted: (_) => _next(),
           ),
         ],
-        if (_step == 1)
-          TextField(
-            key: const ValueKey('child-age'),
-            controller: _age,
-            enabled: !_busy,
-            maxLength: 2,
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            decoration: const InputDecoration(labelText: 'Your age'),
-            textInputAction: TextInputAction.done,
-            onSubmitted: (_) => _next(),
-          ),
         if (_step == 2) ...[
           const Text('Choose a character for practice.'),
           const SizedBox(height: 24),
@@ -276,7 +277,7 @@ class _ChildOnboardingScreenState extends State<ChildOnboardingScreen> {
             _busy
                 ? 'Saving…'
                 : [
-                    'Add my age',
+                    'Add my name',
                     'Choose my character',
                     'Start practice',
                   ][_step],

@@ -11,8 +11,7 @@ void main() {
     expect(session.feedback, contains('Move away'));
     session.advance();
     expect(session.step.id, 'room');
-    session.retry();
-    expect(session.hasFeedback, isFalse);
+    expect(session.rejectedChoiceIds, {'window'});
     _chooseAndAdvance(session, 'interior');
     session.choose('hallway');
     expect(session.selectedChoice?.visual, MissionVisual.twoWalls);
@@ -21,7 +20,6 @@ void main() {
     session.choose('call');
     session.advance();
     expect(session.step.id, 'communication');
-    session.retry();
     _chooseAndAdvance(session, 'message');
     expect(session.step.id, 'message');
     session.advance();
@@ -31,7 +29,6 @@ void main() {
     expect(session.feedback, contains('Quiet does not mean'));
     session.advance();
     expect(session.step.id, 'quiet');
-    session.retry();
     _chooseAndAdvance(session, 'stay');
     expect(session.isComplete, isFalse);
     session.advance();
@@ -103,7 +100,7 @@ void main() {
       session.choose('stay');
       session.advance();
       expect(session.step.id, 'get_down');
-      session.retry();
+      expect(session.rejectedChoiceIds, {'stay'});
       _chooseAndAdvance(session, 'down');
       expect(session.step.id, 'protect_head');
       _chooseAndAdvance(session, 'protect_head');
@@ -135,15 +132,25 @@ void main() {
     expect(session.step.narration, isNot(contains('home')));
   });
 
-  test('choice cannot be changed until feedback is acknowledged', () {
-    final session = MissionSession(mode: MissionMode.home);
-    session.advance();
-    session.choose('unknown');
-    expect(session.hasFeedback, isFalse);
-    session.choose('window');
-    session.choose('interior');
-    expect(session.selectedChoice?.id, 'window');
-  });
+  test(
+    'rejected choices stay disabled and correct feedback locks the decision',
+    () {
+      final session = MissionSession(mode: MissionMode.home);
+      session.advance();
+      session.choose('unknown');
+      expect(session.hasFeedback, isFalse);
+      session.choose('window');
+      session.choose('door');
+      session.choose('window');
+      expect(session.selectedChoice?.id, 'door');
+      expect(session.rejectedChoiceIds, {'window', 'door'});
+      session.choose('interior');
+      session.choose('door');
+      expect(session.selectedChoice?.id, 'interior');
+      session.restart();
+      expect(session.rejectedChoiceIds, isEmpty);
+    },
+  );
 }
 
 void _chooseAndAdvance(MissionSession session, String choiceId) {

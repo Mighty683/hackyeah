@@ -30,6 +30,7 @@ class MissionScene extends StatelessWidget {
     this.stepId,
     this.gender = ChildGender.girl,
     this.choices = const [],
+    this.rejectedChoiceIds = const {},
     this.selectedChoice,
     this.onChoose,
   });
@@ -38,6 +39,7 @@ class MissionScene extends StatelessWidget {
   final MissionVisual visual;
   final String? stepId;
   final List<MissionChoice> choices;
+  final Set<String> rejectedChoiceIds;
   final MissionChoice? selectedChoice;
   final ValueChanged<String>? onChoose;
 
@@ -57,6 +59,7 @@ class MissionScene extends StatelessWidget {
         gender: gender,
         choices: choices,
         selectedChoice: selectedChoice,
+        rejectedChoiceIds: rejectedChoiceIds,
         onChoose: onChoose,
         backdrop: _PortraitBackdrop(
           layout: layout,
@@ -138,9 +141,11 @@ class MissionScene extends StatelessWidget {
       child: _SceneChoice(
         choice: choice,
         selected: selectedChoice?.id == choice.id,
-        onTap: onChoose == null ? null : () => onChoose!(choice.id),
+        rejected: rejectedChoiceIds.contains(choice.id),
+        onTap: onChoose == null || rejectedChoiceIds.contains(choice.id)
+            ? null
+            : () => onChoose!(choice.id),
         showIllustration:
-            visual == MissionVisual.contacts ||
             visual == MissionVisual.communication ||
             visual == MissionVisual.getDown ||
             visual == MissionVisual.protectHead,
@@ -153,7 +158,11 @@ class MissionScene extends StatelessWidget {
     BoxConstraints constraints,
     MissionSceneLayout layout,
   ) {
-    final destination = layout.destinations[selectedChoice?.id];
+    final destination =
+        selectedChoice?.isCorrect == true ||
+            selectedChoice?.continuesAfterFeedback == true
+        ? layout.destinations[selectedChoice?.id]
+        : null;
     final feet = destination ?? layout.childFeet;
     final extent =
         (destination == null
@@ -162,6 +171,7 @@ class MissionScene extends StatelessWidget {
         constraints.maxWidth;
     final pose = _characterPose(layout, selectedChoice, destination != null);
     return AnimatedPositioned(
+      key: const ValueKey('mission-character'),
       duration: MediaQuery.disableAnimationsOf(context)
           ? Duration.zero
           : const Duration(milliseconds: 240),
@@ -218,18 +228,22 @@ class _SceneChoice extends StatelessWidget {
   const _SceneChoice({
     required this.choice,
     required this.selected,
+    required this.rejected,
     required this.onTap,
     required this.showIllustration,
   });
 
   final MissionChoice choice;
   final bool selected;
+  final bool rejected;
   final VoidCallback? onTap;
   final bool showIllustration;
 
   @override
   Widget build(BuildContext context) {
-    final accent = selected
+    final accent = rejected
+        ? BaseboundColors.muted
+        : selected
         ? (choice.isCorrect ? BaseboundColors.green : BaseboundColors.coral)
         : BaseboundColors.blue;
     return Semantics(
@@ -238,9 +252,12 @@ class _SceneChoice extends StatelessWidget {
       onTap: onTap,
       selected: selected,
       label: choice.label,
+      hint: rejected ? 'Try another choice.' : null,
       child: ExcludeSemantics(
         child: Material(
-          color: Colors.transparent,
+          color: rejected
+              ? BaseboundColors.muted.withValues(alpha: .3)
+              : Colors.transparent,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
             side: BorderSide(color: accent, width: 2),
@@ -255,19 +272,23 @@ class _SceneChoice extends StatelessWidget {
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(4),
-                color: Colors.white.withValues(alpha: .96),
+                color: rejected
+                    ? BaseboundColors.border
+                    : Colors.white.withValues(alpha: .96),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    if (showIllustration || selected) ...[
+                    if (showIllustration || selected || rejected) ...[
                       BaseboundIcon(
-                        selected
+                        rejected
+                            ? BaseboundIconName.cross
+                            : selected
                             ? (choice.isCorrect
                                   ? BaseboundIconName.check
                                   : BaseboundIconName.cross)
                             : missionActionIcon(choice.icon),
                         size: 24,
-                        color: selected ? accent : null,
+                        color: selected || rejected ? accent : null,
                       ),
                       const SizedBox(width: 4),
                     ],
@@ -323,9 +344,11 @@ ChildPoseName _characterPose(
 }
 
 String _sceneDescription(MissionVisual visual, MissionChoice? choice) {
-  if (visual == MissionVisual.street && choice?.isCorrect == false) {
+  if (visual == MissionVisual.street &&
+      choice?.continuesAfterFeedback == true) {
     return 'The child has started along the street and is still outside.';
   }
+  if (choice?.isCorrect == false) choice = null;
   if (choice?.icon == MissionActionIcon.window) {
     return 'The child has moved toward the window.';
   }
@@ -870,19 +893,11 @@ class _PortraitScenePainter extends CustomPainter {
       for (var index = 0; index < contacts.length; index++) {
         final top = 124.0 + index * 126;
         canvas.drawCircle(
-          Offset(115, top + 47),
+          Offset(200, top + 42),
           25,
           Paint()..color = BaseboundColors.peach,
         );
-        _symbol(canvas, contacts[index], Rect.fromLTWH(98, top + 29, 34, 36));
-        _phoneTextLines(canvas, Offset(162, top + 38), width: 136);
-        _line(
-          canvas,
-          Offset(83, top + 99),
-          Offset(317, top + 99),
-          color: BaseboundColors.border,
-          width: 1,
-        );
+        _symbol(canvas, contacts[index], Rect.fromLTWH(183, top + 24, 34, 36));
       }
     } else {
       _symbol(

@@ -126,14 +126,14 @@ flowchart TD
     AL -->|Read failed| AE
     AE -->|Retry loading| AL
     AE -->|Delete all saved details| DEL
-    W -->|I'm a child| ON["CHILD ONBOARDING: NAME<br/>Name or nickname; saved details prefilled"]
-    ON -->|Add my age| OA["CHILD ONBOARDING: AGE<br/>Enter age 1–99"]
-    OA -->|Choose my character| OG["CHILD ONBOARDING: GENDER<br/>Girl or boy with character previews"]
+    W -->|I'm a child| OA["CHILD ONBOARDING: AGE<br/>Enter age 1–99; saved details prefilled"]
+    OA -->|Add my name| ON["CHILD ONBOARDING: NAME<br/>Name or nickname"]
     OG -->|Start practice: save encrypted local details| PS["ACTIVITY SELECTION<br/>Practices or Our map"]
     OG -->|Save failed: retain edits and retry| OG
-    OA -->|Back| ON
-    OG -->|Back| OA
-    ON -->|Back| W
+    ON -->|Choose my character| OG["CHILD ONBOARDING: GENDER<br/>Girl or boy with character previews"]
+    ON -->|Back| OA
+    OA -->|Back| W
+    OG -->|Back| ON
     PS -->|Our map| F
     PS -->|Practices| SC["PRACTICE SCENARIOS<br/>Alarm practice or I’m lost practice"]
     SC -->|Back| PS
@@ -143,18 +143,18 @@ flowchart TD
     MODE -->|Outside| OUT["OUTDOOR ALARM SIMULATION"]
     HOME --> MR["MISSION RECALL<br/>Completion sticker; no score"]
     OUT -->|Choose where to go| OS_DEST["OUTDOOR DESTINATION<br/>Home, school, nearby shelter or other places"]
-    OS_DEST -->|Other places; acknowledge feedback| OS_OTHER["NEARBY PLACES<br/>Park, bus stop or nearby shelter"]
+    OS_DEST -->|Other places; automatic feedback| OS_OTHER["NEARBY PLACES<br/>Park, bus stop or nearby shelter"]
     OS_DEST -->|Home or school| OS_FEEDBACK["DESTINATION FEEDBACK<br/>Explain why the child is still outside"]
     OS_OTHER -->|Park or bus stop| OS_FEEDBACK
-    OS_FEEDBACK -->|See what happens| OS_NOISE["STILL OUTSIDE<br/>Same chosen destination; restrained sound cue"]
+    OS_FEEDBACK -->|After feedback| OS_NOISE["STILL OUTSIDE<br/>Same chosen destination; restrained sound cue"]
     OS_NOISE -->|Choose what to do| OS_DOWN["GET DOWN<br/>Drag down or tap one of two pictured actions"]
     OS_DOWN -->|Keep standing; calm feedback and retry| OS_DOWN
-    OS_DOWN -->|Get down; Protect my head| OS_HEAD["PROTECT YOUR HEAD<br/>Two pictured actions"]
+    OS_DOWN -->|Get down; automatic feedback| OS_HEAD["PROTECT YOUR HEAD<br/>Two pictured actions"]
     OS_HEAD -->|Keep hands down; calm feedback and retry| OS_HEAD
-    OS_HEAD -->|Cover head; Stay down| OS_ADULT["AN ADULT HELPS YOU<br/>Stay down; adult leads to shelter when possible in this story"]
+    OS_HEAD -->|Cover head; automatic feedback| OS_ADULT["AN ADULT HELPS YOU<br/>Stay down; adult leads to shelter when possible in this story"]
     OS_ADULT -->|Follow the adult| OS_SHELTER["INSIDE THE PRACTICE SHELTER<br/>Away from windows"]
-    OS_DEST -->|Nearby shelter; Enter the shelter| OS_SHELTER
-    OS_OTHER -->|Nearby shelter; Enter the shelter| OS_SHELTER
+    OS_DEST -->|Nearby shelter; automatic feedback| OS_SHELTER
+    OS_OTHER -->|Nearby shelter; automatic feedback| OS_SHELTER
     OS_SHELTER -->|Tell a trusted adult| OS_REST["SHARED PRACTICE STEPS<br/>Pretend message; wait through noise and silence; all-clear"]
     OS_REST --> MR
     MR -->|Replay| RE{"Selected mission mode"}
@@ -315,7 +315,7 @@ flowchart TD
 | Mission mode (7+) | Choose home or outside | Replay audio, back to scenarios |
 | Mission scene | Tap a highlighted scene object to choose an action, or hear the situation | Replay audio, mute/unmute sound effects, back |
 | Outdoor interruption/recovery | Connect the chosen destination to still being outside; get down, cover head, then follow the adult in the story | Drag or equivalent tap; retry physical choices; nearby shelter skips this branch |
-| Mission feedback | See the consequence and explanation | Retry the same decision or advance; replay audio, mute/unmute sound effects |
+| Mission feedback | See the consequence and explanation | Choose another action after a mistake; accepted actions advance automatically; replay audio, mute/unmute sound effects |
 | Mission recall | See the six learned actions and completion sticker | Replay audio, replay mission, choose practice |
 | Lost practice loading/error | Load the current display-only family snapshot | Retry or explicitly use pretend family; back preserves saved details |
 | Lost scene selection (7+) | Choose meeting point nearby or out of sight | Replay audio, back; unavailable voice offers adult help and retry |
@@ -367,7 +367,7 @@ Help also reads named non-demo saved family pins and independently uses foregrou
 
 The home tutorial practices alarm recognition, moving away from windows, choosing an interior hallway, messaging a fictional trusted adult, staying after a noise, waiting through silence, and following an explicit all-clear. The premise is a fallback when the agreed shelter cannot be reached. An interior area and two walls offer some protection; the game does not certify a home as safe.
 
-The MVP targets children aged 7+ with two to four choices and optional fictional outdoor practice: compare nearby shelter against distant destinations and exposed places. Child onboarding collects age, but there is no younger-child branch; saved age does not change this mission. An outdoor mistake first explains why the child remains outside, then a short “Still outside” scene names the chosen destination as a sound interrupts the journey. The next two decisions practice getting down (drag or tap) and covering the head. An explicit story scene keeps the child down while a trusted adult helps them reach shelter when possible; arriving at the shelter then leads to fictional contact selection. Choosing the nearby shelter skips this recovery branch. Home and physical-action mistakes explain the consequence and retry without punishment. Both modes finish with a visual recall and completion sticker, with no score or timer.
+The MVP targets children aged 7+ with two to four choices and optional fictional outdoor practice: compare nearby shelter against distant destinations and exposed places. Child onboarding collects age, but there is no younger-child branch; saved age does not change this mission. An outdoor mistake first explains why the child remains outside, then a short “Still outside” scene names the chosen destination as a sound interrupts the journey. The next two decisions practice getting down (drag or tap) and covering the head. An explicit story scene keeps the child down while a trusted adult helps them reach shelter when possible; arriving at the shelter then leads to fictional contact selection. Choosing the nearby shelter skips this recovery branch. Home and physical-action mistakes show immediate dinosaur feedback, grey out the rejected target, and let the child choose again without moving. Accepted actions and outdoor destination consequences advance automatically after narration and a minimum three-second reading pause. Both modes finish with visual recall and a completion sticker, with no score or countdown.
 
 Instructions, feedback, and replay use an installed offline English Android speech voice. If unavailable, the app shows an adult-help message; text remains as a fallback and sound cues can still play. Gentle selection, action, success and retry cues accompany feedback. A separate sound-effects control mutes cues while leaving narration available. Playback stops when the app backgrounds or the mission exits. Short warning and all-clear playback excerpts are teaching samples, not complete alarm signals; the outdoor interruption uses a restrained fictional noise. Contacts, messages, replies, shelter selection and movement are fictional; this mission neither calls nor sends messages nor uses saved personal contacts or map pins. See [mission-01-air-raid-alarm.md](mission-01-air-raid-alarm.md) for the scenario and source notes.
 
@@ -385,9 +385,9 @@ The implemented screens follow [UI_GUIDELINES.md](UI_GUIDELINES.md): warm neutra
 
 Welcome, child onboarding, activity selection and practice scenarios use clear headings and calm choices. The first child activity screen has two choices: **Practices** opens a separate scenario list; **Our map** opens the familiar-place map. Alarm and lost practice return to the scenario list, whose back action returns to activities. Maps and landmark photos remain the main content of their screens, with compact controls and preserved attribution. Adult onboarding uses a field-first layout with one detail per step, a compact progress indicator and a single save/next action. Help retains its separate cool theme, no training mascot and a visible prototype notice.
 
-Mission 01 uses portrait environment backgrounds and a separate character layer. Decision targets highlight the pictured windows, doors, rooms and destinations, with readable captions and native labelled tap controls. Abstract actions and fictional contacts use separate illustrated targets within the scene. Mission 02 places selectable people, landmarks and action objects in its fictional square. Equivalent targets use the same neutral highlight before selection; feedback supplies the outcome colour and symbol. Training and adult-setup icons retain their original colours.
+Mission 01 uses portrait environment backgrounds and a separate character layer. Decision targets highlight the pictured windows, doors, rooms and destinations, with readable captions and native labelled tap controls. Abstract actions and fictional contacts use separate illustrated targets within the scene. Each fictional contact card shows one centered avatar and its name, without duplicate caption icons or placeholder text lines. Mission 02 places selectable people, landmarks and action objects in its fictional square. Equivalent targets use the same neutral highlight before selection; feedback supplies the outcome colour and symbol. Training and adult-setup icons retain their original colours.
 
-Narration and feedback stay outside the scene; next/retry actions remain below it. Narrow and large-text layouts allow scenes to grow or scroll while retaining at least 48-pixel touch targets. The hallway and two-wall explanation stays visible. Completion keeps replay and exit actions available. Narration, decisions, consequences, explanations and return paths are preserved.
+Narration and feedback stay outside the scene. Mission 01 decisions show dinosaur feedback immediately, keep wrong targets greyed out, and advance correct answers automatically; its instruction screens retain next actions. Mission 02 retains next/retry actions below the scene. Narrow and large-text layouts allow scenes to grow or scroll while retaining at least 48-pixel touch targets. The hallway and two-wall explanation stays visible during correct-answer feedback. Completion keeps replay and exit actions available.
 
 The current activity split adds a separate scenario-list route to the implemented graph. Mission content and the future graph remain unchanged. Earlier verification records in [UI_IMPLEMENTATION_PLAN.md](UI_IMPLEMENTATION_PLAN.md) are historical; the current pass has its own integration checks.
 
