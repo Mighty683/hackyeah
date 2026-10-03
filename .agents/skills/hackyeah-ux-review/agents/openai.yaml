@@ -1,0 +1,4 @@
+interface:
+  display_name: "HackYeah UX Review"
+  short_description: "Review HackYeah changes against docs/UX.md"
+  default_prompt: "Use $hackyeah-ux-review to review the current changes against docs/UX.md and report actionable UX findings."

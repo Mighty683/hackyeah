@@ -1,45 +1,63 @@
 ---
 theme: default
-title: HackYeah
-info: Hackathon pitch deck
+title: Basebound — game demo
+info: Clickable game prototype helping children learn their neighborhood.
 fonts:
   local: sans
   sans: Arial
   mono: monospace
 drawings:
   persist: false
+layout: none
+transition: fade
+canvasWidth: 980
+aspectRatio: 16/9
 ---
 
-# HackYeah
-
-From idea to working demo
+<DemoScreen screen="start" />
 
 ---
-
-# The problem
-
-- Who are we helping?
-- What hurts today?
-- Why does it matter?
-
+layout: none
 ---
 
-# Our solution
-
-Describe the core idea and what makes it useful.
+<DemoScreen screen="backpack" />
 
 ---
-
-# Live demo
-
-[Open the app](http://localhost:5173)
-
-Show the main user journey and the result.
-
+layout: none
 ---
 
-# What comes next
+<DemoScreen screen="mission" />
 
-- What we built during the hackathon
-- Impact and next steps
-- Team
+---
+layout: none
+---
+
+<DemoScreen screen="landmark" />
+
+---
+layout: none
+---
+
+<DemoScreen screen="flood" />
+
+---
+layout: none
+---
+
+<DemoScreen screen="finish" />
+
+---
+layout: none
+---
+
+<DemoScreen screen="emergency" />
+
+<!-- Interface prototype. Help scenarios require specialist review. -->
+
+---
+layout: none
+---
+
+<DemoScreen screen="plan" />
+
+<!-- All data is illustrative. Contact and navigation are simulated. -->

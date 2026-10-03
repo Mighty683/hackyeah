@@ -1,58 +1,59 @@
-# HackYeah
+# HackYeah — Basebound
 
-A pnpm + Turborepo hackathon workspace with four packages.
+A Flutter + Flame Android game with a Slidev pitch deck. The mobile game is the primary product; the web app template has been removed.
 
-| Package | Purpose |
+| Directory | Purpose |
 | --- | --- |
-| `packages/frontend` | React + TypeScript, Vite+, Tailwind CSS |
-| `packages/backend` | Express API and production frontend hosting |
-| `packages/presentation` | Slidev pitch deck |
-| `packages/types` | Shared TypeScript API contracts |
+| `mobile/` | Standalone Flutter + Flame Android game |
+| `packages/presentation/` | Slidev pitch deck, the only pnpm workspace package |
 
-## Start developing
+## Android game
 
-Use Node.js 24 (see `.node-version`) and pnpm 12.3.4.
+Install Flutter and the Android SDK, then run:
+
+```sh
+cd mobile
+flutter pub get
+flutter devices
+flutter run -d <android-device-id>
+```
+
+Verify and build an installable debug APK from `mobile/`:
+
+```sh
+flutter analyze
+flutter build apk --debug
+```
+
+The APK is generated at `mobile/build/app/outputs/flutter-apk/app-debug.apk`. See [`mobile/README.md`](mobile/README.md) for prerequisites and development details.
+
+The current demo is one game screen with a real offline OpenStreetMap snapshot around TAURON Arena Kraków and a touch-controlled character. The base, mission, and survival resource indicators are demo data. The game has no runtime backend dependency.
+
+Map data © OpenStreetMap contributors, ODbL 1.0. Attribution, area details, and refresh instructions live in [`mobile/assets/maps/README.md`](mobile/assets/maps/README.md). After installing the JavaScript tooling, `pnpm maps:refresh` updates the bundled snapshot.
+
+## Pitch deck
+
+Use Node.js 24 (see `.node-version`) and pnpm 12.3.4. Run from the workspace root:
 
 ```sh
 pnpm install
 pnpm dev
 ```
 
-- Frontend: http://localhost:5173
-- Backend health endpoint: http://localhost:3000/api/health
-- Presentation: http://localhost:3030
-
-`pnpm dev:app` runs only the frontend and backend. `pnpm dev:presentation` runs only Slidev. Click **Check backend** in the app to confirm the API connection.
-
-The frontend was generated with the Vite+ `vp create vite` React TypeScript template. Its local `vp` commands provide development, builds, linting, and formatting; no global Vite+ installation is required. Turborepo handles tasks across packages.
-
-## Build and run the demo
+Open http://localhost:3030. `pnpm dev:presentation` also starts Slidev. Edit `packages/presentation/slides.md`; the existing components, styles, and demo slides live alongside it. Turborepo orchestrates the presentation workspace tasks.
 
 ```sh
-pnpm build:app
-pnpm start
+pnpm build
 ```
 
-Open http://localhost:3000. Express serves `packages/frontend/dist`, SPA routes, and `/api` endpoints. Unknown API routes return JSON 404s. Build both app packages before starting; keep the frontend build alongside the backend when deploying this workspace.
-
-`pnpm build` builds all four packages, including the Slidev site. `pnpm typecheck` checks application and shared types. `pnpm lint` runs the frontend Vite+ linter.
-
-The backend defaults to `0.0.0.0:3000`. Override `HOST` or `PORT` when starting it. The Vite dev proxy targets port 3000; update `packages/frontend/vite.config.ts` if changing the development backend port.
-
-## Shared contracts
-
-Define shared request/response types in `packages/types/src/index.ts` and import them with `import type { ... } from '@hackyeah/types'`. The package exports source types directly so development does not need a types watcher; its build emits declarations only. Put runtime helpers in the consuming app.
-
-## Pitch deck
-
-Edit `packages/presentation/slides.md`. `pnpm --filter @hackyeah/presentation build` creates the static deck in its `dist` directory. PDF export is available through the package's `export` script and requires Slidev's optional Playwright browser setup.
+The static deck is generated in `packages/presentation/dist`. PDF export is available with `pnpm --filter @hackyeah/presentation export` and requires Slidev's optional Playwright browser setup. Flutter builds and runs the mobile game separately.
 
 ## Ripwire
 
 With `ripwire` installed on PATH:
 
 ```sh
-pnpm run context "understand frontend/backend API wiring"
+pnpm run context "understand the mobile game screen and offline map"
 ```
 
 This read-only helper follows our Pi setup: 4000-token task context, compact output, 120-second timeout, and a 2000-line / 50KB output cap. Ripwire is optional and is not downloaded by `pnpm install`; use `rg` when it is unavailable.

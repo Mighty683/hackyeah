@@ -2,6 +2,26 @@
 
 This is a HackYeah hackathon project. Speed of development and a compelling working demo are the primary goals. Prioritize shipping useful features over production stability, exhaustive testing, long-term maintainability, or architectural polish.
 
+## Application purpose
+
+Basebound is a child-focused training game for ages roughly 7–14. It helps children learn familiar places, find their way, and practice decisions in simulated emergencies. Teach through **Situation → Decision → Action → Consequence → Explanation**, using simple English and calm feedback rather than long readings or memorization.
+
+Start with a welcome screen asking whether the user is an adult or a child. Keep the child's journey focused on one task per screen with minimal text and 2–4 choices on decision screens. Keep adult explanation and future family-plan setup separate from child play. Role selection is navigation, not age verification or authorization.
+
+The current Android demo implements welcome, an adult introduction, and offline character movement to a fictional base. It does not yet implement emergency decision scenarios, family-plan storage, walking navigation, or real emergency assistance. Label demo behavior clearly and never present simulated contacts or routes as working safety features. If real emergency mode is added, separate it from training and use reviewed authoritative guidance with one actionable instruction per screen.
+
+Follow `docs/UX.md` for product principles and keep `docs/SCREEN_FLOW.md` updated as screens and actions change. Its implemented and future graphs must stay distinct.
+
+## Bring the war face
+
+**BUILD. DEMO. SHIP.**
+
+The clock is ticking. Bring relentless energy. Pick the next useful thing, make it work, and put it in the team's hands. Smash blockers into concrete next steps. Build momentum, feed it with working features, and charge straight into the next challenge.
+
+Bring confidence backed by evidence: a green build, a working user journey, a demo we can show. When something breaks, take command, fix the critical path, and get back to shipping. No timid execution. No endless deliberation. Make the call, deliver the feature, and keep the team moving.
+
+**FULL THROTTLE. RELENTLESS MOMENTUM. SHIP THE DAMN DEMO.**
+
 ## How to work
 
 - Implement the smallest useful solution and keep moving. Make reasonable assumptions instead of blocking on routine decisions.
@@ -14,16 +34,17 @@ This is a HackYeah hackathon project. Speed of development and a compelling work
 
 ## Workspace
 
-Use pnpm only. Turborepo orchestrates workspace tasks. There are exactly four packages:
+The project focuses on the standalone mobile game in `mobile/` and its Slidev pitch deck. The web app template has been removed. Do not recreate frontend, backend, or shared API packages unless the user expands the scope.
 
-- `packages/frontend` (`@hackyeah/frontend`): React + TypeScript, scaffolded with Vite+, styled with Tailwind CSS. Use the local `vp` CLI through package scripts.
-- `packages/backend` (`@hackyeah/backend`): Express API under `/api`; serves the frontend build and SPA routes from `packages/frontend/dist`.
-- `packages/presentation` (`@hackyeah/presentation`): Slidev pitch deck in `slides.md`.
-- `packages/types` (`@hackyeah/types`): shared API contracts. Keep it type-only and use `import type` in both apps.
+Use pnpm only for JavaScript tooling. The pnpm workspace contains one package: `packages/presentation` (`@hackyeah/presentation`), with the pitch deck in `slides.md`. Turborepo orchestrates its workspace tasks.
 
-`pnpm dev` starts the app and slides. `pnpm dev:app` starts only frontend/backend. `pnpm build:app` builds the frontend before the backend; `pnpm start` serves both through Express. `pnpm build` also builds the presentation. Do not replace Turborepo with Vite+'s task runner at the workspace level.
+`pnpm dev` (or `pnpm dev:presentation`) starts Slidev on port 3030. `pnpm build` builds the static presentation into `packages/presentation/dist`. Export slides with `pnpm --filter @hackyeah/presentation export`; PDF export requires Slidev's optional Playwright browser setup. There is no web app server or API.
 
-The frontend proxies `/api` to port 3000 during development. Keep API calls relative so the same code works through Express in production. If changing the backend port, update the frontend proxy too.
+## Android game
+
+The standalone Flutter + Flame Android application lives in `mobile/`, outside the pnpm workspace, and is the primary product. Run Flutter/Dart tools from `mobile/` (`flutter pub get`, `flutter analyze`, `flutter run`, `flutter build apk --debug`); pnpm does not build or run the game. The current mobile scope includes welcome, the adult introduction, and the game screen; expand it only when requested.
+
+The game bundles a real offline OpenStreetMap snapshot at `mobile/assets/maps/tauron-arena.geojson`. Preserve its attribution and license documentation in that directory. Refresh the snapshot from the workspace root with `pnpm maps:refresh`; the tool lives in `scripts/refresh-demo-map.mjs`. The fictional base and mission are demo data. Inactive survival resource indicators have been removed from the Android game screen. The game has no runtime backend dependency.
 
 ## Ripwire context
 
