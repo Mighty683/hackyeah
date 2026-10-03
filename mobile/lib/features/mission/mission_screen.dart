@@ -35,7 +35,6 @@ class _MissionScreenState extends State<MissionScreen>
     with WidgetsBindingObserver {
   late final MissionSession _session = MissionSession(mode: widget.mode);
   late MissionAudio _audio = widget.audio ?? MissionAudio();
-  final _scrollController = ScrollController();
   bool _audioReady = false;
   bool _initializingAudio = true;
   bool _speaking = false;
@@ -130,18 +129,12 @@ class _MissionScreenState extends State<MissionScreen>
       }
       _dragDistance = 0;
     });
-    _resetScroll();
     unawaited(_narrate());
   }
 
   void _restart() {
     setState(_session.restart);
-    _resetScroll();
     unawaited(_narrate());
-  }
-
-  void _resetScroll() {
-    if (_scrollController.hasClients) _scrollController.jumpTo(0);
   }
 
   Future<void> _exit() async {
@@ -169,7 +162,6 @@ class _MissionScreenState extends State<MissionScreen>
     WidgetsBinding.instance.removeObserver(this);
     ++_audioRequest;
     unawaited(_audio.dispose());
-    _scrollController.dispose();
     super.dispose();
   }
 
@@ -217,22 +209,14 @@ class _MissionScreenState extends State<MissionScreen>
       body: SafeArea(
         child: IllustratedBackdrop(
           warm: true,
-          child: SingleChildScrollView(
-            controller: _scrollController,
-            padding: const EdgeInsets.fromLTRB(16, 10, 16, 28),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 640),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _audioControls(),
-                    if (_session.isComplete)
-                      ..._completion()
-                    else
-                      ..._currentStep(),
-                  ],
-                ),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 640),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+                child: _session.isComplete
+                    ? _completionLayout()
+                    : _stepLayout(),
               ),
             ),
           ),
@@ -313,72 +297,87 @@ class _MissionScreenState extends State<MissionScreen>
     ],
   );
 
-  List<Widget> _currentStep() {
-    final step = _session.step;
-    final choice = _session.selectedChoice;
-    final visual = choice?.visual ?? step.visual;
-    final sceneChoices = _useSceneChoices(visual);
-    return [
-      if (_needsChoiceList) ...[
-        Text(
-          step.title,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.w800,
-            height: 1.15,
-            color: BaseboundColors.ink,
-          ),
-        ),
-        const SizedBox(height: 12),
-      ],
-      if (!_session.hasFeedback) ...[
-        SoftPanel(
-          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 11),
-          child: Text(
-            step.narration,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-              color: BaseboundColors.ink,
-              height: 1.25,
+  Widget _stepLayout() => LayoutBuilder(
+    builder: (context, constraints) {
+      final step = _session.step;
+      final visual = _session.selectedChoice?.visual ?? step.visual;
+      // Short screens use cards so pictured targets remain large enough to tap.
+      final sceneChoices =
+          _useSceneChoices(visual) && constraints.maxHeight >= 620;
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: CustomMultiChildLayout(
+              delegate: _MissionViewportLayout(),
+              children: [
+                LayoutId(
+                  id: _MissionRegion.instruction,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _audioControls(),
+                        if (!_session.hasFeedback)
+                          SoftPanel(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 15,
+                              vertical: 11,
+                            ),
+                            child: Text(
+                              step.narration,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w700,
+                                height: 1.25,
+                              ),
+                            ),
+                          ),
+                        if (step.id == 'get_down' && !_session.hasFeedback)
+                          const Text(
+                            'Drag down, or tap the arrow.',
+                            textAlign: TextAlign.center,
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+                LayoutId(
+                  id: _MissionRegion.actions,
+                  child: SingleChildScrollView(
+                    child: _session.hasFeedback
+                        ? _feedback()
+                        : step.isDecision && !sceneChoices
+                        ? _choiceGrid(step.choices)
+                        : const SizedBox.shrink(),
+                  ),
+                ),
+                LayoutId(
+                  id: _MissionRegion.scene,
+                  child: Center(
+                    child: _scene(visual, sceneChoices: sceneChoices),
+                  ),
+                ),
+              ],
             ),
           ),
-        ),
-        const SizedBox(height: 12),
-      ],
-      _scene(visual),
-      const SizedBox(height: 14),
-      if (step.id == 'get_down' && !_session.hasFeedback)
-        const Padding(
-          padding: EdgeInsets.only(top: 10),
-          child: Text(
-            'Drag down, or tap the arrow.',
-            textAlign: TextAlign.center,
-          ),
-        ),
-      if (_session.hasFeedback) _feedback(),
-      if (step.isDecision && !sceneChoices && !_session.hasFeedback) ...[
-        const SizedBox(height: 16),
-        _choiceGrid(step.choices),
-      ],
-      if (!step.isDecision || _session.hasFeedback) ...[
-        const SizedBox(height: 18),
-        _nextButton(),
-      ],
-    ];
-  }
+          if (!step.isDecision || _session.hasFeedback) ...[
+            const SizedBox(height: 10),
+            _nextButton(),
+          ],
+        ],
+      );
+    },
+  );
 
-  Widget _scene(MissionVisual visual) {
+  Widget _scene(MissionVisual visual, {required bool sceneChoices}) {
     final scene = MissionScene(
       visual: visual,
       gender: widget.gender,
       stepId: _session.step.id,
-      choices: _useSceneChoices(visual)
-          ? (_session.hasFeedback
-                ? [_session.selectedChoice!]
-                : _session.step.choices)
+      choices: sceneChoices && !_session.hasFeedback
+          ? _session.step.choices
           : const [],
       selectedChoice: _session.selectedChoice,
       onChoose: _session.hasFeedback ? null : _choose,
@@ -413,6 +412,7 @@ class _MissionScreenState extends State<MissionScreen>
                 width: width,
                 child: MissionChoiceCard(
                   choice: choice,
+                  compact: true,
                   onPressed: () => _choose(choice.id),
                 ),
               ),
@@ -472,46 +472,93 @@ class _MissionScreenState extends State<MissionScreen>
     _ => 'Next step',
   };
 
-  List<Widget> _completion() => [
-    const BaseboundIcon(
-      BaseboundIconName.badge,
-      size: 100,
-      color: BaseboundColors.green,
-    ),
-    const SizedBox(height: 12),
-    const Text(
-      'Practice complete',
-      textAlign: TextAlign.center,
-      style: TextStyle(
-        fontSize: 30,
-        fontWeight: FontWeight.w800,
-        color: BaseboundColors.ink,
+  Widget _completionLayout() => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Expanded(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _audioControls(),
+              const BaseboundIcon(
+                BaseboundIconName.badge,
+                size: 64,
+                color: BaseboundColors.green,
+              ),
+              const Text(
+                'Practice complete',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800),
+              ),
+              SizedBox(
+                height: MediaQuery.sizeOf(context).height * .25,
+                child: const Center(
+                  child: MissionScene(visual: MissionVisual.recall),
+                ),
+              ),
+              const BaseboundGuide(
+                message: 'Move inside. Tell someone. Stay until the all-clear.',
+              ),
+            ],
+          ),
+        ),
       ),
-    ),
-    const SizedBox(height: 16),
-    const MissionScene(visual: MissionVisual.recall),
-    const SizedBox(height: 16),
-    const BaseboundGuide(
-      message: 'Move inside. Tell someone. Stay until the all-clear.',
-    ),
-    const SizedBox(height: 24),
-    FilledButton.icon(
-      onPressed: _restart,
-      icon: const BaseboundIcon(BaseboundIconName.replay),
-      label: const Text('Play again'),
-      style: FilledButton.styleFrom(
-        minimumSize: const Size(64, 64),
-        backgroundColor: BaseboundColors.blue,
-        foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        textStyle: const TextStyle(fontFamily: 'Nunito', fontSize: 21),
+      FilledButton.icon(
+        onPressed: _restart,
+        icon: const BaseboundIcon(BaseboundIconName.replay),
+        label: const Text('Play again'),
+        style: FilledButton.styleFrom(minimumSize: const Size(64, 64)),
       ),
-    ),
-    TextButton.icon(
-      onPressed: () => unawaited(_exit()),
-      icon: const BaseboundIcon(BaseboundIconName.home),
-      label: const Text('Back to practice choices'),
-      style: TextButton.styleFrom(minimumSize: const Size(64, 56)),
-    ),
-  ];
+      TextButton.icon(
+        onPressed: () => unawaited(_exit()),
+        icon: const BaseboundIcon(BaseboundIconName.home),
+        label: const Text('Back to practice choices'),
+        style: TextButton.styleFrom(minimumSize: const Size(64, 56)),
+      ),
+    ],
+  );
+}
+
+enum _MissionRegion { instruction, scene, actions }
+
+/// Readable content takes priority; the uncropped illustration takes the rest.
+/// Accessibility text can scroll without moving the primary button.
+class _MissionViewportLayout extends MultiChildLayoutDelegate {
+  _MissionViewportLayout();
+
+  @override
+  void performLayout(Size size) {
+    final instruction = layoutChild(
+      _MissionRegion.instruction,
+      BoxConstraints(
+        minWidth: size.width,
+        maxWidth: size.width,
+        maxHeight: size.height * .4,
+      ),
+    );
+    final actions = layoutChild(
+      _MissionRegion.actions,
+      BoxConstraints(
+        minWidth: size.width,
+        maxWidth: size.width,
+        maxHeight: (size.height - instruction.height) * .8,
+      ),
+    );
+    final sceneHeight = (size.height - instruction.height - actions.height - 16)
+        .clamp(0.0, size.height);
+    layoutChild(
+      _MissionRegion.scene,
+      BoxConstraints.tight(Size(size.width, sceneHeight)),
+    );
+    positionChild(_MissionRegion.instruction, Offset.zero);
+    positionChild(_MissionRegion.scene, Offset(0, instruction.height + 8));
+    positionChild(
+      _MissionRegion.actions,
+      Offset(0, size.height - actions.height),
+    );
+  }
+
+  @override
+  bool shouldRelayout(_MissionViewportLayout oldDelegate) => false;
 }
