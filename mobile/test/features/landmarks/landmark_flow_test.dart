@@ -3,7 +3,8 @@ import 'dart:io';
 
 import 'package:do_bazy/features/landmarks/data/landmark.dart';
 import 'package:do_bazy/features/landmarks/landmark_editor_screen.dart';
-import 'package:do_bazy/features/landmarks/landmark_practice_screen.dart';
+import 'package:do_bazy/features/game/game_screen.dart';
+import 'package:do_bazy/game/maps/demo_map.dart';
 import 'package:do_bazy/features/landmarks/widgets/landmark_map.dart';
 import 'package:do_bazy/features/landmarks/widgets/landmark_photo.dart';
 import 'package:do_bazy/ui/basebound_ui.dart';
@@ -68,31 +69,37 @@ void main() {
   testWidgets('child retries a wrong map pin and learns the correct location', (
     tester,
   ) async {
-    const landmarks = [
+    final geography = DemoMap.fromJson(
+      jsonDecode(File('assets/maps/tauron-arena.geojson').readAsStringSync())
+          as Map<String, dynamic>,
+    );
+    final landmarks = [
       Landmark(
         id: '1_1',
         name: 'Red shop',
         photoName: '1_1.photo',
-        latitude: 50.073,
-        longitude: 20.001,
+        latitude: geography.center[1].toDouble(),
+        longitude: geography.center[0].toDouble(),
       ),
       Landmark(
         id: '2_2',
         name: 'Playground',
         photoName: '2_2.photo',
-        latitude: 50.076,
-        longitude: 20.006,
+        latitude: geography.center[1].toDouble() + .003,
+        longitude: geography.center[0].toDouble() + .003,
       ),
     ];
     await _start(
       tester,
-      LandmarkPracticeScreen(
+      GameScreen(
+        map: geography,
         landmarks: landmarks,
         photoDirectory: directory.path,
       ),
       settle: false,
     );
     await _pumpMap(tester);
+    await _tap(tester, 'Find the photo pin', settle: false);
     final target = tester
         .widget<LandmarkPhoto>(find.byType(LandmarkPhoto))
         .label;

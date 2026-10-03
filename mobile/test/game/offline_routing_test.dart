@@ -1,13 +1,7 @@
-import 'package:flame/game.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:do_bazy/game/components/player_component.dart';
-import 'package:do_bazy/game/components/practice_route_component.dart';
 import 'package:do_bazy/game/maps/demo_map.dart';
 import 'package:do_bazy/game/maps/offline_router.dart';
-import 'package:do_bazy/game/neighborhood_game.dart';
-import 'package:do_bazy/features/parent/data/family_plan.dart';
 
 DemoMap fixture(List<DemoMapFeature> features) =>
     DemoMap(bounds: [0, 0, 396, 396], center: [0, 0], features: features);
@@ -244,21 +238,7 @@ void main() {
     }
   });
 
-  test('movement consumes waypoints around bends and resets cleanly', () {
-    final player = PlayerComponent(startPosition: Vector2.zero());
-    player.followPath([Vector2.zero(), Vector2(30, 0), Vector2(30, 30)]);
-    player.update(1.5);
-    expect(player.position.x, 30);
-    expect(player.position.y, 15);
-    expect(player.isMoving, isTrue);
-    player.update(10);
-    expect(player.position, Vector2(30, 30));
-    expect(player.isMoving, isFalse);
-    player.reset(Vector2.zero());
-    expect(player.position, Vector2.zero());
-  });
-
-  test('bundled map routes the demo journey offline', () async {
+  test('bundled map connects two real geographic points offline', () async {
     final map = await DemoMapRepository().load();
     final router = OfflineRouter(map);
     final route = router.route(
@@ -268,87 +248,8 @@ void main() {
     expect(
       route,
       isNotNull,
-      reason: 'The fictional base must remain reachable for the demo',
+      reason: 'The bundled pedestrian network must remain connected',
     );
     expect(route!.length, greaterThan(2));
   });
-
-  testWidgets(
-    'game follow action arrives once and restart restores the route',
-    (tester) async {
-      var arrivals = 0;
-      final game = NeighborhoodGame(
-        onArrived: () => arrivals++,
-        gender: ChildGender.boy,
-      );
-      await tester.runAsync(() async {
-        await tester.pumpWidget(
-          Directionality(
-            textDirection: TextDirection.ltr,
-            child: SizedBox(
-              width: 396,
-              height: 396,
-              child: GameWidget(game: game),
-            ),
-          ),
-        );
-        await game.toBeLoaded();
-        await game.ready();
-      });
-      game.pauseEngine();
-      game.update(0);
-      expect(game.hasRoute, isTrue);
-      final guide = game.world.children
-          .whereType<PracticeRouteComponent>()
-          .single;
-      final player = game.world.children.whereType<PlayerComponent>().single;
-      expect(player.gender, ChildGender.boy);
-      game.togglePracticeBlockage();
-      expect(game.hasPracticeBlockage, isTrue);
-      expect(
-        game.hasRoute,
-        isTrue,
-        reason: 'The default demo should show an alternate route',
-      );
-      final blockage = guide.blockage!()!;
-      final alternative = guide.points();
-      for (var i = 1; i < alternative.length; i++) {
-        expect(
-          blockage.intersects(alternative[i - 1], alternative[i]),
-          isFalse,
-        );
-      }
-      game.togglePracticeBlockage();
-      expect(game.hasPracticeBlockage, isFalse);
-      expect(game.hasRoute, isTrue);
-      game.showNearby();
-      game.update(0);
-      final nearby = guide.points()[2];
-      final tap = game.camera.localToGlobal(nearby);
-      game.selectDestination(tap.toOffset());
-      expect(player.isMoving, isTrue);
-      for (var i = 0; i < 20; i++) {
-        game.update(.1);
-      }
-      expect(player.position.distanceTo(nearby), lessThan(.01));
-      expect(arrivals, 0);
-      expect(game.hasRoute, isTrue);
-      game.followPracticePath();
-      for (var i = 0; i < 1000; i++) {
-        game.update(.1);
-      }
-      expect(arrivals, 1);
-      game.restart();
-      game.togglePracticeBlockage();
-      game.restart();
-      expect(game.hasPracticeBlockage, isFalse);
-      expect(game.hasRoute, isTrue);
-      game.followPracticePath();
-      for (var i = 0; i < 1000; i++) {
-        game.update(.1);
-      }
-      expect(arrivals, 2);
-      await tester.pumpWidget(const SizedBox.shrink());
-    },
-  );
 }

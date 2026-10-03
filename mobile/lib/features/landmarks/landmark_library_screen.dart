@@ -4,27 +4,19 @@ import 'package:image_picker/image_picker.dart';
 import '../../game/maps/demo_map.dart';
 import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
-import '../../widgets/basebound_mascot.dart';
 import '../parent/widgets/parent_editor_scaffold.dart';
 import 'data/landmark.dart';
 import 'data/landmark_repository.dart';
 import 'data/demo_landmarks.dart';
 import 'landmark_editor_screen.dart';
 import 'landmark_location.dart';
-import 'landmark_practice_screen.dart';
 import 'widgets/landmark_map.dart';
 import 'widgets/landmark_photo.dart';
 import 'widgets/photo_action_icon.dart';
 
-/// Parents capture individual recognition points; children explore the same
-/// collection. Sorting is presentation only and never defines a route.
+/// Adult photo capture for the same familiar-place map children use.
 class LandmarkLibraryScreen extends StatefulWidget {
-  const LandmarkLibraryScreen({
-    this.parentMode = false,
-    this.repository,
-    super.key,
-  });
-  final bool parentMode;
+  const LandmarkLibraryScreen({this.repository, super.key});
   final LandmarkRepository? repository;
 
   @override
@@ -79,7 +71,7 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
     } finally {
       if (mounted) setState(() => _loading = false);
     }
-    if (mounted && _error == null && widget.parentMode && !_checkedRecovery) {
+    if (mounted && _error == null && !_checkedRecovery) {
       _checkedRecovery = true;
       await _recoverPhoto();
     }
@@ -241,46 +233,42 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
     }
   }
 
-  Future<void> _practice() async {
-    await Navigator.of(context).push<void>(
-      MaterialPageRoute(
-        builder: (_) => LandmarkPracticeScreen(
-          landmarks: _mapLandmarks,
-          photoDirectory: _photoDirectory!,
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) => Theme(
-    data: widget.parentMode ? parentSetupTheme() : BaseboundTheme.training(),
+    data: parentSetupTheme(),
     child: PopScope(
       canPop: !_busy,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(widget.parentMode ? 'Walk together' : 'Our landmarks'),
+          title: const Text('Walk together'),
           actions: [
-            if (widget.parentMode)
-              PopupMenuButton<String>(
-                enabled: !_loading && !_busy,
-                tooltip: 'Landmark options',
-                onSelected: (_) => _delete(),
-                itemBuilder: (_) => const [
-                  PopupMenuItem(
-                    value: 'delete',
-                    child: Text('Delete all landmarks'),
-                  ),
-                ],
-              ),
+            PopupMenuButton<String>(
+              enabled: !_loading && !_busy,
+              tooltip: 'Landmark options',
+              onSelected: (_) => _delete(),
+              itemBuilder: (_) => const [
+                PopupMenuItem(
+                  value: 'delete',
+                  child: Text('Delete all landmarks'),
+                ),
+              ],
+            ),
           ],
         ),
-        body: SafeArea(
-          child: widget.parentMode
-              ? _body()
-              : IllustratedBackdrop(child: _body()),
-        ),
-        bottomNavigationBar: _error == null && !_loading ? _footer() : null,
+        body: SafeArea(child: _body()),
+        bottomNavigationBar: _error == null && !_loading
+            ? SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+                  child: FilledButton.icon(
+                    onPressed: _busy ? null : _addPhoto,
+                    icon: const PhotoActionIcon(color: Colors.white),
+                    label: Text(_busy ? 'Opening photo…' : 'Take a photo'),
+                  ),
+                ),
+              )
+            : null,
       ),
     ),
   );
@@ -313,25 +301,20 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (widget.parentMode) ...[
-                const Text(
-                  'Save places you recognise',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
-                ),
-                const SizedBox(height: 8),
-                const Text('Stop together. Add a photo and a map pin.'),
-                const SizedBox(height: 12),
-                OutlinedButton.icon(
-                  onPressed: _busy ? null : _loadDemo,
-                  icon: const BaseboundIcon(BaseboundIconName.play),
-                  label: const Text('Load demo landmarks'),
-                ),
-              ] else ...[
-                const BaseboundGuide(
-                  message: 'Tap a photo pin. Remember this place?',
-                  pose: DinoPose.point,
-                ),
-              ],
+              const Text(
+                'Save places you recognise',
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Stop together. Add a photo and a map pin. Your child can recognise it and choose it on Our map.',
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: _busy ? null : _loadDemo,
+                icon: const BaseboundIcon(BaseboundIconName.play),
+                label: const Text('Load demo landmarks'),
+              ),
               const SizedBox(height: 16),
               LandmarkMap(
                 landmarks: _mapLandmarks,
@@ -342,11 +325,9 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
               const SizedBox(height: 16),
               if (_selected != null) _selectedCard(_selected!),
               if (_landmarks.isEmpty)
-                SoftPanel(
+                const SoftPanel(
                   child: Text(
-                    widget.parentMode
-                        ? 'No landmarks yet. Photograph a familiar place, then choose its pin.'
-                        : 'No photo landmarks yet. Ask an adult to add places together.',
+                    'No landmarks yet. Photograph a familiar place, then choose its pin.',
                   ),
                 ),
               if (_landmarks.isNotEmpty) ...[
@@ -358,25 +339,13 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
                 for (final entry in _landmarks) _listEntry(entry),
               ],
               const SizedBox(height: 16),
-              if (widget.parentMode)
-                const ParentEditorNote(
-                  message: 'Demo map: TAURON Arena, Kraków. Pins are independent landmarks, not a path or checked safe places. Photos stay in app-private storage; names and pins are encrypted. No cloud sync or parent lock.',
-                  icon: BaseboundIconName.info,
-                )
-              else
-                const Text(
-                  'Learn familiar places. These pins are not walking directions.',
-                  style: TextStyle(color: BaseboundColors.muted),
-                ),
-              if (!widget.parentMode &&
-                  _mapLandmarks.length < 2 &&
-                  _landmarks.isNotEmpty)
-                const Padding(
-                  padding: EdgeInsets.only(top: 12),
-                  child: Text(
-                    'Add two landmarks to practise finding their pins.',
-                  ),
-                ),
+              const ParentEditorNote(
+                message:
+                    'Demo map: TAURON Arena, Kraków. Landmarks are independent points, with no fixed visiting order. '
+                    'Walking routes use GPS and offline paths; access, entrances and hazards are not verified. Walk with your child. '
+                    'Fictional demo pins are for recognition only. Photos stay in app-private storage; names and pins are encrypted. No cloud sync or parent lock.',
+                icon: BaseboundIconName.info,
+              ),
             ],
           ),
         ),
@@ -400,19 +369,12 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
             style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 24),
           ),
           if (entry.isDemo)
-            const Padding(
-              padding: EdgeInsets.only(top: 8),
-              child: Text(
-                'Fictional demo photo and pin',
-                style: TextStyle(color: BaseboundColors.muted),
-              ),
-            ),
-          if (widget.parentMode)
-            TextButton.icon(
-              onPressed: _busy ? null : () => _edit(landmark: entry),
-              icon: const BaseboundIcon(BaseboundIconName.edit),
-              label: const Text('Edit landmark'),
-            ),
+            const Text('Fictional demo photo and pin · recognition only'),
+          TextButton.icon(
+            onPressed: _busy ? null : () => _edit(landmark: entry),
+            icon: const BaseboundIcon(BaseboundIconName.edit),
+            label: const Text('Edit landmark'),
+          ),
         ],
       ),
     ),
@@ -440,46 +402,12 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
             : entry.isDemo
             ? const Text('Fictional demo landmark')
             : null,
-        onTap: _busy
-            ? null
-            : () => widget.parentMode
-                  ? _edit(landmark: entry)
-                  : setState(() => _selected = entry),
-        trailing: widget.parentMode
-            ? IconButton(
-                onPressed: _busy ? null : () => _delete(landmark: entry),
-                tooltip: 'Delete ${entry.name}',
-                icon: const BaseboundIcon(BaseboundIconName.delete),
-              )
-            : const BaseboundIcon(BaseboundIconName.pin),
-      ),
-    ),
-  );
-
-  Widget _footer() => SafeArea(
-    top: false,
-    child: Padding(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (widget.parentMode)
-            FilledButton.icon(
-              onPressed: _busy ? null : _addPhoto,
-              icon: const PhotoActionIcon(color: Colors.white),
-              label: Text(_busy ? 'Opening photo…' : 'Take a photo'),
-            ),
-          if (!widget.parentMode && _mapLandmarks.length >= 2)
-            FilledButton.icon(
-              onPressed: _practice,
-              icon: const BaseboundIcon(
-                BaseboundIconName.play,
-                color: Colors.white,
-              ),
-              label: const Text('Find the photo pin'),
-            ),
-        ],
+        onTap: _busy ? null : () => _edit(landmark: entry),
+        trailing: IconButton(
+          onPressed: _busy ? null : () => _delete(landmark: entry),
+          tooltip: 'Delete ${entry.name}',
+          icon: const BaseboundIcon(BaseboundIconName.delete),
+        ),
       ),
     ),
   );

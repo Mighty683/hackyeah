@@ -1,591 +1,570 @@
 import 'dart:math' as math;
 
-import 'package:flame/game.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
-import '../../game/neighborhood_game.dart';
+import '../../game/maps/demo_map.dart';
 import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
-import '../../widgets/basebound_mascot.dart';
 import '../help/help_screen.dart';
-import '../parent/data/family_plan.dart';
+import '../landmarks/data/landmark.dart';
+import '../landmarks/landmark_practice.dart';
+import '../landmarks/widgets/landmark_map.dart';
+import '../landmarks/widgets/landmark_photo.dart';
+import '../mission/mission_audio.dart';
+import 'navigation_location.dart';
+import 'walking_navigation.dart';
 
+/// Familiar places, recognition and live walking guidance share one map.
 class GameScreen extends StatefulWidget {
   const GameScreen({
-    this.destination,
-    this.onNewGame,
+    required this.map,
+    required this.landmarks,
+    required this.photoDirectory,
+    this.location,
     super.key,
-    this.gender = ChildGender.girl,
   });
-
-  final SafePoint? destination;
-  final VoidCallback? onNewGame;
-
-  final ChildGender gender;
-
+  final DemoMap map;
+  final List<Landmark> landmarks;
+  final String photoDirectory;
+  final NavigationLocation? location;
   @override
   State<GameScreen> createState() => _GameScreenState();
 }
 
-class _GameScreenState extends State<GameScreen> {
-  late final NeighborhoodGame _game;
-  bool _arrived = false;
-  bool _hasRoute = false;
-  String? _routeMessage;
-  bool _ready = false;
-  bool _failed = false;
-  bool _tapBlocked = false;
-  final Map<int, Offset> _pointerStarts = {};
+class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
+  late final _location = widget.location ?? NavigationLocation();
+  late final _navigation = WalkingNavigation(
+    map: widget.map,
+    location: _location,
+  );
+  final _mapController = LandmarkMapController();
+  final _audio = MissionAudio();
+  Landmark? _selected;
+  LandmarkQuestion? _question;
+  bool _correct = false;
+  bool _tried = false;
   bool _helpOpen = false;
+  bool _voiceAvailable = true;
+  bool _recognised = false;
+  int _audioRevision = 0;
+  String? _spokenCue;
+  WalkingRoute? _announcedRoute;
 
-  Future<void> _openHelp() async {
-    if (_helpOpen) return;
-    _helpOpen = true;
-    _tapBlocked = true;
-    _pointerStarts.clear();
-    _game.endMapGesture();
-    final wasPaused = _game.paused;
-    _game.pauseEngine();
-    try {
-      await openHelpScreen(context);
-    } finally {
-      _helpOpen = false;
-      if (mounted && !wasPaused) _game.resumeEngine();
-    }
-  }
+  List<Landmark> get _visible => widget.landmarks
+      .where((place) => withinMap(widget.map, place.latitude, place.longitude))
+      .toList();
+  List<Landmark> get _photos =>
+      _visible.where((place) => place.photoName.isNotEmpty).toList();
+  String get _instruction => _question == null
+      ? _navigation.instruction
+      : _correct
+      ? 'You remembered! This place is here.'
+      : _tried
+      ? 'Another place. Look at the photo again.'
+      : 'Where is ${_question!.target.name}? Choose its pin.';
 
   @override
   void initState() {
     super.initState();
-    _game = NeighborhoodGame(
-      destination: widget.destination,
-      onRouteChanged: (available, message) {
-        if (mounted) {
-          setState(() {
-            _hasRoute = available;
-            _routeMessage = message;
-          });
-        }
-      },
-      gender: widget.gender,
-      onArrived: () {
-        if (mounted) setState(() => _arrived = true);
-      },
-    );
-    _game.loaded.then((_) {
-      if (mounted) setState(() => _ready = _game.isMapReady);
-    });
+    WidgetsBinding.instance.addObserver(this);
+    _navigation.addListener(_routeChanged);
   }
 
-  void _restart() {
-    if (!_game.isMapReady) return;
-    _tapBlocked = true;
-    if (widget.onNewGame != null) {
-      widget.onNewGame!();
-      return;
+  void _routeChanged() {
+    if (!mounted || _helpOpen || _question != null) return;
+    final route = _navigation.route;
+    if (route != null && route != _announcedRoute) {
+      _announcedRoute = route;
+      _speak();
     }
-    _game.restart();
-    setState(() => _arrived = false);
+    final next = _navigation.route?.turns
+        .where((turn) => turn.distance >= _navigation.progress - 8)
+        .firstOrNull;
+    final cue = _navigation.nearPlace
+        ? 'near:${_navigation.destination?.id}'
+        : next != null && next.distance - _navigation.progress <= 20
+        ? next.action
+        : null;
+    if (cue != null && cue != _spokenCue) {
+      _spokenCue = cue;
+      _speak();
+    }
+    if (!_navigation.nearPlace) _recognised = false;
   }
 
-  void _showDemoInfo() {
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('About this demo'),
-        scrollable: true,
-        content: Text(
-          'This is a practice game, not real-world navigation. '
-          '${widget.destination == null ? 'The base is pretend.' : 'The target is a parent-selected safe place. Its safety has not been checked.'} '
-          'Your character follows a practice path on the map. '
-          'Routes prefer pedestrian paths but may use public local roads. '
-          'These preferences are demo rules, not safety ratings.\n\n'
-          'Block a path creates one fictional blockage and tries another route. '
-          'There is no live hazard information.\n\n'
-          'Streets, paths, buildings, parks and water use bundled map shapes. '
-          'Colours and landmarks are simplified for practice. '
-          'Some details are missing, and decorative trees are illustrations.\n\n'
-          'The source map covers 2 × 2 km around TAURON Arena in Kraków. '
-          'The close view follows your character. An edge arrow points towards '
-          'a target outside the view. The marked path ends at a nearby mapped path, '
-          'not at a verified entrance. It is not a real walking route. '
-          'Show me returns to your character. '
-          'Show whole map restores all of it.\n\n'
-          'Map data © OpenStreetMap contributors · ODbL 1.0.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
-    );
+  Future<void> _speak() async {
+    final revision = ++_audioRevision;
+    try {
+      final available = await _audio.initialize();
+      if (!mounted || revision != _audioRevision || _helpOpen) return;
+      setState(() => _voiceAvailable = available);
+      if (available) await _audio.narrate(_instruction);
+    } catch (_) {
+      if (mounted && revision == _audioRevision) {
+        setState(() => _voiceAvailable = false);
+      }
+    }
+  }
+
+  Future<void> _openHelp() async {
+    if (_helpOpen) return;
+    _helpOpen = true;
+    _location.pause();
+    _audioRevision++;
+    await _audio.stop();
+    if (!mounted) return;
+    try {
+      await openHelpScreen(context);
+    } finally {
+      _helpOpen = false;
+      if (mounted) await _location.resume();
+    }
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        leading: Navigator.canPop(context) ? const BaseboundBackButton() : null,
-        title: const Row(
-          children: [
-            BaseboundMascot(size: 32, pose: DinoPose.point),
-            SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                'Practice game',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            onPressed: _openHelp,
-            icon: const BaseboundIcon(BaseboundIconName.help),
-            tooltip: 'I need help · prototype',
-          ),
-          if (!_arrived)
-            IconButton(
-              onPressed: _ready ? _restart : null,
-              icon: BaseboundIcon(
-                BaseboundIconName.replay,
-                color: _ready
-                    ? null
-                    : BaseboundColors.muted.withValues(alpha: .4),
-              ),
-              tooltip: 'Start again',
-            ),
-          IconButton(
-            onPressed: _showDemoInfo,
-            icon: const BaseboundIcon(BaseboundIconName.info),
-            tooltip: 'About this demo',
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: IllustratedBackdrop(
-          warm: true,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
-            child: LayoutBuilder(
-              builder: (context, constraints) => _buildContent(constraints),
-            ),
-          ),
-        ),
-      ),
-    );
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) {
+      _location.pause();
+      _audioRevision++;
+      _audio.stop();
+    } else if (!_helpOpen) {
+      _location.resume();
+    }
   }
 
-  Widget _buildContent(BoxConstraints constraints) {
-    final landscape = constraints.maxWidth > constraints.maxHeight * 1.25;
-    final compact =
-        landscape ||
-        constraints.maxHeight < 460 ||
-        MediaQuery.textScalerOf(context).scale(18) > 24;
-    final controls = SingleChildScrollView(
-      child: _buildControls(compact: compact),
-    );
-    final content = landscape
-        ? Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(child: _buildFittedMap()),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _buildInstructions(compact: true),
-                    const SizedBox(height: 8),
-                    Expanded(child: controls),
-                  ],
-                ),
-              ),
-            ],
-          )
-        : Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildInstructions(compact: compact),
-              const SizedBox(height: 8),
-              Expanded(child: _buildFittedMap()),
-              const SizedBox(height: 8),
-              ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxHeight: constraints.maxHeight * .32,
-                ),
-                child: controls,
-              ),
-            ],
-          );
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Expanded(child: content),
-        const SizedBox(height: 6),
-        const Text(
-          '© OpenStreetMap contributors · ODbL',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 12, color: BaseboundColors.muted),
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _navigation.removeListener(_routeChanged);
+    _navigation.dispose();
+    if (widget.location == null) {
+      _location.dispose();
+    } else {
+      _location.stop();
+    }
+    _mapController.dispose();
+    _audioRevision++;
+    _audio.dispose();
+    super.dispose();
+  }
+
+  void _choose(Landmark landmark) {
+    if (_question == null) {
+      setState(() => _selected = landmark);
+      return;
+    }
+    if (_correct) return;
+    setState(() {
+      _tried = true;
+      _correct = _question!.isCorrect(landmark);
+    });
+    _speak();
+  }
+
+  void _recall() {
+    _navigation.stop();
+    setState(() {
+      _question = LandmarkQuestion.pick(
+        _photos,
+        previousId: _question?.target.id,
+      );
+      _correct = false;
+      _tried = false;
+      _selected = null;
+    });
+    _mapController.showWholeMap();
+    _speak();
+  }
+
+  Future<void> _navigate() async {
+    final target = _selected;
+    if (target == null || target.isDemo) return;
+    _spokenCue = null;
+    _announcedRoute = null;
+    _recognised = false;
+    _navigation.navigateTo(target);
+    if (!_location.isTracking) await _location.start();
+    _mapController.showMe();
+    _speak();
+  }
+
+  void _about() => showDialog<void>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('About our map'),
+      scrollable: true,
+      content: const Text(
+        'Your blue dot comes only from phone GPS. No tap moves it. Location is used while this screen is open; no track is saved.\n\n'
+        'Offline coverage: 2 × 2 km around TAURON Arena, Kraków. Walk with an adult. '
+        'Routes use bundled OpenStreetMap paths and local roads. Access, barriers, entrances and hazards are not verified. '
+        'Follow your adult’s judgment at roads and crossings. The endpoint ring is a mapped path near the pin.\n\n'
+        'Turn instructions follow map geometry, not the way the phone is facing. The map is north-up. '
+        'Unclear, old or out-of-area GPS pauses guidance. Fictional demo photos are for recognition only. '
+        'Saved places are parent-selected, with no safety check.\n\n'
+        'Map data © OpenStreetMap contributors · ODbL 1.0.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Close'),
         ),
       ],
-    );
-  }
-
-  Widget _buildInstructions({required bool compact}) {
-    final target = widget.destination?.displayName;
-    final title = _failed
-        ? compact
-              ? 'Go back and try again.'
-              : 'The map could not load'
-        : _arrived
-        ? 'You reached the path near ${target ?? 'the base'}!'
-        : compact
-        ? 'Reach ${target ?? 'the pretend base'}.'
-        : 'Reach ${target ?? 'the pretend base'}';
-    return Padding(
-      padding: EdgeInsets.all(compact ? 12 : 16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          if (!compact) ...[
-            BaseboundMascot(
-              size: 62,
-              pose: _failed
-                  ? DinoPose.calm
-                  : _arrived
-                  ? DinoPose.celebrate
-                  : DinoPose.point,
-            ),
-            const SizedBox(width: 14),
-          ],
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Semantics(
-                  liveRegion: true,
-                  header: true,
-                  child: Text(
-                    title,
-                    maxLines: compact ? 2 : 3,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: BaseboundColors.ink,
-                      fontSize: compact ? 18 : 24,
-                      height: 1.18,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-                if (!compact) ...[
-                  const SizedBox(height: 6),
-                  Text(
-                    _failed
-                        ? 'Go back and try again.'
-                        : _arrived
-                        ? widget.destination == null
-                              ? 'Your character reached a path near the pretend base.'
-                              : 'Your character reached a path near the practice place.'
-                        : _routeMessage ??
-                              'Follow the marked path to the ring.',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      height: 1.3,
-                      color: BaseboundColors.muted,
-                    ),
-                  ),
-                ],
-                if (compact && !_arrived && !_failed) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    _routeMessage ?? 'Follow the marked path to the ring.',
-                    style: const TextStyle(fontSize: 14, height: 1.2),
-                  ),
-                ],
-                const SizedBox(height: 6),
-                Text(
-                  compact
-                      ? 'Practice only.'
-                      : 'Practice only. Not real navigation.',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: BaseboundColors.muted,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFittedMap() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final side = math.min(constraints.maxWidth, constraints.maxHeight);
-        return Center(
-          child: Container(
-            width: side,
-            height: side,
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(28),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x18112568),
-                  blurRadius: 18,
-                  offset: Offset(0, 6),
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(24),
-              child: _buildMap(),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildControls({required bool compact}) {
-    return SoftPanel(
-      padding: const EdgeInsets.all(12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (!_arrived) ...[
-            FilledButton.icon(
-              onPressed: _ready && _hasRoute && !_game.isCharacterMoving
-                  ? _game.followPracticePath
-                  : null,
-              icon: const Icon(Icons.route),
-              label: const Text('Follow path'),
-            ),
-            TextButton.icon(
-              onPressed:
-                  _ready &&
-                      !_game.isCharacterMoving &&
-                      (_hasRoute || _game.hasPracticeBlockage)
-                  ? _game.togglePracticeBlockage
-                  : null,
-              icon: const Icon(Icons.block),
-              label: Text(
-                _game.hasPracticeBlockage ? 'Clear blockage' : 'Block a path',
-              ),
-            ),
-            const SizedBox(height: 8),
-          ],
-          if (_arrived) ...[
-            FilledButton.icon(
-              onPressed: _ready ? _restart : null,
-              style: FilledButton.styleFrom(padding: const EdgeInsets.all(16)),
-              icon: const BaseboundIcon(
-                BaseboundIconName.replay,
-                color: Colors.white,
-              ),
-              label: const Text('Play again'),
-            ),
-            const SizedBox(height: 8),
-          ],
-          Wrap(
-            spacing: 8,
-            runSpacing: 4,
-            alignment: WrapAlignment.center,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              IconButton.outlined(
-                onPressed: _ready ? () => _zoom(1 / 1.4) : null,
-                tooltip: 'Zoom out',
-                constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-                style: IconButton.styleFrom(
-                  backgroundColor: BaseboundColors.sky,
-                  foregroundColor: BaseboundColors.blue,
-                  side: BorderSide.none,
-                ),
-                icon: BaseboundIcon(
-                  BaseboundIconName.minus,
-                  color: _ready
-                      ? BaseboundColors.blue
-                      : BaseboundColors.muted.withValues(alpha: .4),
-                ),
-              ),
-              IconButton.outlined(
-                onPressed: _ready ? () => _zoom(1.4) : null,
-                tooltip: 'Zoom in',
-                constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-                style: IconButton.styleFrom(
-                  backgroundColor: BaseboundColors.sky,
-                  foregroundColor: BaseboundColors.blue,
-                  side: BorderSide.none,
-                ),
-                icon: BaseboundIcon(
-                  BaseboundIconName.plus,
-                  color: _ready
-                      ? BaseboundColors.blue
-                      : BaseboundColors.muted.withValues(alpha: .4),
-                ),
-              ),
-              _buildViewControl(
-                compact: compact,
-                label: 'Show me',
-                icon: BaseboundIconName.child,
-                onPressed: _showNearby,
-              ),
-              _buildViewControl(
-                compact: compact,
-                label: 'Show whole map',
-                icon: BaseboundIconName.fitMap,
-                onPressed: _showWholeMap,
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildViewControl({
-    required bool compact,
-    required String label,
-    required BaseboundIconName icon,
-    required VoidCallback onPressed,
-  }) {
-    final artwork = BaseboundIcon(
-      icon,
-      color: _ready ? null : BaseboundColors.muted.withValues(alpha: .4),
-    );
-    if (compact) {
-      return IconButton.outlined(
-        onPressed: _ready ? onPressed : null,
-        tooltip: label,
-        constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-        icon: artwork,
-      );
-    }
-    return OutlinedButton.icon(
-      onPressed: _ready ? onPressed : null,
-      style: OutlinedButton.styleFrom(
-        minimumSize: const Size(48, 48),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        textStyle: const TextStyle(
-          fontFamily: 'Nunito',
-          fontSize: 16,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-      icon: artwork,
-      label: Text(label),
-    );
-  }
-
-  void _zoom(double factor) {
-    _tapBlocked = true;
-    _game.zoomMap(factor);
-  }
-
-  void _showWholeMap() {
-    _tapBlocked = true;
-    _game.showWholeMap();
-  }
-
-  void _showNearby() {
-    _tapBlocked = true;
-    _game.showNearby();
-  }
-
-  void _pointerDown(PointerDownEvent event) {
-    if (_pointerStarts.isEmpty) _tapBlocked = false;
-    _pointerStarts[event.pointer] = event.localPosition;
-    // Even a stationary two-finger contact must never become a move tap.
-    if (_pointerStarts.length > 1) _tapBlocked = true;
-  }
-
-  void _pointerMove(PointerMoveEvent event) {
-    final start = _pointerStarts[event.pointer];
-    if (start != null && (event.localPosition - start).distance > kTouchSlop) {
-      _tapBlocked = true;
-    }
-  }
-
-  void _mapError() {
-    _game.markMapUnavailable();
-    _tapBlocked = true;
-    if (!_failed) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          setState(() {
-            _ready = false;
-            _failed = true;
-          });
-        }
-      });
-    }
-  }
-
-  Widget _buildMapLoading(BuildContext context) => LayoutBuilder(
-    builder: (context, constraints) => Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (constraints.maxHeight >= 160 && constraints.maxWidth >= 88) ...[
-            const BaseboundMascot(size: 88, pose: DinoPose.listen),
-            const SizedBox(height: 12),
-          ],
-          const CircularProgressIndicator(),
-        ],
-      ),
     ),
   );
 
-  Widget _buildMap() {
-    return ClipRect(
-      child: Listener(
-        onPointerDown: _pointerDown,
-        onPointerMove: _pointerMove,
-        onPointerUp: (event) => _pointerStarts.remove(event.pointer),
-        onPointerCancel: (event) {
-          _tapBlocked = true;
-          _pointerStarts.remove(event.pointer);
-          _game.endMapGesture();
-        },
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTapUp: (details) {
-            if (!_tapBlocked) _game.selectDestination(details.localPosition);
-          },
-          onScaleStart: (details) {
-            _tapBlocked = true;
-            _game.beginMapGesture(details.localFocalPoint);
-          },
-          onScaleUpdate: (details) =>
-              _game.updateMapGesture(details.localFocalPoint, details.scale),
-          onScaleEnd: (_) => _game.endMapGesture(),
-          // Remove Flame's recognizers from the arena; its onTapDown callback
-          // is also a no-op, so movement only happens after a resolved tap-up.
-          child: IgnorePointer(
-            child: GameWidget<NeighborhoodGame>(
-              game: _game,
-              loadingBuilder: _buildMapLoading,
-              errorBuilder: (_, error) {
-                _mapError();
-                return const Center(
-                  child: BaseboundIcon(BaseboundIconName.map, size: 48),
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(
+      automaticallyImplyLeading: false,
+      leading: Navigator.canPop(context) ? const BaseboundBackButton() : null,
+      title: const Text('Our map'),
+      actions: [
+        IconButton(
+          onPressed: _openHelp,
+          icon: const BaseboundIcon(BaseboundIconName.help),
+          tooltip: 'I need help · prototype',
+        ),
+        IconButton(
+          onPressed: _about,
+          icon: const BaseboundIcon(BaseboundIconName.info),
+          tooltip: 'About our map',
+        ),
+      ],
+    ),
+    body: SafeArea(
+      child: IllustratedBackdrop(
+        warm: true,
+        child: AnimatedBuilder(
+          animation: _navigation,
+          builder: (context, _) => Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final landscape =
+                    constraints.maxWidth > constraints.maxHeight * 1.25;
+                final controls = SingleChildScrollView(child: _controls());
+                final map = LayoutBuilder(
+                  builder: (context, bounds) {
+                    final side = math.min(bounds.maxWidth, bounds.maxHeight);
+                    final position = _navigation.outsideMap
+                        ? null
+                        : _location.position;
+                    return Center(
+                      child: SizedBox(
+                        width: side,
+                        height: side,
+                        child: LandmarkMap(
+                          map: widget.map,
+                          landmarks: _question?.choices ?? _visible,
+                          photoDirectory: widget.photoDirectory,
+                          position: position,
+                          route: _question == null
+                              ? _navigation.route?.points ?? []
+                              : [],
+                          selectedId: _question == null
+                              ? _selected?.id
+                              : _correct
+                              ? _question!.target.id
+                              : null,
+                          hidePhotos: _question != null && !_correct,
+                          onSelected: _choose,
+                          controller: _mapController,
+                          showAttribution: false,
+                        ),
+                      ),
+                    );
+                  },
+                );
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Semantics(
+                      liveRegion: true,
+                      child: Text(
+                        _recognised
+                            ? 'You recognised this place!'
+                            : _instruction,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          height: 1.2,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    if (_question == null)
+                      const Text(
+                        'Walk together with an adult · North is up',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: BaseboundColors.muted,
+                        ),
+                      ),
+                    const SizedBox(height: 8),
+                    Expanded(
+                      child: landscape
+                          ? Row(
+                              children: [
+                                Expanded(child: map),
+                                const SizedBox(width: 12),
+                                Expanded(child: controls),
+                              ],
+                            )
+                          : Column(
+                              children: [
+                                Expanded(child: map),
+                                const SizedBox(height: 8),
+                                ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    maxHeight: constraints.maxHeight * .4,
+                                  ),
+                                  child: controls,
+                                ),
+                              ],
+                            ),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      '© OpenStreetMap contributors · ODbL',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: BaseboundColors.muted,
+                      ),
+                    ),
+                  ],
                 );
               },
             ),
           ),
         ),
       ),
+    ),
+  );
+
+  Widget _controls() => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      if (_question != null)
+        _recallPanel()
+      else ...[
+        if (_navigation.destination != null) _routePanel(),
+        if (_selected != null) _placePanel(_selected!),
+        if (widget.landmarks.isEmpty)
+          const SoftPanel(
+            child: Text(
+              'No familiar places yet. Ask your adult to add photo landmarks in Walk together.',
+            ),
+          ),
+        if (_selected == null && widget.landmarks.isNotEmpty)
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final place in widget.landmarks)
+                ActionChip(
+                  label: Text(place.name),
+                  onPressed: () => _choose(place),
+                ),
+            ],
+          ),
+        if (_photos.length >= 2)
+          OutlinedButton.icon(
+            onPressed: _recall,
+            icon: const BaseboundIcon(BaseboundIconName.pin),
+            label: const Text('Find the photo pin'),
+          ),
+      ],
+      const SizedBox(height: 8),
+      Wrap(
+        spacing: 8,
+        runSpacing: 4,
+        alignment: WrapAlignment.center,
+        children: [
+          OutlinedButton.icon(
+            onPressed: _location.state == LocationState.waiting
+                ? null
+                : () async {
+                    if (_location.isTracking) {
+                      _location.stop();
+                    } else {
+                      await _location.start();
+                      _mapController.showMe();
+                    }
+                  },
+            icon: const Icon(Icons.my_location),
+            label: Text(_location.isTracking ? 'Stop GPS' : 'Use live GPS'),
+          ),
+          IconButton(
+            onPressed: _location.position != null && !_navigation.outsideMap
+                ? _mapController.showMe
+                : null,
+            tooltip: 'Show me',
+            icon: const BaseboundIcon(BaseboundIconName.child),
+          ),
+          IconButton(
+            onPressed: () => _mapController.zoom(1.4),
+            tooltip: 'Zoom in',
+            icon: const BaseboundIcon(BaseboundIconName.plus),
+          ),
+          IconButton(
+            onPressed: () => _mapController.zoom(1 / 1.4),
+            tooltip: 'Zoom out',
+            icon: const BaseboundIcon(BaseboundIconName.minus),
+          ),
+          IconButton(
+            onPressed: _mapController.showWholeMap,
+            tooltip: 'Show whole map',
+            icon: const BaseboundIcon(BaseboundIconName.fitMap),
+          ),
+          IconButton(
+            onPressed: _speak,
+            tooltip: 'Replay audio',
+            icon: const BaseboundIcon(BaseboundIconName.speaker),
+          ),
+        ],
+      ),
+      Text(
+        _navigation.outsideMap
+            ? 'GPS is outside the TAURON Arena, Kraków map. No position is placed on this map.'
+            : _location.message,
+        style: const TextStyle(fontSize: 12, color: BaseboundColors.muted),
+      ),
+      if (!_voiceAvailable)
+        const Text(
+          'Voice is unavailable. Ask your adult to help.',
+          style: TextStyle(fontSize: 12),
+        ),
+    ],
+  );
+
+  Widget _placePanel(Landmark place) => Padding(
+    padding: const EdgeInsets.only(bottom: 8),
+    child: SoftPanel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  place.name,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: () => setState(() => _selected = null),
+                tooltip: 'Close place',
+                icon: const Icon(Icons.close),
+              ),
+            ],
+          ),
+          if (place.photoName.isNotEmpty)
+            LandmarkPhoto(
+              path: '${widget.photoDirectory}/${place.photoName}',
+              label: place.name,
+              height: 120,
+            ),
+          const SizedBox(height: 8),
+          if (place.isDemo)
+            const Text('Fictional demo photo and pin · recognition only')
+          else if (!withinMap(widget.map, place.latitude, place.longitude))
+            const Text(
+              'Outside this downloaded map. Walking guidance is unavailable.',
+            )
+          else
+            FilledButton.icon(
+              onPressed: _navigate,
+              icon: const Icon(Icons.directions_walk),
+              label: const Text('Walk here together'),
+            ),
+        ],
+      ),
+    ),
+  );
+
+  Widget _routePanel() {
+    final target = _navigation.destination!;
+    final route = _navigation.route;
+    return SoftPanel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'To ${target.name}',
+            style: const TextStyle(fontWeight: FontWeight.w800),
+          ),
+          if (route != null) ...[
+            Text('${metres(_navigation.remaining)} of mapped path remaining'),
+            Text(
+              'Photo pin: ${metres(_navigation.destinationDistance)} ${compass(_navigation.destinationBearing)} · direct distance',
+              style: const TextStyle(fontSize: 12),
+            ),
+            const Text(
+              'The ring ends on a mapped path near the pin.',
+              style: TextStyle(fontSize: 12),
+            ),
+          ],
+          if (_navigation.nearPlace && !_recognised)
+            FilledButton(
+              onPressed: () {
+                setState(() => _recognised = true);
+                _navigation.stop();
+              },
+              child: const Text('I recognise this place'),
+            ),
+          TextButton(
+            onPressed: _navigation.stop,
+            child: const Text('Stop directions'),
+          ),
+        ],
+      ),
     );
   }
+
+  Widget _recallPanel() => SoftPanel(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        LandmarkPhoto(
+          path: '${widget.photoDirectory}/${_question!.target.photoName}',
+          label: _question!.target.name,
+          height: 120,
+        ),
+        Text(
+          _question!.target.name,
+          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 20),
+        ),
+        if (_question!.target.isDemo) const Text('Fictional demo photo'),
+        if (!_correct)
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (var index = 0; index < _question!.choices.length; index++)
+                OutlinedButton(
+                  onPressed: () => _choose(_question!.choices[index]),
+                  child: Text('Pin ${index + 1}'),
+                ),
+            ],
+          )
+        else
+          FilledButton(
+            onPressed: _recall,
+            child: const Text('Try another place'),
+          ),
+        TextButton(
+          onPressed: () {
+            setState(() => _question = null);
+            _audioRevision++;
+            _audio.stop();
+          },
+          child: const Text('Explore our map'),
+        ),
+      ],
+    ),
+  );
 }

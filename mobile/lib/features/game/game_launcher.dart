@@ -1,36 +1,55 @@
-/// Loads saved safe places and picks a fresh target for each practice game.
-library;
-
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 
 import '../../game/maps/demo_map.dart';
 import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
-import '../../widgets/basebound_mascot.dart';
 import '../help/help_screen.dart';
-import '../parent/data/family_plan.dart';
+import '../landmarks/data/landmark.dart';
+import '../landmarks/data/landmark_repository.dart';
 import '../parent/data/family_plan_repository.dart';
 import 'game_screen.dart';
 
+/// Opens one familiar-place map; no random destination or fictional player.
 class GameLauncher extends StatefulWidget {
-  const GameLauncher({super.key, this.gender = ChildGender.girl});
-
-  final ChildGender gender;
-
+  const GameLauncher({super.key});
   @override
   State<GameLauncher> createState() => _GameLauncherState();
 }
 
+class _MapContent {
+  const _MapContent(this.map, this.places, this.photoDirectory);
+  final DemoMap map;
+  final List<Landmark> places;
+  final String photoDirectory;
+}
+
 class _GameLauncherState extends State<GameLauncher> {
-  final _repository = FamilyPlanRepository();
-  final _random = Random();
-  late Future<SafePoint?> _destination = _chooseDestination();
-  int _round = 0;
+  late Future<_MapContent> _content = _load();
   bool _helpOpen = false;
 
-  Future<void> _openHelp() async {
+  Future<_MapContent> _load() async {
+    final repository = LandmarkRepository();
+    final landmarks = await repository.load();
+    final directory = await repository.photoDirectory();
+    final plan = await FamilyPlanRepository().load();
+    final map = await DemoMapRepository().load();
+    // Adapt existing named parent pins for this view only. Stored data and photo
+    // records remain separate, so existing family setup is not migrated or lost.
+    final places = <Landmark>[
+      ...landmarks,
+      for (var i = 0; i < plan.safePoints.length; i++)
+        Landmark(
+          id: 'family_place_$i',
+          name: plan.safePoints[i].displayName,
+          photoName: '',
+          latitude: plan.safePoints[i].latitude,
+          longitude: plan.safePoints[i].longitude,
+        ),
+    ];
+    return _MapContent(map, places, directory.path);
+  }
+
+  Future<void> _help() async {
     if (_helpOpen) return;
     setState(() => _helpOpen = true);
     try {
@@ -40,115 +59,56 @@ class _GameLauncherState extends State<GameLauncher> {
     }
   }
 
-  Future<SafePoint?> _chooseDestination() async {
-    final plan = await _repository.load();
-    if (plan.safePoints.isEmpty) return null;
-    final map = await DemoMapRepository().load();
-    final points = plan.safePoints
-        .where(
-          (point) =>
-              point.longitude >= map.bounds[0] &&
-              point.longitude <= map.bounds[2] &&
-              point.latitude >= map.bounds[1] &&
-              point.latitude <= map.bounds[3],
-        )
-        .toList();
-    if (points.isEmpty) return null;
-    return points[_random.nextInt(points.length)];
-  }
-
-  void _newGame() {
-    setState(() {
-      _round++;
-      _destination = _chooseDestination();
-    });
-  }
-
   @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<SafePoint?>(
-      key: ValueKey(_round),
-      future: _destination,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done &&
-            !snapshot.hasError &&
-            !_helpOpen) {
-          return GameScreen(
-            key: ValueKey(_round),
-            destination: snapshot.data,
-            gender: widget.gender,
-            onNewGame: _newGame,
-          );
-        }
-        return Scaffold(
-          appBar: AppBar(
-            automaticallyImplyLeading: false,
-            leading: Navigator.canPop(context)
-                ? const BaseboundBackButton()
-                : null,
-            title: const Text('Practice game'),
-          ),
-          bottomNavigationBar: SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-              child: HelpEntryButton(onPressed: _openHelp),
-            ),
-          ),
-          body: Center(
-            child: IllustratedBackdrop(
-              warm: true,
-              child: Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 440),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Align(
-                            alignment: snapshot.hasError
-                                ? Alignment.centerLeft
-                                : Alignment.center,
-                            child: BaseboundMascot(
-                              size: snapshot.hasError ? 104 : 132,
-                              pose: snapshot.hasError
-                                  ? DinoPose.calm
-                                  : DinoPose.listen,
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          if (snapshot.hasError) ...[
-                            const Text(
-                              'Could not load safe places. Go back or try again.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 22,
-                                height: 1.3,
-                                color: BaseboundColors.ink,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            FilledButton(
-                              onPressed: _newGame,
-                              child: const Text('Try again'),
-                            ),
-                          ] else
-                            const Center(child: CircularProgressIndicator()),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
+  Widget build(BuildContext context) => FutureBuilder<_MapContent>(
+    future: _content,
+    builder: (context, snapshot) {
+      if (snapshot.hasData && !_helpOpen) {
+        final data = snapshot.data!;
+        return GameScreen(
+          map: data.map,
+          landmarks: data.places,
+          photoDirectory: data.photoDirectory,
         );
-      },
-    );
-  }
+      }
+      return Scaffold(
+        appBar: AppBar(
+          leading: Navigator.canPop(context)
+              ? const BaseboundBackButton()
+              : null,
+          title: const Text('Our map'),
+        ),
+        bottomNavigationBar: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: HelpEntryButton(onPressed: _help),
+          ),
+        ),
+        body: IllustratedBackdrop(
+          warm: true,
+          child: Center(
+            child: snapshot.hasError
+                ? Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          'Could not load our map. Saved places have not been reset.',
+                        ),
+                        const SizedBox(height: 16),
+                        FilledButton(
+                          onPressed: () => setState(() => _content = _load()),
+                          child: const Text('Try again'),
+                        ),
+                      ],
+                    ),
+                  )
+                : const CircularProgressIndicator(),
+          ),
+        ),
+      );
+    },
+  );
 }

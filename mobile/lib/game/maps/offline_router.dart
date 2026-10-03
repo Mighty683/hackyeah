@@ -22,7 +22,7 @@ class PracticeBlockage {
   }
 }
 
-/// Practice routing on bundled line geometry. This is not verified walking data.
+/// Offline pedestrian routing on bundled line geometry; access is not verified.
 /// Only shared source vertices connect ways; visual crossings add no shortcuts.
 class OfflineRouter {
   OfflineRouter(DemoMap map, {this.blockage}) {
@@ -54,6 +54,7 @@ class OfflineRouter {
   final PracticeBlockage? blockage;
   final _points = <Vector2>[];
   final _edges = <Map<int, double>>[];
+  final _tags = <Map<int, Map<String, dynamic>>>[];
   final _incoming = <int>{};
 
   static bool _allowsWalking(DemoMapFeature feature) {
@@ -104,6 +105,7 @@ class OfflineRouter {
   int _addNode(Vector2 point) {
     _points.add(point);
     _edges.add({});
+    _tags.add({});
     return _points.length - 1;
   }
 
@@ -140,11 +142,17 @@ class OfflineRouter {
     final cost = length * _costFactor(tags);
     final oneWay = tags['oneway:foot'];
     if (oneWay != '-1') {
-      _edges[a][b] = math.min(_edges[a][b] ?? double.infinity, cost);
+      if (cost < (_edges[a][b] ?? double.infinity)) {
+        _edges[a][b] = cost;
+        _tags[a][b] = tags;
+      }
       _incoming.add(b);
     }
     if (!const {'yes', '1', 'true'}.contains(oneWay)) {
-      _edges[b][a] = math.min(_edges[b][a] ?? double.infinity, cost);
+      if (cost < (_edges[b][a] ?? double.infinity)) {
+        _edges[b][a] = cost;
+        _tags[b][a] = tags;
+      }
       _incoming.add(a);
     }
   }
@@ -184,6 +192,10 @@ class OfflineRouter {
   /// A* with Euclidean distance: admissible because each preference multiplier is at least one.
   /// Returns null for distant pins or disconnected paths; no straight-line fallback.
   List<Vector2>? route(Vector2 start, Vector2 target) {
+    return routeDetails(start, target)?.points;
+  }
+
+  RoutedPath? routeDetails(Vector2 start, Vector2 target) {
     final source = nearestNode(start);
     final goal = nearestNode(target);
     if (source == null || goal == null) return null;
@@ -213,13 +225,27 @@ class OfflineRouter {
     return null;
   }
 
-  List<Vector2> _reconstruct(Map<int, int> previous, int goal) {
-    final result = <Vector2>[pointAt(goal)];
+  RoutedPath _reconstruct(Map<int, int> previous, int goal) {
+    final nodes = <int>[goal];
     var current = goal;
     while (previous.containsKey(current)) {
       current = previous[current]!;
-      result.add(pointAt(current));
+      nodes.add(current);
     }
-    return result.reversed.toList();
+    final ordered = nodes.reversed.toList();
+    return RoutedPath(
+      points: ordered.map(pointAt).toList(),
+      segments: [
+        for (var i = 1; i < ordered.length; i++)
+          Map.unmodifiable(_tags[ordered[i - 1]][ordered[i]]!),
+      ],
+    );
   }
+}
+
+/// One tag record per directed path segment, for local walking instructions.
+class RoutedPath {
+  const RoutedPath({required this.points, required this.segments});
+  final List<Vector2> points;
+  final List<Map<String, dynamic>> segments;
 }

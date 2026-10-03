@@ -113,9 +113,7 @@ class _ParentScreenState extends State<ParentScreen> {
 
   Future<void> _openLandmarks() async {
     await Navigator.of(context).push<void>(
-      MaterialPageRoute(
-        builder: (_) => const LandmarkLibraryScreen(parentMode: true),
-      ),
+      MaterialPageRoute(builder: (_) => const LandmarkLibraryScreen()),
     );
   }
 
