@@ -1,5 +1,9 @@
 # Hackathon working agreement
 
+## Visual verification
+
+Visual checks are performed by the user. Agents should verify code and functionality, and leave appearance, layout and design review to the user unless the user explicitly requests an agent visual review. Do not run screenshot or rendered-preview review as a routine completion check.
+
 This is a HackYeah hackathon project. Speed of development and a compelling working demo are the primary goals. Prioritize shipping useful features over production stability, exhaustive testing, long-term maintainability, or architectural polish.
 
 ## Application purpose
