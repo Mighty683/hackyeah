@@ -1,9 +1,10 @@
 import 'package:flutter/services.dart';
 
-/// Offline narration and gentle bundled cues for the training mission.
+/// Offline narration and gentle sound cues for the training mission.
 ///
 /// Android needs an installed English voice that does not require a network.
 /// Callers must provide an adult-supported fallback when [initialize] is false.
+/// [playCue] works without an installed voice.
 class MissionAudio {
   MissionAudio({MethodChannel? channel})
     : _channel = channel ?? const MethodChannel('basebound/mission_audio');
@@ -34,8 +35,8 @@ class MissionAudio {
 
   /// Cancels the previous cue or narration before speaking this instruction.
   ///
-  /// [sound] may be `alarm`, `all_clear`, or `noise`. The returned future ends
-  /// when playback finishes or is cancelled. Playback errors reach the caller.
+  /// [sound] accepts the same cues as [playCue]. The returned future ends when
+  /// playback finishes or is cancelled. Playback errors reach the caller.
   Future<void> narrate(String text, {String? sound}) async {
     if (_disposed) return;
     final generation = ++_generation;
@@ -44,6 +45,17 @@ class MissionAudio {
       'text': text,
       'sound': sound,
     });
+  }
+
+  /// Plays a cue without requiring or initializing an offline narration voice.
+  ///
+  /// Supports the teaching cues `alarm`, `all_clear`, and `noise`, plus gentle
+  /// interaction cues `select`, `action`, `success`, and `retry`. Each playback
+  /// cancels the previous cue or narration and completes when stopped or done.
+  Future<void> playCue(String sound) async {
+    if (_disposed) return;
+    ++_generation;
+    await _channel.invokeMethod<void>('narrate', {'text': '', 'sound': sound});
   }
 
   Future<void> stop() async {

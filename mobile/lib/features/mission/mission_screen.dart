@@ -36,10 +36,10 @@ class _MissionScreenState extends State<MissionScreen>
   bool _audioReady = false;
   bool _initializingAudio = true;
   bool _speaking = false;
+  bool _effectsEnabled = true;
   bool _exiting = false;
   bool _foreground = true;
   int _audioRequest = 0;
-  double _dragDistance = 0;
 
   @override
   void initState() {
@@ -70,7 +70,7 @@ class _MissionScreenState extends State<MissionScreen>
       _audioReady = ready;
       _initializingAudio = false;
     });
-    if (ready) await _narrate();
+    await _narrate();
   }
 
   String get _spokenText {
@@ -81,14 +81,27 @@ class _MissionScreenState extends State<MissionScreen>
     return _session.feedback ?? _session.step.narration;
   }
 
+  String? get _soundCue {
+    if (!_effectsEnabled) return null;
+    if (_session.isComplete) return 'success';
+    final choice = _session.selectedChoice;
+    if (choice == null) return _session.step.sound;
+    if (choice.continuesAfterFeedback || choice.id == 'more_places') {
+      return 'select';
+    }
+    if (!choice.isCorrect) return 'retry';
+    if (_session.step.id == 'get_down' || _session.step.id == 'protect_head') {
+      return 'action';
+    }
+    return 'success';
+  }
+
   Future<void> _narrate() async {
-    if (!_audioReady || !_foreground || _exiting) return;
+    if (_initializingAudio || !_foreground || _exiting) return;
     final request = ++_audioRequest;
     final text = _spokenText;
-    final sound = _session.hasFeedback || _session.isComplete
-        ? null
-        : _session.step.sound;
-    setState(() => _speaking = true);
+    final sound = _soundCue;
+    setState(() => _speaking = _audioReady);
     try {
       await _audio.stop();
       if (!mounted || !_foreground || _exiting || request != _audioRequest) {
@@ -97,7 +110,11 @@ class _MissionScreenState extends State<MissionScreen>
       if (sound == 'alarm' || sound == 'all_clear') {
         unawaited(HapticFeedback.lightImpact());
       }
-      await _audio.narrate(text, sound: sound);
+      if (_audioReady) {
+        await _audio.narrate(text, sound: sound);
+      } else if (sound != null) {
+        await _audio.playCue(sound);
+      }
     } catch (_) {
       if (mounted && request == _audioRequest) {
         setState(() => _audioReady = false);
@@ -108,6 +125,15 @@ class _MissionScreenState extends State<MissionScreen>
       }
     }
   }
+
+  void _toggleEffects() {
+    setState(() => _effectsEnabled = !_effectsEnabled);
+    // Cancel an in-flight cue immediately, then keep the instruction audible.
+    unawaited(_narrate());
+  }
+
+  bool get _canReplay =>
+      !_initializingAudio && !_exiting && (_audioReady || _soundCue != null);
 
   void _choose(String id) {
     if (_session.hasFeedback || _session.isComplete) return;
@@ -125,7 +151,6 @@ class _MissionScreenState extends State<MissionScreen>
       } else {
         _session.advance();
       }
-      _dragDistance = 0;
     });
     unawaited(_narrate());
   }
@@ -184,14 +209,25 @@ class _MissionScreenState extends State<MissionScreen>
           overflow: TextOverflow.ellipsis,
         ),
         actions: [
+          IconButton(
+            onPressed: _initializingAudio || _exiting ? null : _toggleEffects,
+            tooltip: _effectsEnabled
+                ? 'Mute sound effects'
+                : 'Unmute sound effects',
+            icon: Icon(
+              _effectsEnabled ? Icons.music_note_outlined : Icons.music_off,
+              size: 24,
+              color: BaseboundColors.muted,
+            ),
+          ),
           Semantics(
             label: 'Replay audio',
             button: true,
-            enabled: _audioReady,
-            onTap: _audioReady ? () => unawaited(_narrate()) : null,
+            enabled: _canReplay,
+            onTap: _canReplay ? () => unawaited(_narrate()) : null,
             child: ExcludeSemantics(
               child: IconButton(
-                onPressed: _audioReady ? () => unawaited(_narrate()) : null,
+                onPressed: _canReplay ? () => unawaited(_narrate()) : null,
                 tooltip: 'Replay audio',
                 icon: BaseboundIcon(
                   BaseboundIconName.speaker,
@@ -303,14 +339,6 @@ class _MissionScreenState extends State<MissionScreen>
                               style: const TextStyle(fontSize: 17, height: 1.4),
                             ),
                           ),
-                        if (step.id == 'get_down' && !_session.hasFeedback)
-                          const Padding(
-                            padding: EdgeInsets.only(top: 8),
-                            child: Text(
-                              'Drag down, or tap the arrow.',
-                              style: TextStyle(color: BaseboundColors.muted),
-                            ),
-                          ),
                         _audioControls(),
                       ],
                     ),
@@ -340,25 +368,14 @@ class _MissionScreenState extends State<MissionScreen>
     },
   );
 
-  Widget _scene(MissionVisual visual) {
-    final scene = MissionScene(
-      visual: visual,
-      gender: widget.gender,
-      stepId: _session.step.id,
-      selectedChoice: _session.selectedChoice,
-      choices: _session.hasFeedback ? const [] : _session.step.choices,
-      onChoose: _session.hasFeedback ? null : _choose,
-    );
-    if (_session.step.id != 'get_down') return scene;
-    return GestureDetector(
-      onVerticalDragStart: (_) => _dragDistance = 0,
-      onVerticalDragUpdate: (details) {
-        _dragDistance += details.delta.dy;
-        if (_dragDistance >= 48) _choose('down');
-      },
-      child: scene,
-    );
-  }
+  Widget _scene(MissionVisual visual) => MissionScene(
+    visual: visual,
+    gender: widget.gender,
+    stepId: _session.step.id,
+    selectedChoice: _session.selectedChoice,
+    choices: _session.hasFeedback ? const [] : _session.step.choices,
+    onChoose: _session.hasFeedback ? null : _choose,
+  );
 
   Widget _decisionInstruction() => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -378,8 +395,8 @@ class _MissionScreenState extends State<MissionScreen>
       ),
       const SizedBox(height: 8),
       Text(
-        _session.step.id == 'get_down'
-            ? 'Drag down, or tap a highlighted action.'
+        _session.step.id == 'get_down' || _session.step.id == 'protect_head'
+            ? 'Tap a pose to choose.'
             : 'Tap a highlighted part of the picture.',
         style: const TextStyle(color: BaseboundColors.muted),
       ),
@@ -479,10 +496,21 @@ class _MissionScreenState extends State<MissionScreen>
   String _nextLabel() => switch (_session.step.id) {
     'alarm' => 'Find a place',
     'outdoor_alarm' => 'Choose where to go',
+    'destination' || 'outdoor_places' =>
+      _session.selectedChoice?.continuesAfterFeedback == true
+          ? 'See what happens'
+          : _session.selectedChoice?.id == 'more_places'
+          ? 'See nearby places'
+          : 'Enter the shelter',
+    'outdoor_noise' => 'Choose what to do',
+    'get_down' => 'Protect my head',
+    'protect_head' => 'Stay down',
+    'outdoor_recover' => 'Follow the adult',
+    'outdoor_sheltered' => 'Tell a trusted adult',
     'contacts' => 'Tell them',
     'communication' => 'Hear the reply',
     'message' => 'Stay here',
-    'noise' || 'outdoor_sheltered' => 'Keep waiting',
+    'noise' => 'Keep waiting',
     'quiet' => 'Wait for the all-clear',
     'all_clear' => 'Remember the steps',
     'recall' => 'Finish practice',

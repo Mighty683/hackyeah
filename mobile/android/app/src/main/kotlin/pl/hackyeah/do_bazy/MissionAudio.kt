@@ -100,7 +100,8 @@ class MissionAudio(private val context: Context) {
 
     fun narrate(text: String, sound: String?, result: MethodChannel.Result) {
         stop()
-        if (!ready || speech == null) {
+        // Short interaction cues remain available when no offline voice exists.
+        if (text.isNotBlank() && (!ready || speech == null)) {
             result.error("AUDIO_UNAVAILABLE", "Install an offline English voice with an adult's help.", null)
             return
         }

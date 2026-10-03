@@ -98,9 +98,12 @@ class MissionSession {
   late final Map<String, MissionStep> _steps;
   late String _stepId;
   MissionChoice? _selectedChoice;
+  String? _outdoorDestination;
   bool _isComplete = false;
 
-  MissionStep get step => _steps[_stepId]!;
+  MissionStep get step => _stepId == 'outdoor_noise'
+      ? _outdoorNoiseStep(_outdoorDestination)
+      : _steps[_stepId]!;
   MissionChoice? get selectedChoice => _selectedChoice;
   String? get feedback => _selectedChoice?.feedback;
   bool get hasFeedback => _selectedChoice != null;
@@ -111,6 +114,10 @@ class MissionSession {
     for (final choice in step.choices) {
       if (choice.id == id) {
         _selectedChoice = choice;
+        if ((_stepId == 'destination' || _stepId == 'outdoor_places') &&
+            !choice.isCorrect) {
+          _outdoorDestination = choice.id;
+        }
         return;
       }
     }
@@ -140,6 +147,7 @@ class MissionSession {
   void restart() {
     _stepId = mode == MissionMode.home ? 'alarm' : 'outdoor_alarm';
     _selectedChoice = null;
+    _outdoorDestination = null;
     _isComplete = false;
   }
 
@@ -170,18 +178,43 @@ class MissionSession {
         return 'destination';
       case 'destination':
         if (_selectedChoice!.id == 'more_places') return 'outdoor_places';
-        return _selectedChoice!.isCorrect ? 'outdoor_sheltered' : 'get_down';
+        return _selectedChoice!.isCorrect
+            ? 'outdoor_sheltered'
+            : 'outdoor_noise';
       case 'outdoor_places':
-        return _selectedChoice!.isCorrect ? 'outdoor_sheltered' : 'get_down';
+        return _selectedChoice!.isCorrect
+            ? 'outdoor_sheltered'
+            : 'outdoor_noise';
+      case 'outdoor_noise':
+        return 'get_down';
       case 'get_down':
         return 'protect_head';
       case 'protect_head':
+        return 'outdoor_recover';
+      case 'outdoor_recover':
         return 'outdoor_sheltered';
       default:
         throw StateError('Unknown mission step: $_stepId');
     }
   }
 }
+
+/// Keep the interruption tied to the destination the child just chose.
+MissionStep _outdoorNoiseStep(String? destination) => MissionStep(
+  id: 'outdoor_noise',
+  title: 'Still outside',
+  narration: switch (destination) {
+    'home' =>
+      'You start towards home. Before you get there, you hear a loud noise.',
+    'school' =>
+      'You start towards school. Before you get there, you hear a loud noise.',
+    'park' => 'You are by the open park. Then you hear a loud noise.',
+    'bus_stop' => 'You are by the bus stop. Then you hear a loud noise.',
+    _ => 'Before you reach shelter, you hear a loud noise.',
+  },
+  visual: MissionVisual.getDown,
+  sound: 'noise',
+);
 
 Map<String, MissionStep> _buildSteps() {
   final steps = <MissionStep>[
@@ -406,7 +439,7 @@ Map<String, MissionStep> _buildSteps() {
           'Home: far away',
           MissionActionIcon.home,
           false,
-          'Home is far away. You are still outside when a loud noise starts.',
+          'Home is too far to reach yet. You are still outside.',
           continuesAfterFeedback: true,
         ),
         _choice(
@@ -414,7 +447,7 @@ Map<String, MissionStep> _buildSteps() {
           'School: farther away',
           MissionActionIcon.school,
           false,
-          'School is farther away. You hear a loud noise outside.',
+          'School is too far to reach yet. You are still outside.',
           continuesAfterFeedback: true,
         ),
         _choice(
@@ -444,7 +477,7 @@ Map<String, MissionStep> _buildSteps() {
           'Park',
           MissionActionIcon.park,
           false,
-          'The open park offers little protection. You hear a loud noise.',
+          'The open park offers little protection. You are still outside.',
           continuesAfterFeedback: true,
         ),
         _choice(
@@ -452,7 +485,7 @@ Map<String, MissionStep> _buildSteps() {
           'Bus stop',
           MissionActionIcon.busStop,
           false,
-          'The bus stop offers little protection. You hear a loud noise.',
+          'The bus stop offers little protection. You are still outside.',
           continuesAfterFeedback: true,
         ),
         _choice(
@@ -466,10 +499,9 @@ Map<String, MissionStep> _buildSteps() {
     ),
     MissionStep(
       id: 'get_down',
-      title: 'A loud noise outside',
-      narration: 'You are outside. Get down.',
+      title: 'What will you do?',
+      narration: 'You are still outside when the noise starts.',
       visual: MissionVisual.getDown,
-      sound: 'noise',
       choices: [
         _choice(
           'stay',
@@ -495,7 +527,7 @@ Map<String, MissionStep> _buildSteps() {
       choices: [
         _choice(
           'stay',
-          'Arms by your side',
+          'Keep hands down',
           MissionActionIcon.stay,
           false,
           'Use your arms to cover your head.',
@@ -510,11 +542,18 @@ Map<String, MissionStep> _buildSteps() {
       ],
     ),
     const MissionStep(
+      id: 'outdoor_recover',
+      title: 'An adult helps you',
+      narration:
+          'You stay down with your head covered. In this story, a trusted adult '
+          'helps you reach shelter when it is possible.',
+      visual: MissionVisual.protectHead,
+    ),
+    const MissionStep(
       id: 'outdoor_sheltered',
       title: 'Inside the practice shelter',
       narration:
-          'In this practice, a trusted adult helps you reach shelter '
-          'when it is possible. You stay away from windows.',
+          'You are now inside the practice shelter, away from windows.',
       visual: MissionVisual.sheltered,
     ),
   ];

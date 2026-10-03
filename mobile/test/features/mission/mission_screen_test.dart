@@ -53,12 +53,14 @@ void main() {
     );
     expect(find.byType(MissionChoiceCard), findsNothing);
     await _tap(tester, 'Go to the window');
+    expect(_lastNarration(audioCalls)['sound'], 'retry');
     expect(
       find.text('Windows are less safe. Move away from them.'),
       findsOneWidget,
     );
     await _tap(tester, 'Try again');
     await _tap(tester, 'Move deeper inside');
+    expect(_lastNarration(audioCalls)['sound'], 'success');
     await _tap(tester, 'Next step');
     expect(
       tester.widget<MissionScene>(find.byType(MissionScene)).choices,
@@ -96,7 +98,7 @@ void main() {
     await tester.pump();
   });
 
-  testWidgets('outdoor destination mistake supports drag and head protection', (
+  testWidgets('outdoor story connects the destination, noise and recovery', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(430, 932);
@@ -106,22 +108,71 @@ void main() {
     await _showMission(tester, audioChannel, MissionMode.outdoor);
     await _tap(tester, 'Choose where to go');
     await _tap(tester, 'Home: far away');
-    await _tap(tester, 'Next step');
-    expect(find.text('A loud noise outside'), findsOneWidget);
+    expect(_lastNarration(audioCalls)['sound'], 'select');
+    await _tap(tester, 'See what happens');
+    expect(find.text('Still outside'), findsOneWidget);
+    expect(_lastNarration(audioCalls)['text'], contains('towards home'));
+    expect(_lastNarration(audioCalls)['sound'], 'noise');
+    await _tap(tester, 'Choose what to do');
+    expect(find.text('What will you do?'), findsOneWidget);
+    expect(_lastNarration(audioCalls)['sound'], isNull);
     final scene = find.byType(MissionScene);
     await tester.ensureVisible(scene);
     await tester.drag(scene, const Offset(0, 90));
     await tester.pumpAndSettle();
     expect(find.text('You got down. Now protect your head.'), findsOneWidget);
-    await _tap(tester, 'Next step');
+    expect(_lastNarration(audioCalls)['sound'], 'action');
+    await _tap(tester, 'Protect my head');
     await _tap(tester, 'Cover your head');
-    await _tap(tester, 'Next step');
+    expect(_lastNarration(audioCalls)['sound'], 'action');
+    await _tap(tester, 'Stay down');
+    expect(find.text('An adult helps you'), findsOneWidget);
+    await _tap(tester, 'Follow the adult');
     expect(find.text('Inside the practice shelter'), findsOneWidget);
-    await _tap(tester, 'Keep waiting');
+    await _tap(tester, 'Tell a trusted adult');
     expect(find.text('Tell a trusted adult'), findsOneWidget);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();
+  });
+
+  testWidgets('sound effects can be muted while narration remains available', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(430, 932);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await _showMission(tester, audioChannel, MissionMode.home);
+    expect(_lastNarration(audioCalls)['sound'], 'alarm');
+    final initialText = _lastNarration(audioCalls)['text'];
+
+    await tester.tap(find.byTooltip('Mute sound effects'));
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Unmute sound effects'), findsOneWidget);
+    expect(_lastNarration(audioCalls)['text'], initialText);
+    expect(_lastNarration(audioCalls)['sound'], isNull);
+    await _tap(tester, 'Replay audio');
+    expect(_lastNarration(audioCalls)['text'], initialText);
+    expect(_lastNarration(audioCalls)['sound'], isNull);
+
+    await _tap(tester, 'Find a place');
+    await _tap(tester, 'Move deeper inside');
+    expect(_lastNarration(audioCalls)['text'], contains('moved away'));
+    expect(_lastNarration(audioCalls)['sound'], isNull);
+    await tester.tap(find.byTooltip('Unmute sound effects'));
+    await tester.pumpAndSettle();
+    expect(_lastNarration(audioCalls)['sound'], 'success');
+
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    await tester.pump();
+    expect(audioCalls.last.method, 'stop');
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pumpAndSettle();
+    expect(_lastNarration(audioCalls)['sound'], 'success');
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+    expect(audioCalls.last.method, 'dispose');
   });
 
   testWidgets('short quiz screens keep choices and next button in view', (
@@ -170,10 +221,60 @@ void main() {
       }
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pumpAndSettle();
+      await _showMission(tester, audioChannel, MissionMode.outdoor);
+      for (final label in [
+        'Choose where to go',
+        'Home: far away',
+        'See what happens',
+        'Choose what to do',
+        'Get down',
+        'Protect my head',
+        'Cover your head',
+        'Stay down',
+        'Follow the adult',
+      ]) {
+        await _tap(tester, label);
+        expect(tester.takeException(), isNull, reason: '$size: $label');
+      }
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pumpAndSettle();
     }
   });
 
-  testWidgets('narrow screens and large text keep room targets usable', (
+  testWidgets('sound cues still play and mute without an offline voice', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(430, 932);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(audioChannel, (call) async {
+          audioCalls.add(call);
+          return call.method == 'initialize' ? false : null;
+        });
+    await _showMission(tester, audioChannel, MissionMode.outdoor);
+    expect(find.textContaining('The voice is unavailable'), findsOneWidget);
+    expect(_lastNarration(audioCalls)['text'], isEmpty);
+    expect(_lastNarration(audioCalls)['sound'], 'alarm');
+    await _tap(tester, 'Replay audio');
+    expect(_lastNarration(audioCalls)['sound'], 'alarm');
+    await tester.tap(find.byTooltip('Mute sound effects'));
+    await tester.pumpAndSettle();
+    expect(audioCalls.last.method, 'stop');
+    final replay = tester.widget<Semantics>(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is Semantics && widget.properties.label == 'Replay audio',
+      ),
+    );
+    expect(replay.properties.enabled, isFalse);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+    expect(audioCalls.last.method, 'dispose');
+  });
+
+  testWidgets('narrow screens and large text keep mission targets usable', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(320, 700);
@@ -199,8 +300,30 @@ void main() {
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();
+    await _showMission(tester, audioChannel, MissionMode.outdoor, textScale: 2);
+    for (final label in [
+      'Choose where to go',
+      'Home: far away',
+      'See what happens',
+      'Choose what to do',
+      'Keep standing',
+      'Try again',
+      'Get down',
+      'Protect my head',
+      'Cover your head',
+      'Stay down',
+      'Follow the adult',
+    ]) {
+      await _tap(tester, label);
+      expect(tester.takeException(), isNull, reason: label);
+    }
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
   });
 }
+
+Map<dynamic, dynamic> _lastNarration(List<MethodCall> calls) =>
+    calls.lastWhere((call) => call.method == 'narrate').arguments as Map;
 
 Future<void> _showMission(
   WidgetTester tester,

@@ -41,11 +41,12 @@ const _apartmentTargets = {
 };
 
 const _streetDestinations = {
-  'home': Offset(.19, .265),
-  'school': Offset(.85, .277),
+  // Wrong destinations stop along the street: the child has not arrived.
+  'home': Offset(.43, .70),
+  'school': Offset(.53, .70),
   'shelter': Offset(.70, .50),
-  'park': Offset(.22, .74),
-  'bus_stop': Offset(.84, .795),
+  'park': Offset(.38, .79),
+  'bus_stop': Offset(.58, .80),
 };
 
 const _streetSelectedTargets = {
@@ -99,7 +100,7 @@ MissionSceneLayout missionSceneLayout(String? stepId, MissionVisual visual) {
       childWidth: .31,
       destinations: _streetDestinations,
       selectedTargets: _streetSelectedTargets,
-      selectedChildWidth: .16,
+      selectedChildWidth: .24,
     ),
     'outdoor_places' => const MissionSceneLayout(
       family: MissionVisual.street,
@@ -113,7 +114,7 @@ MissionSceneLayout missionSceneLayout(String? stepId, MissionVisual visual) {
       childWidth: .31,
       destinations: _streetDestinations,
       selectedTargets: _streetSelectedTargets,
-      selectedChildWidth: .16,
+      selectedChildWidth: .24,
     ),
     'contacts' => const MissionSceneLayout(
       family: MissionVisual.contacts,
@@ -156,23 +157,35 @@ MissionSceneLayout missionSceneLayout(String? stepId, MissionVisual visual) {
       selectedTargets: {'leave': Rect.fromLTWH(.62, .18, .35, .13)},
       selectedChildWidth: .18,
     ),
+    'outdoor_noise' => const MissionSceneLayout(
+      family: MissionVisual.street,
+      asset: 'assets/illustrations/street-practice-v2.png',
+      targets: {},
+      childWidth: 0,
+    ),
     'get_down' => const MissionSceneLayout(
       family: MissionVisual.getDown,
+      asset: 'assets/illustrations/street-practice-v2.png',
       targets: {
-        'stay': Rect.fromLTWH(.32, .40, .35, .32),
-        'down': Rect.fromLTWH(.03, .77, .43, .20),
+        'stay': Rect.fromLTWH(.04, .46, .44, .50),
+        'down': Rect.fromLTWH(.52, .46, .44, .50),
       },
-      childFeet: Offset(.49, .77),
-      childWidth: .52,
+      childWidth: 0,
     ),
     'protect_head' => const MissionSceneLayout(
       family: MissionVisual.protectHead,
+      asset: 'assets/illustrations/street-practice-v2.png',
       targets: {
-        'stay': Rect.fromLTWH(.03, .73, .42, .24),
-        'protect_head': Rect.fromLTWH(.29, .36, .43, .30),
+        'stay': Rect.fromLTWH(.04, .46, .44, .50),
+        'protect_head': Rect.fromLTWH(.52, .46, .44, .50),
       },
-      childFeet: Offset(.49, .77),
-      childWidth: .52,
+      childWidth: 0,
+    ),
+    'outdoor_recover' => const MissionSceneLayout(
+      family: MissionVisual.protectHead,
+      asset: 'assets/illustrations/street-practice-v2.png',
+      targets: {},
+      childWidth: 0,
     ),
     _ => _nonDecisionLayout(visual),
   };

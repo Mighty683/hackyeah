@@ -142,7 +142,21 @@ flowchart TD
     MODE -->|At home| HOME["HOME ALARM TUTORIAL"]
     MODE -->|Outside| OUT["OUTDOOR ALARM SIMULATION"]
     HOME --> MR["MISSION RECALL<br/>Completion sticker; no score"]
-    OUT --> MR
+    OUT -->|Choose where to go| OS_DEST["OUTDOOR DESTINATION<br/>Home, school, nearby shelter or other places"]
+    OS_DEST -->|Other places; acknowledge feedback| OS_OTHER["NEARBY PLACES<br/>Park, bus stop or nearby shelter"]
+    OS_DEST -->|Home or school| OS_FEEDBACK["DESTINATION FEEDBACK<br/>Explain why the child is still outside"]
+    OS_OTHER -->|Park or bus stop| OS_FEEDBACK
+    OS_FEEDBACK -->|See what happens| OS_NOISE["STILL OUTSIDE<br/>Same chosen destination; restrained sound cue"]
+    OS_NOISE -->|Choose what to do| OS_DOWN["GET DOWN<br/>Drag down or tap one of two pictured actions"]
+    OS_DOWN -->|Keep standing; calm feedback and retry| OS_DOWN
+    OS_DOWN -->|Get down; Protect my head| OS_HEAD["PROTECT YOUR HEAD<br/>Two pictured actions"]
+    OS_HEAD -->|Keep hands down; calm feedback and retry| OS_HEAD
+    OS_HEAD -->|Cover head; Stay down| OS_ADULT["AN ADULT HELPS YOU<br/>Stay down; adult leads to shelter when possible in this story"]
+    OS_ADULT -->|Follow the adult| OS_SHELTER["INSIDE THE PRACTICE SHELTER<br/>Away from windows"]
+    OS_DEST -->|Nearby shelter; Enter the shelter| OS_SHELTER
+    OS_OTHER -->|Nearby shelter; Enter the shelter| OS_SHELTER
+    OS_SHELTER -->|Tell a trusted adult| OS_REST["SHARED PRACTICE STEPS<br/>Pretend message; wait through noise and silence; all-clear"]
+    OS_REST --> MR
     MR -->|Replay| RE{"Selected mission mode"}
     RE -->|Home| HOME
     RE -->|Outside| OUT
@@ -299,8 +313,9 @@ flowchart TD
 | Activity selection | Choose Practices or Our map | Replay audio, back |
 | Practice scenarios | Choose alarm or lost practice | Replay audio, back to activities |
 | Mission mode (7+) | Choose home or outside | Replay audio, back to scenarios |
-| Mission scene | Tap a highlighted scene object to choose an action, or hear the situation | Replay audio, back |
-| Mission feedback | See the consequence and explanation | Retry the same decision or advance; replay audio |
+| Mission scene | Tap a highlighted scene object to choose an action, or hear the situation | Replay audio, mute/unmute sound effects, back |
+| Outdoor interruption/recovery | Connect the chosen destination to still being outside; get down, cover head, then follow the adult in the story | Drag or equivalent tap; retry physical choices; nearby shelter skips this branch |
+| Mission feedback | See the consequence and explanation | Retry the same decision or advance; replay audio, mute/unmute sound effects |
 | Mission recall | See the six learned actions and completion sticker | Replay audio, replay mission, choose practice |
 | Lost practice loading/error | Load the current display-only family snapshot | Retry or explicitly use pretend family; back preserves saved details |
 | Lost scene selection (7+) | Choose meeting point nearby or out of sight | Replay audio, back; unavailable voice offers adult help and retry |
@@ -352,9 +367,9 @@ Help also reads named non-demo saved family pins and independently uses foregrou
 
 The home tutorial practices alarm recognition, moving away from windows, choosing an interior hallway, messaging a fictional trusted adult, staying after a noise, waiting through silence, and following an explicit all-clear. The premise is a fallback when the agreed shelter cannot be reached. An interior area and two walls offer some protection; the game does not certify a home as safe.
 
-The MVP targets children aged 7+ with two to four choices and optional fictional outdoor practice: compare nearby shelter against distant destinations and exposed places. Child onboarding collects age, but there is no younger-child branch; saved age does not change this mission. An outdoor mistake leads to getting down (drag or tap), protecting the head, and moving to shelter. Home mistakes explain the consequence and retry without punishment. Both modes finish with a visual recall and completion sticker, with no score or timer.
+The MVP targets children aged 7+ with two to four choices and optional fictional outdoor practice: compare nearby shelter against distant destinations and exposed places. Child onboarding collects age, but there is no younger-child branch; saved age does not change this mission. An outdoor mistake first explains why the child remains outside, then a short “Still outside” scene names the chosen destination as a sound interrupts the journey. The next two decisions practice getting down (drag or tap) and covering the head. An explicit story scene keeps the child down while a trusted adult helps them reach shelter when possible; arriving at the shelter then leads to fictional contact selection. Choosing the nearby shelter skips this recovery branch. Home and physical-action mistakes explain the consequence and retry without punishment. Both modes finish with a visual recall and completion sticker, with no score or timer.
 
-Instructions, feedback, and replay use an installed offline English Android speech voice. If unavailable, the app shows an adult-help message; text remains as a fallback. Short warning and all-clear playback excerpts are teaching samples, not complete alarm signals. Contacts, messages, replies, shelter selection and movement are fictional; this mission neither calls nor sends messages nor uses saved personal contacts or map pins. See [mission-01-air-raid-alarm.md](mission-01-air-raid-alarm.md) for the scenario and source notes.
+Instructions, feedback, and replay use an installed offline English Android speech voice. If unavailable, the app shows an adult-help message; text remains as a fallback and sound cues can still play. Gentle selection, action, success and retry cues accompany feedback. A separate sound-effects control mutes cues while leaving narration available. Playback stops when the app backgrounds or the mission exits. Short warning and all-clear playback excerpts are teaching samples, not complete alarm signals; the outdoor interruption uses a restrained fictional noise. Contacts, messages, replies, shelter selection and movement are fictional; this mission neither calls nor sends messages nor uses saved personal contacts or map pins. See [mission-01-air-raid-alarm.md](mission-01-air-raid-alarm.md) for the scenario and source notes.
 
 ### Mission 02 — lost practice
 
