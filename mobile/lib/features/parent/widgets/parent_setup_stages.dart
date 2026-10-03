@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../../ui/basebound_icons.dart';
 import '../../../ui/basebound_ui.dart';
@@ -28,7 +29,9 @@ class ParentIntroductionStage extends StatelessWidget {
       ),
       const SizedBox(height: 16),
       const Text(
-        'Saved details are encrypted on this device. Anyone using this app can open them. No parent lock or cloud sync.',
+        kIsWeb
+            ? 'Details stay in this browser tab for this demo. Refresh or reset discards edits. Use fictional details. No encryption, parent lock or cloud sync.'
+            : 'Saved details are encrypted on this device. Anyone using this app can open them. No parent lock or cloud sync.',
         style: parentSetupSubtitleStyle,
       ),
       const SizedBox(height: 24),

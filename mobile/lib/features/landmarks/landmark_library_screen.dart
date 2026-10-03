@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../game/maps/demo_map.dart';
@@ -74,7 +75,7 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
     }
     if (mounted && _error == null && !_checkedRecovery) {
       _checkedRecovery = true;
-      await _recoverPhoto();
+      if (!kIsWeb) await _recoverPhoto();
     }
   }
 
@@ -123,6 +124,10 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
   }
 
   Future<void> _addPhoto() async {
+    if (kIsWeb) {
+      await _addDemoPhoto();
+      return;
+    }
     final source = await chooseLandmarkPhotoSource(context);
     if (source == null || !mounted) return;
     setState(() => _busy = true);
@@ -138,6 +143,19 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
       await _edit(photoPath: photo.path);
     } catch (_) {
       _message('Could not open the photo. Try the camera or gallery again.');
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _addDemoPhoto() async {
+    final asset = await chooseDemoLandmarkPhoto(context);
+    if (asset == null || !mounted) return;
+    setState(() => _busy = true);
+    try {
+      await _edit(photoPath: asset);
+    } catch (_) {
+      _message('Could not open the demo photo. Try again.');
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -236,7 +254,13 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
                   child: FilledButton.icon(
                     onPressed: _busy ? null : _addPhoto,
                     icon: const PhotoActionIcon(color: Colors.white),
-                    label: Text(_busy ? 'Opening photo…' : 'Take a photo'),
+                    label: Text(
+                      _busy
+                          ? 'Opening photo…'
+                          : kIsWeb
+                          ? 'Choose a demo photo'
+                          : 'Take a photo',
+                    ),
                   ),
                 ),
               )
@@ -329,11 +353,11 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
                   ),
               ],
               const SizedBox(height: 24),
-              const ParentEditorNote(
+              ParentEditorNote(
                 message:
                     'Map: TAURON Arena, Kraków. Landmarks are independent points, with no fixed visiting order. '
-                    'Walking routes use GPS and offline paths; access, entrances and hazards are not verified. Walk with your child. '
-                    'Photos stay in app-private storage; names and pins are encrypted. No cloud sync or parent lock.',
+                    'Walking routes use ${kIsWeb ? 'simulated location' : 'GPS'} and offline paths; access, entrances and hazards are not verified. Walk with your child. '
+                    '${kIsWeb ? 'Browser demo: location and photos are simulated. Changes last until reload.' : 'Photos stay in app-private storage; names and pins are encrypted. No cloud sync or parent lock.'}',
                 icon: BaseboundIconName.info,
               ),
             ],

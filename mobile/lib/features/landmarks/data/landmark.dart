@@ -16,8 +16,9 @@ class Landmark {
     this.photoAsset,
   });
 
+  // A literal keeps this bound intact on the web's 32-bit bitwise operations.
   static String newId() =>
-      '${DateTime.now().microsecondsSinceEpoch}_${Random.secure().nextInt(1 << 32)}';
+      '${DateTime.now().microsecondsSinceEpoch}_${Random.secure().nextInt(0x100000000)}';
 
   factory Landmark.fromJson(Map<String, dynamic> json) {
     final point = SafePoint.fromJson(json);

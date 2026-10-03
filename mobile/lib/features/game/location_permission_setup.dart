@@ -1,4 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
+import '../../platform/app_storage.dart';
+
 import 'package:geolocator/geolocator.dart';
 
 import 'navigation_location.dart';
@@ -11,13 +15,11 @@ class LocationPermissionSetup {
     LocationSource? source,
     FlutterSecureStorage? storage,
     Future<bool> Function()? openSettings,
-  }) : _source = source ?? DeviceLocationSource(),
-       _storage =
-           storage ??
-           const FlutterSecureStorage(
-             aOptions: AndroidOptions(resetOnError: false),
-           ),
-       _openSettings = openSettings ?? Geolocator.openAppSettings;
+  }) : _source = source ?? defaultLocationSource(),
+       _storage = storage ?? defaultAppStorage(),
+       _openSettings =
+           openSettings ??
+           (kIsWeb ? () async => false : Geolocator.openAppSettings);
 
   static const _attemptKey = 'basebound.location_permission_attempted.v1';
   final LocationSource _source;

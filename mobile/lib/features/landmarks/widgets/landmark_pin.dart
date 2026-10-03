@@ -1,4 +1,4 @@
-import 'dart:io';
+import '../../../platform/photo_access.dart';
 
 import 'package:flutter/material.dart';
 
@@ -46,10 +46,8 @@ class LandmarkPin extends StatelessWidget {
                         child: Image(
                           image: ResizeImage(
                             landmark.photoAsset == null
-                                ? FileImage(
-                                    File(
-                                      '$photoDirectory/${landmark.photoName}',
-                                    ),
+                                ? photoImageProvider(
+                                    '$photoDirectory/${landmark.photoName}',
                                   )
                                 : AssetImage(landmark.photoAsset!),
                             width: 120,

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
@@ -252,21 +253,25 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
         else
           ..._variantContent(),
         const SizedBox(height: 16),
-        OutlinedButton.icon(
-          onPressed: _opening ? null : _speak,
-          icon: const BaseboundIcon(BaseboundIconName.speaker),
-          label: const Text('Replay audio'),
-        ),
+        if (!kIsWeb)
+          OutlinedButton.icon(
+            onPressed: _opening ? null : _speak,
+            icon: const BaseboundIcon(BaseboundIconName.speaker),
+            label: const Text('Replay audio'),
+          ),
         if (!_audioAvailable) ...[
           const SizedBox(height: 12),
           const Text(
-            'Voice is unavailable. Ask an adult to help. '
-            'An offline English voice is needed.',
+            kIsWeb
+                ? 'Web demo: voice and sounds are off. Read the instructions with an adult.'
+                : 'Voice is unavailable. Ask an adult to help. '
+                      'An offline English voice is needed.',
           ),
-          TextButton(
-            onPressed: _opening ? null : _speak,
-            child: const Text('Try voice again'),
-          ),
+          if (!kIsWeb)
+            TextButton(
+              onPressed: _opening ? null : _speak,
+              child: const Text('Try voice again'),
+            ),
         ],
       ],
     );

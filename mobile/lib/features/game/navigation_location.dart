@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 
-/// Foreground GPS only. No saved tracks, background service or pretend position.
+/// Foreground location; the browser demo uses an explicitly fictional position.
 abstract interface class LocationSource {
   Future<bool> serviceEnabled();
   Future<LocationPermission> permission();
@@ -28,6 +28,41 @@ class DeviceLocationSource implements LocationSource {
   );
 }
 
+LocationSource defaultLocationSource() =>
+    kIsWeb ? DemoLocationSource() : DeviceLocationSource();
+
+/// A stationary demo fix, never a browser or phone location reading.
+Position demoLocationPosition() => Position(
+  latitude: 50.0678,
+  longitude: 19.9917,
+  timestamp: DateTime.now(),
+  accuracy: 5,
+  altitude: 0,
+  altitudeAccuracy: 0,
+  heading: 0,
+  headingAccuracy: 0,
+  speed: 0,
+  speedAccuracy: 0,
+);
+
+class DemoLocationSource implements LocationSource {
+  @override
+  Future<bool> serviceEnabled() async => true;
+  @override
+  Future<LocationPermission> permission() async =>
+      LocationPermission.whileInUse;
+  @override
+  Future<LocationPermission> requestPermission() => permission();
+  @override
+  Stream<Position> positions() async* {
+    yield demoLocationPosition();
+    yield* Stream<Position>.periodic(
+      const Duration(seconds: 5),
+      (_) => demoLocationPosition(),
+    );
+  }
+}
+
 enum LocationState {
   off,
   waiting,
@@ -42,7 +77,7 @@ enum LocationState {
 
 class NavigationLocation extends ChangeNotifier {
   NavigationLocation({LocationSource? source, DateTime Function()? now})
-    : _source = source ?? DeviceLocationSource(),
+    : _source = source ?? defaultLocationSource(),
       _now = now ?? DateTime.now;
 
   final LocationSource _source;
@@ -67,21 +102,26 @@ class NavigationLocation extends ChangeNotifier {
       state == LocationState.waiting ||
       state == LocationState.stale;
 
-  String get message => switch (state) {
-    LocationState.off =>
-      'Explore the photo pins. Location shows your blue dot.',
-    LocationState.waiting => 'Finding your location… Stay with your adult.',
-    LocationState.live =>
-      isPrecise ? 'Live GPS · accuracy about ${position!.accuracy.round()} m' : 'GPS is approximate. Wait for a clearer position before following directions.',
-    LocationState.denied =>
-      'Location permission was denied. You can still explore photo pins.',
-    LocationState.settingsRequired => 'Ask your adult to allow location in Family setup or Android app settings.',
-    LocationState.disabled => 'Ask your adult to turn on phone location.',
-    LocationState.unavailable =>
-      'GPS is unavailable. Try again outdoors with your adult.',
-    LocationState.stale => 'GPS stopped updating. Directions are paused until a fresh position arrives.',
-    LocationState.paused => 'GPS is paused.',
-  };
+  String get message => kIsWeb
+      ? 'Demo location · fictional fixed position. No GPS is used.'
+      : switch (state) {
+          LocationState.off =>
+            'Explore the photo pins. Location shows your blue dot.',
+          LocationState.waiting =>
+            'Finding your location… Stay with your adult.',
+          LocationState.live =>
+            isPrecise
+                ? 'Live GPS · accuracy about ${position!.accuracy.round()} m'
+                : 'GPS is approximate. Wait for a clearer position before following directions.',
+          LocationState.denied =>
+            'Location permission was denied. You can still explore photo pins.',
+          LocationState.settingsRequired => 'Ask your adult to allow location in Family setup or Android app settings.',
+          LocationState.disabled => 'Ask your adult to turn on phone location.',
+          LocationState.unavailable =>
+            'GPS is unavailable. Try again outdoors with your adult.',
+          LocationState.stale => 'GPS stopped updating. Directions are paused until a fresh position arrives.',
+          LocationState.paused => 'GPS is paused.',
+        };
 
   Future<void> start({bool requestPermission = true}) async {
     if (_disposed) return;

@@ -34,6 +34,7 @@ class HelpContext extends ChangeNotifier {
 
   /// Only a nearby familiar-place hint; it cannot establish a safe destination.
   String? get nearbyPlaceName {
+    if (kIsWeb) return null;
     final fix = _location.position;
     if (!_active || !_location.isPrecise || fix == null) return null;
     final age = _now().difference(fix.timestamp);

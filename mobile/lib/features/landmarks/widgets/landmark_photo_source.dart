@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'photo_action_icon.dart';
+import '../data/demo_landmarks.dart';
 
 Future<ImageSource?> chooseLandmarkPhotoSource(
   BuildContext context,
@@ -38,3 +39,40 @@ Future<ImageSource?> chooseLandmarkPhotoSource(
     ),
   ),
 );
+
+/// Browser demo substitutes bundled fictional photos for camera/gallery access.
+Future<String?> chooseDemoLandmarkPhoto(BuildContext context) =>
+    showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                'Choose a demo photo',
+                style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 8),
+              const Text('Fictional samples replace the Android camera here.'),
+              const SizedBox(height: 16),
+              for (final demo in demoLandmarks)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: OutlinedButton.icon(
+                    icon: const PhotoActionIcon(gallery: true),
+                    label: Text(demo.landmark.name),
+                    style: OutlinedButton.styleFrom(
+                      alignment: Alignment.centerLeft,
+                    ),
+                    onPressed: () => Navigator.pop(context, demo.asset),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );

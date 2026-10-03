@@ -1,0 +1,2 @@
+void installBrowserAssetLoader() {}
+void removeBrowserAssetLoader() {}

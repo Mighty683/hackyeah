@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
@@ -198,24 +199,27 @@ class _PracticeSelectionScreenState extends State<_PracticeSelectionScreen>
                       const SizedBox(height: 24),
                       ..._choices(),
                       const SizedBox(height: 8),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: TextButton.icon(
-                          onPressed: _opening ? null : _speak,
-                          icon: const BaseboundIcon(
-                            BaseboundIconName.speaker,
-                            size: 24,
+                      if (!kIsWeb)
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: TextButton.icon(
+                            onPressed: _opening ? null : _speak,
+                            icon: const BaseboundIcon(
+                              BaseboundIconName.speaker,
+                              size: 24,
+                            ),
+                            label: const Text('Replay audio'),
                           ),
-                          label: const Text('Replay audio'),
                         ),
-                      ),
                       if (!_audioAvailable)
                         const Padding(
                           padding: EdgeInsets.only(top: 12),
                           child: SoftPanel(
                             child: Text(
-                              'Voice is unavailable. Ask an adult to help. '
-                              'An offline English voice is needed for spoken practice.',
+                              kIsWeb
+                                  ? 'Web demo: voice and sounds are off. Read the instructions with an adult.'
+                                  : 'Voice is unavailable. Ask an adult to help. '
+                                        'An offline English voice is needed for spoken practice.',
                               style: TextStyle(color: BaseboundColors.muted),
                             ),
                           ),

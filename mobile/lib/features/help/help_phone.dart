@@ -1,6 +1,7 @@
 /// MVP 112 mock dialog and explicit trusted-contact dialler handoff.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
 
@@ -23,6 +24,14 @@ class HelpPhone {
 
   /// Android's voice-service report; never a guarantee a call will connect.
   Stream<HelpPhoneService> serviceStates() async* {
+    if (kIsWeb) {
+      yield HelpPhoneService.available;
+      yield* Stream<HelpPhoneService>.periodic(
+        const Duration(seconds: 30),
+        (_) => HelpPhoneService.available,
+      );
+      return;
+    }
     try {
       if (await _channel.invokeMethod<bool>('hasServiceStateStream') != true) {
         yield HelpPhoneService.unknown;
@@ -55,6 +64,8 @@ class HelpPhone {
   /// 112 only opens the native demo dialog; it never reaches the dialler.
   /// Other numbers open the phone app without automatically placing a call.
   Future<bool> openDialler(String phone) async {
+    // Browser UI owns the pretend-call dialog; direct callers cannot launch tel.
+    if (kIsWeb) return false;
     if (phone == '112') {
       return await _channel.invokeMethod<bool>('showMockEmergencyCall') ??
           false;

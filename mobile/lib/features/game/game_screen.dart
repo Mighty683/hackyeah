@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -197,13 +198,17 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     _speak();
   }
 
+  String get _mapLocationExplanation => kIsWeb
+      ? 'Web demo: the blue dot is a fictional fixed position. No GPS, actual movement or real arrival is detected.\n\n'
+      : 'Your blue dot comes only from phone GPS. No tap moves it. Location is used while this screen is open; no track is saved.\n\n';
+
   void _about() => showDialog<void>(
     context: context,
     builder: (context) => AlertDialog(
       title: const Text('About our map'),
       scrollable: true,
-      content: const Text(
-        'Your blue dot comes only from phone GPS. No tap moves it. Location is used while this screen is open; no track is saved.\n\n'
+      content: Text(
+        '$_mapLocationExplanation'
         'Offline coverage: 2 × 2 km around TAURON Arena, Kraków. Walk with an adult. '
         'Routes use bundled OpenStreetMap paths and local roads. Access, barriers, entrances and hazards are not verified. '
         'Follow your adult’s judgment at roads and crossings. The endpoint ring is a mapped path near the pin.\n\n'
@@ -341,6 +346,9 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   );
 
   String? get _locationStatus {
+    if (kIsWeb) {
+      return 'Demo location · fictional fixed position. No GPS is used.';
+    }
     if (_navigation.outsideMap) return 'GPS is outside this demo map.';
     return switch (_location.state) {
       LocationState.off => 'Location is off. You can still explore.',
@@ -422,7 +430,9 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       ],
       if (!_voiceAvailable)
         const Text(
-          'Voice is unavailable. Ask your adult to help.',
+          kIsWeb
+              ? 'Web demo has no narration. Ask your adult to read with you.'
+              : 'Voice is unavailable. Ask your adult to help.',
           style: TextStyle(fontSize: 12),
         ),
     ],

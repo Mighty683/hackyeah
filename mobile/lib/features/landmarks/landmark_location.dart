@@ -1,12 +1,23 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
+
+import '../game/navigation_location.dart';
 
 import '../../game/maps/demo_map.dart';
 import '../parent/data/family_plan.dart';
 
 /// Foreground, one-shot placement only. Never records a track in the background.
 Future<SafePoint> currentLandmarkLocation() async {
+  if (kIsWeb) {
+    final position = demoLocationPosition();
+    return SafePoint(
+      name: '',
+      latitude: position.latitude,
+      longitude: position.longitude,
+    );
+  }
   if (!await Geolocator.isLocationServiceEnabled()) {
     throw const LandmarkLocationException(
       'Turn on location, or choose a pin manually.',

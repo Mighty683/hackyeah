@@ -2,7 +2,9 @@
 library;
 
 import 'dart:async';
-import 'dart:io';
+
+import '../../../platform/photo_access.dart';
+
 import 'dart:ui' as ui;
 
 import 'package:flame/components.dart';
@@ -226,7 +228,7 @@ class _PointPickerGame extends FlameGame {
   Future<void> _loadSelectionPhoto() async {
     try {
       final codec = await ui.instantiateImageCodec(
-        await File(selectionPhotoPath!).readAsBytes(),
+        await readPhotoBytes(selectionPhotoPath!),
         targetWidth: 120,
       );
       try {

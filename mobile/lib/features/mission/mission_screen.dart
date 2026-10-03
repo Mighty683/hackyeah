@@ -3,6 +3,7 @@ import 'dart:async';
 import '../parent/data/family_plan.dart';
 import '../parent/data/family_plan_repository.dart';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -360,17 +361,20 @@ class _MissionScreenState extends State<MissionScreen>
                     SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'The voice is unavailable. Ask an adult to read each step with you.',
+                        kIsWeb
+                            ? 'Web demo has no narration. Ask an adult to read each step with you.'
+                            : 'The voice is unavailable. Ask an adult to read each step with you.',
                         style: TextStyle(fontSize: 16, height: 1.4),
                       ),
                     ),
                   ],
                 ),
-                TextButton.icon(
-                  onPressed: () => unawaited(_initializeAudio(retry: true)),
-                  icon: const BaseboundIcon(BaseboundIconName.replay),
-                  label: const Text('Try the voice again'),
-                ),
+                if (!kIsWeb)
+                  TextButton.icon(
+                    onPressed: () => unawaited(_initializeAudio(retry: true)),
+                    icon: const BaseboundIcon(BaseboundIconName.replay),
+                    label: const Text('Try the voice again'),
+                  ),
               ],
             ),
           ),

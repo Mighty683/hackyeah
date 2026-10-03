@@ -1,4 +1,4 @@
-import 'dart:io';
+import '../../platform/photo_access.dart';
 
 import '../../game/maps/demo_map.dart';
 import '../landmarks/data/landmark.dart';
@@ -55,7 +55,7 @@ class LostPracticeLoader {
       for (final place in landmarks) {
         final photoPath = '$photoDirectory/${place.photoName}';
         if (!loadedMap.contains(place.latitude, place.longitude) ||
-            !await File(photoPath).exists()) {
+            !await photoExists(photoPath)) {
           continue;
         }
         mapLandmarks.add(place);

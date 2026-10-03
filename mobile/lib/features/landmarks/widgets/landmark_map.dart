@@ -1,6 +1,7 @@
 import 'package:flame/components.dart' hide Matrix4;
 import 'package:flame/game.dart' hide Matrix4;
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 
 import '../../../game/components/neighborhood_component.dart';
@@ -10,7 +11,7 @@ import '../data/landmark.dart';
 import 'landmark_pin.dart';
 import 'navigation_painter.dart';
 
-/// Shared parent/child geography. Pins open details; only GPS sets the live dot.
+/// Shared geography. GPS sets the Android dot; web uses a fictional position.
 class LandmarkMap extends StatefulWidget {
   const LandmarkMap({
     required this.landmarks,
@@ -154,7 +155,9 @@ class _LandmarkMapCanvasState extends State<_LandmarkMapCanvas> {
               Positioned.fill(
                 child: IgnorePointer(
                   child: Semantics(
-                    label: 'Your live GPS position',
+                    label: kIsWeb
+                        ? 'Fictional demo position · no GPS'
+                        : 'Your live GPS position',
                     child: CustomPaint(
                       key: const ValueKey('live-gps-marker'),
                       painter: NavigationPainter(

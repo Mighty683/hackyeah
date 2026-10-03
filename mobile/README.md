@@ -1,4 +1,4 @@
-# Safe Path — Android game
+# Safe Path — Android game and browser demo
 
 Standalone Flutter + Flame application and the primary product. The pnpm workspace contains only the Slidev presentation; this app uses Flutter/Dart tooling separately.
 
@@ -17,6 +17,64 @@ flutter pub get
 flutter devices
 flutter run -d <android-device-id>
 ```
+
+## Browser demo
+
+The browser runs the same Flutter entry point, screens, illustrations, missions,
+and offline map as Android. Native device features use explicit web mocks; the
+Android implementation continues to use its normal device services.
+
+From `mobile/`:
+
+```sh
+flutter run -d chrome --web-port 8080
+flutter build web --release --no-web-resources-cdn
+```
+
+If Chrome is unavailable, run `flutter run -d web-server --web-port 8080` and open
+the printed address in a browser. Static output is in `build/web`; serve that
+directory over HTTP. No application backend is required. The release command
+above serves Flutter's renderer locally; development builds may fetch it on first
+load. Browser offline caching is not implemented. The shared map and illustrations
+are bundled application assets.
+
+On desktop, the app uses a portrait phone frame with a 390 × 844 logical screen,
+including pushed screens and dialogs. The whole phone scales down on shorter
+presentation displays without switching to a desktop layout. Narrow browser
+windows use the available screen directly.
+Outside the child screens, a persistent label identifies the web demo and offers
+**Reset web demo**. This clears session data, disposes the current navigation and
+returns to Welcome with the fictional examples seeded again. Browser refresh
+also discards all edits. No family details or photos are stored persistently,
+encrypted, synced, or read from Android. Use fictional information throughout.
+
+Web device behavior:
+
+- Location permission is mocked; a labelled fixed arena position replaces GPS.
+  No browser GPS access, moving position, or walking completion is implied.
+  Fictional seeded pins remain excluded from walking guidance.
+- Camera/gallery actions offer bundled example photos instead of device access.
+- Phone-service availability is simulated. Calls and contact actions show a
+  pretend-call dialog; no dialler, telephone call, SMS, or external app opens.
+- Android narration and sound cues are silent; screens disclose the text-only
+  demo and preserve the training instructions.
+
+Demo walkthrough: choose **I'm a child**, keep the prefilled profile, then open
+**Practices → Alarm practice** (home or outside), or **I'm lost practice** (nearby
+or out-of-sight meeting place). **Our map** shows the bundled photo pins and named
+places. The adult journey supports editing fictional setup, choosing example
+landmark photos and configuring the lost-practice meeting point. Help remains an
+explicitly unreviewed prototype, not assistance for real emergencies.
+
+Run the browser-safe smoke files explicitly; the existing native suite includes
+file-backed tests that cannot run in Chrome:
+
+```sh
+flutter test --platform chrome test/web_demo_storage_test.dart test/web_demo_flow_test.dart test/web_device_services_test.dart
+```
+
+Native checks and Android APK builds use the commands below. Appearance review
+stays with the user.
 
 ## Verify and build
 
@@ -56,7 +114,7 @@ Independent landmarks: **Adult → Walk together → Take a photo → camera or 
 
 Fresh installations automatically fill all child details (name, age, address, support notes and gender), all three contact slots (name, phone and relationship), and three fictional **Home**, **School (demo)** and **Park (demo)** practice pins with icons. Three AI-generated fictional photo landmarks are included, with Red corner shop selected as the lost-practice meeting place. Demo contacts use reserved fictional phone numbers from [NANPA's non-working 555-0100–0199 range](https://nanpa.com/numbering/555-line-numbers). All setup details are editable. Existing saved records and edits are preserved, including during interrupted initialization, and deleting demo data does not restore it on relaunch. For a quick demo choose **Child activities → Our map → Find the photo pin**. Parent **Walk together → Load demo landmarks** can explicitly add missing photo examples. Children explore photo pins; lost practice uses saved photos for recognition, and walking guidance uses live GPS with offline narration. There is no assumed next landmark or fixed visiting order. Fictional demo pins cannot be selected for GPS walking guidance. Photo generation prompts are in [`assets/landmarks/prompts.json`](assets/landmarks/prompts.json).
 
-A separate offline help prototype covers someone not responding, air raid, and being lost, with an unsure fallback. It is explicitly unreviewed and not for real emergencies. An explicit tap opens the phone app for 112 or an adult-configured trusted contact; no call is automatic and no connection or SMS delivery is claimed. The welcome and game screens offer help, including target/map loading and errors. Help reads the same encrypted family record as parent setup.
+A separate offline help prototype covers someone not responding, air raid, and being lost, with an unsure fallback. It is explicitly unreviewed and not for real emergencies. An explicit 112 tap opens a native pretend-call popup; an adult-configured trusted contact opens the phone app. No call is automatic and no connection or SMS delivery is claimed. The welcome and game screens offer help, including target/map loading and errors. Help reads the same encrypted family record as parent setup.
 
 Online map area selection, verified pedestrian routing, Street View, multi-device sync and reviewed emergency assistance remain future work. Live GPS and local walking guidance now work within the bundled arena area. Landmark placement supports an optional one-shot foreground GPS fix inside the bundled map, with manual correction. Inactive resource cards remain removed; optional map details live behind the info button. See [`../docs/SCREEN_FLOW.md`](../docs/SCREEN_FLOW.md) for implemented and future journeys.
 

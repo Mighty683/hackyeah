@@ -2,6 +2,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../ui/basebound_icons.dart';
 
@@ -164,7 +165,11 @@ class _ParentScreenState extends State<ParentScreen> {
       context,
       all ? 'Delete all saved details?' : 'Delete this entry?',
       all
-          ? 'This removes the child details, trusted contacts, safe places, practice meeting point, landmarks, and saved photo copies from this device. It cannot be undone.'
+          ? kIsWeb
+                ? 'This removes the details and photos from this demo session. Reset web demo restores the fictional examples.'
+                : 'This removes the child details, trusted contacts, safe places, practice meeting point, landmarks, and saved photo copies from this device. It cannot be undone.'
+          : kIsWeb
+          ? 'This removes the entry from this demo session.'
           : 'This removes the entry from this device.',
     );
     if (!confirmed || !mounted) return;
@@ -243,7 +248,9 @@ class _ParentScreenState extends State<ParentScreen> {
         itemBuilder: (_) => const [
           PopupMenuItem(
             value: 'location',
-            child: Text('Map location permission'),
+            child: Text(
+              kIsWeb ? 'Demo map location' : 'Map location permission',
+            ),
           ),
           PopupMenuItem(
             value: 'delete',

@@ -2,6 +2,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 import 'widgets/place_icon_picker.dart';
 
@@ -45,7 +46,7 @@ class _SafePointEditorScreenState extends State<SafePointEditorScreen> {
       icon: _icon,
       latitude: _selected!.latitude,
       longitude: _selected!.longitude,
-      isDemo: widget.point?.isDemo ?? false,
+      isDemo: kIsWeb || (widget.point?.isDemo ?? false),
     ),
   );
 

@@ -1,4 +1,4 @@
-import 'dart:io';
+import '../../../platform/photo_access.dart';
 
 import 'package:flutter/material.dart';
 
@@ -25,7 +25,7 @@ class LandmarkPhoto extends StatelessWidget {
     borderRadius: BorderRadius.circular(20),
     child: Image(
       image: ResizeImage(
-        assetPath == null ? FileImage(File(path)) : AssetImage(assetPath!),
+        assetPath == null ? photoImageProvider(path) : AssetImage(assetPath!),
         width: 900,
       ),
       height: height,

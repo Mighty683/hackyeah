@@ -1,6 +1,7 @@
 # Safe Path screen and action reference
 
-Updated: 2026-10-03. Android is the application; the Slidev screens are pitch prototypes.
+Updated: 2026-10-03. Android is the application; Flutter web is a shared-code demo
+with mocked device features. The Slidev screens are pitch prototypes.
 
 ## Implemented Android flow
 
@@ -465,6 +466,58 @@ Landmark names, coordinates and photo references persist in a separate encrypted
 - The family plan persists in `flutter_secure_storage` using Android encryption. Android cloud backup and device-transfer rules exclude app data. No sync, migration or restore is promised.
 - Encryption is not a parent gate: anyone using this unlocked app can view the records. Recommend fictional personal details for demonstrations. **Delete all saved details** removes child/contact/place records, independent landmarks and app photo copies after confirmation; it does not silently reset failed reads.
 - Keep map attribution visible. Keep GPS walking guidance distinct from fictional alarm/lost training. Missions 01 and 02 implement fictional alarm and lost decision training; validated real emergency assistance remains unimplemented. The separate help prototype is unreviewed.
+
+## Implemented Flutter web demo
+
+The web demo runs the same Flutter screen tree and scenario logic described
+above. Device operations are mocked only in the browser; Android retains its
+encrypted local records, photo files, GPS, audio and explicit dialler behavior.
+A persistent **Web demo · practice only** label and presenter reset control sit
+outside the phone-width child screens. All pushed routes and dialogs stay in
+that frame. This is a browser demonstration, not a real-help release.
+
+```mermaid
+flowchart TD
+    WS["WEB STARTUP<br/>Seed fictional profile, contacts, places and bundled photos in tab memory"]
+    WW["SHARED WELCOME<br/>Mock location permission; choose adult or child"]
+    WP["SHARED PARENT SETUP<br/>Edit session details and select meeting place"]
+    WL["SHARED WALK TOGETHER<br/>Pick bundled example photo; name and pin"]
+    WC["SHARED CHILD ONBOARDING<br/>Prefilled fictional profile"]
+    WA["SHARED ACTIVITY CHOICE<br/>Practices or Our map"]
+    WM["SHARED OUR MAP<br/>Bundled pins and fixed labelled demo position"]
+    WT["SHARED PRACTICES<br/>Home/outside alarm; nearby/out-of-sight lost"]
+    WH["SHARED HELP PROTOTYPE<br/>Existing unreviewed warning; simulated service"]
+    WD["WEB PRETEND CALL DIALOG<br/>No dialler, call or message"]
+    WR["PRESENTER RESET OR BROWSER REFRESH<br/>Discard session edits and current route"]
+    WS --> WW
+    WW -->|Adult| WP
+    WP -->|Walk together| WL
+    WL -->|Save example photo and pin| WP
+    WP -->|Start practice| WA
+    WW -->|Child| WC
+    WC -->|Save session profile| WA
+    WA -->|Our map| WM
+    WA -->|Practices| WT
+    WW -->|I need help| WH
+    WM -->|I need help| WH
+    WH -->|Explicit pretend phone action| WD
+    WD -->|Close| WH
+    WR --> WS
+```
+
+Family records and photo bytes live only in tab memory. Refresh or **Reset web
+demo** restores the fictional examples; reset also disposes the navigator and
+temporary screen edits. Browser records are not encrypted or persisted. Parent
+setup explains this separately from Android storage.
+
+Camera/gallery selections use bundled example photos. The fixed demo position
+and one-shot placement substitute never request browser GPS. Seeded fictional
+pins remain excluded from walking guidance; there is no simulated movement or
+arrival claim. Phone-service state is simulated, and every phone action opens a
+pretend dialog without launching an external app. Narration and sound cues are
+silent; text instructions and an explicit web audio explanation remain visible.
+Map attribution, fictional-place flags, practice labels and the unreviewed help
+warning remain in the shared UI.
 
 ## Proposed future product flow — not implemented
 

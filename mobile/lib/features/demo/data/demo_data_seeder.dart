@@ -1,6 +1,7 @@
-import 'dart:io';
-
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
+import '../../../platform/app_storage.dart';
+import '../../../platform/photo_access.dart';
 
 import '../../landmarks/data/demo_landmarks.dart';
 import '../../landmarks/data/landmark_repository.dart';
@@ -70,11 +71,7 @@ class DemoDataSeeder {
     FlutterSecureStorage? storage,
     FamilyPlanRepository? familyRepository,
     LandmarkRepository? landmarkRepository,
-  }) : _storage =
-           storage ??
-           const FlutterSecureStorage(
-             aOptions: AndroidOptions(resetOnError: false),
-           ),
+  }) : _storage = storage ?? defaultAppStorage(),
        _familyRepository =
            familyRepository ?? FamilyPlanRepository(storage: storage),
        _landmarkRepository =
@@ -133,8 +130,7 @@ class DemoDataSeeder {
     final directory = await _landmarkRepository.photoDirectory();
     for (final demo in demoLandmarks) {
       if (savedIds.contains(demo.landmark.id)) continue;
-      final photo = File('${directory.path}/${demo.landmark.photoName}');
-      if (await photo.exists()) await photo.delete();
+      await deletePhotoIfExists('${directory.path}/${demo.landmark.photoName}');
     }
   }
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../ui/basebound_icons.dart';
@@ -43,6 +44,13 @@ class HelpStepContent extends StatelessWidget {
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       const _PrototypeNotice(),
+      if (kIsWeb)
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 24),
+          child: Text(
+            'Web demo · phone service is simulated. All calls are pretend.',
+          ),
+        ),
       Expanded(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),

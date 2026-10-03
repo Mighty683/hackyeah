@@ -4,6 +4,7 @@ library;
 
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../ui/basebound_ui.dart';
@@ -184,10 +185,32 @@ class _HelpScreenState extends State<HelpScreen> with WidgetsBindingObserver {
       _phoneStatus = null;
     });
     try {
-      final opened = await _phone.openDialler(phone);
+      final bool opened;
+      if (kIsWeb) {
+        await showDialog<void>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('$phone · Demo call'),
+            content: const Text(
+              'This is a pretend call for practice. No real call is made.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close'),
+              ),
+            ],
+          ),
+        );
+        opened = true;
+      } else {
+        opened = await _phone.openDialler(phone);
+      }
       if (!mounted) return;
       setState(() {
-        _phoneStatus = phone == '112'
+        _phoneStatus = kIsWeb
+            ? 'Demo popup opened. No real call is made.'
+            : phone == '112'
             ? opened
                   ? 'Demo popup opened. No real call is made.'
                   : 'The demo popup could not open. No call was made.'

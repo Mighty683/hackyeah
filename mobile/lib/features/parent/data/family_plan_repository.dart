@@ -1,19 +1,18 @@
-/// Device-only encrypted family plan storage; no network or authentication gate.
+/// Local family records: encrypted on Android, ephemeral in the browser demo.
+/// No network or authentication gate.
 library;
 
 import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import '../../../platform/app_storage.dart';
+
 import 'family_plan.dart';
 
 class FamilyPlanRepository {
   FamilyPlanRepository({FlutterSecureStorage? storage})
-    : _storage =
-          storage ??
-          const FlutterSecureStorage(
-            aOptions: AndroidOptions(resetOnError: false),
-          );
+    : _storage = storage ?? defaultAppStorage();
 
   static const _key = 'basebound.family_plan.v1';
   final FlutterSecureStorage _storage;

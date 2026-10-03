@@ -1,7 +1,7 @@
 /// Selects a photo landmark for lost recognition and map practice.
 library;
 
-import 'dart:io';
+import '../../platform/photo_access.dart';
 
 import 'package:flutter/material.dart';
 
@@ -71,7 +71,7 @@ class _PracticeMeetingPointEditorScreenState
       final available = <Landmark>[];
       for (final place in landmarks) {
         if (mapContainsPoint(map, place.point) &&
-            await File('${directory.path}/${place.photoName}').exists()) {
+            await photoExists('${directory.path}/${place.photoName}')) {
           available.add(place);
         }
       }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 /// Offline narration and gentle sound cues for scenario practice and walking guidance.
@@ -15,7 +16,7 @@ class PracticeAudio {
   int _generation = 0;
 
   Future<bool> initialize() {
-    if (_disposed) return Future.value(false);
+    if (_disposed || kIsWeb) return Future.value(false);
     return _initialization ??= _initialize().then((ready) {
       if (!ready) _initialization = null;
       return ready;
@@ -38,7 +39,7 @@ class PracticeAudio {
   /// [sound] accepts the same cues as [playCue]. The returned future ends when
   /// playback finishes or is cancelled. Playback errors reach the caller.
   Future<void> narrate(String text, {String? sound}) async {
-    if (_disposed) return;
+    if (_disposed || kIsWeb) return;
     final generation = ++_generation;
     if (!await initialize() || _disposed || generation != _generation) return;
     await _channel.invokeMethod<void>('narrate', {
@@ -53,13 +54,13 @@ class PracticeAudio {
   /// interaction cues `select`, `action`, `success`, and `retry`. Each playback
   /// cancels the previous cue or narration and completes when stopped or done.
   Future<void> playCue(String sound) async {
-    if (_disposed) return;
+    if (_disposed || kIsWeb) return;
     ++_generation;
     await _channel.invokeMethod<void>('narrate', {'text': '', 'sound': sound});
   }
 
   Future<void> stop() async {
-    if (_disposed) return;
+    if (_disposed || kIsWeb) return;
     ++_generation;
     try {
       await _channel.invokeMethod<void>('stop');
@@ -74,6 +75,7 @@ class PracticeAudio {
     if (_disposed) return;
     _disposed = true;
     ++_generation;
+    if (kIsWeb) return;
     try {
       await _channel.invokeMethod<void>('dispose');
     } on PlatformException {

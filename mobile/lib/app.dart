@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 import 'features/demo/data/demo_data_seeder.dart';
+import 'features/demo/web_demo_shell.dart';
+import 'platform/demo_session.dart';
 import 'features/help/help_screen.dart';
 import 'features/welcome/welcome_screen.dart';
 import 'ui/basebound_ui.dart';
@@ -12,6 +15,7 @@ class BaseboundApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (kIsWeb) return _WebAppSession(initialize: initialize);
     return MaterialApp(
       title: 'Safe Path',
       debugShowCheckedModeBanner: false,
@@ -19,6 +23,37 @@ class BaseboundApp extends StatelessWidget {
       home: _AppStartup(initialize: initialize),
     );
   }
+}
+
+/// Replacing the whole navigator also clears routes and their temporary edits.
+class _WebAppSession extends StatefulWidget {
+  const _WebAppSession({this.initialize});
+
+  final Future<void> Function()? initialize;
+
+  @override
+  State<_WebAppSession> createState() => _WebAppSessionState();
+}
+
+class _WebAppSessionState extends State<_WebAppSession> {
+  var _revision = 0;
+
+  void _reset() {
+    FocusManager.instance.primaryFocus?.unfocus();
+    DemoSession.instance.reset();
+    setState(() => _revision++);
+  }
+
+  @override
+  Widget build(BuildContext context) => MaterialApp(
+    key: ValueKey(_revision),
+    title: 'Safe Path — web demo',
+    debugShowCheckedModeBanner: false,
+    theme: BaseboundTheme.training(),
+    builder: (context, child) =>
+        WebDemoShell(onReset: _reset, child: child ?? const SizedBox.shrink()),
+    home: _AppStartup(initialize: widget.initialize),
+  );
 }
 
 class _AppStartup extends StatefulWidget {

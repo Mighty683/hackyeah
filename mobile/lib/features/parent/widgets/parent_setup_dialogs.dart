@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../../ui/basebound_ui.dart';
 import '../../../ui/parent_setup_ui.dart';
@@ -8,6 +9,25 @@ Future<void> configureParentLocation(
   BuildContext context,
   LocationPermissionSetup permission,
 ) async {
+  if (kIsWeb) {
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Demo map location'),
+        content: const Text(
+          'The web demo uses a fictional fixed position in the arena map. '
+          'No browser GPS permission is requested. No real location is read.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+    return;
+  }
   final status = await permission.check();
   if (!context.mounted) return;
   final proceed = await showDialog<bool>(

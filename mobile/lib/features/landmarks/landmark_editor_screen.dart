@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
@@ -60,7 +61,9 @@ class _LandmarkEditorScreenState extends State<LandmarkEditorScreen> {
       setState(() {
         _selected = point;
         _pinRevision++;
-        _locationMessage = 'Location found. Check and adjust the pin.';
+        _locationMessage = kIsWeb
+            ? 'Demo position selected. Check and adjust the pin.'
+            : 'Location found. Check and adjust the pin.';
       });
     } on LandmarkLocationException catch (error) {
       if (mounted) setState(() => _locationMessage = error.message);
@@ -83,7 +86,7 @@ class _LandmarkEditorScreenState extends State<LandmarkEditorScreen> {
       photoName: '$_id.photo',
       latitude: _selected!.latitude,
       longitude: _selected!.longitude,
-      isDemo: widget.landmark?.isDemo ?? false,
+      isDemo: kIsWeb || (widget.landmark?.isDemo ?? false),
     ),
   );
 
@@ -160,7 +163,11 @@ class _LandmarkEditorScreenState extends State<LandmarkEditorScreen> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const BaseboundIcon(BaseboundIconName.pin, size: 24),
-            label: Text(_locating ? 'Finding location…' : 'Use my location'),
+            label: Text(
+              _locating
+                  ? (kIsWeb ? 'Selecting demo position…' : 'Finding location…')
+                  : (kIsWeb ? 'Use demo position' : 'Use my location'),
+            ),
           ),
           const SizedBox(height: 12),
           Semantics(

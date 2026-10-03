@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
@@ -105,7 +106,9 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                 child: _WelcomeChoices(
                   onHelp: _openHelp,
                   rolesEnabled: !_checkingLocation,
-                  locationMessage: _checkingLocation
+                  locationMessage: kIsWeb
+                      ? 'Try the Android screens with fictional demo details. Device features are mocked.'
+                      : _checkingLocation
                       ? 'An adult can allow location for the map and nearby-place hints in Help. GPS runs only while these screens are open.'
                       : _locationStatus == LocationPermissionStatus.granted
                       ? null

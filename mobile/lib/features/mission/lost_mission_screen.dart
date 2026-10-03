@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../ui/basebound_icons.dart';
@@ -365,18 +366,21 @@ class _LostMissionScreenState extends State<LostMissionScreen>
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Text(
-              'The voice is unavailable. Ask an adult to read each step with you.',
+              kIsWeb
+                  ? 'Web demo has no narration. Ask an adult to read each step with you.'
+                  : 'The voice is unavailable. Ask an adult to read each step with you.',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 17),
             ),
-            TextButton.icon(
-              onPressed: _exiting
-                  ? null
-                  : () => unawaited(_initializeAudio(retry: true)),
-              icon: const BaseboundIcon(BaseboundIconName.replay),
-              label: const Text('Try the voice again'),
-              style: TextButton.styleFrom(minimumSize: const Size(64, 52)),
-            ),
+            if (!kIsWeb)
+              TextButton.icon(
+                onPressed: _exiting
+                    ? null
+                    : () => unawaited(_initializeAudio(retry: true)),
+                icon: const BaseboundIcon(BaseboundIconName.replay),
+                label: const Text('Try the voice again'),
+                style: TextButton.styleFrom(minimumSize: const Size(64, 52)),
+              ),
           ],
         ),
       ),
