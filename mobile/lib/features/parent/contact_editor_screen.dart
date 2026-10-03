@@ -4,7 +4,6 @@ library;
 import 'package:flutter/material.dart';
 
 import '../../ui/basebound_icons.dart';
-import '../../ui/basebound_ui.dart';
 
 import 'data/family_plan.dart';
 import 'widgets/parent_editor_scaffold.dart';
@@ -62,11 +61,7 @@ class _ContactEditorScreenState extends State<ContactEditorScreen> {
               controller: _name,
               decoration: const InputDecoration(
                 labelText: 'Name (optional)',
-                prefixIcon: BaseboundIcon(
-                  BaseboundIconName.adult,
-                  size: 24,
-                  color: BaseboundColors.muted,
-                ),
+                prefixIcon: BaseboundIcon(BaseboundIconName.adult, size: 24),
               ),
               textCapitalization: TextCapitalization.words,
               maxLength: 100,
@@ -87,11 +82,7 @@ class _ContactEditorScreenState extends State<ContactEditorScreen> {
               controller: _phone,
               decoration: const InputDecoration(
                 labelText: 'Phone number (optional)',
-                prefixIcon: BaseboundIcon(
-                  BaseboundIconName.phone,
-                  size: 24,
-                  color: BaseboundColors.muted,
-                ),
+                prefixIcon: BaseboundIcon(BaseboundIconName.phone, size: 24),
               ),
               keyboardType: TextInputType.phone,
               maxLength: 30,
@@ -112,11 +103,7 @@ class _ContactEditorScreenState extends State<ContactEditorScreen> {
               decoration: const InputDecoration(
                 labelText: 'Relationship to child (optional)',
                 hintText: 'Parent, grandparent, family friend…',
-                prefixIcon: BaseboundIcon(
-                  BaseboundIconName.family,
-                  size: 24,
-                  color: BaseboundColors.muted,
-                ),
+                prefixIcon: BaseboundIcon(BaseboundIconName.family, size: 24),
               ),
               textCapitalization: TextCapitalization.words,
               maxLength: 80,

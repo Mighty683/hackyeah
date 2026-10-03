@@ -279,12 +279,12 @@ flowchart TD
 | Activity selection | Choose Practices or Our map | Replay audio, back |
 | Practice scenarios | Choose alarm or lost practice | Replay audio, back to activities |
 | Mission mode (7+) | Choose home or outside | Replay audio, back to scenarios |
-| Mission scene | Make one visual decision or hear the situation | Replay audio, back |
+| Mission scene | Tap a highlighted scene object to choose an action, or hear the situation | Replay audio, back |
 | Mission feedback | See the consequence and explanation | Retry the same decision or advance; replay audio |
 | Mission recall | See the six learned actions and completion sticker | Replay audio, replay mission, choose practice |
 | Lost practice loading/error | Load the current display-only family snapshot | Retry or explicitly use pretend family; back preserves saved details |
 | Lost scene selection (7+) | Choose meeting point nearby or out of sight | Replay audio, back; unavailable voice offers adult help and retry |
-| Lost decision/feedback | Make one choice; hear a calm consequence | Retry unsafe choice or advance; replay audio, exit |
+| Lost decision/feedback | Tap a highlighted person, object or landmark; hear a calm consequence | Retry unsafe choice or advance; replay audio, exit |
 | Lost reunion/confirmation | Tap I'M SAFE after the fictional reunion | Explicit local confirmation; no message sent |
 | Lost recall/completion | Recall seven actions, including meeting point only if nearby | Replay audio, Play again with the same snapshot/variant, Back to practice choices |
 | Parent intro | Add child details | Walk together; Skip child details, demo/privacy details, confirmed Delete all and explicit location recovery in Setup options, back |
@@ -339,7 +339,9 @@ The implemented screens follow [UI_GUIDELINES.md](UI_GUIDELINES.md): warm neutra
 
 Welcome, child onboarding, activity selection and practice scenarios use clear headings and calm choices. The first child activity screen has two choices: **Practices** opens a separate scenario list; **Our map** opens the familiar-place map. Alarm and lost practice return to the scenario list, whose back action returns to activities. Maps and landmark photos remain the main content of their screens, with compact controls and preserved attribution. Adult onboarding uses a field-first layout with one detail per step, a compact progress indicator and a single save/next action. Help retains its separate cool theme, no training mascot and a visible prototype notice.
 
-Mission illustrations use portrait environment backgrounds and a separate character layer. Native choices sit below the scene, keeping the hallway and two-wall illustration unobscured. Mission screens reserve the bottom edge for next/retry actions. Short, narrow and large-text layouts retain accessible choice cards and scrollable instruction/choice regions; completion keeps replay and exit actions available. Narration, decisions, consequences, explanations and return paths are preserved.
+Mission 01 uses portrait environment backgrounds and a separate character layer. Decision targets highlight the pictured windows, doors, rooms and destinations, with readable captions and native labelled tap controls. Abstract actions and fictional contacts use separate illustrated targets within the scene. Mission 02 places selectable people, landmarks and action objects in its fictional square. Equivalent targets use the same neutral highlight before selection; feedback supplies the outcome colour and symbol. Training and adult-setup icons retain their original colours.
+
+Narration and feedback stay outside the scene; next/retry actions remain below it. Narrow and large-text layouts allow scenes to grow or scroll while retaining at least 48-pixel touch targets. The hallway and two-wall explanation stays visible. Completion keeps replay and exit actions available. Narration, decisions, consequences, explanations and return paths are preserved.
 
 The current activity split adds a separate scenario-list route to the implemented graph. Mission content and the future graph remain unchanged. Earlier verification records in [UI_IMPLEMENTATION_PLAN.md](UI_IMPLEMENTATION_PLAN.md) are historical; the current pass has its own integration checks.
 

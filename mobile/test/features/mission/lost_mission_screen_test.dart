@@ -64,6 +64,13 @@ void main() {
         expect(find.text("I'M SAFE"), findsNothing);
         expect(_lastNarration(audioCalls), contains('Run and search'));
         expect(_lastNarration(audioCalls), contains('Stop and look'));
+        expect(
+          find.descendant(
+            of: find.byType(LostMissionScene),
+            matching: find.byType(LostMissionChoiceCard),
+          ),
+          findsNWidgets(3),
+        );
 
         await _choose(tester, 'search');
         expect(find.text('Try again'), findsOneWidget);
@@ -259,6 +266,14 @@ void main() {
                 widget.properties.label == card.choice.label &&
                 widget.properties.onTap != null,
           ),
+          findsOneWidget,
+        );
+        final target = find.byKey(ValueKey('lost-choice-${card.choice.id}'));
+        final targetSize = tester.getSize(target);
+        expect(targetSize.width, greaterThanOrEqualTo(48));
+        expect(targetSize.height, greaterThanOrEqualTo(48));
+        expect(
+          find.descendant(of: find.byType(LostMissionScene), matching: target),
           findsOneWidget,
         );
       }

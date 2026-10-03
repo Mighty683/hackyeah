@@ -28,16 +28,16 @@ class MissionSceneLayout {
 }
 
 const _homeTargets = {
-  'window': Rect.fromLTWH(.025, .40, .34, .16),
-  'door': Rect.fromLTWH(.635, .40, .34, .16),
-  'interior': Rect.fromLTWH(.35, .35, .30, .27),
+  'window': Rect.fromLTWH(.025, .16, .31, .40),
+  'door': Rect.fromLTWH(.655, .15, .32, .45),
+  'interior': Rect.fromLTWH(.355, .25, .28, .40),
 };
 
 const _apartmentTargets = {
-  'living_room': Rect.fromLTWH(.055, .29, .385, .15),
-  'bedroom': Rect.fromLTWH(.565, .29, .385, .15),
-  'kitchen': Rect.fromLTWH(.055, .73, .385, .15),
-  'hallway': Rect.fromLTWH(.565, .73, .385, .15),
+  'living_room': Rect.fromLTWH(.07, .10, .36, .33),
+  'bedroom': Rect.fromLTWH(.58, .10, .35, .33),
+  'kitchen': Rect.fromLTWH(.07, .54, .36, .35),
+  'hallway': Rect.fromLTWH(.58, .54, .29, .34),
 };
 
 const _streetDestinations = {
@@ -90,10 +90,10 @@ MissionSceneLayout missionSceneLayout(String? stepId, MissionVisual visual) {
       family: MissionVisual.street,
       asset: 'assets/illustrations/street-practice-v2.png',
       targets: {
-        'home': Rect.fromLTWH(.02, .23, .38, .16),
-        'school': Rect.fromLTWH(.60, .18, .38, .16),
-        'shelter': Rect.fromLTWH(.56, .37, .42, .17),
-        'more_places': Rect.fromLTWH(.02, .81, .40, .16),
+        'home': Rect.fromLTWH(.025, .16, .37, .23),
+        'school': Rect.fromLTWH(.62, .16, .35, .19),
+        'shelter': Rect.fromLTWH(.56, .38, .41, .23),
+        'more_places': Rect.fromLTWH(.025, .80, .40, .18),
       },
       childFeet: Offset(.47, .84),
       childWidth: .31,
@@ -105,9 +105,9 @@ MissionSceneLayout missionSceneLayout(String? stepId, MissionVisual visual) {
       family: MissionVisual.street,
       asset: 'assets/illustrations/street-practice-v2.png',
       targets: {
-        'park': Rect.fromLTWH(.025, .64, .35, .15),
-        'bus_stop': Rect.fromLTWH(.63, .78, .34, .17),
-        'shelter': Rect.fromLTWH(.56, .37, .42, .17),
+        'park': Rect.fromLTWH(.025, .64, .39, .20),
+        'bus_stop': Rect.fromLTWH(.63, .71, .34, .25),
+        'shelter': Rect.fromLTWH(.56, .38, .41, .23),
       },
       childFeet: Offset(.47, .84),
       childWidth: .31,
@@ -118,26 +118,26 @@ MissionSceneLayout missionSceneLayout(String? stepId, MissionVisual visual) {
     'contacts' => const MissionSceneLayout(
       family: MissionVisual.contacts,
       targets: {
-        'mom': Rect.fromLTWH(.21, .22, .58, .14),
-        'dad': Rect.fromLTWH(.21, .43, .58, .14),
-        'grandparent': Rect.fromLTWH(.21, .64, .58, .14),
+        'mom': Rect.fromLTWH(.21, .20, .58, .19),
+        'dad': Rect.fromLTWH(.21, .41, .58, .19),
+        'grandparent': Rect.fromLTWH(.21, .62, .58, .19),
       },
       childWidth: 0,
     ),
     'communication' => const MissionSceneLayout(
       family: MissionVisual.communication,
       targets: {
-        'call': Rect.fromLTWH(.21, .32, .58, .18),
-        'message': Rect.fromLTWH(.21, .59, .58, .18),
+        'call': Rect.fromLTWH(.21, .28, .58, .28),
+        'message': Rect.fromLTWH(.21, .60, .58, .28),
       },
       childWidth: 0,
     ),
     'noise' => const MissionSceneLayout(
       family: MissionVisual.apartment,
       targets: {
-        'window': Rect.fromLTWH(.055, .29, .385, .15),
-        'door': Rect.fromLTWH(.565, .29, .385, .15),
-        'stay': Rect.fromLTWH(.565, .73, .385, .15),
+        'window': Rect.fromLTWH(.07, .08, .36, .35),
+        'door': Rect.fromLTWH(.57, .37, .36, .18),
+        'stay': Rect.fromLTWH(.58, .59, .29, .30),
       },
       childFeet: Offset(.76, .70),
       childWidth: .20,
@@ -147,8 +147,8 @@ MissionSceneLayout missionSceneLayout(String? stepId, MissionVisual visual) {
       family: MissionVisual.quiet,
       asset: 'assets/illustrations/hallway-practice-v2.png',
       targets: {
-        'leave': Rect.fromLTWH(.635, .36, .34, .17),
-        'stay': Rect.fromLTWH(.24, .79, .52, .17),
+        'leave': Rect.fromLTWH(.655, .20, .31, .40),
+        'stay': Rect.fromLTWH(.24, .66, .40, .30),
       },
       childFeet: Offset(.47, .76),
       childWidth: .35,
@@ -159,8 +159,8 @@ MissionSceneLayout missionSceneLayout(String? stepId, MissionVisual visual) {
     'get_down' => const MissionSceneLayout(
       family: MissionVisual.getDown,
       targets: {
-        'stay': Rect.fromLTWH(.625, .42, .35, .18),
-        'down': Rect.fromLTWH(.03, .77, .39, .17),
+        'stay': Rect.fromLTWH(.32, .40, .35, .32),
+        'down': Rect.fromLTWH(.03, .77, .43, .20),
       },
       childFeet: Offset(.49, .77),
       childWidth: .52,
@@ -168,8 +168,8 @@ MissionSceneLayout missionSceneLayout(String? stepId, MissionVisual visual) {
     'protect_head' => const MissionSceneLayout(
       family: MissionVisual.protectHead,
       targets: {
-        'stay': Rect.fromLTWH(.03, .72, .40, .18),
-        'protect_head': Rect.fromLTWH(.55, .36, .425, .17),
+        'stay': Rect.fromLTWH(.03, .73, .42, .24),
+        'protect_head': Rect.fromLTWH(.29, .36, .43, .30),
       },
       childFeet: Offset(.49, .77),
       childWidth: .52,

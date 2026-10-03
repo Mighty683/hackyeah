@@ -9,7 +9,6 @@ import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
 import 'air_raid_mission.dart';
 import 'mission_audio.dart';
-import 'mission_choice_card.dart';
 import 'mission_scene.dart';
 
 /// An explicitly fictional training session, separate from the help prototype.
@@ -197,7 +196,7 @@ class _MissionScreenState extends State<MissionScreen>
                 icon: BaseboundIcon(
                   BaseboundIconName.speaker,
                   size: 24,
-                  color: _speaking ? BaseboundColors.blue : BaseboundColors.ink,
+                  color: _speaking ? BaseboundColors.blue : null,
                 ),
               ),
             ),
@@ -272,6 +271,9 @@ class _MissionScreenState extends State<MissionScreen>
     builder: (context, constraints) {
       final step = _session.step;
       final visual = _session.selectedChoice?.visual ?? step.visual;
+      if (step.isDecision && !_session.hasFeedback) {
+        return _decisionLayout(visual, constraints);
+      }
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -319,8 +321,6 @@ class _MissionScreenState extends State<MissionScreen>
                   child: SingleChildScrollView(
                     child: _session.hasFeedback
                         ? _feedback()
-                        : step.isDecision
-                        ? _choiceGrid(step.choices)
                         : const SizedBox.shrink(),
                   ),
                 ),
@@ -346,6 +346,8 @@ class _MissionScreenState extends State<MissionScreen>
       gender: widget.gender,
       stepId: _session.step.id,
       selectedChoice: _session.selectedChoice,
+      choices: _session.hasFeedback ? const [] : _session.step.choices,
+      onChoose: _session.hasFeedback ? null : _choose,
     );
     if (_session.step.id != 'get_down') return scene;
     return GestureDetector(
@@ -358,29 +360,72 @@ class _MissionScreenState extends State<MissionScreen>
     );
   }
 
-  Widget _choiceGrid(List<MissionChoice> choices) => LayoutBuilder(
-    builder: (context, constraints) {
-      final largeText = MediaQuery.textScalerOf(context).scale(1) > 1.4;
-      final columns = constraints.maxWidth < 330 || largeText ? 1 : 2;
-      final width = (constraints.maxWidth - (columns - 1) * 12) / columns;
-      return Wrap(
-        spacing: 12,
-        runSpacing: 12,
-        children: choices
-            .map(
-              (choice) => SizedBox(
-                width: width,
-                child: MissionChoiceCard(
-                  choice: choice,
-                  compact: true,
-                  onPressed: () => _choose(choice.id),
-                ),
-              ),
-            )
-            .toList(),
-      );
-    },
+  Widget _decisionInstruction() => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Text(
+        _session.step.title,
+        style: const TextStyle(
+          fontSize: 28,
+          fontWeight: FontWeight.w700,
+          height: 1.2,
+        ),
+      ),
+      const SizedBox(height: 8),
+      Text(
+        _session.step.narration,
+        style: const TextStyle(fontSize: 17, height: 1.4),
+      ),
+      const SizedBox(height: 8),
+      Text(
+        _session.step.id == 'get_down'
+            ? 'Drag down, or tap a highlighted action.'
+            : 'Tap a highlighted part of the picture.',
+        style: const TextStyle(color: BaseboundColors.muted),
+      ),
+      _audioControls(),
+    ],
   );
+
+  Widget _decisionLayout(MissionVisual visual, BoxConstraints constraints) {
+    final largeText = MediaQuery.textScalerOf(context).scale(1) > 1.4;
+    if (largeText) {
+      return SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _decisionInstruction(),
+            const SizedBox(height: 16),
+            _scene(visual),
+          ],
+        ),
+      );
+    }
+    if (constraints.maxWidth > constraints.maxHeight) {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(child: SingleChildScrollView(child: _decisionInstruction())),
+          const SizedBox(width: 16),
+          Expanded(child: Center(child: _scene(visual))),
+        ],
+      );
+    }
+    // Keep the complete scene and every object target visible. Longer voice
+    // fallback instructions can scroll independently of the interactive art.
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SizedBox(
+          height: (constraints.maxHeight - constraints.maxWidth * 1.5 - 12)
+              .clamp(64.0, constraints.maxHeight * .35),
+          child: SingleChildScrollView(child: _decisionInstruction()),
+        ),
+        const SizedBox(height: 12),
+        Expanded(child: Center(child: _scene(visual))),
+      ],
+    );
+  }
 
   Widget _feedback() => Semantics(
     liveRegion: true,

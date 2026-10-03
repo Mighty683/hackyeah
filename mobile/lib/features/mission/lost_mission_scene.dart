@@ -6,20 +6,23 @@ import '../../widgets/child_character.dart';
 import 'data/lost_practice_context.dart';
 import 'lost_landmarks.dart';
 import 'lost_mission.dart';
+import 'lost_mission_choice_card.dart';
 import 'lost_mission_scene_layout.dart';
 
-/// Fictional illustrated situations; the screen owns all choice controls.
+/// Fictional square with independently labelled, clickable scene objects.
 class LostMissionScene extends StatelessWidget {
   const LostMissionScene({
     super.key,
     required this.step,
     required this.practiceContext,
     this.selectedChoice,
+    this.onChoice,
   });
 
   final LostMissionStep step;
   final LostPracticeContext practiceContext;
   final LostMissionChoice? selectedChoice;
+  final ValueChanged<String>? onChoice;
 
   @override
   Widget build(BuildContext context) {
@@ -28,12 +31,15 @@ class LostMissionScene extends StatelessWidget {
       practiceContext,
       selectedChoice,
     );
+    if (step.isDecision && selectedChoice == null) {
+      return _decisionScene(context, layout);
+    }
     return Semantics(
       image: true,
       label: layout.description,
       child: ExcludeSemantics(
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(16),
           child: ColoredBox(
             color: BaseboundColors.sky,
             child: layout.motif == LostSceneMotif.recall
@@ -44,6 +50,60 @@ class LostMissionScene extends StatelessWidget {
       ),
     );
   }
+
+  Widget _decisionScene(
+    BuildContext context,
+    LostMissionSceneLayout layout,
+  ) => LayoutBuilder(
+    builder: (context, constraints) {
+      // Let labels wrap and the scene grow instead of covering other targets.
+      final textScale = MediaQuery.textScalerOf(context).scale(16) / 16;
+      final columns = (constraints.maxWidth / (132 * textScale)).floor().clamp(
+        1,
+        step.choices.length,
+      );
+      final targetWidth =
+          (constraints.maxWidth - 24 - 16 * (columns - 1)) / columns;
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Semantics(
+                image: true,
+                label: layout.description,
+                child: const ExcludeSemantics(
+                  child: CustomPaint(painter: _SquareBackdropPainter()),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 16,
+                runSpacing: 24,
+                children: [
+                  for (final choice in step.choices)
+                    SizedBox(
+                      width: targetWidth,
+                      child: LostMissionChoiceCard(
+                        key: ValueKey('lost-choice-${choice.id}'),
+                        choice: choice,
+                        childGender: practiceContext.gender,
+                        onPressed: onChoice == null
+                            ? null
+                            : () => onChoice!(choice.id),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    },
+  );
 
   Widget _story(
     BuildContext context,
@@ -157,6 +217,7 @@ class _SquareBackdropPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    canvas.drawRect(Offset.zero & size, Paint()..color = BaseboundColors.sky);
     final ground = Rect.fromLTWH(0, size.height * .61, size.width, size.height);
     canvas.drawRect(ground, Paint()..color = BaseboundColors.cream);
     final buildingPaint = Paint()..color = BaseboundColors.peach;

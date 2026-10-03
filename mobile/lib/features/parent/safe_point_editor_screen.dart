@@ -65,11 +65,7 @@ class _SafePointEditorScreenState extends State<SafePointEditorScreen> {
                 labelText: 'Safe place name (optional)',
                 floatingLabelBehavior: FloatingLabelBehavior.always,
                 hintText: 'Family meeting place…',
-                prefixIcon: BaseboundIcon(
-                  BaseboundIconName.pin,
-                  size: 24,
-                  color: BaseboundColors.muted,
-                ),
+                prefixIcon: BaseboundIcon(BaseboundIconName.pin, size: 24),
               ),
               textCapitalization: TextCapitalization.words,
               maxLength: 60,
@@ -116,7 +112,6 @@ class _SafePointEditorScreenState extends State<SafePointEditorScreen> {
                           ? BaseboundIconName.pin
                           : BaseboundIconName.check,
                       size: 24,
-                      color: BaseboundColors.muted,
                     ),
                     const SizedBox(width: 12),
                     Expanded(

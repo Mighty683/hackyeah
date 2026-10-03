@@ -23,6 +23,9 @@ Avoid the appearance of a mobile game advertisement.
   control labels 17–18 px, weight 600–700. Avoid all-caps headlines.
 - Use 24 px icons in ordinary controls. One small illustration may support the
   main task; do not put a second large illustration inside every choice.
+- Keep training and adult-setup icons in their original colours. Reserve icon
+  tints for feedback, disabled states and contrast on filled buttons; keep the
+  help prototype's restrained icon treatment.
 
 ## Controls and hierarchy
 
@@ -36,9 +39,13 @@ Avoid the appearance of a mobile game advertisement.
 - Keep one clear heading, a short instruction, content and the action area.
   Avoid panels inside panels, repeated headings and competing badges.
 - Keep audio replay secondary. It must not look like the main decision.
-- Put mission choices in an orderly action area below the illustration, using
-  short left-aligned labels. Do not scatter gradient captions over rooms or
-  obscure the hallway/two-wall illustration with button furniture.
+- Put practice choices on the pictured objects, people or destinations. Use
+  matching neutral outlines before selection, with a short readable caption
+  and a labelled touch target of at least 48 px. Keep the object visible inside
+  the target; use separate illustrated objects for abstract actions or contacts.
+- Keep narration and feedback outside the scene, with next/retry actions below.
+  Preserve the hallway/two-wall explanation and make the scene scroll or grow
+  when needed for narrow screens and large text.
 - Show feedback with a symbol and a short explanation. Never pre-highlight the
   correct answer, add scores, or shame a child for choosing differently.
 
