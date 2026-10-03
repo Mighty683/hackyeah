@@ -156,8 +156,6 @@ class _SavedPhotoMeetingPointState extends State<_SavedPhotoMeetingPoint> {
                 title: place?.name ?? 'Meeting photo unavailable',
                 subtitle: place == null
                     ? 'Choose a saved photo place again.'
-                    : place.isDemo
-                    ? 'Fictional demo photo and pin.'
                     : 'Saved photo and pin for lost practice.',
                 onEdit: widget.onEdit,
                 onDelete: widget.onDelete,

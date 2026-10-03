@@ -188,7 +188,6 @@ class _PracticeMeetingPointEditorScreenState
                   Text(
                     '${place.name}${place.id == _landmarkId ? ' · Selected' : ''}',
                   ),
-                  if (place.isDemo) const Text('Fictional demo photo'),
                 ],
               ),
             ),

@@ -208,7 +208,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
         'Routes use bundled OpenStreetMap paths and local roads. Access, barriers, entrances and hazards are not verified. '
         'Follow your adult’s judgment at roads and crossings. The endpoint ring is a mapped path near the pin.\n\n'
         'Turn instructions follow map geometry, not the way the phone is facing. The map is north-up. '
-        'Unclear, old or out-of-area GPS pauses guidance. Fictional demo photos are for recognition only. '
+        'Unclear, old or out-of-area GPS pauses guidance. '
         'Saved places are parent-selected, with no safety check.\n\n'
         'Map data © OpenStreetMap contributors · ODbL 1.0.',
       ),
@@ -319,13 +319,6 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
           for (final place in widget.landmarks)
             ListTile(
               title: Text(place.name),
-              subtitle: place.isDemo
-                  ? Text(
-                      place.isDestination
-                          ? 'Fictional demo place · not verified safe'
-                          : 'Fictional demo photo · recognition only',
-                    )
-                  : null,
               leading: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -384,8 +377,6 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                 onPressed: () => _choose(nearby.place),
                 child: Text(nearby.place.name),
               ),
-              if (nearby.place.isDemo)
-                const Text('Fictional demo photo · recognition only'),
             ],
           ),
         ),

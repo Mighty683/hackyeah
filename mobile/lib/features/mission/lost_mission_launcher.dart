@@ -305,10 +305,6 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
         textAlign: TextAlign.center,
         style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
       ),
-      if (practice.fictionalMeetingPoint) ...[
-        const SizedBox(height: 8),
-        const Text('Demo meeting place.', textAlign: TextAlign.center),
-      ],
       if (practice.contacts.any((contact) => contact.isFictional)) ...[
         const SizedBox(height: 8),
         const Text('Some contacts are pretend.', textAlign: TextAlign.center),

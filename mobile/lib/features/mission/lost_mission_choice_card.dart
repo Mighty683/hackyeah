@@ -41,8 +41,7 @@ class LostMissionChoiceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SceneObjectTarget(
-    label:
-        '${choice.label}${choice.isDemoPhoto ? '. Fictional demo photo.' : ''}',
+    label: choice.label,
     onTap: onPressed,
     child: SizedBox(
       height: 140,

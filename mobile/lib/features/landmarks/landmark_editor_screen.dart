@@ -190,7 +190,7 @@ class _LandmarkEditorScreenState extends State<LandmarkEditorScreen> {
           ),
           const SizedBox(height: 24),
           const ParentEditorNote(
-            message: 'Choose a point on the TAURON Arena demo map. Landmarks help recognition; they are not checked safe places or routes.',
+            message: 'Choose a point on the TAURON Arena map. Use a photo your child recognises.',
             icon: BaseboundIconName.map,
           ),
         ],

@@ -58,17 +58,11 @@ class SelectedPlacePanel extends StatelessWidget {
               height: 120,
             ),
           const SizedBox(height: 8),
-          if (place.isDemo)
-            Text(
-              place.isDestination
-                  ? 'Fictional demo place${place.hasPhoto ? ' and photo' : ''} · not a verified safe destination'
-                  : 'Fictional demo photo and pin · recognition only',
-            )
-          else if (!map.contains(place.latitude, place.longitude))
+          if (!place.isDemo && !map.contains(place.latitude, place.longitude))
             const Text(
               'Outside this downloaded map. Walking guidance is unavailable.',
             )
-          else
+          else if (!place.isDemo)
             FilledButton.icon(
               onPressed: onNavigate,
               icon: const Icon(Icons.directions_walk, size: 24),

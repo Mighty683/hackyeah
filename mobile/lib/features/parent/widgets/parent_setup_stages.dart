@@ -133,9 +133,7 @@ class ParentPlacesStage extends StatelessWidget {
       for (var index = 0; index < points.length; index++)
         ParentSetupEntry(
           title: points[index].displayName,
-          subtitle: points[index].isDemo
-              ? 'Fictional demo place'
-              : 'Tap to edit this safe place.',
+          subtitle: 'Tap to edit this safe place.',
           onEdit: () => onEdit(index),
           onDelete: () => onDelete(index),
           icon: BaseboundIconName.pin,

@@ -33,14 +33,6 @@ class SelectedLandmarkCard extends StatelessWidget {
             entry.name,
             style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 24),
           ),
-          if (entry.isDemo)
-            const Padding(
-              padding: EdgeInsets.only(top: 8),
-              child: Text(
-                'Fictional demo photo and pin · recognition only',
-                style: TextStyle(color: BaseboundColors.muted),
-              ),
-            ),
           Align(
             alignment: Alignment.centerLeft,
             child: TextButton.icon(
@@ -95,11 +87,7 @@ class LandmarkLibraryEntry extends StatelessWidget {
           fontSize: 16,
           height: 1.4,
         ),
-        subtitle: !onMap
-            ? const Text('Outside this demo map')
-            : entry.isDemo
-            ? const Text('Fictional demo landmark')
-            : null,
+        subtitle: !onMap ? const Text('Outside this map') : null,
         onTap: onEdit,
         trailing: IconButton(
           onPressed: onDelete,

@@ -107,12 +107,12 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
       final added = await loadDemoLandmarks(_repository);
       _message(
         added == 0
-            ? 'Demo landmarks are already saved.'
-            : '$added fictional demo landmarks added.',
+            ? 'Example landmarks are already saved.'
+            : '$added landmarks added.',
       );
     } catch (_) {
       _message(
-        'Could not finish loading demo landmarks. Try again; saved points are kept.',
+        'Could not finish loading landmarks. Try again; saved points are kept.',
       );
     } finally {
       if (mounted) {
@@ -300,7 +300,7 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
                 child: TextButton.icon(
                   onPressed: _busy ? null : _loadDemo,
                   icon: const BaseboundIcon(BaseboundIconName.play),
-                  label: const Text('Load demo landmarks'),
+                  label: const Text('Load example landmarks'),
                 ),
               ),
               const SizedBox(height: 16),
@@ -331,9 +331,9 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
               const SizedBox(height: 24),
               const ParentEditorNote(
                 message:
-                    'Demo map: TAURON Arena, Kraków. Landmarks are independent points, with no fixed visiting order. '
+                    'Map: TAURON Arena, Kraków. Landmarks are independent points, with no fixed visiting order. '
                     'Walking routes use GPS and offline paths; access, entrances and hazards are not verified. Walk with your child. '
-                    'Fictional demo pins are for recognition only. Photos stay in app-private storage; names and pins are encrypted. No cloud sync or parent lock.',
+                    'Photos stay in app-private storage; names and pins are encrypted. No cloud sync or parent lock.',
                 icon: BaseboundIconName.info,
               ),
             ],

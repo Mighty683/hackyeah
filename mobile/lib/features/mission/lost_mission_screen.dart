@@ -284,12 +284,6 @@ class _LostMissionScreenState extends State<LostMissionScreen>
         textAlign: TextAlign.center,
         style: TextStyle(fontSize: 13, color: BaseboundColors.muted),
       ),
-      if (widget.practiceContext.fictionalMeetingPoint)
-        const Text(
-          'Demo meeting place.',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 13, color: BaseboundColors.muted),
-        ),
       if (widget.practiceContext.contacts.any((contact) => contact.isFictional))
         const Padding(
           padding: EdgeInsets.only(top: 5),
@@ -315,14 +309,6 @@ class _LostMissionScreenState extends State<LostMissionScreen>
             height: 1.3,
           ),
         ),
-        if (_session.step.choices.any((choice) => choice.isDemoPhoto))
-          const Padding(
-            padding: EdgeInsets.only(top: 8),
-            child: Text(
-              'Fictional demo photo',
-              style: TextStyle(fontSize: 13, color: BaseboundColors.muted),
-            ),
-          ),
       ],
     ),
   );

@@ -138,7 +138,7 @@ void main() {
         '${directory.path}/1_1.photo',
       );
       await _next(tester);
-      expect(find.text('Fictional demo photo'), findsOneWidget);
+      expect(find.text('Fictional demo photo'), findsNothing);
       await _tap(tester, find.byKey(const ValueKey('lost-choice-2_2')));
       expect(find.textContaining('That is a different place.'), findsOneWidget);
       await _next(tester);
@@ -163,7 +163,7 @@ void main() {
       expect(find.text('Walk here together'), findsNothing);
       // Home is enabled as a map choice; the agreed photo remains the target.
       await _tap(tester, find.text('Places'));
-      expect(find.text('Fictional demo place'), findsOneWidget);
+      expect(find.text('Fictional demo place'), findsNothing);
       await _tap(tester, find.text('Home'));
       expect(find.textContaining('Home is a different place.'), findsOneWidget);
       await _next(tester);

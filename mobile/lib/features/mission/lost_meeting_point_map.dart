@@ -63,14 +63,6 @@ class LostMeetingPointMap extends StatelessWidget {
                         if (place.isDestination)
                           const BaseboundIcon(BaseboundIconName.home, size: 64),
                         Text(place.name),
-                        if (place.isDemo)
-                          Text(
-                            place.isDestination
-                                ? 'Fictional demo place'
-                                : 'Fictional demo photo',
-                          ),
-                        if (place.isDestination)
-                          const Text('Practice point. Not checked for safety.'),
                       ],
                     ),
                   ),
@@ -93,8 +85,6 @@ class LostMeetingPointMap extends StatelessWidget {
         label: target.label,
         height: 110,
       ),
-      if (target.isDemo)
-        const Text('Fictional demo photo', textAlign: TextAlign.center),
       const SizedBox(height: 12),
       LandmarkMap(
         map: map,
