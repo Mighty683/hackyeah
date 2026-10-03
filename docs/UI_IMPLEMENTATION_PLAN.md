@@ -1,4 +1,4 @@
-# Safe Path visual design and parallel implementation plan
+# Tuptu visual design and parallel implementation plan
 
 ## Current screen revision — 2026-10-03
 

@@ -71,7 +71,7 @@ void main() {
       await tester.tap(find.byTooltip('Leave practice'));
       await _wait(tester, find.text('Choose a scenario'));
       await _tap(tester, 'Reset web demo');
-      await _wait(tester, find.text('Welcome to Safe Path'));
+      await _wait(tester, find.text('Welcome to Tuptu'));
       await _child(tester);
       await _tap(tester, 'Our map');
       await _wait(tester, find.byType(GameScreen));
@@ -114,7 +114,7 @@ void main() {
         '11',
       );
       await _tap(tester, 'Reset web demo');
-      await _wait(tester, find.text('Welcome to Safe Path'));
+      await _wait(tester, find.text('Welcome to Tuptu'));
       expect((await repository.load()).child.fullName, 'Alex Example (demo)');
       expect(await LandmarkRepository().load(), hasLength(3));
       expect(find.byKey(const ValueKey('child-age')), findsNothing);

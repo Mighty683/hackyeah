@@ -8,7 +8,7 @@ This is a HackYeah hackathon project. Speed of development and a compelling work
 
 ## Application purpose
 
-Safe Path is a child-focused training game for ages roughly 7–14. It helps children learn familiar places, find their way, and practice decisions in simulated emergencies. Teach through **Situation → Decision → Action → Consequence → Explanation**, using simple English and calm feedback rather than long readings or memorization.
+Tuptu is a child-focused training game for ages roughly 7–14. It helps children learn familiar places, find their way, and practice decisions in simulated emergencies. Teach through **Situation → Decision → Action → Consequence → Explanation**, using simple English and calm feedback rather than long readings or memorization.
 
 Start with a welcome screen asking whether the user is an adult or a child. Keep the child's journey focused on one task per screen with minimal text and 2–4 choices on decision screens. Keep adult explanation and future family-plan setup separate from child play. Role selection is navigation, not age verification or authorization.
 

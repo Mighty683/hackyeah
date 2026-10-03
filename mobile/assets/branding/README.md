@@ -1,4 +1,4 @@
-# Safe Path launcher icon
+# Tuptu launcher icon
 
 The approved app icon combines the friendly dinosaur guide with a compass.
 The source images were generated with the built-in imagegen tool:

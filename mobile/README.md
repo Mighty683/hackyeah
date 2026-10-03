@@ -1,4 +1,4 @@
-# Safe Path — Android game and browser demo
+# Tuptu — Android game and browser demo
 
 Standalone Flutter + Flame application and the primary product. The pnpm workspace contains only the Slidev presentation; this app uses Flutter/Dart tooling separately.
 

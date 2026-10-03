@@ -45,7 +45,7 @@ defaults:
       <p class="pitch-kicker">{{ copy.kicker }}</p>
       <p class="story-lead">{{ copy.storyLead.text }}<strong>{{ copy.storyLead.emphasis }}</strong>{{ copy.storyLead.suffix }}</p>
       <p>{{ copy.story }}</p>
-      <p class="source-caption">{{ copy.caption }}</p>
+      <p class="source-caption">{{ copy.caption }}<br><a :href="copy.sourceUrl" target="_blank" rel="noopener noreferrer" @click.stop>{{ copy.sourceLabel }}</a></p>
     </div>
     <div class="problem-insight">
       <p>{{ copy.insight.text }}<br><strong>{{ copy.insight.emphasis }}</strong></p>

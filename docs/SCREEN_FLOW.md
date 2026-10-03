@@ -1,4 +1,4 @@
-# Safe Path screen and action reference
+# Tuptu screen and action reference
 
 Updated: 2026-10-03. Android is the application; Flutter web is a shared-code demo
 with mocked device features. The Slidev screens are pitch prototypes.

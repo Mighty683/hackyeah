@@ -1,4 +1,4 @@
-# Safe Path screen guidelines
+# Tuptu screen guidelines
 
 These rules govern the current screen revision. Read them together with `UX.md`.
 They supersede the older visual treatments in `UI_IMPLEMENTATION_PLAN.md`.

@@ -18,7 +18,7 @@ Use case: illustration-story. Asset: portrait 2:3 environment illustration for a
 ### Final prompt: hallway-practice-v2.png
 
 Use case: illustration-story
-Asset type: portrait 2:3 background illustration for a child-focused practice mission in the Safe Path mobile app, no UI.
+Asset type: portrait 2:3 background illustration for a child-focused practice mission in the Tuptu mobile app, no UI.
 Primary request: Replace the supplied hallway reference with a believable, modest modern European apartment interior hallway. The reference is for general perspective and open floor composition only; replace its ornate decorative style completely.
 Scene/backdrop: A simple interior corridor with solid plaster walls on both sides and a closed solid flat door at the far end. Two understated closed solid flat doors in the side walls. Straight rectangular doorframes, plain hardware, pale warm plaster, natural light oak floor. No windows and no exterior view. A single small framed abstract print on one side wall and one small simple potted plant set back in a rear corner; otherwise spare.
 Style/medium: Understated editorial children's-book illustration, soft matte gouache-like textures, clear restrained architectural forms, warm human scale, sophisticated picture-book taste. The environment should feel familiar, quiet and credible.

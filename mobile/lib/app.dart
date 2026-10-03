@@ -17,7 +17,7 @@ class BaseboundApp extends StatelessWidget {
   Widget build(BuildContext context) {
     if (kIsWeb) return _WebAppSession(initialize: initialize);
     return MaterialApp(
-      title: 'Safe Path',
+      title: 'Tuptu',
       debugShowCheckedModeBanner: false,
       theme: BaseboundTheme.training(),
       home: _AppStartup(initialize: initialize),
@@ -47,7 +47,7 @@ class _WebAppSessionState extends State<_WebAppSession> {
   @override
   Widget build(BuildContext context) => MaterialApp(
     key: ValueKey(_revision),
-    title: 'Safe Path — web demo',
+    title: 'Tuptu — web demo',
     debugShowCheckedModeBanner: false,
     theme: BaseboundTheme.training(),
     builder: (context, child) =>

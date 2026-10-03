@@ -162,7 +162,7 @@ class _PracticeSelectionScreenState extends State<_PracticeSelectionScreen>
               ? BaseboundBackButton(enabled: !_opening, onPressed: _back)
               : null,
           title: Text(
-            _selection == _Selection.activity ? 'Safe Path' : 'Practice only',
+            _selection == _Selection.activity ? 'Tuptu' : 'Practice only',
           ),
         ),
         body: SafeArea(

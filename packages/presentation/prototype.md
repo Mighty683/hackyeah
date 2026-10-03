@@ -1,6 +1,6 @@
 ---
 theme: default
-title: Safe Path — game demo
+title: Tuptu — game demo
 info: Clickable game prototype helping children learn their neighborhood.
 fonts:
   local: sans

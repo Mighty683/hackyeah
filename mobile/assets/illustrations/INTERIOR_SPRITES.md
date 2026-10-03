@@ -27,7 +27,7 @@ cells are not perfectly uniform:
 ## Generation prompt
 
 Use case: illustration-story
-Asset type: transparent furniture sprite atlas for Safe Path's top-down apartment plans.
+Asset type: transparent furniture sprite atlas for Tuptu's top-down apartment plans.
 Primary request: Create ONE square transparent sprite sheet with exactly SIX separate furniture sprites in a clean 3-column by 2-row equal-cell grid. The attached child sheet is STYLE REFERENCE ONLY for the soft, friendly illustrated rendering; do not include any people.
 Camera: strict orthographic directly overhead, 90-degree bird's-eye view. Top surfaces only. No isometric perspective, no front facades, no room walls or flooring.
 Grid order: TOP LEFT a wide muted sage-blue two-seat sofa with two cushions and upholstered arms, backrest at top of cell. TOP CENTER a single bed vertical with pale oak frame, lavender blanket, white pillow at top. TOP RIGHT a long narrow vertical kitchen worktop containing a dark four-ring stovetop and pale oak counter. BOTTOM LEFT a long narrow vertical kitchen worktop containing a steel sink basin and tap, pale oak counter. BOTTOM CENTER a small pale oak dining table vertical with two sage chairs, one each left and right. BOTTOM RIGHT one round potted leafy green houseplant viewed directly overhead.

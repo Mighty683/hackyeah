@@ -26,7 +26,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Try again'));
     await tester.pumpAndSettle();
-    expect(find.text('Welcome to Safe Path'), findsOneWidget);
+    expect(find.text('Welcome to Tuptu'), findsOneWidget);
     expect(attempts, 2);
   });
 
@@ -41,11 +41,11 @@ void main() {
     ready.complete();
     await tester.pumpAndSettle();
     expect(
-      find.text('Welcome to Safe Path', skipOffstage: false),
+      find.text('Welcome to Tuptu', skipOffstage: false),
       findsNothing,
     );
     tester.state<NavigatorState>(find.byType(Navigator)).pop();
     await tester.pumpAndSettle();
-    expect(find.text('Welcome to Safe Path'), findsOneWidget);
+    expect(find.text('Welcome to Tuptu'), findsOneWidget);
   });
 }
