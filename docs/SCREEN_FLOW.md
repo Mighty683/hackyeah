@@ -136,13 +136,15 @@ flowchart TD
     L -->|Map loaded| G
     L -->|Map load failed| E
     G -->|Tap a map point: move character| G
-    G -->|Drag: pan; pinch or zoom buttons: zoom 1–4×| G
+    G -->|Drag: pan; pinch or zoom buttons: zoom 1–8×| G
+    G -->|Show me: 4× view follows the character| G
     G -->|Show whole map: restore full source area| G
     G -->|Reach target| R
-    G -->|Start again: random target, reset character and overview| F
+    G -->|Start again: random target, reset character and close view| F
     R -->|Drag, pinch or zoom buttons: explore without moving character| R
     R -->|Show whole map: restore full source area| R
-    R -->|Play again: random target, reset character and overview| F
+    R -->|Show me: close view around the character| R
+    R -->|Play again: random target, reset character and close view| F
     G -->|About this demo| I
     R -->|About this demo| I
     I -->|Close| P{"Previous game state"}
@@ -179,8 +181,8 @@ flowchart TD
 | Form save error | Retry saving without losing edits | Back without saving |
 | Game target selection/error | Wait for saved safe places or retry | Help prototype, back |
 | Game map loading | Wait for the offline map | Help prototype, back |
-| Game playing | Move the character to the selected safe place or pretend base | Help prototype, pan/zoom, show whole map, restart with a random target, demo information, back |
-| Game result | Read the result and replay | Help prototype, pan/zoom, show whole map, demo information, back |
+| Game playing | Move the character to the selected safe place or pretend base; edge arrow points towards an offscreen target | Help prototype, pan/zoom, Show me, Show whole map, restart with a random target, demo information, back |
+| Game result | Read the result and replay | Help prototype, pan/zoom, Show me, Show whole map, demo information, back |
 | Game load error | Retry saved details or reopen the map | Help prototype, back |
 | Demo information | Read optional demo details | Close |
 | Help prototype entry | Choose not responding, air raid, lost, or unsure | Open 112 dialler, no-signal information, close |
@@ -210,7 +212,11 @@ This visual work preserves every screen action and return path described above. 
 
 ### Child map interaction
 
-The parent pin editor shows accurate bundled OSM geometry; the child view is deliberately schematic. The square overview covers the same geographic extent as the offline source, but minor streets/buildings/POIs are omitted. Decorative trees and illustrated buildings are not exact real-world positions or outlines. Dragging or pinching explores without selecting a movement destination; only a resolved tap moves the character. Zoom buttons and Show whole map are secondary controls, disabled while loading or after a load error. Instructions and attribution stay outside scrolling areas. Only secondary controls can scroll; the map has its own gesture area. Short or large-text layouts use a shorter instruction, and landscape places the map beside instructions and controls. Water, energy and warmth cards remain removed. There is one restart control in each loaded game state. Restart/replay reloads the saved safe places, selects a fresh random target, and resets character and overview; repeats are possible.
+The parent pin editor and child view share the bundled OSM geography. The child view keeps actual building footprints, local streets, paths, tram lines, green areas and water, with soft colours and illustrated landmarks. Close zoom reveals service roads, paths, small footprints and play areas; tiny details and overlapping labels are omitted. Decorative trees and landmark artwork are illustrations. This incomplete map remains practice only.
+
+The initial view is 4× zoom, covering roughly 500 × 500 metres around the character. It follows character movement within the source bounds. An edge arrow points towards an offscreen target and disappears when the target is visible or the game is complete; it shows direction, not a walking route. Dragging or pinching explores without selecting a movement destination and pauses following. Only a resolved tap moves the character and resumes following. Pinch/zoom controls allow 1–8×. **Show me** restores the 4× character view, and **Show whole map** shows the full source area without resetting progress. These controls are disabled while loading or after a load error. Instructions and attribution stay outside scrolling areas. Only secondary controls can scroll; the map has its own gesture area. Short or large-text layouts use a shorter instruction and a compact toolbar with 48-pixel touch targets, tooltips and accessibility labels. Landscape places the map beside instructions and controls. Water, energy and warmth cards remain removed. There is one restart control in each loaded game state. Restart/replay reloads the saved safe places, selects a fresh random target, and resets the character and close view; repeats are possible.
+
+Map update checks on 2026-10-03: Flutter analysis reported no issues, all 14 existing tests passed, and the Android debug APK built. A disposable loaded Flutter rendering check verified the 4× start/nearby/reset view, 1× overview, character following, pan/pinch without movement, and the arrow appearing only for an offscreen unfinished target. Phone layouts passed at 390 × 844 and 320 × 700 with 200% text; the latter retained a 246-pixel map and all four map controls. No Android device walkthrough was performed.
 
 ### Data and demo boundaries
 

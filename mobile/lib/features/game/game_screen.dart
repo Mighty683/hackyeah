@@ -81,10 +81,14 @@ class _GameScreenState extends State<GameScreen> {
           'This is a practice game, not real-world navigation. '
           '${widget.destination == null ? 'The base is pretend.' : 'The target is a parent-selected safe place. Its safety has not been checked.'} '
           'Your character can move freely.\n\n'
-          'This simplified map leaves out small streets and buildings. '
-          'Trees and buildings are illustrations, not exact outlines.\n\n'
+          'Streets, paths, buildings, parks and water use bundled map shapes. '
+          'Colours and landmarks are simplified for practice. '
+          'Some details are missing, and decorative trees are illustrations.\n\n'
           'The source map covers 2 × 2 km around TAURON Arena in Kraków. '
-          'Zooming shows a smaller part. Show whole map restores all of it.\n\n'
+          'The close view follows your character. An edge arrow points towards '
+          'a target outside the view; it does not show a walking route. '
+          'Show me returns to your character. '
+          'Show whole map restores all of it.\n\n'
           'Map data © OpenStreetMap contributors · ODbL 1.0.',
         ),
         actions: [
@@ -160,7 +164,9 @@ class _GameScreenState extends State<GameScreen> {
         landscape ||
         constraints.maxHeight < 460 ||
         MediaQuery.textScalerOf(context).scale(18) > 24;
-    final controls = SingleChildScrollView(child: _buildControls());
+    final controls = SingleChildScrollView(
+      child: _buildControls(compact: compact),
+    );
     final content = landscape
         ? Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -217,7 +223,7 @@ class _GameScreenState extends State<GameScreen> {
         : _arrived
         ? 'You reached ${target ?? 'the base'}!'
         : compact
-        ? 'Tap ${target ?? 'the pretend base'}.'
+        ? 'Reach ${target ?? 'the pretend base'}.'
         : 'Reach ${target ?? 'the pretend base'}';
     return Padding(
       padding: EdgeInsets.all(compact ? 12 : 16),
@@ -263,12 +269,19 @@ class _GameScreenState extends State<GameScreen> {
                         ? widget.destination == null
                               ? 'Your character reached the pretend base.'
                               : 'Your character reached the safe place in this game.'
-                        : 'Tap to move. Drag or pinch to explore.',
+                        : 'Tap nearby to move. The arrow points towards your target.',
                     style: const TextStyle(
                       fontSize: 16,
                       height: 1.3,
                       color: BaseboundColors.muted,
                     ),
+                  ),
+                ],
+                if (compact && !_arrived && !_failed) ...[
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Tap to move.',
+                    style: TextStyle(fontSize: 14, height: 1.2),
                   ),
                 ],
                 const SizedBox(height: 6),
@@ -320,7 +333,7 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
-  Widget _buildControls() {
+  Widget _buildControls({required bool compact}) {
     return SoftPanel(
       padding: const EdgeInsets.all(12),
       child: Column(
@@ -376,32 +389,56 @@ class _GameScreenState extends State<GameScreen> {
                       : BaseboundColors.muted.withValues(alpha: .4),
                 ),
               ),
-              OutlinedButton.icon(
-                onPressed: _ready ? _showWholeMap : null,
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(48, 48),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 12,
-                  ),
-                  textStyle: const TextStyle(
-                    fontFamily: 'Nunito',
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                icon: BaseboundIcon(
-                  BaseboundIconName.fitMap,
-                  color: _ready
-                      ? null
-                      : BaseboundColors.muted.withValues(alpha: .4),
-                ),
-                label: const Text('Show whole map'),
+              _buildViewControl(
+                compact: compact,
+                label: 'Show me',
+                icon: BaseboundIconName.child,
+                onPressed: _showNearby,
+              ),
+              _buildViewControl(
+                compact: compact,
+                label: 'Show whole map',
+                icon: BaseboundIconName.fitMap,
+                onPressed: _showWholeMap,
               ),
             ],
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildViewControl({
+    required bool compact,
+    required String label,
+    required BaseboundIconName icon,
+    required VoidCallback onPressed,
+  }) {
+    final artwork = BaseboundIcon(
+      icon,
+      color: _ready ? null : BaseboundColors.muted.withValues(alpha: .4),
+    );
+    if (compact) {
+      return IconButton.outlined(
+        onPressed: _ready ? onPressed : null,
+        tooltip: label,
+        constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+        icon: artwork,
+      );
+    }
+    return OutlinedButton.icon(
+      onPressed: _ready ? onPressed : null,
+      style: OutlinedButton.styleFrom(
+        minimumSize: const Size(48, 48),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        textStyle: const TextStyle(
+          fontFamily: 'Nunito',
+          fontSize: 16,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      icon: artwork,
+      label: Text(label),
     );
   }
 
@@ -413,6 +450,11 @@ class _GameScreenState extends State<GameScreen> {
   void _showWholeMap() {
     _tapBlocked = true;
     _game.showWholeMap();
+  }
+
+  void _showNearby() {
+    _tapBlocked = true;
+    _game.showNearby();
   }
 
   void _pointerDown(PointerDownEvent event) {

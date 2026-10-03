@@ -14,7 +14,8 @@ class PlayerComponent extends PositionComponent {
         anchor: Anchor.center,
       );
 
-  static const speed = 125.0;
+  // A close view needs time to recognise nearby landmarks while moving.
+  static const speed = 30.0;
   final _paint = Paint();
   Vector2? _destination;
 
