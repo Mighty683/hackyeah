@@ -2,6 +2,28 @@
 /// interprets real alerts; reviewed local instructions take precedence.
 enum MissionMode { home, outdoor }
 
+/// The same three reminders are shown and narrated at the end of practice.
+abstract final class AirRaidPracticeRecap {
+  static const praise = 'You did a great job! You finished the practice.';
+  static const points = [
+    (
+      title: 'Find a protected place',
+      description: 'Move away from windows when you hear the alarm.',
+    ),
+    (
+      title: 'Tell a trusted adult',
+      description: 'Send one message to tell them where you are.',
+    ),
+    (
+      title: 'Wait for the all-clear',
+      description: 'Stay there, even when it is quiet.',
+    ),
+  ];
+
+  static String get narration =>
+      '$praise ${points.map((point) => '${point.title}. ${point.description}').join(' ')}';
+}
+
 enum MissionVisual {
   alarm,
   room,
@@ -424,12 +446,10 @@ Map<String, MissionStep> _buildSteps() {
       visual: MissionVisual.allClear,
       sound: 'all_clear',
     ),
-    const MissionStep(
+    MissionStep(
       id: 'recall',
       title: 'You finished the practice',
-      narration:
-          'Alarm. Move away from windows. Find a protected place. '
-          'Message someone you trust. Stay there until the all-clear.',
+      narration: AirRaidPracticeRecap.narration,
       visual: MissionVisual.recall,
     ),
     const MissionStep(

@@ -90,8 +90,7 @@ class _MissionScreenState extends State<MissionScreen>
       return 'Practice only. Nothing was sent. ${_session.step.narration}';
     }
     if (_session.isComplete) {
-      return 'You finished the practice. You learned to move away from windows, '
-          'find a protected place, tell a trusted adult, and wait for the all-clear.';
+      return AirRaidPracticeRecap.narration;
     }
     return _session.feedback ?? _session.step.narration;
   }
@@ -412,6 +411,7 @@ class _MissionScreenState extends State<MissionScreen>
       if (_enteringPhoneNumber) return _phonePracticeLayout();
       final step = _session.step;
       if (step.id == 'message') return _messageLayout();
+      if (step.id == 'recall') return _recallLayout();
       final visual = _session.selectedChoice?.isCorrect == true
           ? _session.selectedChoice?.visual ?? step.visual
           : step.visual;
@@ -693,35 +693,89 @@ class _MissionScreenState extends State<MissionScreen>
     _ => 'Next step',
   };
 
+  Widget _summaryContent(String title) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Text(
+        title,
+        style: const TextStyle(
+          fontSize: 28,
+          fontWeight: FontWeight.w700,
+          height: 1.2,
+        ),
+      ),
+      const SizedBox(height: 12),
+      const BaseboundGuide(message: AirRaidPracticeRecap.praise),
+      const SizedBox(height: 16),
+      for (var index = 0; index < AirRaidPracticeRecap.points.length; index++)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: _summaryPoint(index),
+        ),
+      _audioControls(),
+    ],
+  );
+
+  Widget _summaryPoint(int index) {
+    final point = AirRaidPracticeRecap.points[index];
+    return SoftPanel(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '${index + 1}.',
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: BaseboundColors.blue,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  point.title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    height: 1.3,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  point.description,
+                  style: const TextStyle(fontSize: 16, height: 1.4),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _recallLayout() => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Expanded(
+        child: SingleChildScrollView(
+          child: _summaryContent(_session.step.title),
+        ),
+      ),
+      const SizedBox(height: 16),
+      _nextButton(),
+    ],
+  );
+
   Widget _completionLayout() => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       Expanded(
         child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text(
-                'Practice complete',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
-                  height: 1.2,
-                ),
-              ),
-              SizedBox(
-                height: MediaQuery.sizeOf(context).height * .25,
-                child: const Center(
-                  child: MissionScene(visual: MissionVisual.recall),
-                ),
-              ),
-              const Text(
-                'Move inside. Tell someone. Stay until the all-clear.',
-                style: TextStyle(fontSize: 18, height: 1.4),
-              ),
-              _audioControls(),
-            ],
-          ),
+          child: _summaryContent('Practice complete'),
         ),
       ),
       const SizedBox(height: 16),

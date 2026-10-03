@@ -126,8 +126,23 @@ void main() {
     await _tap(tester, 'Stay here');
     await _tap(tester, 'Stay and wait');
     await _tap(tester, 'Remember the steps');
+    expect(find.byType(MissionScene), findsNothing);
+    expect(find.byType(SoftPanel), findsNWidgets(3));
+    expect(find.text(AirRaidPracticeRecap.praise), findsOneWidget);
+    for (final point in AirRaidPracticeRecap.points) {
+      expect(find.text(point.title), findsOneWidget);
+      expect(find.text(point.description), findsOneWidget);
+    }
+    expect(
+      tester.widget<BaseboundMascot>(find.byType(BaseboundMascot)).pose,
+      DinoPose.celebrate,
+    );
+    expect(_lastNarration(audioCalls)['text'], AirRaidPracticeRecap.narration);
     await _tap(tester, 'Finish practice');
     expect(find.text('Practice complete'), findsOneWidget);
+    expect(find.byType(SoftPanel), findsNWidgets(3));
+    expect(find.text(AirRaidPracticeRecap.praise), findsOneWidget);
+    expect(_lastNarration(audioCalls)['text'], AirRaidPracticeRecap.narration);
     expect(
       audioCalls
           .where((call) => call.method == 'narrate')
@@ -482,6 +497,18 @@ void main() {
     expect(find.text('A pretend conversation'), findsOneWidget);
     await _tap(tester, 'Stay here');
     expect(find.text('You hear a loud noise'), findsOneWidget);
+    await _tap(tester, 'Stay here');
+    await _tap(tester, 'Stay and wait');
+    await _tap(tester, 'Remember the steps');
+    expect(find.byType(SoftPanel), findsNWidgets(3));
+    await tester.ensureVisible(find.text('Stay there, even when it is quiet.'));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    await _tap(tester, 'Finish practice');
+    expect(find.text('Practice complete'), findsOneWidget);
+    expect(find.byType(SoftPanel), findsNWidgets(3));
+    await _tap(tester, 'Play again');
+    expect(find.text('An alarm at home'), findsOneWidget);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();
