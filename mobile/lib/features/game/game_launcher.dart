@@ -1,35 +1,55 @@
-/// Loads saved safe places and picks a fresh target for each practice game.
-library;
-
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 
 import '../../game/maps/demo_map.dart';
 import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
 import '../help/help_screen.dart';
-import '../parent/data/family_plan.dart';
+import '../landmarks/data/landmark.dart';
+import '../landmarks/data/landmark_repository.dart';
 import '../parent/data/family_plan_repository.dart';
 import 'game_screen.dart';
 
+/// Opens one familiar-place map; no random destination or fictional player.
 class GameLauncher extends StatefulWidget {
-  const GameLauncher({super.key, this.gender = ChildGender.girl});
-
-  final ChildGender gender;
-
+  const GameLauncher({super.key});
   @override
   State<GameLauncher> createState() => _GameLauncherState();
 }
 
+class _MapContent {
+  const _MapContent(this.map, this.places, this.photoDirectory);
+  final DemoMap map;
+  final List<Landmark> places;
+  final String photoDirectory;
+}
+
 class _GameLauncherState extends State<GameLauncher> {
-  final _repository = FamilyPlanRepository();
-  final _random = Random();
-  late Future<SafePoint?> _destination = _chooseDestination();
-  int _round = 0;
+  late Future<_MapContent> _content = _load();
   bool _helpOpen = false;
 
-  Future<void> _openHelp() async {
+  Future<_MapContent> _load() async {
+    final repository = LandmarkRepository();
+    final landmarks = await repository.load();
+    final directory = await repository.photoDirectory();
+    final plan = await FamilyPlanRepository().load();
+    final map = await DemoMapRepository().load();
+    // Adapt existing named parent pins for this view only. Stored data and photo
+    // records remain separate, so existing family setup is not migrated or lost.
+    final places = <Landmark>[
+      ...landmarks,
+      for (var i = 0; i < plan.safePoints.length; i++)
+        Landmark(
+          id: 'family_place_$i',
+          name: plan.safePoints[i].displayName,
+          photoName: '',
+          latitude: plan.safePoints[i].latitude,
+          longitude: plan.safePoints[i].longitude,
+        ),
+    ];
+    return _MapContent(map, places, directory.path);
+  }
+
+  Future<void> _help() async {
     if (_helpOpen) return;
     setState(() => _helpOpen = true);
     try {
@@ -39,137 +59,69 @@ class _GameLauncherState extends State<GameLauncher> {
     }
   }
 
-  Future<SafePoint?> _chooseDestination() async {
-    final plan = await _repository.load();
-    if (plan.safePoints.isEmpty) return null;
-    final map = await DemoMapRepository().load();
-    final points = plan.safePoints
-        .where(
-          (point) =>
-              point.longitude >= map.bounds[0] &&
-              point.longitude <= map.bounds[2] &&
-              point.latitude >= map.bounds[1] &&
-              point.latitude <= map.bounds[3],
-        )
-        .toList();
-    if (points.isEmpty) return null;
-    return points[_random.nextInt(points.length)];
-  }
-
-  void _newGame() {
-    setState(() {
-      _round++;
-      _destination = _chooseDestination();
-    });
-  }
-
   @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<SafePoint?>(
-      key: ValueKey(_round),
-      future: _destination,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done &&
-            !snapshot.hasError &&
-            !_helpOpen) {
-          return GameScreen(
-            key: ValueKey(_round),
-            destination: snapshot.data,
-            gender: widget.gender,
-            onNewGame: _newGame,
-          );
-        }
-        return Scaffold(
-          appBar: AppBar(
-            automaticallyImplyLeading: false,
-            leading: Navigator.canPop(context)
-                ? const BaseboundBackButton()
-                : null,
-            title: const Text('Practice game'),
-          ),
-          bottomNavigationBar: SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
-              child: HelpEntryButton(onPressed: _openHelp),
-            ),
-          ),
-          body: SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 440),
-                  child: _PracticePreparation(
-                    hasError: snapshot.hasError,
-                    onRetry: _newGame,
-                  ),
-                ),
-              ),
-            ),
-          ),
+  Widget build(BuildContext context) => FutureBuilder<_MapContent>(
+    future: _content,
+    builder: (context, snapshot) {
+      if (snapshot.hasData && !_helpOpen) {
+        final data = snapshot.data!;
+        return GameScreen(
+          map: data.map,
+          landmarks: data.places,
+          photoDirectory: data.photoDirectory,
         );
-      },
-    );
-  }
-}
-
-class _PracticePreparation extends StatelessWidget {
-  const _PracticePreparation({required this.hasError, required this.onRetry});
-
-  final bool hasError;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) => Column(
-    mainAxisSize: MainAxisSize.min,
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      const Align(
-        alignment: Alignment.centerLeft,
-        child: BaseboundIcon(
-          BaseboundIconName.map,
-          size: 64,
-          color: BaseboundColors.blue,
-          calm: true,
+      }
+      return Scaffold(
+        appBar: AppBar(
+          leading: Navigator.canPop(context)
+              ? const BaseboundBackButton()
+              : null,
+          title: const Text('Our map'),
         ),
-      ),
-      const SizedBox(height: 24),
-      Text(
-        hasError ? 'Let’s try that again' : 'Preparing your practice',
-        style: Theme.of(context).textTheme.headlineMedium
-            ?.copyWith(fontSize: 28),
-      ),
-      const SizedBox(height: 12),
-      Text(
-        hasError
-            ? 'Your practice places could not load. Go back or try again.'
-            : 'Choosing a place on the offline map.',
-        style: Theme.of(context).textTheme.bodyLarge,
-      ),
-      const SizedBox(height: 24),
-      if (hasError)
-        FilledButton(onPressed: onRetry, child: const Text('Try again'))
-      else
-        const Align(
-          alignment: Alignment.centerLeft,
-          child: SizedBox.square(
-            dimension: 24,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              semanticsLabel: 'Loading practice game',
-            ),
+        bottomNavigationBar: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: HelpEntryButton(onPressed: _help),
           ),
         ),
-      const SizedBox(height: 24),
-      const Text(
-        'Practice only. Places are not verified safe destinations.',
-        style: TextStyle(
-          fontSize: 14,
-          color: BaseboundColors.muted,
-          height: 1.4,
+        body: IllustratedBackdrop(
+          warm: true,
+          child: Center(
+            child: snapshot.hasError
+                ? Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: SoftPanel(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const Align(
+                            alignment: Alignment.centerLeft,
+                            child: BaseboundIcon(
+                              BaseboundIconName.map,
+                              size: 24,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'Could not load our map. Saved places have not been reset.',
+                          ),
+                          const SizedBox(height: 16),
+                          FilledButton(
+                            onPressed: () => setState(() => _content = _load()),
+                            child: const Text('Try again'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : const CircularProgressIndicator(
+                    semanticsLabel: 'Loading our map',
+                  ),
+          ),
         ),
-      ),
-    ],
+      );
+    },
   );
 }

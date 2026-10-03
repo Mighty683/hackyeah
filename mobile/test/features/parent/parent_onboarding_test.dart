@@ -2,6 +2,7 @@ import 'package:do_bazy/features/parent/child_editor_screen.dart';
 import 'package:do_bazy/features/parent/data/family_plan.dart';
 import 'package:do_bazy/features/parent/data/family_plan_repository.dart';
 import 'package:do_bazy/features/parent/parent_screen.dart';
+import 'package:do_bazy/features/parent/practice_meeting_point_editor_screen.dart';
 import 'package:do_bazy/features/parent/safe_point_editor_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -38,6 +39,14 @@ void main() {
   testWidgets('child fields stay separate and Back retains edits before save', (
     tester,
   ) async {
+    await FamilyPlanRepository().save(
+      const FamilyPlan(
+        practiceMeetingPoint: PracticeMeetingPoint(
+          presetId: 'fountain',
+          label: 'Demo fountain',
+        ),
+      ),
+    );
     await _start(tester, const ParentScreen());
     await _tap(tester, 'Add child details');
     expect(find.byType(TextField), findsOneWidget);
@@ -67,6 +76,10 @@ void main() {
     expect(child.age, 9);
     expect(child.address, 'Fictional home');
     expect(child.supportNotes, 'Demo support note');
+    expect(
+      (await FamilyPlanRepository().load()).practiceMeetingPoint!.label,
+      'Demo fountain',
+    );
     expect(tester.takeException(), isNull);
   });
 
@@ -79,6 +92,10 @@ void main() {
           TrustedContact(name: 'Demo adult one'),
           TrustedContact(name: 'Demo adult two'),
         ],
+        practiceMeetingPoint: PracticeMeetingPoint(
+          presetId: 'fountain',
+          label: 'Demo fountain',
+        ),
       ),
     );
     await _start(tester, const ParentScreen());
@@ -101,6 +118,10 @@ void main() {
     expect(contacts.length, FamilyPlan.maxContacts);
     expect(contacts.last.phone, '000000000');
     expect(contacts.last.relationship, 'Demo parent');
+    expect(
+      (await FamilyPlanRepository().load()).practiceMeetingPoint!.label,
+      'Demo fountain',
+    );
     expect(tester.takeException(), isNull);
   });
 
@@ -193,6 +214,84 @@ void main() {
     expect(find.byType(ChildEditorScreen), findsNothing);
     expect(saved!.fullName, 'Retained demo name');
     expect(saved!.supportNotes, 'Retained demo note');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('practice landmark saves and clears without replacing map pins', (
+    tester,
+  ) async {
+    await FamilyPlanRepository().save(
+      const FamilyPlan(
+        contacts: [TrustedContact(name: 'Demo adult')],
+        safePoints: [SafePoint(name: 'Demo pin', latitude: 50, longitude: 20)],
+      ),
+    );
+    await _start(tester, const ParentScreen());
+    await _tap(tester, 'Skip child details');
+    await _tap(tester, 'Choose safe places');
+    await _tap(tester, 'Add a practice meeting point');
+    await _tap(tester, 'Information desk');
+    await _tap(tester, 'Name this meeting point');
+    await tester.enterText(find.byType(TextField), 'Demo help desk');
+    await _tap(tester, 'Save practice meeting point');
+
+    var plan = await FamilyPlanRepository().load();
+    expect(plan.practiceMeetingPoint!.presetId, 'information_desk');
+    expect(plan.practiceMeetingPoint!.label, 'Demo help desk');
+    expect(plan.safePoints.single.name, 'Demo pin');
+    expect(plan.contacts.single.name, 'Demo adult');
+    final delete = find.byTooltip('Delete Demo help desk');
+    await tester.ensureVisible(delete);
+    await tester.tap(delete);
+    await tester.pumpAndSettle();
+    await _tap(tester, 'Delete');
+    plan = await FamilyPlanRepository().load();
+    expect(plan.practiceMeetingPoint, isNull);
+    expect(plan.safePoints.single.name, 'Demo pin');
+    expect(plan.contacts.single.name, 'Demo adult');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('practice landmark error retains selection and label for retry', (
+    tester,
+  ) async {
+    var failSave = true;
+    PracticeMeetingPoint? saved;
+    await _start(
+      tester,
+      _EditorLauncher(
+        editor: PracticeMeetingPointEditorScreen(
+          point: const PracticeMeetingPoint(
+            presetId: 'removed-preset',
+            label: 'Old custom label',
+          ),
+          onSave: (point) async {
+            if (failSave) throw StateError('Storage unavailable');
+            saved = point;
+          },
+        ),
+      ),
+    );
+    await _tap(tester, 'Open editor');
+    expect(
+      find.textContaining('The saved picture is unavailable.'),
+      findsOneWidget,
+    );
+    await _tap(tester, 'Information desk');
+    await _tap(tester, 'Name this meeting point');
+    expect(_fieldText(tester), 'Old custom label');
+    await tester.enterText(find.byType(TextField), 'Retained meeting label');
+    await _tap(tester, 'Save practice meeting point');
+    expect(saved, isNull);
+    expect(_fieldText(tester), 'Retained meeting label');
+    expect(
+      find.text('Could not save. Your edits are still here. Try again.'),
+      findsOneWidget,
+    );
+    failSave = false;
+    await _tap(tester, 'Save practice meeting point');
+    expect(saved!.presetId, 'information_desk');
+    expect(saved!.label, 'Retained meeting label');
     expect(tester.takeException(), isNull);
   });
 }

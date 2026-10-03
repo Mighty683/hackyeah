@@ -53,7 +53,9 @@ void main() {
       expect(find.byType(MissionScreen), findsNothing);
       expect(find.text('Choose practice'), findsOneWidget);
       expect(find.text('Alarm practice'), findsOneWidget);
-      expect(find.text('Map practice'), findsOneWidget);
+      expect(find.text('Our map'), findsOneWidget);
+      expect(find.text('Landmark practice'), findsNothing);
+      expect(find.text('Map practice'), findsNothing);
       expect(audioCalls.where((call) => call.method == 'dispose').length, 2);
       expect(audioCalls.last.method, 'narrate');
       expect(tester.takeException(), isNull);

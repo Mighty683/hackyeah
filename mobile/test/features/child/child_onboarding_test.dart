@@ -14,6 +14,10 @@ class _MemoryRepository extends FamilyPlanRepository {
     child: ChildProfile(address: 'Demo home', supportNotes: 'Demo note'),
     contacts: [TrustedContact(name: 'Demo adult')],
     safePoints: [SafePoint(name: 'Practice', latitude: 50, longitude: 20)],
+    practiceMeetingPoint: PracticeMeetingPoint(
+      presetId: 'information_desk',
+      label: 'Demo help desk',
+    ),
   );
   bool failSave = false;
   @override
@@ -96,6 +100,11 @@ void main() {
       expect(repository.plan.child.supportNotes, 'Demo note');
       expect(repository.plan.contacts.single.name, 'Demo adult');
       expect(repository.plan.safePoints.single.name, 'Practice');
+      expect(
+        repository.plan.practiceMeetingPoint!.presetId,
+        'information_desk',
+      );
+      expect(repository.plan.practiceMeetingPoint!.label, 'Demo help desk');
       await _tap(tester, 'Alarm practice');
       await _tap(tester, 'At home');
       final mission = tester.widget<MissionScreen>(find.byType(MissionScreen));

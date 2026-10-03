@@ -5,27 +5,10 @@ import 'package:flame/components.dart';
 
 import 'demo_map.dart';
 
-/// Fictional blocked area used only by the practice scenario, in map units.
-class PracticeBlockage {
-  PracticeBlockage({required Vector2 center, required this.radius})
-    : center = center.clone();
-
-  final Vector2 center;
-  final double radius;
-
-  bool intersects(Vector2 start, Vector2 end) {
-    final delta = end - start;
-    final fraction = delta.length2 == 0
-        ? 0.0
-        : ((center - start).dot(delta) / delta.length2).clamp(0.0, 1.0);
-    return center.distanceTo(start + delta * fraction) <= radius;
-  }
-}
-
-/// Practice routing on bundled line geometry. This is not verified walking data.
+/// Offline pedestrian routing on bundled line geometry; access is not verified.
 /// Only shared source vertices connect ways; visual crossings add no shortcuts.
 class OfflineRouter {
-  OfflineRouter(DemoMap map, {this.blockage}) {
+  OfflineRouter(DemoMap map) {
     final vertices = <String, int>{};
     for (final feature in map.features.where(_allowsWalking)) {
       final lines = feature.geometryType == 'LineString'
@@ -51,9 +34,9 @@ class OfflineRouter {
 
   // About 60 m in this 2 km snapshot. Snapping never draws an off-path connector.
   static const maximumSnapDistance = 12.0;
-  final PracticeBlockage? blockage;
   final _points = <Vector2>[];
   final _edges = <Map<int, double>>[];
+  final _tags = <Map<int, Map<String, dynamic>>>[];
   final _incoming = <int>{};
 
   static bool _allowsWalking(DemoMapFeature feature) {
@@ -104,6 +87,7 @@ class OfflineRouter {
   int _addNode(Vector2 point) {
     _points.add(point);
     _edges.add({});
+    _tags.add({});
     return _points.length - 1;
   }
 
@@ -136,15 +120,21 @@ class OfflineRouter {
     final start = _points[a];
     final end = _points[b];
     final length = start.distanceTo(end);
-    if (length == 0 || (blockage?.intersects(start, end) ?? false)) return;
+    if (length == 0) return;
     final cost = length * _costFactor(tags);
     final oneWay = tags['oneway:foot'];
     if (oneWay != '-1') {
-      _edges[a][b] = math.min(_edges[a][b] ?? double.infinity, cost);
+      if (cost < (_edges[a][b] ?? double.infinity)) {
+        _edges[a][b] = cost;
+        _tags[a][b] = tags;
+      }
       _incoming.add(b);
     }
     if (!const {'yes', '1', 'true'}.contains(oneWay)) {
-      _edges[b][a] = math.min(_edges[b][a] ?? double.infinity, cost);
+      if (cost < (_edges[b][a] ?? double.infinity)) {
+        _edges[b][a] = cost;
+        _tags[b][a] = tags;
+      }
       _incoming.add(a);
     }
   }
@@ -164,12 +154,10 @@ class OfflineRouter {
   }
 
   int? nearestNode(Vector2 point) {
-    if (blockage?.intersects(point, point) ?? false) return null;
     int? result;
     var distance = maximumSnapDistance;
     for (var i = 0; i < _points.length; i++) {
       if (_edges[i].isEmpty && !_incoming.contains(i)) continue;
-      if (blockage?.intersects(_points[i], _points[i]) ?? false) continue;
       final candidate = point.distanceTo(_points[i]);
       if (candidate <= distance) {
         result = i;
@@ -184,6 +172,10 @@ class OfflineRouter {
   /// A* with Euclidean distance: admissible because each preference multiplier is at least one.
   /// Returns null for distant pins or disconnected paths; no straight-line fallback.
   List<Vector2>? route(Vector2 start, Vector2 target) {
+    return routeDetails(start, target)?.points;
+  }
+
+  RoutedPath? routeDetails(Vector2 start, Vector2 target) {
     final source = nearestNode(start);
     final goal = nearestNode(target);
     if (source == null || goal == null) return null;
@@ -213,13 +205,27 @@ class OfflineRouter {
     return null;
   }
 
-  List<Vector2> _reconstruct(Map<int, int> previous, int goal) {
-    final result = <Vector2>[pointAt(goal)];
+  RoutedPath _reconstruct(Map<int, int> previous, int goal) {
+    final nodes = <int>[goal];
     var current = goal;
     while (previous.containsKey(current)) {
       current = previous[current]!;
-      result.add(pointAt(current));
+      nodes.add(current);
     }
-    return result.reversed.toList();
+    final ordered = nodes.reversed.toList();
+    return RoutedPath(
+      points: ordered.map(pointAt).toList(),
+      segments: [
+        for (var i = 1; i < ordered.length; i++)
+          Map.unmodifiable(_tags[ordered[i - 1]][ordered[i]]!),
+      ],
+    );
   }
+}
+
+/// One tag record per directed path segment, for local walking instructions.
+class RoutedPath {
+  const RoutedPath({required this.points, required this.segments});
+  final List<Vector2> points;
+  final List<Map<String, dynamic>> segments;
 }

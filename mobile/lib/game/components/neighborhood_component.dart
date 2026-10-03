@@ -7,7 +7,6 @@ import 'package:flutter/painting.dart';
 
 import '../maps/demo_map.dart';
 import '../maps/schematic_map_scene.dart';
-import 'player_component.dart';
 
 /// Child-facing illustrated practice map, not street or emergency navigation.
 /// Nearby source geography stays recognizable without adding a wall of labels.
@@ -81,10 +80,6 @@ class NeighborhoodComponent extends PositionComponent with TapCallbacks {
         Rect.fromCircle(center: _scene.shop!, radius: landmarkRadius),
       if (showHome)
         Rect.fromCircle(center: home.toOffset(), radius: 21 / scale),
-      for (final player
-          in parent?.children.whereType<PlayerComponent>() ??
-              <PlayerComponent>[])
-        player.markerBounds(scale).inflate(4 / scale),
     ];
     if (showHome && visible.inflate(21 / scale).contains(home.toOffset())) {
       obstacles.add(

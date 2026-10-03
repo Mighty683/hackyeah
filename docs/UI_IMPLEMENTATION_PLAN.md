@@ -2,6 +2,19 @@
 
 ## Current screen revision — 2026-10-03
 
+### Integration with current main
+
+The requested merge preserves main's Mission 02, parent practice meeting-point
+setup and unified GPS map. Shared styling applies to the new journeys. GPS map
+and adult landmark-library presentation were ported selectively onto their newer
+implementations; the obsolete standalone landmark-practice screen stays removed.
+Activity selection keeps Alarm practice, I'm lost practice and Our map. Parent
+completion now describes the shared map rather than obsolete random targets.
+
+Integration verification: Flutter analysis found no issues, all 63 current tests
+passed, and the Android debug APK built successfully. This
+record supersedes the pre-merge test count while preserving its earlier evidence.
+
 The current source of truth is [UI_GUIDELINES.md](UI_GUIDELINES.md), also linked
 from `AGENTS.md`. This pass replaces the earlier raised, heavily rounded cards
 and gradient captions with warm neutral surfaces, slate text, muted blue actions,

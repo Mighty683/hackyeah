@@ -9,10 +9,12 @@ import '../../ui/basebound_ui.dart';
 import '../mission/practice_launcher.dart';
 import '../landmarks/landmark_library_screen.dart';
 import '../landmarks/data/landmark_repository.dart';
+import '../mission/lost_landmarks.dart';
 import 'child_editor_screen.dart';
 import 'contact_editor_screen.dart';
 import 'data/family_plan.dart';
 import 'data/family_plan_repository.dart';
+import 'practice_meeting_point_editor_screen.dart';
 import 'safe_point_editor_screen.dart';
 import 'widgets/parent_editor_scaffold.dart';
 
@@ -111,11 +113,16 @@ class _ParentScreenState extends State<ParentScreen> {
     );
   }
 
+  Future<void> _editPracticeMeetingPoint() => _openEditor(
+    PracticeMeetingPointEditorScreen(
+      point: _plan!.practiceMeetingPoint,
+      onSave: (point) => _save(_plan!.copyWith(practiceMeetingPoint: point)),
+    ),
+  );
+
   Future<void> _openLandmarks() async {
     await Navigator.of(context).push<void>(
-      MaterialPageRoute(
-        builder: (_) => const LandmarkLibraryScreen(parentMode: true),
-      ),
+      MaterialPageRoute(builder: (_) => const LandmarkLibraryScreen()),
     );
   }
 
@@ -159,11 +166,16 @@ class _ParentScreenState extends State<ParentScreen> {
       ) ??
       false;
 
-  Future<void> _delete({int? contact, int? place, bool all = false}) async {
+  Future<void> _delete({
+    int? contact,
+    int? place,
+    bool practiceMeetingPoint = false,
+    bool all = false,
+  }) async {
     final confirmed = await _confirm(
       all ? 'Delete all saved details?' : 'Delete this entry?',
       all
-          ? 'This removes the child details, trusted contacts, safe places, landmarks, and saved photo copies from this device. It cannot be undone.'
+          ? 'This removes the child details, trusted contacts, safe places, practice meeting point, landmarks, and saved photo copies from this device. It cannot be undone.'
           : 'This removes the entry from this device.',
     );
     if (!confirmed || !mounted) return;
@@ -184,7 +196,13 @@ class _ParentScreenState extends State<ParentScreen> {
         final points = [..._plan!.safePoints];
         if (contact != null) contacts.removeAt(contact);
         if (place != null) points.removeAt(place);
-        await _save(_plan!.copyWith(contacts: contacts, safePoints: points));
+        await _save(
+          _plan!.copyWith(
+            contacts: contacts,
+            safePoints: points,
+            clearPracticeMeetingPoint: practiceMeetingPoint,
+          ),
+        );
       }
     } catch (_) {
       if (mounted) {
@@ -395,6 +413,60 @@ class _ParentScreenState extends State<ParentScreen> {
         icon: BaseboundIconName.addPlace,
         onPressed: _editPlace,
       ),
+      const SizedBox(height: 28),
+      ..._practiceMeetingPoint(),
+    ];
+  }
+
+  List<Widget> _practiceMeetingPoint() {
+    final point = _plan!.practiceMeetingPoint;
+    final preset = resolveLostLandmark(point?.presetId ?? 'fountain');
+    final unknownPreset = point != null && point.presetId != preset.id;
+    return [
+      _heading('A meeting point for lost practice', BaseboundIconName.pin),
+      const Text(
+        'Choose an illustration and a name your child can recognize. '
+        'This is separate from map pins.',
+        style: _subtitleStyle,
+      ),
+      const SizedBox(height: 16),
+      if (point == null)
+        const ParentEditorNote(
+          message: 'No practice meeting point saved. Lost practice uses a pretend Fountain.',
+          icon: BaseboundIconName.info,
+        )
+      else ...[
+        Center(
+          child: LostLandmarkIllustration(presetId: point.presetId, size: 80),
+        ),
+        const SizedBox(height: 8),
+        _entry(
+          title: unknownPreset
+              ? 'Pretend fountain'
+              : point.label.trim().isEmpty
+              ? preset.label
+              : point.label,
+          subtitle: 'Bundled practice picture. Tap to edit.',
+          onEdit: _editPracticeMeetingPoint,
+          onDelete: () => _delete(practiceMeetingPoint: true),
+          icon: BaseboundIconName.pin,
+        ),
+        if (unknownPreset)
+          const ParentEditorNote(
+            message: 'The saved picture is unavailable. A pretend Fountain is shown. Edit to choose a new picture.',
+            icon: BaseboundIconName.info,
+          ),
+      ],
+      const SizedBox(height: 12),
+      OutlinedButton.icon(
+        onPressed: _editPracticeMeetingPoint,
+        icon: const BaseboundIcon(BaseboundIconName.edit),
+        label: Text(
+          point == null
+              ? 'Add a practice meeting point'
+              : 'Edit practice meeting point',
+        ),
+      ),
     ];
   }
 
@@ -407,13 +479,19 @@ class _ParentScreenState extends State<ParentScreen> {
     const SizedBox(height: 24),
     ParentEditorNote(
       message: _plan!.safePoints.isEmpty
-          ? 'No safe place chosen. The map game uses a pretend base.'
-          : 'The map game picks one saved safe place at random for training.',
+          ? 'No safe place chosen. Add a place or explore Our map.'
+          : 'Your saved places are available on Our map.',
       icon: BaseboundIconName.play,
     ),
     const SizedBox(height: 16),
     const Text(
       'Training only. Saved safe places are not verified. No real emergency navigation or assistance.',
+      style: _subtitleStyle,
+    ),
+    const SizedBox(height: 16),
+    const Text(
+      'Lost practice uses a saved landmark or a pretend Fountain. '
+      'Calls, replies and safety confirmation are simulated. No message is sent.',
       style: _subtitleStyle,
     ),
     const SizedBox(height: 24),
