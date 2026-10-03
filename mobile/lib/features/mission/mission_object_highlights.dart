@@ -110,17 +110,15 @@ class MissionObjectHighlights extends CustomPainter {
     }
     if (layout.family == MissionVisual.contacts) {
       final center = switch (id) {
-        'mom' => const Offset(200, 166),
-        'dad' => const Offset(200, 292),
-        _ => const Offset(200, 418),
+        'mom' => const Offset(122, 166),
+        'dad' => const Offset(122, 292),
+        _ => const Offset(122, 418),
       };
       canvas.drawCircle(center, 31, paint);
       return;
     }
     if (layout.family == MissionVisual.communication) {
-      final bounds = id == 'call'
-          ? const Rect.fromLTWH(95, 186, 42, 44)
-          : const Rect.fromLTWH(95, 347, 42, 44);
+      const bounds = Rect.fromLTWH(101, 258, 42, 44);
       canvas.drawRRect(
         RRect.fromRectAndRadius(bounds, const Radius.circular(6)),
         paint,

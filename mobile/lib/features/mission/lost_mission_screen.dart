@@ -444,6 +444,11 @@ class _LostMissionScreenState extends State<LostMissionScreen>
         titleKey: const ValueKey('lost-step-title'),
         praise: LostPracticeRecap.praise,
         points: LostPracticeRecap.points,
+        pointIcons: const [
+          BaseboundIconName.stay,
+          BaseboundIconName.phone,
+          BaseboundIconName.family,
+        ],
       ),
       const Text(
         LostPracticeRecap.notice,

@@ -89,8 +89,17 @@ void main() {
     );
     await _finishFeedback(tester);
     await _tap(tester, 'Mom');
-    await _tap(tester, 'Keep calling');
-    await _tap(tester, 'Send one message');
+    expect(find.text('Send an SMS'), findsNothing);
+    await _tap(tester, 'Try one call', advanceFeedback: false);
+    expect(
+      find.text('No answer in this practice. Try one short SMS.'),
+      findsOneWidget,
+    );
+    expect(find.text('Send an SMS'), findsNothing);
+    expect(_lastNarration(audioCalls)['text'], contains('No answer'));
+    await _finishFeedback(tester);
+    expect(find.text('No answer? Send an SMS'), findsOneWidget);
+    await _tap(tester, 'Send an SMS');
     expect(find.byType(PracticePhoneKeypad), findsOneWidget);
     expect(find.text('987 654 321'), findsNothing);
     await _tap(tester, '1');
@@ -348,7 +357,8 @@ void main() {
         'Move deeper inside',
         'Inside hallway',
         'Mom',
-        'Send one message',
+        'Try one call',
+        'Send an SMS',
       ]) {
         await _tap(tester, label);
       }
@@ -542,12 +552,12 @@ void main() {
     expect(
       find.byWidgetPredicate(
         (widget) =>
-            widget is Semantics &&
-            widget.properties.label == 'Send one message',
+            widget is Semantics && widget.properties.label == 'Try one call',
       ),
       findsOneWidget,
     );
-    await _tap(tester, 'Send one message');
+    await _tap(tester, 'Try one call');
+    await _tap(tester, 'Send an SMS');
     for (final digit in '123456789'.split('')) {
       await _tap(tester, digit);
     }

@@ -17,9 +17,15 @@ void main() {
     expect(session.selectedChoice?.visual, MissionVisual.twoWalls);
     session.advance();
     _chooseAndAdvance(session, 'dad');
-    session.choose('call');
+    expect(session.step.id, 'communication');
+    session.choose('message');
     session.advance();
     expect(session.step.id, 'communication');
+    expect(session.hasFeedback, isFalse);
+    session.choose('call');
+    expect(session.feedback, contains('No answer'));
+    session.advance();
+    expect(session.step.id, 'sms');
     _chooseAndAdvance(session, 'message');
     expect(session.step.id, 'message');
     session.advance();
@@ -41,7 +47,7 @@ void main() {
   });
 
   test(
-    'home and outdoor practice keep decisions to two through four choices',
+    'decisions have two through four choices and phone actions are guided',
     () {
       for (final mode in MissionMode.values) {
         final session = MissionSession(mode: mode);
@@ -49,7 +55,12 @@ void main() {
         while (!session.isComplete) {
           visitedSteps.add(session.step.id);
           if (session.step.isDecision) {
-            expect(session.step.choices.length, inInclusiveRange(2, 4));
+            if (session.step.id == 'communication' ||
+                session.step.id == 'sms') {
+              expect(session.step.choices, hasLength(1));
+            } else {
+              expect(session.step.choices.length, inInclusiveRange(2, 4));
+            }
             final choice = session.step.choices.firstWhere(
               (choice) => choice.isCorrect,
             );

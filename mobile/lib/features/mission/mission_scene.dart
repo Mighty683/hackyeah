@@ -92,7 +92,7 @@ class MissionScene extends StatelessWidget {
                   _character(context, constraints, layout),
                 if (visual == MissionVisual.alarm ||
                     visual == MissionVisual.allClear)
-                  _phoneSignal(constraints),
+                  _sceneSignal(constraints),
                 IgnorePointer(
                   child: CustomPaint(
                     painter: MissionObjectHighlights(
@@ -116,11 +116,11 @@ class MissionScene extends StatelessWidget {
     );
   }
 
-  Widget _phoneSignal(BoxConstraints constraints) => Positioned(
-    left: constraints.maxWidth * .405,
-    top: constraints.maxHeight * .20,
-    width: constraints.maxWidth * .19,
-    height: constraints.maxHeight * .16,
+  Widget _sceneSignal(BoxConstraints constraints) => Positioned(
+    left: constraints.maxWidth * (visual == MissionVisual.alarm ? .07 : .405),
+    top: constraints.maxHeight * (visual == MissionVisual.alarm ? .19 : .20),
+    width: constraints.maxWidth * (visual == MissionVisual.alarm ? .11 : .19),
+    height: constraints.maxHeight * (visual == MissionVisual.alarm ? .10 : .16),
     child: ExcludeSemantics(
       child: Container(
         padding: const EdgeInsets.all(6),
@@ -175,7 +175,24 @@ class MissionScene extends StatelessWidget {
           onTap: onChoose == null || rejected
               ? null
               : () => onChoose!(choice.id),
-          child: const SizedBox.expand(),
+          child:
+              visual == MissionVisual.contacts ||
+                  visual == MissionVisual.communication
+              ? Padding(
+                  padding: EdgeInsets.only(left: width * .31, right: 12),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      choice.label,
+                      style: const TextStyle(
+                        color: BaseboundColors.ink,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                )
+              : const SizedBox.expand(),
         ),
       ),
     );
@@ -235,7 +252,15 @@ class _PortraitBackdrop extends StatelessWidget {
   Widget build(BuildContext context) {
     final fallback = layout.family == MissionVisual.apartment
         ? const MissionHomePlan()
-        : CustomPaint(painter: _PortraitScenePainter(layout.family, visual));
+        : CustomPaint(
+            painter: _PortraitScenePainter(
+              layout.family,
+              visual,
+              phoneAction: layout.targets.containsKey('message')
+                  ? MissionActionIcon.message
+                  : MissionActionIcon.call,
+            ),
+          );
     return ExcludeSemantics(
       child: layout.asset == null
           ? fallback
@@ -280,13 +305,15 @@ String _sceneDescription(MissionVisual visual, MissionChoice? choice) {
     return 'The child has moved toward the door.';
   }
   return switch (visual) {
-    MissionVisual.alarm => 'A child playing at home. A phone shows an alarm.',
+    MissionVisual.alarm =>
+      'A child playing at home. An alarm sounds outside the window.',
     MissionVisual.room => 'A room with a window, an inside area, and a door.',
     MissionVisual.apartment => 'A home seen from above. Three rooms have windows. The hallway is inside.',
     MissionVisual.twoWalls =>
       'The child, one wall, another wall, then outside.',
     MissionVisual.contacts => 'Pretend family faces on the child’s phone.',
-    MissionVisual.communication => 'A pretend phone with a call and a message.',
+    MissionVisual.communication =>
+      'A pretend phone. Try one call, then an SMS if there is no answer.',
     MissionVisual.message => 'A pretend message and a reply from an adult.',
     MissionVisual.sheltered ||
     MissionVisual.quiet => 'The child is waiting in an inside room.',
@@ -307,10 +334,11 @@ String _sceneDescription(MissionVisual visual, MissionChoice? choice) {
 
 /// Native portrait fallback also supplies phone and home-plan scenes.
 class _PortraitScenePainter extends CustomPainter {
-  _PortraitScenePainter(this.family, this.visual);
+  _PortraitScenePainter(this.family, this.visual, {required this.phoneAction});
 
   final MissionVisual family;
   final MissionVisual visual;
+  final MissionActionIcon phoneAction;
   static const wood = Color(0xFFC99A68);
 
   @override
@@ -457,7 +485,7 @@ class _PortraitScenePainter extends CustomPainter {
       const Color(0xFFFFCE78),
       radius: 20,
     );
-    if (visual == MissionVisual.alarm || visual == MissionVisual.allClear) {
+    if (visual == MissionVisual.allClear) {
       _panel(
         canvas,
         const Rect.fromLTWH(151, 144, 92, 110),
@@ -466,9 +494,7 @@ class _PortraitScenePainter extends CustomPainter {
       );
       _symbol(
         canvas,
-        visual == MissionVisual.alarm
-            ? BaseboundIconName.alarm
-            : BaseboundIconName.check,
+        BaseboundIconName.check,
         const Rect.fromLTWH(170, 163, 55, 55),
       );
     }
@@ -618,32 +644,20 @@ class _PortraitScenePainter extends CustomPainter {
       for (var index = 0; index < contacts.length; index++) {
         final top = 124.0 + index * 126;
         canvas.drawCircle(
-          Offset(200, top + 42),
+          Offset(122, top + 42),
           25,
           Paint()..color = BaseboundColors.peach,
         );
-        _symbol(canvas, contacts[index], Rect.fromLTWH(183, top + 24, 34, 36));
+        _symbol(canvas, contacts[index], Rect.fromLTWH(105, top + 24, 34, 36));
       }
     } else {
       _symbol(
         canvas,
-        BaseboundIconName.phone,
-        const Rect.fromLTWH(99, 190, 34, 36),
+        phoneAction == MissionActionIcon.call
+            ? BaseboundIconName.phone
+            : BaseboundIconName.message,
+        const Rect.fromLTWH(105, 262, 34, 36),
       );
-      _phoneTextLines(canvas, const Offset(162, 200), width: 136);
-      _line(
-        canvas,
-        const Offset(83, 283),
-        const Offset(317, 283),
-        color: BaseboundColors.border,
-        width: 1,
-      );
-      _symbol(
-        canvas,
-        BaseboundIconName.message,
-        const Rect.fromLTWH(99, 351, 34, 36),
-      );
-      _phoneTextLines(canvas, const Offset(162, 361), width: 136);
     }
     _line(
       canvas,
@@ -826,5 +840,7 @@ class _PortraitScenePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_PortraitScenePainter oldDelegate) =>
-      family != oldDelegate.family || visual != oldDelegate.visual;
+      family != oldDelegate.family ||
+      visual != oldDelegate.visual ||
+      phoneAction != oldDelegate.phoneAction;
 }

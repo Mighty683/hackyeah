@@ -12,7 +12,7 @@ abstract final class AirRaidPracticeRecap {
     ),
     (
       title: 'Tell a trusted adult',
-      description: 'Send one message to tell them where you are.',
+      description: 'Try one call. If there is no answer, send an SMS.',
     ),
     (
       title: 'Wait for the all-clear',
@@ -196,6 +196,8 @@ class MissionSession {
       case 'contacts':
         return 'communication';
       case 'communication':
+        return 'sms';
+      case 'sms':
         return 'message';
       case 'message':
         return 'noise';
@@ -360,20 +362,28 @@ Map<String, MissionStep> _buildSteps(MissionMode mode) {
     ),
     MissionStep(
       id: 'communication',
-      title: 'How will you tell them?',
-      narration: 'Send one short message to your trusted adult.',
+      title: 'First, try one call',
+      narration: 'Try one pretend call to your trusted adult.',
       visual: MissionVisual.communication,
       choices: [
         _choice(
           'call',
-          'Keep calling',
+          'Try one call',
           MissionActionIcon.call,
-          false,
-          'Repeated calls can keep lines busy. Try one short message.',
+          true,
+          'No answer in this practice. Try one short SMS.',
         ),
+      ],
+    ),
+    MissionStep(
+      id: 'sms',
+      title: 'No answer? Send an SMS',
+      narration: 'There was no answer. Send one short SMS with your location.',
+      visual: MissionVisual.communication,
+      choices: [
         _choice(
           'message',
-          'Send one message',
+          'Send an SMS',
           MissionActionIcon.message,
           true,
           'Your pretend message says: I am away from windows.',

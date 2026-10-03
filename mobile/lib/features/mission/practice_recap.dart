@@ -1,20 +1,25 @@
 import 'package:flutter/material.dart';
 
+import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
 
-/// Shared celebration and numbered reminders for scenario recall and completion.
+/// Shared celebration and illustrated reminders for scenario recall and completion.
 class PracticeRecap extends StatelessWidget {
   const PracticeRecap({
     super.key,
     required this.title,
     required this.praise,
     required this.points,
+    required this.pointIcons,
     this.titleKey,
-  });
+  }) : assert(points.length == pointIcons.length);
 
   final String title;
   final String praise;
   final List<({String title, String description})> points;
+
+  /// Illustrations in the same order as the displayed and narrated reminders.
+  final List<BaseboundIconName> pointIcons;
   final Key? titleKey;
 
   @override
@@ -43,26 +48,43 @@ class PracticeRecap extends StatelessWidget {
 
   Widget _point(int index) {
     final point = points[index];
+    return _PracticeRecapPoint(
+      number: index + 1,
+      icon: pointIcons[index],
+      title: point.title,
+      description: point.description,
+    );
+  }
+}
+
+class _PracticeRecapPoint extends StatelessWidget {
+  const _PracticeRecapPoint({
+    required this.number,
+    required this.icon,
+    required this.title,
+    required this.description,
+  });
+
+  final int number;
+  final BaseboundIconName icon;
+  final String title;
+  final String description;
+
+  @override
+  Widget build(BuildContext context) {
     return SoftPanel(
       padding: const EdgeInsets.all(16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '${index + 1}.',
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: BaseboundColors.blue,
-            ),
-          ),
+          _illustration(),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  point.title,
+                  title,
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -71,7 +93,7 @@ class PracticeRecap extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  point.description,
+                  description,
                   style: const TextStyle(fontSize: 16, height: 1.4),
                 ),
               ],
@@ -81,4 +103,19 @@ class PracticeRecap extends StatelessWidget {
       ),
     );
   }
+
+  Widget _illustration() => Column(
+    children: [
+      BaseboundIcon(icon, size: 48),
+      const SizedBox(height: 8),
+      Text(
+        '$number.',
+        style: const TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          color: BaseboundColors.blue,
+        ),
+      ),
+    ],
+  );
 }

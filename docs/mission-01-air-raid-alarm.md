@@ -34,7 +34,7 @@ The game should teach **actions, not terminology**.
 
 The child is playing at home.
 
-The phone vibrates and a warning symbol appears.
+The phone vibrates and a bell symbol appears at the window, showing that the alarm sound comes from outside.
 
 A short sample of the alarm siren is played.
 
@@ -121,7 +121,7 @@ Do not require the child to remember the phrase “two-wall rule”.
 
 The child is already in the safe place.
 
-Show large family avatars, for example:
+Show large family avatars with visible names beside them, for example:
 
 - Mom
 - Dad
@@ -131,16 +131,12 @@ Voice:
 
 > “You are safe. Let someone you trust know.”
 
-Show two visual actions:
+Practice two actions in order:
 
-- repeated phone calls,
-- one short message.
+1. **Try one call.** The call is pretend and receives no answer in this story.
+2. **Send an SMS.** This action appears only after the pretend call.
 
-Correct behavior:
-
-**Send one message.**
-
-In the Android demo, choosing this action opens a pretend numeric keypad. The child enters a trusted adult's phone number saved in parent setup, with digits, backspace and Clear. **Need a hint?** reveals saved contact names/relationships and numbers. Any usable saved trusted-contact number can match; formatting such as `+`, spaces and separators is ignored, while country-code digits are retained. A mismatch gets calm feedback and another try. A correct match enables **Send pretend message**. One conversation screen then shows the outgoing “I am away from windows.” and adult reply “Good. Stay there and wait for the all-clear.” together. It is labelled **Practice only. Nothing was sent.** **Stay here** continues directly to the loud-noise decision, with no separate message-feedback or reply step to dismiss.
+Each screen has one guided action, with short narration explaining what to do. In the Android demo, choosing the SMS action opens a pretend numeric keypad. The child enters a trusted adult's phone number saved in parent setup, with digits, backspace and Clear. **Need a hint?** reveals saved contact names/relationships and numbers. Any usable saved trusted-contact number can match; formatting such as `+`, spaces and separators is ignored, while country-code digits are retained. A mismatch gets calm feedback and another try. A correct match enables **Send pretend message**. One conversation screen then shows the outgoing “I am away from windows.” and adult reply “Good. Stay there and wait for the all-clear.” together. It is labelled **Practice only. Nothing was sent.** **Stay here** continues directly to the loud-noise decision, with no separate message-feedback or reply step to dismiss.
 
 If no usable number is saved, explain that an adult can add one in setup and offer **Continue without a number**. If reading the saved record fails, offer **Try loading again** or **Continue without a number** without changing the record. The earlier Mom/Dad/Grandparent choice remains fictional and does not select a real recipient. This keypad only practices recall: it makes no calls, sends no SMS, opens no external app and uses no network. Typed digits are not saved, and a match verifies neither the contact nor safety.
 
@@ -235,7 +231,9 @@ Do not show a score.
 
 Show the learned behavior as a simple visual sequence:
 
-**Alarm → Away from windows → Protected place → Message a trusted adult → Stay → All-clear**
+**Alarm → Away from windows → Protected place → Call a trusted adult → SMS if no answer → Stay → All-clear**
+
+The recall and completion screens show a matching icon beside each of the three numbered summary points.
 
 Voice:
 
@@ -313,7 +311,7 @@ Selecting the nearby practice shelter goes directly to the arrival scene and ski
 - Choosing a protected internal place.
 - Understanding the two-wall principle visually.
 - Avoiding unnecessary outdoor movement.
-- Messaging a trusted adult instead of repeatedly calling.
+- Trying one pretend call, then sending an SMS if there is no answer.
 - Staying sheltered after a loud noise.
 - Understanding that silence is not the all-clear.
 - Reacting safely outdoors.
@@ -351,8 +349,8 @@ The product should feel like **civil-safety training for children**, not a war s
 
 Implemented in three parallel areas, integrated through a shared mission-state contract:
 
-1. **Scenario logic:** home scenes, two to four choices, immediate dinosaur feedback, rejected-choice retry in place, automatic advancement after correct feedback, and focused flow checks.
-2. **Visual experience:** illustrated rooms/street, movement only after correct choices, grey disabled targets for wrong choices, two-wall diagram, fictional family avatars and messages, recall and completion sticker.
+1. **Scenario logic:** home scenes, two to four choices on decisions and one target for each guided call/SMS action, immediate dinosaur feedback, rejected-choice retry in place, automatic advancement after correct feedback, and focused flow checks.
+2. **Visual experience:** illustrated rooms/street, movement only after correct choices, grey disabled targets for wrong choices, two-wall diagram, fictional family avatars with names, pretend calls and messages, and illustrated recall/completion reminders.
 3. **Offline audio:** Android embedded English speech, replay and cancellation, official alarm/all-clear playback excerpts, a restrained environmental sound, and gentle interaction feedback.
 
 Integration adds narrated practice selection beside the existing map game. Both child entry and parent “Play together” lead to the same 7+ MVP: choose alarm practice, then home or outside. There is no age-selection screen or younger-child implementation; saved age does not change the mission. No age verification is claimed. Screen-flow documentation records the implemented mission separately from future missions and reviewed emergency assistance.
