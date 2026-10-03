@@ -125,7 +125,6 @@ class MissionScene extends StatelessWidget {
             ? null
             : () => onChoose!(choice.id),
         showIllustration:
-            visual == MissionVisual.contacts ||
             visual == MissionVisual.communication ||
             visual == MissionVisual.getDown ||
             visual == MissionVisual.protectHead,
@@ -859,19 +858,11 @@ class _PortraitScenePainter extends CustomPainter {
       for (var index = 0; index < contacts.length; index++) {
         final top = 124.0 + index * 126;
         canvas.drawCircle(
-          Offset(115, top + 47),
+          Offset(200, top + 42),
           25,
           Paint()..color = BaseboundColors.peach,
         );
-        _symbol(canvas, contacts[index], Rect.fromLTWH(98, top + 29, 34, 36));
-        _phoneTextLines(canvas, Offset(162, top + 38), width: 136);
-        _line(
-          canvas,
-          Offset(83, top + 99),
-          Offset(317, top + 99),
-          color: BaseboundColors.border,
-          width: 1,
-        );
+        _symbol(canvas, contacts[index], Rect.fromLTWH(183, top + 24, 34, 36));
       }
     } else {
       _symbol(
