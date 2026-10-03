@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../ui/basebound_icons.dart';
+import '../../ui/basebound_ui.dart';
 import '../parent/data/family_plan.dart';
 import '../parent/widgets/offline_point_picker.dart';
 import '../parent/widgets/parent_editor_scaffold.dart';
@@ -99,8 +100,12 @@ class _LandmarkEditorScreenState extends State<LandmarkEditorScreen> {
         title: 'Name this place',
         nextLabel: 'Choose map position',
         children: [
-          LandmarkPhoto(path: widget.photoPath, label: 'Landmark photo'),
-          const SizedBox(height: 20),
+          LandmarkPhoto(
+            path: widget.photoPath,
+            label: 'Landmark photo',
+            height: 216,
+          ),
+          const SizedBox(height: 24),
           TextField(
             controller: _name,
             textCapitalization: TextCapitalization.sentences,
@@ -109,6 +114,8 @@ class _LandmarkEditorScreenState extends State<LandmarkEditorScreen> {
             decoration: const InputDecoration(
               labelText: 'Landmark name',
               hintText: 'Red corner shop',
+              floatingLabelBehavior: FloatingLabelBehavior.always,
+              prefixIcon: BaseboundIcon(BaseboundIconName.pin, size: 24),
             ),
           ),
           const SizedBox(height: 16),
@@ -121,20 +128,20 @@ class _LandmarkEditorScreenState extends State<LandmarkEditorScreen> {
       ParentEditorStep(
         title: 'Place it on the map',
         children: [
-          const ParentEditorNote(
-            message: 'Choose a point on the TAURON Arena demo map. Landmarks help recognition; they are not checked safe places or routes.',
-            icon: BaseboundIconName.map,
-          ),
-          const SizedBox(height: 16),
           Text(
             _name.text.trim().isEmpty
                 ? 'Add a landmark name before saving.'
                 : _name.text.trim(),
-            style: const TextStyle(fontWeight: FontWeight.w800),
+            style: const TextStyle(
+              color: BaseboundColors.ink,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              height: 1.4,
+            ),
           ),
-          const SizedBox(height: 12),
-          const Text('Tap the map to place or move the pin.'),
           const SizedBox(height: 8),
+          const Text('Tap the map to place or move the pin.'),
+          const SizedBox(height: 16),
           OfflinePointPicker(
             key: ValueKey(_pinRevision),
             initialPoint: _selected,
@@ -149,21 +156,46 @@ class _LandmarkEditorScreenState extends State<LandmarkEditorScreen> {
             onPressed: _locating ? null : _useLocation,
             icon: _locating
                 ? const SizedBox.square(
-                    dimension: 20,
+                    dimension: 24,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const BaseboundIcon(BaseboundIconName.pin),
+                : const BaseboundIcon(BaseboundIconName.pin, size: 24),
             label: Text(_locating ? 'Finding location…' : 'Use my location'),
           ),
           const SizedBox(height: 12),
           Semantics(
             liveRegion: true,
-            child: Text(
-              _locationMessage ??
-                  (_selected == null
-                      ? 'Choose a pin before saving.'
-                      : 'Pin selected. Check it before saving.'),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const ExcludeSemantics(
+                  child: BaseboundIcon(
+                    BaseboundIconName.pin,
+                    size: 24,
+                    color: BaseboundColors.muted,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    _locationMessage ??
+                        (_selected == null
+                            ? 'Choose a pin before saving.'
+                            : 'Pin selected. Check it before saving.'),
+                    style: const TextStyle(
+                      color: BaseboundColors.muted,
+                      fontSize: 16,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
             ),
+          ),
+          const SizedBox(height: 24),
+          const ParentEditorNote(
+            message: 'Choose a point on the TAURON Arena demo map. Landmarks help recognition; they are not checked safe places or routes.',
+            icon: BaseboundIconName.map,
           ),
         ],
       ),

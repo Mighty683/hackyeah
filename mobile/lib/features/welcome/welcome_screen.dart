@@ -19,7 +19,7 @@ class WelcomeScreen extends StatelessWidget {
           warm: true,
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+              padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 440),
                 child: const _WelcomeChoices(),
@@ -47,31 +47,33 @@ class _WelcomeChoices extends StatelessWidget {
           textAlign: TextAlign.center,
           style: TextStyle(
             color: BaseboundColors.ink,
-            fontSize: 34,
-            height: 1.12,
-            fontWeight: FontWeight.w800,
+            fontSize: 28,
+            height: 1.2,
+            fontWeight: FontWeight.w700,
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
         const Text(
           'Are you an adult or a child?',
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 22, color: BaseboundColors.muted),
+          style: TextStyle(
+            fontSize: 18,
+            height: 1.4,
+            color: BaseboundColors.muted,
+          ),
         ),
-        const SizedBox(height: 28),
-        _RoleCard(
+        const SizedBox(height: 32),
+        BaseboundActionTile(
           label: "I'm a child",
+          description: 'Practice and explore.',
           icon: BaseboundIconName.child,
-          color: BaseboundColors.blue,
-          tint: BaseboundColors.sky,
           onPressed: () => _openScreen(context, const ChildOnboardingScreen()),
         ),
-        const SizedBox(height: 16),
-        _RoleCard(
+        const SizedBox(height: 12),
+        BaseboundActionTile(
           label: "I'm an adult",
+          description: 'Set up practice.',
           icon: BaseboundIconName.adult,
-          color: BaseboundColors.ink,
-          tint: BaseboundColors.cream,
           onPressed: () => _openScreen(context, const AdultScreen()),
         ),
         const SizedBox(height: 24),
@@ -87,86 +89,27 @@ class _WelcomeIllustration extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ExcludeSemantics(
     child: SizedBox(
-      width: 240,
-      height: 178,
+      width: 184,
+      height: 136,
       child: Stack(
         alignment: Alignment.center,
         children: [
           const Positioned(
             top: 0,
-            left: 10,
-            child: BaseboundIcon(BaseboundIconName.sun, size: 42),
+            left: 8,
+            child: BaseboundIcon(BaseboundIconName.sun, size: 28),
           ),
           const Positioned(
             right: 0,
-            bottom: 28,
-            child: BaseboundIcon(BaseboundIconName.home, size: 72),
+            bottom: 24,
+            child: BaseboundIcon(BaseboundIconName.home, size: 48),
           ),
           const Positioned(
-            left: 26,
+            left: 16,
             bottom: 0,
-            child: BaseboundMascot(size: 166, pose: DinoPose.wave),
+            child: BaseboundMascot(size: 124, pose: DinoPose.wave),
           ),
         ],
-      ),
-    ),
-  );
-}
-
-class _RoleCard extends StatelessWidget {
-  const _RoleCard({
-    required this.label,
-    required this.icon,
-    required this.color,
-    required this.tint,
-    required this.onPressed,
-  });
-
-  final String label;
-  final BaseboundIconName icon;
-  final Color color;
-  final Color tint;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) => Semantics(
-    button: true,
-    child: Material(
-      color: Colors.white,
-      elevation: 3,
-      shadowColor: BaseboundColors.ink.withValues(alpha: .08),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(28),
-        side: const BorderSide(color: BaseboundColors.border),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onPressed,
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(color: tint, shape: BoxShape.circle),
-                child: BaseboundIcon(icon, size: 34),
-              ),
-              const SizedBox(width: 18),
-              Expanded(
-                child: Text(
-                  label,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    color: BaseboundColors.ink,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              BaseboundIcon(BaseboundIconName.next, color: color),
-            ],
-          ),
-        ),
       ),
     ),
   );

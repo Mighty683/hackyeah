@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../ui/basebound_ui.dart';
 
-/// Camera and gallery drawings follow the existing local vector icon family.
+/// Neutral camera and gallery line icons for photo actions.
 class PhotoActionIcon extends StatelessWidget {
   const PhotoActionIcon({
     this.gallery = false,
@@ -35,14 +35,12 @@ class _PhotoPainter extends CustomPainter {
       ..color = color ?? BaseboundColors.ink
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.2
+      ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
-    final fill = Paint()
-      ..color = color == null ? BaseboundColors.sky : Colors.transparent;
     final body = RRect.fromRectAndRadius(
       const Rect.fromLTWH(3, 8, 26, 20),
-      const Radius.circular(5),
+      const Radius.circular(3),
     );
-    canvas.drawRRect(body, fill);
     canvas.drawRRect(body, outline);
     if (gallery) {
       canvas.drawPath(
@@ -54,11 +52,7 @@ class _PhotoPainter extends CustomPainter {
           ..lineTo(28, 24),
         outline,
       );
-      canvas.drawCircle(
-        const Offset(23, 13),
-        2,
-        Paint()..color = color ?? const Color(0xFFF1BD68),
-      );
+      canvas.drawCircle(const Offset(23, 13), 2, outline);
       return;
     }
     canvas.drawRRect(
@@ -68,20 +62,11 @@ class _PhotoPainter extends CustomPainter {
       ),
       outline,
     );
-    canvas.drawCircle(
-      const Offset(16, 18),
-      6,
-      Paint()..color = color ?? BaseboundColors.blue,
-    );
-    canvas.drawCircle(
-      const Offset(16, 18),
-      3,
-      Paint()..color = color == null ? Colors.white : BaseboundColors.blue,
-    );
+    canvas.drawCircle(const Offset(16, 18), 6, outline);
     canvas.drawCircle(
       const Offset(25, 12),
       1.5,
-      Paint()..color = color ?? const Color(0xFFF1BD68),
+      Paint()..color = color ?? BaseboundColors.ink,
     );
   }
 

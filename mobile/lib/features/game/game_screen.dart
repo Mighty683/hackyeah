@@ -130,18 +130,10 @@ class _GameScreenState extends State<GameScreen> {
       appBar: AppBar(
         automaticallyImplyLeading: false,
         leading: Navigator.canPop(context) ? const BaseboundBackButton() : null,
-        title: const Row(
-          children: [
-            BaseboundMascot(size: 32, pose: DinoPose.point),
-            SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                'Practice game',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
+        title: const Text(
+          'Practice game',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
         actions: [
           IconButton(
@@ -171,7 +163,7 @@ class _GameScreenState extends State<GameScreen> {
         child: IllustratedBackdrop(
           warm: true,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
             child: LayoutBuilder(
               builder: (context, constraints) => _buildContent(constraints),
             ),
@@ -227,7 +219,7 @@ class _GameScreenState extends State<GameScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Expanded(child: content),
-        const SizedBox(height: 6),
+        const SizedBox(height: 8),
         const Text(
           '© OpenStreetMap contributors · ODbL',
           textAlign: TextAlign.center,
@@ -249,77 +241,56 @@ class _GameScreenState extends State<GameScreen> {
         ? 'Reach ${target ?? 'the pretend base'}.'
         : 'Reach ${target ?? 'the pretend base'}';
     return Padding(
-      padding: EdgeInsets.all(compact ? 12 : 16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+      padding: EdgeInsets.symmetric(vertical: compact ? 8 : 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (!compact) ...[
-            BaseboundMascot(
-              size: 62,
-              pose: _failed
-                  ? DinoPose.calm
-                  : _arrived
-                  ? DinoPose.celebrate
-                  : DinoPose.point,
+          Semantics(
+            liveRegion: true,
+            header: true,
+            child: Text(
+              title,
+              maxLines: compact ? 2 : 3,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: BaseboundColors.ink,
+                fontSize: compact ? 20 : 26,
+                height: 1.2,
+                fontWeight: FontWeight.w700,
+              ),
             ),
-            const SizedBox(width: 14),
+          ),
+          if (!compact) ...[
+            const SizedBox(height: 8),
+            Text(
+              _failed
+                  ? 'Go back and try again.'
+                  : _arrived
+                  ? widget.destination == null
+                        ? 'Your character reached a path near the pretend base.'
+                        : 'Your character reached a path near the practice place.'
+                  : _routeMessage ?? 'Follow the marked path to the ring.',
+              style: const TextStyle(
+                fontSize: 16,
+                height: 1.3,
+                color: BaseboundColors.muted,
+              ),
+            ),
           ],
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Semantics(
-                  liveRegion: true,
-                  header: true,
-                  child: Text(
-                    title,
-                    maxLines: compact ? 2 : 3,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: BaseboundColors.ink,
-                      fontSize: compact ? 18 : 24,
-                      height: 1.18,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-                if (!compact) ...[
-                  const SizedBox(height: 6),
-                  Text(
-                    _failed
-                        ? 'Go back and try again.'
-                        : _arrived
-                        ? widget.destination == null
-                              ? 'Your character reached a path near the pretend base.'
-                              : 'Your character reached a path near the practice place.'
-                        : _routeMessage ??
-                              'Follow the marked path to the ring.',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      height: 1.3,
-                      color: BaseboundColors.muted,
-                    ),
-                  ),
-                ],
-                if (compact && !_arrived && !_failed) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    _routeMessage ?? 'Follow the marked path to the ring.',
-                    style: const TextStyle(fontSize: 14, height: 1.2),
-                  ),
-                ],
-                const SizedBox(height: 6),
-                Text(
-                  compact
-                      ? 'Practice only.'
-                      : 'Practice only. Not real navigation.',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: BaseboundColors.muted,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
+          if (compact && !_arrived && !_failed) ...[
+            const SizedBox(height: 4),
+            Text(
+              _routeMessage ?? 'Follow the marked path to the ring.',
+              style: const TextStyle(fontSize: 14, height: 1.2),
+            ),
+          ],
+          const SizedBox(height: 8),
+          Text(
+            compact ? 'Practice only.' : 'Practice only. Not real navigation.',
+            style: const TextStyle(
+              fontSize: 12,
+              color: BaseboundColors.muted,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -335,20 +306,14 @@ class _GameScreenState extends State<GameScreen> {
           child: Container(
             width: side,
             height: side,
-            padding: const EdgeInsets.all(4),
+            padding: const EdgeInsets.all(1),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(28),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x18112568),
-                  blurRadius: 18,
-                  offset: Offset(0, 6),
-                ),
-              ],
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: BaseboundColors.border),
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(14),
               child: _buildMap(),
             ),
           ),
@@ -388,7 +353,6 @@ class _GameScreenState extends State<GameScreen> {
           if (_arrived) ...[
             FilledButton.icon(
               onPressed: _ready ? _restart : null,
-              style: FilledButton.styleFrom(padding: const EdgeInsets.all(16)),
               icon: const BaseboundIcon(
                 BaseboundIconName.replay,
                 color: Colors.white,
@@ -399,39 +363,27 @@ class _GameScreenState extends State<GameScreen> {
           ],
           Wrap(
             spacing: 8,
-            runSpacing: 4,
+            runSpacing: 8,
             alignment: WrapAlignment.center,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              IconButton.outlined(
+              _buildMapTool(
                 onPressed: _ready ? () => _zoom(1 / 1.4) : null,
                 tooltip: 'Zoom out',
-                constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-                style: IconButton.styleFrom(
-                  backgroundColor: BaseboundColors.sky,
-                  foregroundColor: BaseboundColors.blue,
-                  side: BorderSide.none,
-                ),
                 icon: BaseboundIcon(
                   BaseboundIconName.minus,
                   color: _ready
-                      ? BaseboundColors.blue
+                      ? BaseboundColors.ink
                       : BaseboundColors.muted.withValues(alpha: .4),
                 ),
               ),
-              IconButton.outlined(
+              _buildMapTool(
                 onPressed: _ready ? () => _zoom(1.4) : null,
                 tooltip: 'Zoom in',
-                constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-                style: IconButton.styleFrom(
-                  backgroundColor: BaseboundColors.sky,
-                  foregroundColor: BaseboundColors.blue,
-                  side: BorderSide.none,
-                ),
                 icon: BaseboundIcon(
                   BaseboundIconName.plus,
                   color: _ready
-                      ? BaseboundColors.blue
+                      ? BaseboundColors.ink
                       : BaseboundColors.muted.withValues(alpha: .4),
                 ),
               ),
@@ -454,6 +406,23 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
+  Widget _buildMapTool({
+    required VoidCallback? onPressed,
+    required String tooltip,
+    required Widget icon,
+  }) => IconButton.outlined(
+    onPressed: onPressed,
+    tooltip: tooltip,
+    constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+    style: IconButton.styleFrom(
+      backgroundColor: Colors.white,
+      foregroundColor: BaseboundColors.ink,
+      side: const BorderSide(color: BaseboundColors.border),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    ),
+    icon: icon,
+  );
+
   Widget _buildViewControl({
     required bool compact,
     required String label,
@@ -465,10 +434,9 @@ class _GameScreenState extends State<GameScreen> {
       color: _ready ? null : BaseboundColors.muted.withValues(alpha: .4),
     );
     if (compact) {
-      return IconButton.outlined(
+      return _buildMapTool(
         onPressed: _ready ? onPressed : null,
         tooltip: label,
-        constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
         icon: artwork,
       );
     }
@@ -476,7 +444,7 @@ class _GameScreenState extends State<GameScreen> {
       onPressed: _ready ? onPressed : null,
       style: OutlinedButton.styleFrom(
         minimumSize: const Size(48, 48),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         textStyle: const TextStyle(
           fontFamily: 'Nunito',
           fontSize: 16,

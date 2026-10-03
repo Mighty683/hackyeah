@@ -46,14 +46,28 @@ class _OfflinePointPickerState extends State<OfflinePointPicker> {
               'Alternatively, use the direction buttons below.',
           child: AspectRatio(
             aspectRatio: 1,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: GameWidget<_PointPickerGame>(
-                game: _game,
-                loadingBuilder: (_) =>
-                    const Center(child: CircularProgressIndicator()),
-                errorBuilder: (_, _) => const Center(
-                  child: Text('Map could not load. Go back and try again.'),
+            child: Container(
+              padding: const EdgeInsets.all(1),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: BaseboundColors.border),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(15),
+                child: GameWidget<_PointPickerGame>(
+                  game: _game,
+                  loadingBuilder: (_) =>
+                      const Center(child: CircularProgressIndicator()),
+                  errorBuilder: (_, _) => const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Text(
+                        'Map could not load. Go back and try again.',
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -63,40 +77,70 @@ class _OfflinePointPickerState extends State<OfflinePointPicker> {
         const Text(
           'Map data © OpenStreetMap contributors · ODbL 1.0',
           style: TextStyle(fontSize: 12, color: BaseboundColors.muted),
+          textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 8),
-        Wrap(
-          alignment: WrapAlignment.center,
-          children: [
-            TextButton(
-              onPressed: _game.selectCenter,
-              child: const Text('Use arena centre'),
-            ),
-            IconButton(
-              onPressed: () => _game.nudge(0, -12),
-              icon: const BaseboundIcon(BaseboundIconName.up),
-              tooltip: 'Move pin north',
-            ),
-            IconButton(
-              onPressed: () => _game.nudge(0, 12),
-              icon: const BaseboundIcon(BaseboundIconName.down),
-              tooltip: 'Move pin south',
-            ),
-            IconButton(
-              onPressed: () => _game.nudge(-12, 0),
-              icon: const BaseboundIcon(BaseboundIconName.back),
-              tooltip: 'Move pin west',
-            ),
-            IconButton(
-              onPressed: () => _game.nudge(12, 0),
-              icon: const BaseboundIcon(BaseboundIconName.next),
-              tooltip: 'Move pin east',
-            ),
-          ],
+        const SizedBox(height: 12),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: BaseboundColors.border),
+          ),
+          child: Column(
+            children: [
+              TextButton(
+                onPressed: _game.selectCenter,
+                child: const Text('Use arena centre'),
+              ),
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 8,
+                children: [
+                  _directionButton(
+                    icon: BaseboundIconName.up,
+                    tooltip: 'Move pin north',
+                    dx: 0,
+                    dy: -12,
+                  ),
+                  _directionButton(
+                    icon: BaseboundIconName.down,
+                    tooltip: 'Move pin south',
+                    dx: 0,
+                    dy: 12,
+                  ),
+                  _directionButton(
+                    icon: BaseboundIconName.back,
+                    tooltip: 'Move pin west',
+                    dx: -12,
+                    dy: 0,
+                  ),
+                  _directionButton(
+                    icon: BaseboundIconName.next,
+                    tooltip: 'Move pin east',
+                    dx: 12,
+                    dy: 0,
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ],
     );
   }
+
+  Widget _directionButton({
+    required BaseboundIconName icon,
+    required String tooltip,
+    required double dx,
+    required double dy,
+  }) => IconButton(
+    onPressed: () => _game.nudge(dx, dy),
+    icon: BaseboundIcon(icon, size: 24, color: BaseboundColors.muted),
+    tooltip: tooltip,
+  );
 }
 
 class _PointPickerGame extends FlameGame {

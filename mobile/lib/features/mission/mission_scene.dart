@@ -21,7 +21,7 @@ bool missionUsesSceneChoices(MissionVisual visual) => switch (visual) {
   _ => false,
 };
 
-/// Portrait art, the child and native actions share one source coordinate space.
+/// Portrait art with optional targets for standalone scene callers.
 class MissionScene extends StatelessWidget {
   const MissionScene({
     super.key,
@@ -47,7 +47,7 @@ class MissionScene extends StatelessWidget {
       visual,
     );
     return ClipRRect(
-      borderRadius: BorderRadius.circular(30),
+      borderRadius: BorderRadius.circular(16),
       child: AspectRatio(
         aspectRatio: missionSceneSize.aspectRatio,
         child: LayoutBuilder(
@@ -94,9 +94,8 @@ class MissionScene extends StatelessWidget {
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: BaseboundColors.ink, width: 3),
-          boxShadow: const [BoxShadow(color: Color(0x22112568), blurRadius: 8)],
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: BaseboundColors.border),
         ),
         child: BaseboundIcon(
           visual == MissionVisual.alarm
@@ -190,8 +189,7 @@ class _PortraitBackdrop extends StatelessWidget {
   }
 }
 
-/// Text belongs to the pictured object; its generous invisible hit area stays
-/// independent of the small caption. Only phone contacts need a separate image.
+/// Standalone callers retain native scene targets with flat, neutral captions.
 class _SceneChoice extends StatelessWidget {
   const _SceneChoice({
     required this.choice,
@@ -226,16 +224,16 @@ class _SceneChoice extends StatelessWidget {
             splashColor: BaseboundColors.sky.withValues(alpha: .5),
             child: Center(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 9),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  gradient: RadialGradient(
-                    radius: 1.05,
-                    colors: [
-                      BaseboundColors.cream.withValues(alpha: .96),
-                      BaseboundColors.cream.withValues(alpha: .83),
-                      BaseboundColors.cream.withValues(alpha: 0),
-                    ],
-                    stops: const [0, .55, 1],
+                  color: selected
+                      ? (choice.isCorrect
+                            ? BaseboundColors.greenLight
+                            : BaseboundColors.coralLight)
+                      : Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: selected ? accent : BaseboundColors.border,
                   ),
                 ),
                 child: selected
@@ -245,10 +243,10 @@ class _SceneChoice extends StatelessWidget {
                             choice.isCorrect
                                 ? BaseboundIconName.check
                                 : BaseboundIconName.cross,
-                            size: 22,
+                            size: 20,
                             color: accent,
                           ),
-                          const SizedBox(width: 5),
+                          const SizedBox(width: 8),
                           Expanded(child: _label(compact: true)),
                         ],
                       )
@@ -258,9 +256,9 @@ class _SceneChoice extends StatelessWidget {
                           if (showIllustration) ...[
                             BaseboundIcon(
                               missionActionIcon(choice.icon),
-                              size: 34,
+                              size: 24,
                             ),
-                            const SizedBox(height: 2),
+                            const SizedBox(height: 8),
                           ],
                           Flexible(child: _label()),
                         ],
@@ -279,13 +277,9 @@ class _SceneChoice extends StatelessWidget {
     style: TextStyle(
       fontFamily: 'Nunito',
       fontSize: compact ? 14 : 17,
-      fontWeight: FontWeight.w800,
+      fontWeight: FontWeight.w700,
       color: BaseboundColors.ink,
-      height: 1.12,
-      shadows: const [Shadow(color: Colors.white, blurRadius: 7)],
-      decoration: selected ? TextDecoration.none : TextDecoration.underline,
-      decorationColor: BaseboundColors.ink.withValues(alpha: .3),
-      decorationThickness: 1,
+      height: 1.25,
     ),
   );
 }
@@ -346,7 +340,6 @@ class _PortraitScenePainter extends CustomPainter {
 
   final MissionVisual family;
   final MissionVisual visual;
-  static const ink = BaseboundColors.ink;
   static const wood = Color(0xFFC99A68);
 
   @override
@@ -355,12 +348,7 @@ class _PortraitScenePainter extends CustomPainter {
     canvas.scale(size.width / 400, size.height / 600);
     canvas.drawRect(
       const Rect.fromLTWH(0, 0, 400, 600),
-      Paint()
-        ..shader = const LinearGradient(
-          colors: [BaseboundColors.cream, BaseboundColors.peach],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ).createShader(const Rect.fromLTWH(0, 0, 400, 600)),
+      Paint()..color = BaseboundColors.cream,
     );
     switch (family) {
       case MissionVisual.apartment:
@@ -516,67 +504,228 @@ class _PortraitScenePainter extends CustomPainter {
   }
 
   void _homePlan(Canvas canvas) {
-    _panel(canvas, const Rect.fromLTWH(10, 30, 380, 545), wood, radius: 18);
     _panel(
       canvas,
-      const Rect.fromLTWH(22, 43, 165, 222),
-      const Color(0xFFF9EDD7),
-    );
-    _panel(
-      canvas,
-      const Rect.fromLTWH(214, 43, 165, 222),
-      const Color(0xFFF0E5FA),
+      const Rect.fromLTWH(24, 50, 352, 504),
+      Colors.white,
+      radius: 0,
     );
     _panel(
       canvas,
-      const Rect.fromLTWH(22, 316, 165, 247),
-      const Color(0xFFE5F1FB),
+      const Rect.fromLTWH(24, 266, 352, 50),
+      BaseboundColors.peach,
+      radius: 0,
     );
     _panel(
       canvas,
-      const Rect.fromLTWH(214, 316, 165, 247),
-      const Color(0xFFFFE9CF),
+      const Rect.fromLTWH(178, 50, 48, 504),
+      BaseboundColors.peach,
+      radius: 0,
     );
     _panel(
       canvas,
-      const Rect.fromLTWH(187, 50, 27, 505),
-      BaseboundColors.cream,
-      radius: 2,
+      const Rect.fromLTWH(226, 316, 128, 214),
+      BaseboundColors.peach,
+      radius: 0,
     );
-    _panel(
+
+    // Openings are omitted from wall segments so windows and doors read as
+    // architecture, rather than colourful objects laid over the rooms.
+    for (final segment in [
+      (const Offset(24, 50), const Offset(70, 50)),
+      (const Offset(140, 50), const Offset(260, 50)),
+      (const Offset(336, 50), const Offset(376, 50)),
+      (const Offset(24, 50), const Offset(24, 350)),
+      (const Offset(24, 424), const Offset(24, 554)),
+      (const Offset(376, 50), const Offset(376, 554)),
+      (const Offset(24, 554), const Offset(376, 554)),
+    ]) {
+      _planWall(canvas, segment.$1, segment.$2, width: 8);
+    }
+    for (final segment in [
+      (const Offset(178, 50), const Offset(178, 266)),
+      (const Offset(226, 50), const Offset(226, 266)),
+      (const Offset(24, 266), const Offset(150, 266)),
+      (const Offset(254, 266), const Offset(376, 266)),
+      (const Offset(24, 316), const Offset(150, 316)),
+      (const Offset(178, 316), const Offset(178, 554)),
+      (const Offset(226, 380), const Offset(226, 554)),
+      (const Offset(292, 316), const Offset(354, 316)),
+      (const Offset(354, 316), const Offset(354, 530)),
+      (const Offset(226, 530), const Offset(354, 530)),
+    ]) {
+      _planWall(canvas, segment.$1, segment.$2);
+    }
+    _planWindow(canvas, const Rect.fromLTWH(70, 46, 70, 8));
+    _planWindow(canvas, const Rect.fromLTWH(260, 46, 76, 8));
+    _planWindow(canvas, const Rect.fromLTWH(20, 350, 8, 74));
+    _planDoor(canvas, const Offset(150, 266), opensUp: true);
+    _planDoor(canvas, const Offset(226, 266), opensUp: true);
+    _planDoor(canvas, const Offset(150, 316), opensUp: false);
+
+    _livingRoomFurniture(canvas);
+    _bedroomFurniture(canvas);
+    _kitchenFurniture(canvas);
+  }
+
+  void _planWall(Canvas canvas, Offset start, Offset end, {double width = 6}) =>
+      canvas.drawLine(
+        start,
+        end,
+        Paint()
+          ..color = BaseboundColors.muted
+          ..strokeWidth = width
+          ..strokeCap = StrokeCap.square,
+      );
+
+  void _planWindow(Canvas canvas, Rect bounds) {
+    canvas.drawRect(bounds, Paint()..color = BaseboundColors.sky);
+    canvas.drawRect(
+      bounds,
+      Paint()
+        ..color = BaseboundColors.blue
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5,
+    );
+    final horizontal = bounds.width > bounds.height;
+    _line(
       canvas,
-      const Rect.fromLTWH(22, 265, 357, 51),
-      BaseboundColors.cream,
-      radius: 2,
+      horizontal ? bounds.centerLeft : bounds.topCenter,
+      horizontal ? bounds.centerRight : bounds.bottomCenter,
+      color: BaseboundColors.blue,
+      width: 1,
     );
-    _window(canvas, const Rect.fromLTWH(65, 36, 80, 35));
-    _window(canvas, const Rect.fromLTWH(265, 36, 80, 35));
-    _window(canvas, const Rect.fromLTWH(18, 348, 31, 75));
-    _symbol(
+  }
+
+  void _planDoor(Canvas canvas, Offset hinge, {required bool opensUp}) {
+    const extent = 28.0;
+    final direction = opensUp ? -1.0 : 1.0;
+    _line(
       canvas,
-      visual == MissionVisual.sheltered
-          ? BaseboundIconName.window
-          : BaseboundIconName.livingRoom,
-      const Rect.fromLTWH(65, 85, 80, 70),
+      hinge,
+      Offset(hinge.dx, hinge.dy + direction * extent),
+      color: BaseboundColors.muted,
+      width: 1.5,
     );
-    _symbol(
+    canvas.drawArc(
+      Rect.fromCircle(center: hinge, radius: extent),
+      opensUp ? -1.5708 : 0,
+      1.5708,
+      false,
+      Paint()
+        ..color = BaseboundColors.border
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5,
+    );
+  }
+
+  void _outlinedPanel(
+    Canvas canvas,
+    Rect bounds, {
+    Color color = BaseboundColors.peach,
+    double radius = 4,
+  }) {
+    final shape = RRect.fromRectAndRadius(bounds, Radius.circular(radius));
+    canvas.drawRRect(shape, Paint()..color = color);
+    canvas.drawRRect(
+      shape,
+      Paint()
+        ..color = BaseboundColors.border
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5,
+    );
+  }
+
+  void _livingRoomFurniture(Canvas canvas) {
+    _outlinedPanel(canvas, const Rect.fromLTWH(52, 102, 99, 50));
+    _outlinedPanel(canvas, const Rect.fromLTWH(52, 98, 99, 14));
+    _outlinedPanel(canvas, const Rect.fromLTWH(47, 110, 13, 39));
+    _outlinedPanel(canvas, const Rect.fromLTWH(143, 110, 13, 39));
+    _line(
       canvas,
-      visual == MissionVisual.sheltered
-          ? BaseboundIconName.door
-          : BaseboundIconName.bedroom,
-      const Rect.fromLTWH(265, 85, 80, 70),
+      const Offset(101, 113),
+      const Offset(101, 146),
+      color: BaseboundColors.border,
+      width: 1.5,
     );
-    _symbol(
+    _outlinedPanel(
       canvas,
-      BaseboundIconName.kitchen,
-      const Rect.fromLTWH(64, 339, 80, 70),
+      const Rect.fromLTWH(78, 195, 50, 28),
+      color: Colors.white,
+      radius: 8,
     );
-    _symbol(
+    _line(
       canvas,
-      BaseboundIconName.hallway,
-      const Rect.fromLTWH(265, 339, 80, 70),
+      const Offset(65, 77),
+      const Offset(138, 77),
+      color: BaseboundColors.muted,
+      width: 4,
     );
-    _panel(canvas, const Rect.fromLTWH(220, 306, 83, 15), wood, radius: 3);
+  }
+
+  void _bedroomFurniture(Canvas canvas) {
+    _outlinedPanel(canvas, const Rect.fromLTWH(246, 85, 62, 101));
+    _outlinedPanel(
+      canvas,
+      const Rect.fromLTWH(254, 92, 46, 19),
+      color: Colors.white,
+    );
+    _line(
+      canvas,
+      const Offset(247, 120),
+      const Offset(307, 120),
+      color: BaseboundColors.border,
+      width: 1.5,
+    );
+    _outlinedPanel(canvas, const Rect.fromLTWH(332, 85, 24, 110));
+    _line(
+      canvas,
+      const Offset(344, 85),
+      const Offset(344, 195),
+      color: BaseboundColors.border,
+      width: 1.5,
+    );
+    _outlinedPanel(canvas, const Rect.fromLTWH(250, 216, 38, 20));
+  }
+
+  void _kitchenFurniture(Canvas canvas) {
+    _outlinedPanel(canvas, const Rect.fromLTWH(37, 333, 32, 203));
+    _outlinedPanel(canvas, const Rect.fromLTWH(69, 509, 96, 27));
+    _outlinedPanel(
+      canvas,
+      const Rect.fromLTWH(42, 441, 22, 35),
+      color: Colors.white,
+    );
+    for (final center in [
+      const Offset(47, 355),
+      const Offset(59, 355),
+      const Offset(47, 369),
+      const Offset(59, 369),
+    ]) {
+      canvas.drawCircle(
+        center,
+        4,
+        Paint()
+          ..color = BaseboundColors.muted
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5,
+      );
+    }
+    _outlinedPanel(
+      canvas,
+      const Rect.fromLTWH(114, 339, 49, 54),
+      color: Colors.white,
+    );
+    _line(
+      canvas,
+      const Offset(114, 355),
+      const Offset(163, 355),
+      color: BaseboundColors.border,
+      width: 1.5,
+    );
+    _outlinedPanel(canvas, const Rect.fromLTWH(117, 427, 38, 49));
+    _outlinedPanel(canvas, const Rect.fromLTWH(104, 439, 10, 24));
+    _outlinedPanel(canvas, const Rect.fromLTWH(158, 439, 10, 24));
   }
 
   void _street(Canvas canvas) {
@@ -657,74 +806,119 @@ class _PortraitScenePainter extends CustomPainter {
   }
 
   void _phone(Canvas canvas) {
-    _panel(
+    _outlinedPanel(
       canvas,
-      const Rect.fromLTWH(43, 28, 314, 535),
-      const Color(0x180F2568),
-      radius: 43,
+      const Rect.fromLTWH(52, 20, 296, 530),
+      color: Colors.white,
+      radius: 28,
     );
-    _panel(canvas, const Rect.fromLTWH(52, 20, 296, 530), ink, radius: 40);
-    _panel(
+    _line(
       canvas,
-      const Rect.fromLTWH(66, 35, 268, 499),
-      Colors.white,
-      radius: 30,
+      const Offset(80, 106),
+      const Offset(320, 106),
+      color: BaseboundColors.border,
+      width: 1,
     );
-    _panel(
-      canvas,
-      const Rect.fromLTWH(67, 35, 266, 72),
-      BaseboundColors.sky,
-      radius: 26,
+    canvas.drawCircle(
+      const Offset(200, 43),
+      3,
+      Paint()..color = BaseboundColors.muted,
     );
-    _panel(canvas, const Rect.fromLTWH(161, 41, 78, 8), ink, radius: 8);
     _symbol(
       canvas,
       BaseboundIconName.family,
-      const Rect.fromLTWH(168, 58, 65, 40),
+      const Rect.fromLTWH(184, 62, 32, 28),
     );
     if (family == MissionVisual.message) {
-      _panel(
+      _messageBubble(canvas, const Rect.fromLTWH(83, 157, 203, 91));
+      _messageBubble(
         canvas,
-        const Rect.fromLTWH(89, 158, 222, 114),
-        BaseboundColors.sky,
-      );
-      _symbol(
-        canvas,
-        BaseboundIconName.message,
-        const Rect.fromLTWH(168, 183, 63, 63),
-      );
-      _panel(
-        canvas,
-        const Rect.fromLTWH(89, 321, 222, 114),
-        BaseboundColors.greenLight,
-      );
-      _symbol(
-        canvas,
-        BaseboundIconName.messageRead,
-        const Rect.fromLTWH(168, 346, 63, 63),
+        const Rect.fromLTWH(114, 316, 203, 91),
+        reply: true,
       );
     } else if (family == MissionVisual.contacts) {
-      for (final top in [124.0, 250.0, 376.0]) {
-        _panel(
+      const contacts = [
+        BaseboundIconName.mother,
+        BaseboundIconName.father,
+        BaseboundIconName.grandparent,
+      ];
+      for (var index = 0; index < contacts.length; index++) {
+        final top = 124.0 + index * 126;
+        canvas.drawCircle(
+          Offset(115, top + 47),
+          25,
+          Paint()..color = BaseboundColors.peach,
+        );
+        _symbol(canvas, contacts[index], Rect.fromLTWH(98, top + 29, 34, 36));
+        _phoneTextLines(canvas, Offset(162, top + 38), width: 136);
+        _line(
           canvas,
-          Rect.fromLTWH(79, top, 242, 99),
-          BaseboundColors.sky,
-          radius: 20,
+          Offset(83, top + 99),
+          Offset(317, top + 99),
+          color: BaseboundColors.border,
+          width: 1,
         );
       }
     } else {
       _symbol(
         canvas,
         BaseboundIconName.phone,
-        const Rect.fromLTWH(161, 191, 80, 85),
+        const Rect.fromLTWH(99, 190, 34, 36),
+      );
+      _phoneTextLines(canvas, const Offset(162, 200), width: 136);
+      _line(
+        canvas,
+        const Offset(83, 283),
+        const Offset(317, 283),
+        color: BaseboundColors.border,
+        width: 1,
       );
       _symbol(
         canvas,
         BaseboundIconName.message,
-        const Rect.fromLTWH(161, 353, 80, 85),
+        const Rect.fromLTWH(99, 351, 34, 36),
       );
+      _phoneTextLines(canvas, const Offset(162, 361), width: 136);
     }
-    _panel(canvas, const Rect.fromLTWH(162, 509, 77, 7), ink, radius: 4);
+    _line(
+      canvas,
+      const Offset(168, 523),
+      const Offset(232, 523),
+      color: BaseboundColors.muted,
+      width: 3,
+    );
+  }
+
+  void _phoneTextLines(Canvas canvas, Offset start, {required double width}) {
+    _line(
+      canvas,
+      start,
+      start.translate(width, 0),
+      color: BaseboundColors.muted,
+      width: 3,
+    );
+    _line(
+      canvas,
+      start.translate(0, 17),
+      start.translate(width * .65, 17),
+      color: BaseboundColors.border,
+      width: 2,
+    );
+  }
+
+  void _messageBubble(Canvas canvas, Rect bounds, {bool reply = false}) {
+    _outlinedPanel(
+      canvas,
+      bounds,
+      color: reply ? BaseboundColors.peach : BaseboundColors.sky,
+      radius: 12,
+    );
+    _phoneTextLines(canvas, bounds.topLeft.translate(20, 27), width: 160);
+    _symbol(
+      canvas,
+      reply ? BaseboundIconName.messageRead : BaseboundIconName.message,
+      Rect.fromLTWH(bounds.right - 41, bounds.bottom - 32, 22, 20),
+    );
   }
 
   void _hallway(Canvas canvas) {
@@ -757,61 +951,129 @@ class _PortraitScenePainter extends CustomPainter {
     _panel(
       canvas,
       const Rect.fromLTWH(0, 0, 400, 600),
-      const Color(0xFFD2ECFA),
+      BaseboundColors.sky,
       radius: 0,
     );
     _panel(
       canvas,
       const Rect.fromLTWH(0, 314, 400, 286),
-      const Color(0xFFE1D1B9),
+      BaseboundColors.peach,
       radius: 0,
     );
-    _building(
+    _outlinedPanel(
       canvas,
-      const Rect.fromLTWH(264, 52, 119, 163),
-      BaseboundIconName.shelter,
+      const Rect.fromLTWH(266, 92, 110, 168),
+      color: Colors.white,
+      radius: 2,
     );
-    _symbol(
+    _line(
       canvas,
-      family == MissionVisual.getDown
-          ? BaseboundIconName.down
-          : BaseboundIconName.protectHead,
-      const Rect.fromLTWH(32, 102, 80, 80),
-      color: BaseboundColors.blue,
+      const Offset(258, 89),
+      const Offset(384, 89),
+      color: BaseboundColors.muted,
+      width: 4,
     );
-    _panel(
+    _outlinedPanel(
       canvas,
-      const Rect.fromLTWH(28, 540, 344, 23),
-      const Color(0xFFC7B79F),
-      radius: 10,
+      const Rect.fromLTWH(307, 177, 38, 83),
+      color: BaseboundColors.peach,
+      radius: 1,
+    );
+    _outlinedPanel(
+      canvas,
+      const Rect.fromLTWH(284, 118, 32, 33),
+      color: BaseboundColors.sky,
+      radius: 1,
+    );
+    _outlinedPanel(
+      canvas,
+      const Rect.fromLTWH(330, 118, 32, 33),
+      color: BaseboundColors.sky,
+      radius: 1,
+    );
+    _line(
+      canvas,
+      const Offset(28, 539),
+      const Offset(372, 539),
+      color: BaseboundColors.border,
+      width: 2,
     );
   }
 
   void _walls(Canvas canvas) {
     _panel(
       canvas,
-      const Rect.fromLTWH(255, 0, 145, 600),
-      const Color(0xFFCCE9FA),
+      const Rect.fromLTWH(24, 130, 272, 312),
+      Colors.white,
       radius: 0,
     );
     _panel(
       canvas,
-      const Rect.fromLTWH(10, 155, 200, 350),
-      BaseboundColors.cream,
+      const Rect.fromLTWH(308, 130, 68, 312),
+      BaseboundColors.sky,
+      radius: 0,
     );
-    _panel(canvas, const Rect.fromLTWH(216, 60, 17, 460), wood, radius: 3);
-    _panel(canvas, const Rect.fromLTWH(291, 60, 17, 460), wood, radius: 3);
-    _symbol(
+    _panel(
       canvas,
-      BaseboundIconName.park,
-      const Rect.fromLTWH(327, 190, 65, 88),
-      color: BaseboundColors.green,
+      const Rect.fromLTWH(24, 442, 284, 14),
+      BaseboundColors.peach,
+      radius: 0,
     );
-    _symbol(
+    _planWall(canvas, const Offset(24, 130), const Offset(308, 130), width: 3);
+    _planWall(canvas, const Offset(24, 442), const Offset(376, 442), width: 3);
+
+    // The child occupies x=32..200. Both uninterrupted walls lie between
+    // that position and the outdoor strip, which starts beyond the second wall.
+    _cutawayWall(canvas, const Rect.fromLTWH(214, 130, 12, 312));
+    _cutawayWall(canvas, const Rect.fromLTWH(296, 130, 12, 312));
+    _line(
       canvas,
-      BaseboundIconName.hallway,
-      const Rect.fromLTWH(63, 218, 103, 100),
+      const Offset(350, 368),
+      const Offset(350, 436),
+      color: BaseboundColors.muted,
+      width: 3,
     );
+    final tree = Path()
+      ..moveTo(350, 283)
+      ..cubicTo(326, 309, 331, 334, 326, 358)
+      ..quadraticBezierTo(350, 373, 374, 358)
+      ..cubicTo(369, 334, 374, 309, 350, 283)
+      ..close();
+    canvas.drawPath(tree, Paint()..color = BaseboundColors.greenLight);
+    canvas.drawPath(
+      tree,
+      Paint()
+        ..color = BaseboundColors.muted
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5,
+    );
+    _line(
+      canvas,
+      const Offset(329, 432),
+      const Offset(367, 432),
+      color: BaseboundColors.border,
+      width: 1.5,
+    );
+  }
+
+  void _cutawayWall(Canvas canvas, Rect bounds) {
+    canvas.drawRect(bounds, Paint()..color = BaseboundColors.border);
+    canvas.drawRect(
+      bounds,
+      Paint()
+        ..color = BaseboundColors.muted
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5,
+    );
+    for (var top = bounds.top + 12; top < bounds.bottom; top += 20) {
+      _line(
+        canvas,
+        Offset(bounds.left + 2, top),
+        Offset(bounds.right - 2, top - 8),
+        color: BaseboundColors.muted,
+        width: 1,
+      );
+    }
   }
 
   void _recall(Canvas canvas) {
@@ -828,17 +1090,23 @@ class _PortraitScenePainter extends CustomPainter {
         index.isEven ? 115 : 285,
         98.0 + (index ~/ 2) * 196,
       );
-      canvas.drawCircle(center, 66, Paint()..color = Colors.white);
+      _outlinedPanel(
+        canvas,
+        Rect.fromCenter(center: center, width: 112, height: 112),
+        color: Colors.white,
+        radius: 12,
+      );
       _symbol(
         canvas,
         symbols[index],
-        Rect.fromCenter(center: center, width: 74, height: 74),
+        Rect.fromCenter(center: center, width: 40, height: 40),
       );
       if (index < symbols.length - 1) {
         _symbol(
           canvas,
           BaseboundIconName.next,
-          Rect.fromLTWH(188, center.dy + (index.isEven ? -14 : 72), 28, 28),
+          Rect.fromLTWH(188, center.dy + (index.isEven ? -10 : 78), 24, 24),
+          color: BaseboundColors.muted,
         );
       }
     }

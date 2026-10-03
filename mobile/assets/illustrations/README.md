@@ -1,5 +1,12 @@
 # Training illustration assets
 
+The current Android mission uses the versioned portrait backgrounds
+`home-practice-v2.png`, `hallway-practice-v2.png` and `street-practice-v2.png`.
+See [PORTRAIT_ASSETS.md](PORTRAIT_ASSETS.md) for their final prompts and provenance.
+The home view uses one continuous floor and a hallway opening through its rear
+wall. Room comparisons and the two-wall explanation are architectural drawings
+in Flutter. The older files below are retained as historical assets.
+
 `home-practice.png` and `hallway-practice.png` were generated with the built-in imagegen tool on 2026-10-03 for the visual redesign. Both are 1536 × 1024. They depict fictional environments and contain no UI, text or safety certification. Native Flutter widgets supply choices, feedback, accessible descriptions and audio actions. The original mission painter remains available for action consequences and asset fallback.
 
 ## Home prompt

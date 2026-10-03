@@ -7,17 +7,17 @@ import '../widgets/basebound_mascot.dart';
 import 'basebound_icons.dart';
 
 abstract final class BaseboundColors {
-  static const ink = Color(0xFF112568);
-  static const blue = Color(0xFF0967DA);
-  static const sky = Color(0xFFE6F2FF);
-  static const cream = Color(0xFFFFF6E7);
-  static const peach = Color(0xFFFFE5C3);
-  static const green = Color(0xFF19853B);
-  static const greenLight = Color(0xFFE8F8DF);
-  static const coral = Color(0xFFE54949);
-  static const coralLight = Color(0xFFFFEEEE);
-  static const muted = Color(0xFF536184);
-  static const border = Color(0xFFDDE5F1);
+  static const ink = Color(0xFF25334A);
+  static const blue = Color(0xFF2C5F9B);
+  static const sky = Color(0xFFEAF0F7);
+  static const cream = Color(0xFFF7F5F0);
+  static const peach = Color(0xFFF1EDE5);
+  static const green = Color(0xFF327554);
+  static const greenLight = Color(0xFFEDF5EF);
+  static const coral = Color(0xFFB64242);
+  static const coralLight = Color(0xFFFAEEEE);
+  static const muted = Color(0xFF5E6A7A);
+  static const border = Color(0xFFCED5DE);
 }
 
 abstract final class BaseboundTheme {
@@ -46,7 +46,7 @@ abstract final class BaseboundTheme {
       fontFamily: 'Nunito',
     );
     final shape = RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(help ? 16 : 24),
+      borderRadius: BorderRadius.circular(12),
     );
     final text = base.textTheme.apply(
       bodyColor: BaseboundColors.ink,
@@ -64,30 +64,29 @@ abstract final class BaseboundTheme {
           : BaseboundColors.cream,
       textTheme: text.copyWith(
         headlineLarge: text.headlineLarge?.copyWith(
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w700,
           height: 1.15,
         ),
         headlineMedium: text.headlineMedium?.copyWith(
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w700,
           height: 1.2,
         ),
-        titleLarge: text.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+        titleLarge: text.titleLarge?.copyWith(fontWeight: FontWeight.w700),
         titleMedium: text.titleMedium?.copyWith(fontWeight: FontWeight.w700),
         bodyLarge: text.bodyLarge?.copyWith(fontSize: 18, height: 1.4),
         bodyMedium: text.bodyMedium?.copyWith(fontSize: 16, height: 1.4),
       ),
       appBarTheme: AppBarTheme(
-        backgroundColor: help
-            ? const Color(0xFFF3F6FA)
-            : const Color(0xFFF5F9FF),
+        backgroundColor: help ? const Color(0xFFF3F6FA) : BaseboundColors.cream,
         foregroundColor: BaseboundColors.ink,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
-        centerTitle: true,
-        toolbarHeight: 72,
+        scrolledUnderElevation: 0,
+        centerTitle: false,
+        toolbarHeight: 64,
         titleTextStyle: text.titleLarge?.copyWith(
-          fontWeight: FontWeight.w800,
-          fontSize: 22,
+          fontWeight: FontWeight.w700,
+          fontSize: 20,
         ),
       ),
       cardTheme: CardThemeData(
@@ -95,16 +94,20 @@ abstract final class BaseboundTheme {
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         margin: EdgeInsets.zero,
-        shape: shape,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: BaseboundColors.border),
+        ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           minimumSize: const Size(56, 56),
-          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 16),
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           textStyle: const TextStyle(
             fontFamily: 'Nunito',
             fontSize: 18,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
           ),
           shape: shape,
         ),
@@ -114,8 +117,8 @@ abstract final class BaseboundTheme {
           foregroundColor: BaseboundColors.ink,
           backgroundColor: Colors.white,
           minimumSize: const Size(56, 56),
-          side: const BorderSide(color: BaseboundColors.border, width: 2),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          side: const BorderSide(color: BaseboundColors.border),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           textStyle: const TextStyle(
             fontFamily: 'Nunito',
             fontSize: 18,
@@ -145,16 +148,13 @@ abstract final class BaseboundTheme {
         filled: true,
         fillColor: const Color(0xFFF9FBFF),
         contentPadding: const EdgeInsets.all(18),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(18)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-          borderSide: const BorderSide(
-            color: BaseboundColors.border,
-            width: 1.5,
-          ),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: BaseboundColors.border, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: scheme.primary, width: 2),
         ),
       ),
@@ -166,7 +166,7 @@ abstract final class BaseboundTheme {
   }
 }
 
-/// Decorative sky or warm room tint; content and scrolling remain caller-owned.
+/// A quiet surface lets illustrations carry the scene's colour.
 class IllustratedBackdrop extends StatelessWidget {
   const IllustratedBackdrop({
     super.key,
@@ -180,17 +180,7 @@ class IllustratedBackdrop extends StatelessWidget {
   @override
   Widget build(BuildContext context) => DecoratedBox(
     decoration: BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: warm
-            ? [BaseboundColors.cream, BaseboundColors.peach]
-            : [
-                const Color(0xFFF4F9FF),
-                BaseboundColors.sky,
-                BaseboundColors.cream,
-              ],
-      ),
+      color: warm ? BaseboundColors.cream : const Color(0xFFF3F6FA),
     ),
     child: SizedBox.expand(child: child),
   );
@@ -215,15 +205,8 @@ class SoftPanel extends StatelessWidget {
     padding: padding,
     decoration: BoxDecoration(
       color: color,
-      borderRadius: BorderRadius.circular(28),
-      border: Border.all(color: borderColor ?? Colors.white, width: 2),
-      boxShadow: const [
-        BoxShadow(
-          color: Color(0x0D112568),
-          blurRadius: 20,
-          offset: Offset(0, 7),
-        ),
-      ],
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: borderColor ?? BaseboundColors.border),
     ),
     child: child,
   );
@@ -246,7 +229,7 @@ class BaseboundBadge extends StatelessWidget {
     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
     decoration: BoxDecoration(
       color: color.withValues(alpha: .09),
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(8),
     ),
     child: Row(
       mainAxisSize: MainAxisSize.min,
@@ -266,6 +249,77 @@ class BaseboundBadge extends StatelessWidget {
           ),
         ),
       ],
+    ),
+  );
+}
+
+/// A neutral navigation choice shared by entry, practice and saved-item lists.
+class BaseboundActionTile extends StatelessWidget {
+  const BaseboundActionTile({
+    super.key,
+    required this.label,
+    required this.icon,
+    required this.onPressed,
+    this.description,
+    this.selected = false,
+  });
+
+  final String label;
+  final BaseboundIconName icon;
+  final VoidCallback? onPressed;
+  final String? description;
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    selected: selected,
+    child: OutlinedButton(
+      onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.all(16),
+        backgroundColor: selected ? BaseboundColors.sky : Colors.white,
+        side: BorderSide(
+          color: selected ? BaseboundColors.blue : BaseboundColors.border,
+        ),
+        alignment: Alignment.centerLeft,
+      ),
+      child: Row(
+        children: [
+          ExcludeSemantics(
+            child: BaseboundIcon(icon, size: 24, color: BaseboundColors.ink),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: const TextStyle(fontSize: 18, height: 1.3)),
+                if (description != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    description!,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w400,
+                      height: 1.4,
+                      color: BaseboundColors.muted,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          const ExcludeSemantics(
+            child: BaseboundIcon(
+              BaseboundIconName.next,
+              size: 20,
+              color: BaseboundColors.muted,
+            ),
+          ),
+        ],
+      ),
     ),
   );
 }

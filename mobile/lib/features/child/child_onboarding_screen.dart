@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 
 import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
-import '../../widgets/basebound_mascot.dart';
 import '../../widgets/child_character.dart';
 import '../mission/practice_launcher.dart';
 import '../parent/data/family_plan.dart';
@@ -148,7 +147,7 @@ class _ChildOnboardingScreenState extends State<ChildOnboardingScreen> {
               padding: const EdgeInsets.all(24),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 440),
-                child: _content(),
+                child: _content(context),
               ),
             ),
           ),
@@ -157,14 +156,14 @@ class _ChildOnboardingScreenState extends State<ChildOnboardingScreen> {
     ),
   );
 
-  Widget _content() {
+  Widget _content(BuildContext context) {
     if (_plan == null) {
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (_busy) const CircularProgressIndicator(),
           if (_error != null) ...[
-            Text(_error!),
+            Semantics(liveRegion: true, child: Text(_error!)),
             const SizedBox(height: 16),
             FilledButton(onPressed: _load, child: const Text('Try again')),
           ],
@@ -174,22 +173,26 @@ class _ChildOnboardingScreenState extends State<ChildOnboardingScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Center(child: BaseboundMascot(size: 104, pose: DinoPose.wave)),
-        const SizedBox(height: 16),
-        Text('Step ${_step + 1} of 3', textAlign: TextAlign.center),
-        const SizedBox(height: 12),
+        Text(
+          'Step ${_step + 1} of 3',
+          style: const TextStyle(
+            color: BaseboundColors.muted,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 8),
         Text(
           [
             'What is your name?',
             'How old are you?',
             'What is your gender?',
           ][_step],
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
+          style: Theme.of(context).textTheme.headlineMedium
+              ?.copyWith(fontSize: 28, fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 24),
         if (_step == 0) ...[
-          const Text('A nickname is fine.', textAlign: TextAlign.center),
+          const Text('A nickname is fine.'),
           const SizedBox(height: 12),
           TextField(
             key: const ValueKey('child-name'),
@@ -215,6 +218,28 @@ class _ChildOnboardingScreenState extends State<ChildOnboardingScreen> {
             onSubmitted: (_) => _next(),
           ),
         if (_step == 2) ...[
+          const Text('Choose a character for practice.'),
+          const SizedBox(height: 24),
+          const SizedBox(
+            height: 140,
+            child: Row(
+              children: [
+                Expanded(
+                  child: ChildCharacter(
+                    pose: ChildPoseName.stand,
+                    gender: ChildGender.girl,
+                  ),
+                ),
+                Expanded(
+                  child: ChildCharacter(
+                    pose: ChildPoseName.stand,
+                    gender: ChildGender.boy,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
           _genderChoice(ChildGender.girl, 'Girl'),
           const SizedBox(height: 12),
           _genderChoice(ChildGender.boy, 'Boy'),
@@ -222,7 +247,27 @@ class _ChildOnboardingScreenState extends State<ChildOnboardingScreen> {
         if (_error != null)
           Padding(
             padding: const EdgeInsets.only(top: 16),
-            child: Semantics(liveRegion: true, child: Text(_error!)),
+            child: Semantics(
+              liveRegion: true,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  BaseboundIcon(
+                    BaseboundIconName.info,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _error!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         const SizedBox(height: 24),
         FilledButton(
@@ -241,31 +286,15 @@ class _ChildOnboardingScreenState extends State<ChildOnboardingScreen> {
     );
   }
 
-  Widget _genderChoice(ChildGender gender, String label) => Semantics(
+  Widget _genderChoice(ChildGender gender, String label) => BaseboundActionTile(
+    label: label,
+    icon: _gender == gender ? BaseboundIconName.check : BaseboundIconName.child,
     selected: _gender == gender,
-    child: OutlinedButton(
-      onPressed: _busy
-          ? null
-          : () => setState(() {
-              _gender = gender;
-              _error = null;
-            }),
-      style: OutlinedButton.styleFrom(
-        backgroundColor: _gender == gender ? BaseboundColors.sky : Colors.white,
-        padding: const EdgeInsets.all(16),
-      ),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 64,
-            height: 100,
-            child: ChildCharacter(pose: ChildPoseName.stand, gender: gender),
-          ),
-          const SizedBox(width: 20),
-          Expanded(child: Text(label)),
-          if (_gender == gender) const BaseboundIcon(BaseboundIconName.check),
-        ],
-      ),
-    ),
+    onPressed: _busy
+        ? null
+        : () => setState(() {
+            _gender = gender;
+            _error = null;
+          }),
   );
 }

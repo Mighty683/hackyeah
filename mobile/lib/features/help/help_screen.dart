@@ -17,22 +17,9 @@ class HelpEntryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => OutlinedButton.icon(
-    style: OutlinedButton.styleFrom(
-      foregroundColor: BaseboundColors.ink,
-      backgroundColor: const Color(0xFFF3F6FA),
-      side: const BorderSide(color: BaseboundColors.border, width: 1.5),
-      minimumSize: const Size(48, 56),
-      padding: const EdgeInsets.all(16),
-      textStyle: const TextStyle(
-        fontFamily: 'Nunito',
-        fontSize: 18,
-        fontWeight: FontWeight.w700,
-      ),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-    ),
     onPressed: onPressed ?? () => openHelpScreen(context),
     icon: const BaseboundIcon(BaseboundIconName.help, calm: true),
-    label: const Text('I need help · prototype'),
+    label: const Text('I need help · prototype', textAlign: TextAlign.center),
   );
 }
 
@@ -192,15 +179,8 @@ class _HelpScreenState extends State<HelpScreen> {
       const _PrototypeNotice(),
       Expanded(
         child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
-                child: _buildInstruction(),
-              ),
-            ],
-          ),
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+          child: _buildInstruction(),
         ),
       ),
       _buildPhoneActions(),
@@ -210,98 +190,37 @@ class _HelpScreenState extends State<HelpScreen> {
   Widget _buildInstruction() => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
-      Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border.all(color: BaseboundColors.border),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Semantics(
-              header: true,
-              liveRegion: true,
-              child: Text(
-                _step.title,
-                style: const TextStyle(
-                  color: BaseboundColors.ink,
-                  fontSize: 30,
-                  height: 1.2,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ),
-            if (_step.note != null) ...[
-              const SizedBox(height: 14),
-              Text(
-                _step.note!,
-                style: const TextStyle(
-                  color: BaseboundColors.muted,
-                  fontSize: 18,
-                  height: 1.4,
-                ),
-              ),
-            ],
-          ],
+      Semantics(
+        header: true,
+        liveRegion: true,
+        child: Text(
+          _step.title,
+          style: const TextStyle(
+            color: BaseboundColors.ink,
+            fontSize: 28,
+            height: 1.2,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
-      const SizedBox(height: 20),
-      for (final choice in _step.choices) ...[
-        OutlinedButton(
-          style: OutlinedButton.styleFrom(
-            foregroundColor: BaseboundColors.ink,
-            backgroundColor: Colors.white,
-            side: const BorderSide(color: BaseboundColors.border, width: 1.5),
-            minimumSize: const Size(48, 64),
-            padding: const EdgeInsets.all(18),
-            textStyle: const TextStyle(
-              fontFamily: 'Nunito',
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-            ),
-            alignment: Alignment.centerLeft,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-          ),
-          onPressed: () => _choose(choice.next),
-          child: Row(
-            children: [
-              if (_history.last == HelpPage.situations) ...[
-                BaseboundIcon(
-                  _situationIcon(choice.next),
-                  size: 26,
-                  calm: true,
-                ),
-                const SizedBox(width: 14),
-              ],
-              Expanded(child: Text(choice.label)),
-              const SizedBox(width: 8),
-              const BaseboundIcon(BaseboundIconName.next, calm: true),
-            ],
+      if (_step.note != null) ...[
+        const SizedBox(height: 12),
+        Text(
+          _step.note!,
+          style: const TextStyle(
+            color: BaseboundColors.muted,
+            fontSize: 18,
+            height: 1.4,
           ),
         ),
+      ],
+      const SizedBox(height: 24),
+      for (final choice in _step.choices) ...[
+        _buildChoice(choice),
         const SizedBox(height: 12),
       ],
       if (_step.offerContact) ...[
         OutlinedButton.icon(
-          style: OutlinedButton.styleFrom(
-            foregroundColor: BaseboundColors.ink,
-            backgroundColor: Colors.white,
-            side: const BorderSide(color: BaseboundColors.ink),
-            minimumSize: const Size(48, 56),
-            padding: const EdgeInsets.all(16),
-            textStyle: const TextStyle(
-              fontFamily: 'Nunito',
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-          ),
           onPressed: _loadingContacts || _openingDialler ? null : _contactAdult,
           icon: const BaseboundIcon(BaseboundIconName.phone, calm: true),
           label: Text(
@@ -347,6 +266,34 @@ class _HelpScreenState extends State<HelpScreen> {
     ],
   );
 
+  Widget _buildChoice(HelpChoice choice) {
+    if (_history.last == HelpPage.situations) {
+      return BaseboundActionTile(
+        label: choice.label,
+        icon: _situationIcon(choice.next),
+        onPressed: () => _choose(choice.next),
+      );
+    }
+    return OutlinedButton(
+      style: OutlinedButton.styleFrom(
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.all(16),
+      ),
+      onPressed: () => _choose(choice.next),
+      child: Row(
+        children: [
+          Expanded(child: Text(choice.label)),
+          const SizedBox(width: 12),
+          const BaseboundIcon(
+            BaseboundIconName.next,
+            color: BaseboundColors.muted,
+            calm: true,
+          ),
+        ],
+      ),
+    );
+  }
+
   BaseboundIconName _situationIcon(HelpPage page) => switch (page) {
     HelpPage.unresponsive => BaseboundIconName.unresponsive,
     HelpPage.airLocation => BaseboundIconName.alarm,
@@ -359,25 +306,11 @@ class _HelpScreenState extends State<HelpScreen> {
       color: Colors.white,
       border: Border(top: BorderSide(color: BaseboundColors.border)),
     ),
-    padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         FilledButton.icon(
-          style: FilledButton.styleFrom(
-            backgroundColor: BaseboundColors.ink,
-            foregroundColor: Colors.white,
-            minimumSize: const Size(48, 56),
-            padding: const EdgeInsets.all(16),
-            textStyle: const TextStyle(
-              fontFamily: 'Nunito',
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-          ),
           onPressed: _openingDialler ? null : () => _dial('112'),
           icon: const BaseboundIcon(
             BaseboundIconName.phone,
@@ -386,7 +319,7 @@ class _HelpScreenState extends State<HelpScreen> {
           ),
           label: Text(_step.urgent ? 'Call 112 now' : 'Call 112'),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 8),
         const Text(
           'Opens phone app.',
           style: TextStyle(color: BaseboundColors.muted, fontSize: 14),
@@ -401,19 +334,23 @@ class _PrototypeNotice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    width: double.infinity,
-    color: const Color(0xFFE4EBF4),
-    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+    margin: const EdgeInsets.fromLTRB(24, 8, 24, 8),
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: BaseboundColors.sky,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: BaseboundColors.border),
+    ),
     child: const Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         BaseboundIcon(
           BaseboundIconName.info,
           color: BaseboundColors.ink,
-          size: 20,
+          size: 24,
           calm: true,
         ),
-        SizedBox(width: 10),
+        SizedBox(width: 12),
         Expanded(
           child: Text(
             'Unreviewed prototype. Not for real emergencies. '
@@ -422,7 +359,7 @@ class _PrototypeNotice extends StatelessWidget {
               color: BaseboundColors.ink,
               fontSize: 14,
               height: 1.35,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -437,12 +374,9 @@ class _HelpInformation extends StatelessWidget {
   final String message;
 
   @override
-  Widget build(BuildContext context) => Container(
+  Widget build(BuildContext context) => SoftPanel(
     padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: const Color(0xFFEAF0F7),
-      borderRadius: BorderRadius.circular(12),
-    ),
+    color: BaseboundColors.sky,
     child: Text(
       message,
       style: const TextStyle(
@@ -465,20 +399,15 @@ class _ContactChoices extends StatelessWidget {
     children: [
       for (final (index, contact) in contacts.indexed)
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          child: OutlinedButton(
-            style: OutlinedButton.styleFrom(
-              minimumSize: const Size(48, 56),
-              padding: const EdgeInsets.all(16),
-            ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+          child: BaseboundActionTile(
+            icon: BaseboundIconName.adult,
             onPressed: () => Navigator.of(context).pop(contact),
-            child: Text(
-              contact.name.trim().isNotEmpty
-                  ? contact.name.trim()
-                  : contact.relationship.trim().isNotEmpty
-                  ? contact.relationship.trim()
-                  : 'Trusted adult ${index + 1}',
-            ),
+            label: contact.name.trim().isNotEmpty
+                ? contact.name.trim()
+                : contact.relationship.trim().isNotEmpty
+                ? contact.relationship.trim()
+                : 'Trusted adult ${index + 1}',
           ),
         ),
       TextButton(

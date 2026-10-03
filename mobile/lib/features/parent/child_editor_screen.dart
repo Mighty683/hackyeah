@@ -2,10 +2,10 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../ui/basebound_icons.dart';
-
-import 'package:flutter/services.dart';
+import '../../ui/basebound_ui.dart';
 
 import 'data/family_plan.dart';
 import 'widgets/parent_editor_scaffold.dart';
@@ -62,20 +62,30 @@ class _ChildEditorScreenState extends State<ChildEditorScreen> {
           title: "What is your child's name?",
           nextLabel: "Add child's age",
           children: [
-            const ParentEditorNote(
-              message: 'All details are optional. Use fictional details for the demo.',
-              icon: BaseboundIconName.info,
-            ),
-            const SizedBox(height: 24),
             TextField(
               controller: _name,
               decoration: const InputDecoration(
                 labelText: 'Full name (optional)',
-                prefixIcon: BaseboundIcon(BaseboundIconName.child),
+                floatingLabelBehavior: FloatingLabelBehavior.always,
+                prefixIcon: BaseboundIcon(
+                  BaseboundIconName.child,
+                  size: 24,
+                  color: BaseboundColors.muted,
+                  calm: true,
+                ),
               ),
               textCapitalization: TextCapitalization.words,
               maxLength: 100,
               textInputAction: TextInputAction.done,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'All details are optional. Use fictional details for the demo.',
+              style: TextStyle(
+                color: BaseboundColors.muted,
+                fontSize: 16,
+                height: 1.45,
+              ),
             ),
           ],
         ),
@@ -87,7 +97,13 @@ class _ChildEditorScreenState extends State<ChildEditorScreen> {
               controller: _age,
               decoration: const InputDecoration(
                 labelText: 'Age (optional)',
-                prefixIcon: BaseboundIcon(BaseboundIconName.birthday),
+                floatingLabelBehavior: FloatingLabelBehavior.always,
+                prefixIcon: BaseboundIcon(
+                  BaseboundIconName.birthday,
+                  size: 24,
+                  color: BaseboundColors.muted,
+                  calm: true,
+                ),
               ),
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -104,7 +120,14 @@ class _ChildEditorScreenState extends State<ChildEditorScreen> {
               controller: _address,
               decoration: const InputDecoration(
                 labelText: 'Address (optional)',
-                prefixIcon: BaseboundIcon(BaseboundIconName.home),
+                floatingLabelBehavior: FloatingLabelBehavior.always,
+                alignLabelWithHint: true,
+                prefixIcon: BaseboundIcon(
+                  BaseboundIconName.home,
+                  size: 24,
+                  color: BaseboundColors.muted,
+                  calm: true,
+                ),
               ),
               textCapitalization: TextCapitalization.words,
               minLines: 1,
@@ -120,7 +143,14 @@ class _ChildEditorScreenState extends State<ChildEditorScreen> {
               controller: _notes,
               decoration: const InputDecoration(
                 labelText: 'Support needs (optional)',
-                prefixIcon: BaseboundIcon(BaseboundIconName.heart),
+                floatingLabelBehavior: FloatingLabelBehavior.always,
+                alignLabelWithHint: true,
+                prefixIcon: BaseboundIcon(
+                  BaseboundIconName.heart,
+                  size: 24,
+                  color: BaseboundColors.muted,
+                  calm: true,
+                ),
               ),
               textCapitalization: TextCapitalization.sentences,
               minLines: 3,

@@ -16,6 +16,8 @@ The current Android demo implements welcome, parent setup with encrypted local c
 
 Follow `docs/UX.md` for product principles and keep `docs/SCREEN_FLOW.md` updated as screens and actions change. Its implemented and future graphs must stay distinct.
 
+For screen design and UI changes, follow `docs/UI_GUIDELINES.md`. Use the shared theme and controls; keep illustrations separate from calm, consistent action controls.
+
 ## Bring the war face
 
 **BUILD. DEMO. SHIP.**

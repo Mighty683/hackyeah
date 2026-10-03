@@ -31,7 +31,7 @@ BaseboundIconName missionActionIcon(MissionActionIcon action) =>
       MissionActionIcon.replay => BaseboundIconName.replay,
     };
 
-/// A large pictured action; its spoken instruction never depends on its label.
+/// A calm action row; its spoken instruction never depends on its label.
 class MissionChoiceCard extends StatelessWidget {
   const MissionChoiceCard({
     super.key,
@@ -50,7 +50,7 @@ class MissionChoiceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final accent = selected
         ? (choice.isCorrect ? BaseboundColors.green : BaseboundColors.coral)
-        : BaseboundColors.blue;
+        : BaseboundColors.border;
     final surface = selected
         ? (choice.isCorrect
               ? BaseboundColors.greenLight
@@ -70,68 +70,42 @@ class MissionChoiceCard extends StatelessWidget {
             disabledBackgroundColor: surface,
             foregroundColor: BaseboundColors.ink,
             disabledForegroundColor: BaseboundColors.ink,
-            side: BorderSide(
-              width: selected ? 3 : 1.5,
-              color: selected ? accent : BaseboundColors.border,
-            ),
+            side: BorderSide(color: accent),
             padding: EdgeInsets.symmetric(
               horizontal: 12,
-              vertical: compact ? 10 : 16,
+              vertical: compact ? 12 : 16,
             ),
-            minimumSize: Size(64, compact ? 64 : 100),
+            minimumSize: const Size(56, 56),
+            alignment: Alignment.centerLeft,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(26),
+              borderRadius: BorderRadius.circular(12),
             ),
           ),
-          child: compact
-              ? Row(
-                  children: [
-                    BaseboundIcon(missionActionIcon(choice.icon), size: 28),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        choice.label,
-                        style: const TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
-                          height: 1.15,
-                        ),
-                      ),
-                    ),
-                  ],
-                )
-              : Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 64,
-                      height: 64,
-                      decoration: BoxDecoration(
-                        color: selected ? accent : BaseboundColors.sky,
-                        borderRadius: BorderRadius.circular(22),
-                      ),
-                      child: BaseboundIcon(
-                        selected
-                            ? (choice.isCorrect
-                                  ? BaseboundIconName.check
-                                  : BaseboundIconName.cross)
-                            : missionActionIcon(choice.icon),
-                        size: 38,
-                        color: selected ? Colors.white : null,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      choice.label,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 19,
-                        fontWeight: FontWeight.w800,
-                        height: 1.15,
-                      ),
-                    ),
-                  ],
+          child: Row(
+            children: [
+              BaseboundIcon(
+                selected
+                    ? (choice.isCorrect
+                          ? BaseboundIconName.check
+                          : BaseboundIconName.cross)
+                    : missionActionIcon(choice.icon),
+                size: 24,
+                color: selected ? accent : BaseboundColors.ink,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  choice.label,
+                  textAlign: TextAlign.left,
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    height: 1.25,
+                  ),
                 ),
+              ),
+            ],
+          ),
         ),
       ),
     );

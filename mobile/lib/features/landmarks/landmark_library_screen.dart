@@ -4,7 +4,6 @@ import 'package:image_picker/image_picker.dart';
 import '../../game/maps/demo_map.dart';
 import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
-import '../../widgets/basebound_mascot.dart';
 import '../parent/widgets/parent_editor_scaffold.dart';
 import 'data/landmark.dart';
 import 'data/landmark_repository.dart';
@@ -135,25 +134,32 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
       showDragHandle: true,
       builder: (context) => SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Text(
                 'Save a recognisable place',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+                style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 16),
-              ListTile(
-                leading: const PhotoActionIcon(),
-                title: const Text('Take a photo'),
-                onTap: () => Navigator.pop(context, ImageSource.camera),
+              OutlinedButton.icon(
+                icon: const PhotoActionIcon(),
+                label: const Text('Take a photo'),
+                style: OutlinedButton.styleFrom(
+                  alignment: Alignment.centerLeft,
+                ),
+                onPressed: () => Navigator.pop(context, ImageSource.camera),
               ),
-              ListTile(
-                leading: const PhotoActionIcon(gallery: true),
-                title: const Text('Choose from gallery'),
-                onTap: () => Navigator.pop(context, ImageSource.gallery),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                icon: const PhotoActionIcon(gallery: true),
+                label: const Text('Choose from gallery'),
+                style: OutlinedButton.styleFrom(
+                  alignment: Alignment.centerLeft,
+                ),
+                onPressed: () => Navigator.pop(context, ImageSource.gallery),
               ),
             ],
           ),
@@ -275,11 +281,7 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
               ),
           ],
         ),
-        body: SafeArea(
-          child: widget.parentMode
-              ? _body()
-              : IllustratedBackdrop(child: _body()),
-        ),
+        body: SafeArea(child: _body()),
         bottomNavigationBar: _error == null && !_loading ? _footer() : null,
       ),
     ),
@@ -306,7 +308,7 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
       );
     }
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 640),
@@ -316,23 +318,17 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
               if (widget.parentMode) ...[
                 const Text(
                   'Save places you recognise',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 8),
                 const Text('Stop together. Add a photo and a map pin.'),
-                const SizedBox(height: 12),
-                OutlinedButton.icon(
-                  onPressed: _busy ? null : _loadDemo,
-                  icon: const BaseboundIcon(BaseboundIconName.play),
-                  label: const Text('Load demo landmarks'),
-                ),
               ] else ...[
-                const BaseboundGuide(
-                  message: 'Tap a photo pin. Remember this place?',
-                  pose: DinoPose.point,
+                const Text(
+                  'Tap a photo pin. Remember this place?',
+                  style: TextStyle(fontSize: 18),
                 ),
               ],
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
               LandmarkMap(
                 landmarks: _mapLandmarks,
                 photoDirectory: _photoDirectory!,
@@ -341,6 +337,17 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
               ),
               const SizedBox(height: 16),
               if (_selected != null) _selectedCard(_selected!),
+              if (widget.parentMode) ...[
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    onPressed: _busy ? null : _loadDemo,
+                    icon: const BaseboundIcon(BaseboundIconName.play),
+                    label: const Text('Load demo landmarks'),
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
               if (_landmarks.isEmpty)
                 SoftPanel(
                   child: Text(
@@ -352,12 +359,15 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
               if (_landmarks.isNotEmpty) ...[
                 Text(
                   '${_landmarks.length} landmarks saved',
-                  style: const TextStyle(fontWeight: FontWeight.w800),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 for (final entry in _landmarks) _listEntry(entry),
               ],
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
               if (widget.parentMode)
                 const ParentEditorNote(
                   message: 'Demo map: TAURON Arena, Kraków. Pins are independent landmarks, not a path or checked safe places. Photos stay in app-private storage; names and pins are encrypted. No cloud sync or parent lock.',
@@ -397,7 +407,7 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
           const SizedBox(height: 12),
           Text(
             entry.name,
-            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 24),
+            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 24),
           ),
           if (entry.isDemo)
             const Padding(
@@ -408,10 +418,13 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
               ),
             ),
           if (widget.parentMode)
-            TextButton.icon(
-              onPressed: _busy ? null : () => _edit(landmark: entry),
-              icon: const BaseboundIcon(BaseboundIconName.edit),
-              label: const Text('Edit landmark'),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: _busy ? null : () => _edit(landmark: entry),
+                icon: const BaseboundIcon(BaseboundIconName.edit),
+                label: const Text('Edit landmark'),
+              ),
             ),
         ],
       ),
@@ -419,10 +432,14 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
   );
 
   Widget _listEntry(Landmark entry) => Padding(
-    padding: const EdgeInsets.only(bottom: 10),
+    padding: const EdgeInsets.only(bottom: 12),
     child: Card(
       child: ListTile(
         contentPadding: const EdgeInsets.all(12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        selected: !widget.parentMode && _selected?.id == entry.id,
+        selectedTileColor: BaseboundColors.sky,
+        selectedColor: BaseboundColors.ink,
         leading: SizedBox(
           width: 64,
           child: LandmarkPhoto(
@@ -433,7 +450,7 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
         ),
         title: Text(
           entry.name,
-          style: const TextStyle(fontWeight: FontWeight.w800),
+          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
         ),
         subtitle: !_mapLandmarks.any((point) => point.id == entry.id)
             ? const Text('Outside this demo map')
@@ -451,7 +468,11 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
                 tooltip: 'Delete ${entry.name}',
                 icon: const BaseboundIcon(BaseboundIconName.delete),
               )
-            : const BaseboundIcon(BaseboundIconName.pin),
+            : BaseboundIcon(
+                _selected?.id == entry.id
+                    ? BaseboundIconName.check
+                    : BaseboundIconName.pin,
+              ),
       ),
     ),
   );
@@ -459,7 +480,7 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
   Widget _footer() => SafeArea(
     top: false,
     child: Padding(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+      padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,

@@ -243,7 +243,7 @@ class _ParentScreenState extends State<ParentScreen> {
     if (_plan == null) return const SizedBox.shrink();
     return SingleChildScrollView(
       key: ValueKey(_stage),
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+      padding: const EdgeInsets.all(24),
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 640),
@@ -257,6 +257,9 @@ class _ParentScreenState extends State<ParentScreen> {
               const SizedBox(height: 8),
               LinearProgressIndicator(
                 value: (_stage.index + 1) / 4,
+                minHeight: 4,
+                borderRadius: BorderRadius.circular(8),
+                backgroundColor: BaseboundColors.border,
                 semanticsLabel: 'Family setup, step ${_stage.index + 1} of 4',
               ),
               const SizedBox(height: 24),
@@ -284,11 +287,15 @@ class _ParentScreenState extends State<ParentScreen> {
           const SizedBox(height: 16),
           OutlinedButton.icon(
             onPressed: _load,
-            icon: const BaseboundIcon(BaseboundIconName.replay),
+            icon: const BaseboundIcon(BaseboundIconName.replay, size: 24),
             label: const Text('Retry loading'),
           ),
           const SizedBox(height: 8),
-          const Text('You can delete saved details from Setup options.'),
+          const Text(
+            'You can delete saved details from Setup options.',
+            textAlign: TextAlign.center,
+            style: _subtitleStyle,
+          ),
         ],
       ),
     ),
@@ -303,12 +310,6 @@ class _ParentScreenState extends State<ParentScreen> {
 
   List<Widget> _introduction() => [
     _heading('Set up your family plan', BaseboundIconName.family),
-    OutlinedButton.icon(
-      onPressed: _openLandmarks,
-      icon: const BaseboundIcon(BaseboundIconName.map),
-      label: const Text('Walk together'),
-    ),
-    const SizedBox(height: 16),
     const Text(
       'Add your child’s details, then contacts and safe places. One step at a time.',
       style: _subtitleStyle,
@@ -323,6 +324,12 @@ class _ParentScreenState extends State<ParentScreen> {
       'Saved details are encrypted on this device. Anyone using this app can open them. No parent lock or cloud sync.',
       style: _subtitleStyle,
     ),
+    const SizedBox(height: 24),
+    BaseboundActionTile(
+      label: 'Walk together',
+      icon: BaseboundIconName.map,
+      onPressed: _openLandmarks,
+    ),
   ];
 
   List<Widget> _contacts() {
@@ -333,7 +340,7 @@ class _ParentScreenState extends State<ParentScreen> {
         'Add up to three trusted adults. ${contacts.length}/3 saved.',
         style: _subtitleStyle,
       ),
-      const SizedBox(height: 20),
+      const SizedBox(height: 24),
       for (var index = 0; index < contacts.length; index++)
         _entry(
           title: contacts[index].name.isEmpty
@@ -348,12 +355,12 @@ class _ParentScreenState extends State<ParentScreen> {
           icon: BaseboundIconName.adult,
         ),
       if (contacts.length < FamilyPlan.maxContacts)
-        OutlinedButton.icon(
+        BaseboundActionTile(
+          label: 'Add a trusted contact',
+          icon: BaseboundIconName.addAdult,
           onPressed: _editContact,
-          icon: const BaseboundIcon(BaseboundIconName.addAdult),
-          label: const Text('Add a trusted contact'),
         ),
-      const SizedBox(height: 20),
+      const SizedBox(height: 24),
       const Text(
         'Saving a contact does not call or verify the number.',
         style: _subtitleStyle,
@@ -374,7 +381,7 @@ class _ParentScreenState extends State<ParentScreen> {
         message: 'This demo stores map pins only. It does not check safety or provide real emergency routes.',
         icon: BaseboundIconName.info,
       ),
-      const SizedBox(height: 20),
+      const SizedBox(height: 24),
       for (var index = 0; index < points.length; index++)
         _entry(
           title: points[index].displayName,
@@ -383,22 +390,16 @@ class _ParentScreenState extends State<ParentScreen> {
           onDelete: () => _delete(place: index),
           icon: BaseboundIconName.pin,
         ),
-      OutlinedButton.icon(
+      BaseboundActionTile(
+        label: 'Add a safe place',
+        icon: BaseboundIconName.addPlace,
         onPressed: _editPlace,
-        icon: const BaseboundIcon(BaseboundIconName.addPlace),
-        label: const Text('Add a safe place'),
       ),
     ];
   }
 
   List<Widget> _ready() => [
     _heading('Ready to practice together', BaseboundIconName.check),
-    OutlinedButton.icon(
-      onPressed: _openLandmarks,
-      icon: const BaseboundIcon(BaseboundIconName.map),
-      label: const Text('Walk together'),
-    ),
-    const SizedBox(height: 16),
     Text(
       '${_plan!.contacts.length} trusted contacts · ${_plan!.safePoints.length} safe places saved',
       style: _subtitleStyle,
@@ -416,10 +417,16 @@ class _ParentScreenState extends State<ParentScreen> {
       style: _subtitleStyle,
     ),
     const SizedBox(height: 24),
-    OutlinedButton.icon(
+    BaseboundActionTile(
+      label: 'Walk together',
+      icon: BaseboundIconName.map,
+      onPressed: _openLandmarks,
+    ),
+    const SizedBox(height: 12),
+    BaseboundActionTile(
+      label: 'Review setup',
+      icon: BaseboundIconName.edit,
       onPressed: () => _goTo(_SetupStage.introduction),
-      icon: const BaseboundIcon(BaseboundIconName.edit),
-      label: const Text('Review setup'),
     ),
   ];
 
@@ -443,42 +450,58 @@ class _ParentScreenState extends State<ParentScreen> {
         ),
       ),
     };
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            FilledButton.icon(
-              onPressed: action,
-              style: FilledButton.styleFrom(minimumSize: const Size(48, 58)),
-              icon: BaseboundIcon(
-                _stage == _SetupStage.ready
-                    ? BaseboundIconName.play
-                    : BaseboundIconName.next,
-                color: Colors.white,
-              ),
-              label: Text(label),
-            ),
-            if (_stage == _SetupStage.introduction)
-              TextButton(
-                onPressed: () => _goTo(_SetupStage.contacts),
-                child: const Text('Skip child details'),
-              ),
-          ],
-        ),
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: BaseboundColors.border)),
       ),
+      child: SafeArea(top: false, child: _footerLayout(label, action)),
     );
   }
+
+  Widget _footerLayout(String label, VoidCallback action) => Padding(
+    padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
+    child: Align(
+      heightFactor: 1,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 640),
+        child: _footerActions(label, action),
+      ),
+    ),
+  );
+
+  Widget _footerActions(String label, VoidCallback action) => Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      FilledButton.icon(
+        onPressed: action,
+        icon: BaseboundIcon(
+          _stage == _SetupStage.ready
+              ? BaseboundIconName.play
+              : BaseboundIconName.next,
+          color: Colors.white,
+          size: 24,
+        ),
+        label: Text(label, textAlign: TextAlign.center),
+      ),
+      if (_stage == _SetupStage.introduction)
+        TextButton(
+          onPressed: () => _goTo(_SetupStage.contacts),
+          child: const Text('Skip child details'),
+        ),
+    ],
+  );
 
   Widget _heading(String title, BaseboundIconName icon) => Padding(
     padding: const EdgeInsets.only(bottom: 16),
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        BaseboundIcon(icon, size: 32, color: BaseboundColors.blue),
+        Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: BaseboundIcon(icon, size: 24, color: BaseboundColors.muted),
+        ),
         const SizedBox(width: 12),
         Expanded(
           child: Semantics(
@@ -488,7 +511,7 @@ class _ParentScreenState extends State<ParentScreen> {
               style: const TextStyle(
                 fontSize: 28,
                 height: 1.2,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -510,20 +533,25 @@ class _ParentScreenState extends State<ParentScreen> {
     required VoidCallback onEdit,
     required VoidCallback onDelete,
     required BaseboundIconName icon,
-  }) => Card(
-    elevation: 0,
-    margin: const EdgeInsets.only(bottom: 12),
-    child: ListTile(
-      contentPadding: const EdgeInsets.all(16),
-      leading: BaseboundIcon(icon, color: BaseboundColors.blue),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
-      subtitle: subtitle.isEmpty ? null : Text(subtitle),
-      onTap: onEdit,
-      trailing: IconButton(
-        onPressed: onDelete,
-        icon: const BaseboundIcon(BaseboundIconName.delete),
-        tooltip: 'Delete $title',
-      ),
+  }) => Padding(
+    padding: const EdgeInsets.only(bottom: 12),
+    child: Row(
+      children: [
+        Expanded(
+          child: BaseboundActionTile(
+            label: title,
+            description: subtitle.isEmpty ? null : subtitle,
+            icon: icon,
+            onPressed: onEdit,
+          ),
+        ),
+        const SizedBox(width: 8),
+        IconButton(
+          onPressed: onDelete,
+          icon: const BaseboundIcon(BaseboundIconName.delete, size: 24),
+          tooltip: 'Delete $title',
+        ),
+      ],
     ),
   );
 }

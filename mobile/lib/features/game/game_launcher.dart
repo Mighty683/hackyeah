@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import '../../game/maps/demo_map.dart';
 import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
-import '../../widgets/basebound_mascot.dart';
 import '../help/help_screen.dart';
 import '../parent/data/family_plan.dart';
 import '../parent/data/family_plan_repository.dart';
@@ -91,57 +90,19 @@ class _GameLauncherState extends State<GameLauncher> {
           bottomNavigationBar: SafeArea(
             top: false,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+              padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
               child: HelpEntryButton(onPressed: _openHelp),
             ),
           ),
-          body: Center(
-            child: IllustratedBackdrop(
-              warm: true,
-              child: Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 440),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Align(
-                            alignment: snapshot.hasError
-                                ? Alignment.centerLeft
-                                : Alignment.center,
-                            child: BaseboundMascot(
-                              size: snapshot.hasError ? 104 : 132,
-                              pose: snapshot.hasError
-                                  ? DinoPose.calm
-                                  : DinoPose.listen,
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          if (snapshot.hasError) ...[
-                            const Text(
-                              'Could not load safe places. Go back or try again.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 22,
-                                height: 1.3,
-                                color: BaseboundColors.ink,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            FilledButton(
-                              onPressed: _newGame,
-                              child: const Text('Try again'),
-                            ),
-                          ] else
-                            const Center(child: CircularProgressIndicator()),
-                        ],
-                      ),
-                    ),
+          body: SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 440),
+                  child: _PracticePreparation(
+                    hasError: snapshot.hasError,
+                    onRetry: _newGame,
                   ),
                 ),
               ),
@@ -151,4 +112,64 @@ class _GameLauncherState extends State<GameLauncher> {
       },
     );
   }
+}
+
+class _PracticePreparation extends StatelessWidget {
+  const _PracticePreparation({required this.hasError, required this.onRetry});
+
+  final bool hasError;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      const Align(
+        alignment: Alignment.centerLeft,
+        child: BaseboundIcon(
+          BaseboundIconName.map,
+          size: 64,
+          color: BaseboundColors.blue,
+          calm: true,
+        ),
+      ),
+      const SizedBox(height: 24),
+      Text(
+        hasError ? 'Let’s try that again' : 'Preparing your practice',
+        style: Theme.of(context).textTheme.headlineMedium
+            ?.copyWith(fontSize: 28),
+      ),
+      const SizedBox(height: 12),
+      Text(
+        hasError
+            ? 'Your practice places could not load. Go back or try again.'
+            : 'Choosing a place on the offline map.',
+        style: Theme.of(context).textTheme.bodyLarge,
+      ),
+      const SizedBox(height: 24),
+      if (hasError)
+        FilledButton(onPressed: onRetry, child: const Text('Try again'))
+      else
+        const Align(
+          alignment: Alignment.centerLeft,
+          child: SizedBox.square(
+            dimension: 24,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              semanticsLabel: 'Loading practice game',
+            ),
+          ),
+        ),
+      const SizedBox(height: 24),
+      const Text(
+        'Practice only. Places are not verified safe destinations.',
+        style: TextStyle(
+          fontSize: 14,
+          color: BaseboundColors.muted,
+          height: 1.4,
+        ),
+      ),
+    ],
+  );
 }

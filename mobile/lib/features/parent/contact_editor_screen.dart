@@ -4,6 +4,7 @@ library;
 import 'package:flutter/material.dart';
 
 import '../../ui/basebound_icons.dart';
+import '../../ui/basebound_ui.dart';
 
 import 'data/family_plan.dart';
 import 'widgets/parent_editor_scaffold.dart';
@@ -57,20 +58,24 @@ class _ContactEditorScreenState extends State<ContactEditorScreen> {
           title: 'Who can your child contact?',
           nextLabel: 'Add phone number',
           children: [
-            const ParentEditorNote(
-              message: 'All details are optional. Use fictional details for the demo.',
-              icon: BaseboundIconName.info,
-            ),
-            const SizedBox(height: 24),
             TextField(
               controller: _name,
               decoration: const InputDecoration(
                 labelText: 'Name (optional)',
-                prefixIcon: BaseboundIcon(BaseboundIconName.adult),
+                prefixIcon: BaseboundIcon(
+                  BaseboundIconName.adult,
+                  size: 24,
+                  color: BaseboundColors.muted,
+                ),
               ),
               textCapitalization: TextCapitalization.words,
               maxLength: 100,
               textInputAction: TextInputAction.done,
+            ),
+            const SizedBox(height: 16),
+            const ParentEditorNote(
+              message: 'All details are optional. Use fictional details for the demo.',
+              icon: BaseboundIconName.info,
             ),
           ],
         ),
@@ -78,20 +83,24 @@ class _ContactEditorScreenState extends State<ContactEditorScreen> {
           title: 'What is their phone number?',
           nextLabel: 'Add relationship',
           children: [
-            const ParentEditorNote(
-              message: 'Saving a contact does not check or call this number.',
-              icon: BaseboundIconName.phone,
-            ),
-            const SizedBox(height: 24),
             TextField(
               controller: _phone,
               decoration: const InputDecoration(
                 labelText: 'Phone number (optional)',
-                prefixIcon: BaseboundIcon(BaseboundIconName.phone),
+                prefixIcon: BaseboundIcon(
+                  BaseboundIconName.phone,
+                  size: 24,
+                  color: BaseboundColors.muted,
+                ),
               ),
               keyboardType: TextInputType.phone,
               maxLength: 30,
               textInputAction: TextInputAction.done,
+            ),
+            const SizedBox(height: 16),
+            const ParentEditorNote(
+              message: 'Saving a contact does not check or call this number.',
+              icon: BaseboundIconName.phone,
             ),
           ],
         ),
@@ -103,7 +112,11 @@ class _ContactEditorScreenState extends State<ContactEditorScreen> {
               decoration: const InputDecoration(
                 labelText: 'Relationship to child (optional)',
                 hintText: 'Parent, grandparent, family friend…',
-                prefixIcon: BaseboundIcon(BaseboundIconName.family),
+                prefixIcon: BaseboundIcon(
+                  BaseboundIconName.family,
+                  size: 24,
+                  color: BaseboundColors.muted,
+                ),
               ),
               textCapitalization: TextCapitalization.words,
               maxLength: 80,

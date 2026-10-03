@@ -1,5 +1,50 @@
 # Safe Path visual design and parallel implementation plan
 
+## Current screen revision — 2026-10-03
+
+The current source of truth is [UI_GUIDELINES.md](UI_GUIDELINES.md), also linked
+from `AGENTS.md`. This pass replaces the earlier raised, heavily rounded cards
+and gradient captions with warm neutral surfaces, slate text, muted blue actions,
+12 px control corners, 16 px panels and flat shared action tiles. Each screen
+has a separate revision agent; the integrator owns shared styling and checks.
+
+Mission choices now belong below the illustration, keeping the hallway and
+two-wall scene unobscured. Narration, scenario content, navigation and demo
+boundaries are preserved. Shared adult forms use simple field-first layouts.
+
+The remainder of this document records earlier implementation decisions and
+checks. Its old palette, card and object-overlay instructions are historical;
+use the current guidelines for new work. Current verification is recorded below
+after integration.
+
+### Current revision verification
+
+- Separate revision agents completed all 14 Flutter screen owners: welcome,
+  child onboarding, practice selection, mission, parent setup, child details,
+  contact details, safe-place editor, game launcher, game, help, landmark library,
+  landmark editor and landmark practice. Two additional scene-art agents handled
+  hallway and street backgrounds; the integrator handled home artwork and shared UI.
+- `flutter analyze --no-pub`: no issues found.
+- `flutter test --no-pub --reporter expanded`: all 37 existing tests passed.
+  Mission assertions now check accessible choices below the illustration rather
+  than expecting the superseded overlay layout, including clipped large-text scrolling.
+- `flutter build apk --debug --no-pub`: built
+  `mobile/build/app/outputs/flutter-apk/app-debug.apk` successfully.
+- A disposable Flutter runner outside the repository rendered the requested room,
+  hallway-choice and two-wall states at 390 × 844 with loaded Nunito and actual
+  assets. The integrator inspected these three targeted mission-art previews:
+  doorways stay in walls, the hallway plan uses real openings and furniture,
+  both wall sections sit between the child and outdoors, and controls sit below art.
+- A separate read-only review using `hackyeah-ux-review` found no introduced
+  actionable UX issue in the screen code or revised assets. Primary-action blue
+  has 6.53:1 contrast against white; slate text has 12.72:1.
+- `git diff --check` passed. No physical Android device walkthrough was performed;
+  camera/GPS/dialler interactions and overall appearance remain for user review.
+
+Final raster assets and exact built-in imagegen prompts are recorded in
+`mobile/assets/illustrations/PORTRAIT_ASSETS.md`. Architectural and instructional
+diagrams remain code-native. The implemented and future screen graphs are unchanged.
+
 The Android demo uses the supplied alarm-training image as its visual reference: warm illustrated rooms, navy rounded text, large white cards, blue audio controls and a friendly green guide. This work upgrades appearance across the existing screens. Game content, narration, decisions, navigation, storage and phone behavior remain the existing demo.
 
 The attached product-flow concept is background context. It does not expand this visual implementation into additional missions, messaging, age branches or verified emergency assistance.

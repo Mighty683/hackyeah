@@ -1,5 +1,45 @@
 # Portrait practice artwork
 
+## Current restrained revision — 2026-10-03
+
+The app now uses `home-practice-v2.png`, `hallway-practice-v2.png` and
+`street-practice-v2.png` (1024 × 1536 each), created with built-in imagegen.
+The original portrait files remain available. Home was regenerated after rejecting
+an inset corridor that looked like a doorway rising out of the floor. Its hallway
+now opens through the rear wall on a continuous floor; destination coordinates
+were adjusted accordingly. Hallway and street use their originals as composition
+references. The apartment plan, two-wall cutaway and phone/action diagrams are
+code-native drawings in `mission_scene.dart`, with no generated labels.
+
+### Final prompt: home-practice-v2.png
+
+Use case: illustration-story. Asset: portrait 2:3 environment illustration for a children's learning app. Create one architecturally coherent ordinary European apartment entry/living room, seen at standing eye height from the front of the room. This must be a single believable three-dimensional space, not a collage or inset. Matte understated contemporary picture-book art with thin simple linework, muted warm off-white plaster, natural light oak, sage and slate blue, minimal decoration. One window in the left vertical wall, with a small plain sofa partly cropped at lower left. One ordinary exterior door in the right vertical wall, open to a plain outdoor path. One rectangular doorway in the REAR VERTICAL WALL at CENTER leads to a modest windowless interior hallway with closed solid doors set into that hallway's VERTICAL SIDE WALLS. Every door and doorway stands upright and reaches the SAME continuous floor plane. Show continuous natural wood flooring leading from foreground through the rear hallway. No doorway or arch emerging from the floor, no inset hallway in bottom right, no floor hatch, no dollhouse cutaway, no impossible architecture or multiple perspective scenes. The rear hallway is clearly recessed and ends with a plain closed door. Keep foreground floor open for a separately overlaid child (feet around x .39,y .95); interior hallway destination around x .52,y .61. Window upper left and exterior door upper right should be equally readable choices, not highlighted. Diffuse ordinary daylight, spare calm room, no shiny glow. No people, no text, no icons, no buttons, no arrows, no watermarks, no danger. Full bleed portrait image.
+
+### Final prompt: hallway-practice-v2.png
+
+Use case: illustration-story
+Asset type: portrait 2:3 background illustration for a child-focused practice mission in the Safe Path mobile app, no UI.
+Primary request: Replace the supplied hallway reference with a believable, modest modern European apartment interior hallway. The reference is for general perspective and open floor composition only; replace its ornate decorative style completely.
+Scene/backdrop: A simple interior corridor with solid plaster walls on both sides and a closed solid flat door at the far end. Two understated closed solid flat doors in the side walls. Straight rectangular doorframes, plain hardware, pale warm plaster, natural light oak floor. No windows and no exterior view. A single small framed abstract print on one side wall and one small simple potted plant set back in a rear corner; otherwise spare.
+Style/medium: Understated editorial children's-book illustration, soft matte gouache-like textures, clear restrained architectural forms, warm human scale, sophisticated picture-book taste. The environment should feel familiar, quiet and credible.
+Composition/framing: Portrait 2:3. Calm centered architectural perspective; both side walls clearly visible. Keep the lower middle floor entirely open and uncluttered for a separately overlaid character, whose feet will be around x=0.47,y=0.83 and whose width is 0.40 of the canvas. Ensure that broad central floor area can receive this character naturally. No foreground furniture, no rugs.
+Lighting/mood: Gentle diffuse interior light, evenly readable, calm daytime mood. Use a discreet ordinary ceiling fixture, no visible glow or spotlit dramatic effects.
+Color palette: Restrained warm off-white, pale beige, light natural wood, a small muted sage detail; low saturation, no dominant orange, no candy colors.
+Constraints: No people, no characters, no labels, no text, no symbols, no UI, no arrows, no icons, no watermarks. All doors closed. No windows or exterior views.
+Avoid: Mobile game advertisement look, glossy 3D render, shiny candy lighting, dramatic glow, ornate fantasy or game-ad furniture, golden carved doors, excessive flowers, purple rugs, decorative paneling, richly saturated orange, heavy black outlines, crisis imagery.
+
+### Final prompt: street-practice-v2.png
+
+Use case: illustration-story
+Asset type: portrait 2:3 mission background for a child-focused training app, final raster illustration.
+Input image: reference for exact landmark placement and scene perspective only. Replace the glossy saturated fantasy-game rendering with a restrained editorial children's-book illustration.
+Primary request: Redraw this fictional outdoor neighborhood as calm, tasteful matte gouache with clean simple lines, broad readable shapes, lightly textured paper, very restrained shading and a warm cream / muted sage / slate-blue / ochre palette. It should feel like a contemporary European picture book for ages 7–14, without childish candy colors or advertising-game polish.
+Scene: an ordinary modern European neighborhood on a quiet clear daytime. A broad paved pedestrian lane curves between small planted areas. The central and lower-middle path must be clean and visually quiet.
+Composition and required semantic placement: use normalized x,y from top left of the full portrait. The distant small home is in upper-left around x=.19,y=.265. The distant recognizable school is in upper-right around x=.85,y=.277, a simple school facade with a clock and orderly windows, no flag or text. The nearby solid windowless fictional practice building sits on right-middle around x=.70,y=.50; use quiet light stone, low roof, an opaque CLOSED slate door with NO glass pane, and no visible windows. The open park with a simple bench sits left-lower around x=.22,y=.74. The recognizable bus-stop shelter sits right-lower around x=.84,y=.795, with plain slate metal framing and clear glass, bench and small generic bus pictogram allowed but no written words. Keep these landmarks close to the original positions and scales. Keep broad open central pedestrian space around x=.47,y=.84 for an overlaid child character; leave the lane empty and uncluttered.
+Style: attractive and credible educational art, flat matte shapes, thin softly imperfect linework, subtle paper grain. Plants are simplified muted shapes. Reduce decorative flowers and leaf detail. Clear separation of the five decision landmarks. Soft daylight, no dramatic shadow or glow. Full-bleed 2:3 portrait.
+Constraints: no people, no character, no animals, no UI, no buttons, no labels, no words, no arrows, no highlight rings, no answer clues, no watermark, no military imagery, no danger, no siren, no actual shelter sign, no official safety symbol and no claim of a real safe destination. This is a fictional practice setting. Preserve all five landmark positions so existing interaction coordinates remain correct.
+
+
 Generated on 2026-10-03 with the built-in imagegen tool. Backgrounds are portrait 2:3 and contain no characters or UI. Native controls and separate child poses are layered in Flutter; scenario content and choice logic stay in the existing mission model. Preserve the transparent alpha channel in the pose sheet.
 
 The backgrounds are 1024 × 1536. `child-poses.png` is a 1254 × 1254 RGBA sheet; its generated rows are not equal-height cells. The renderer uses padded source rectangles around the inspected alpha bounds: stand `(165,21)-(465,685)`, walk `(777,31)-(1104,681)`, crouch `(198,763)-(481,1189)`, protect `(784,786)-(1080,1194)`. Keep the file intact and preserve each source aspect ratio and the common character scale.

@@ -127,23 +127,31 @@ class _PracticeLauncherState extends State<PracticeLauncher>
                       Text(
                         'Hi, ${widget.child.fullName}!',
                         style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w700,
+                          color: BaseboundColors.muted,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 12),
                     ],
-                    _PracticeHeading(title: title),
+                    _PracticeHeading(
+                      title: title,
+                      instruction: _selection == _Selection.activity
+                          ? 'Pick one activity to start.'
+                          : 'Choose a scene for alarm practice.',
+                    ),
                     const SizedBox(height: 24),
                     ..._choices(),
                     const SizedBox(height: 8),
-                    OutlinedButton.icon(
-                      onPressed: _opening ? null : _speak,
-                      icon: const BaseboundIcon(BaseboundIconName.speaker),
-                      label: const Text('Replay audio'),
-                      style: OutlinedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        minimumSize: const Size(64, 56),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton.icon(
+                        onPressed: _opening ? null : _speak,
+                        icon: const BaseboundIcon(
+                          BaseboundIconName.speaker,
+                          size: 24,
+                        ),
+                        label: const Text('Replay audio'),
                       ),
                     ),
                     if (!_audioAvailable)
@@ -180,17 +188,17 @@ class _PracticeLauncherState extends State<PracticeLauncher>
 
   List<Widget> _choices() => switch (_selection) {
     _Selection.activity => [
-      _card(
+      _choice(
         'Alarm practice',
         BaseboundIconName.alarm,
         () => _select(_Selection.mode),
       ),
-      _card(
+      _choice(
         'Landmark practice',
         BaseboundIconName.pin,
         () => _open(const LandmarkLibraryScreen()),
       ),
-      _card(
+      _choice(
         'Map practice',
         BaseboundIconName.map,
         () => _open(
@@ -199,12 +207,12 @@ class _PracticeLauncherState extends State<PracticeLauncher>
       ),
     ],
     _Selection.mode => [
-      _card(
+      _choice(
         'At home',
         BaseboundIconName.home,
         () => _openMission(MissionMode.home),
       ),
-      _card(
+      _choice(
         'Outside',
         BaseboundIconName.park,
         () => _openMission(MissionMode.outdoor),
@@ -212,131 +220,65 @@ class _PracticeLauncherState extends State<PracticeLauncher>
     ],
   };
 
-  Widget _card(String label, BaseboundIconName icon, VoidCallback onPressed) =>
-      Padding(
-        padding: const EdgeInsets.only(bottom: 16),
-        child: _ActivityCard(
-          label: label,
-          icon: icon,
-          onPressed: _opening ? null : onPressed,
-        ),
-      );
+  Widget _choice(
+    String label,
+    BaseboundIconName icon,
+    VoidCallback onPressed,
+  ) => Padding(
+    padding: const EdgeInsets.only(bottom: 12),
+    child: BaseboundActionTile(
+      label: label,
+      icon: icon,
+      onPressed: _opening ? null : onPressed,
+    ),
+  );
 }
 
 class _PracticeHeading extends StatelessWidget {
-  const _PracticeHeading({required this.title});
+  const _PracticeHeading({required this.title, required this.instruction});
 
   final String title;
+  final String instruction;
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
-    child: LayoutBuilder(
-      builder: (context, constraints) {
-        final heading = Text(
-          title,
-          style: const TextStyle(
-            color: BaseboundColors.ink,
-            fontSize: 28,
-            height: 1.15,
-            fontWeight: FontWeight.w800,
-          ),
-        );
-        const guide = BaseboundMascot(size: 96, pose: DinoPose.point);
-        if (constraints.maxWidth < 260 ||
-            MediaQuery.textScalerOf(context).scale(28) > 38) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [guide, const SizedBox(height: 8), heading],
-          );
-        }
-        return Row(
-          children: [
-            guide,
-            const SizedBox(width: 16),
-            Expanded(child: heading),
-          ],
-        );
-      },
-    ),
-  );
-}
-
-class _ActivityCard extends StatelessWidget {
-  const _ActivityCard({
-    required this.label,
-    required this.icon,
-    required this.onPressed,
-  });
-
-  final String label;
-  final BaseboundIconName icon;
-  final VoidCallback? onPressed;
-
-  @override
-  Widget build(BuildContext context) => Semantics(
-    button: true,
-    enabled: onPressed != null,
-    child: Material(
-      color: Colors.white,
-      elevation: 3,
-      shadowColor: BaseboundColors.ink.withValues(alpha: .08),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(28),
-        side: const BorderSide(color: BaseboundColors.border),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onPressed,
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: LayoutBuilder(builder: _buildContent),
-        ),
-      ),
-    ),
-  );
-
-  Widget _buildContent(BuildContext context, BoxConstraints constraints) {
-    final illustration = Container(
-      width: 88,
-      height: 96,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [BaseboundColors.sky, BaseboundColors.cream],
-        ),
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Center(child: BaseboundIcon(icon, size: 54)),
-    );
-    final text = Text(
-      label,
-      style: const TextStyle(
-        color: BaseboundColors.ink,
-        fontSize: 24,
-        fontWeight: FontWeight.w800,
-      ),
-    );
-    if (constraints.maxWidth < 220 ||
-        MediaQuery.textScalerOf(context).scale(24) > 32) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final heading = Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Center(child: illustration),
-          const SizedBox(height: 16),
-          text,
+          Text(
+            title,
+            style: const TextStyle(
+              color: BaseboundColors.ink,
+              fontSize: 28,
+              height: 1.2,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            instruction,
+            style: const TextStyle(
+              color: BaseboundColors.muted,
+              fontSize: 16,
+              height: 1.4,
+            ),
+          ),
         ],
       );
-    }
-    return Row(
-      children: [
-        illustration,
-        const SizedBox(width: 18),
-        Expanded(child: text),
-        const SizedBox(width: 8),
-        const BaseboundIcon(BaseboundIconName.next),
-      ],
-    );
-  }
+      if (constraints.maxWidth < 280 ||
+          MediaQuery.textScalerOf(context).scale(28) > 38 ||
+          MediaQuery.sizeOf(context).height < 600) {
+        return heading;
+      }
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(child: heading),
+          const SizedBox(width: 16),
+          const BaseboundMascot(size: 64, pose: DinoPose.point),
+        ],
+      );
+    },
+  );
 }

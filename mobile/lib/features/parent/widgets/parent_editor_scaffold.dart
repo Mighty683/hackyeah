@@ -11,11 +11,11 @@ import '../../../ui/basebound_ui.dart';
 ThemeData parentSetupTheme() {
   final theme = BaseboundTheme.training();
   const fieldBorder = OutlineInputBorder(
-    borderRadius: BorderRadius.all(Radius.circular(18)),
+    borderRadius: BorderRadius.all(Radius.circular(12)),
     borderSide: BorderSide(color: BaseboundColors.border),
   );
   return theme.copyWith(
-    scaffoldBackgroundColor: const Color(0xFFF3F7FC),
+    scaffoldBackgroundColor: BaseboundColors.cream,
     appBarTheme: theme.appBarTheme.copyWith(
       backgroundColor: Colors.white,
       foregroundColor: BaseboundColors.ink,
@@ -25,18 +25,18 @@ ThemeData parentSetupTheme() {
       titleTextStyle: const TextStyle(
         fontFamily: 'Nunito',
         color: BaseboundColors.ink,
-        fontSize: 22,
-        fontWeight: FontWeight.w800,
+        fontSize: 20,
+        fontWeight: FontWeight.w700,
       ),
     ),
     inputDecorationTheme: const InputDecorationTheme(
       filled: true,
-      fillColor: Color(0xFFF8FAFE),
-      contentPadding: EdgeInsets.symmetric(horizontal: 18, vertical: 20),
+      fillColor: Colors.white,
+      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       border: fieldBorder,
       enabledBorder: fieldBorder,
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.all(Radius.circular(18)),
+        borderRadius: BorderRadius.all(Radius.circular(12)),
         borderSide: BorderSide(color: BaseboundColors.blue, width: 2),
       ),
       labelStyle: TextStyle(
@@ -74,7 +74,7 @@ class ParentEditorNote extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     decoration: BoxDecoration(
       color: BaseboundColors.sky,
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(12),
     ),
     padding: const EdgeInsets.all(16),
     child: Row(
@@ -224,50 +224,47 @@ class _ParentEditorScaffoldState extends State<ParentEditorScaffold> {
       body: SafeArea(
         child: SingleChildScrollView(
           key: ValueKey(_stepIndex),
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+          padding: const EdgeInsets.all(24),
           child: Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 640),
-              child: SoftPanel(
-                borderColor: BaseboundColors.border,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    ParentEditorIllustration(art: widget.illustration),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Step ${_stepIndex + 1} of $_stepCount',
+              constraints: const BoxConstraints(maxWidth: 560),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'Step ${_stepIndex + 1} of $_stepCount',
+                    style: const TextStyle(
+                      color: BaseboundColors.muted,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  LinearProgressIndicator(
+                    minHeight: 3,
+                    borderRadius: BorderRadius.circular(4),
+                    value: (_stepIndex + 1) / _stepCount,
+                    color: BaseboundColors.blue,
+                    backgroundColor: BaseboundColors.sky,
+                    semanticsLabel:
+                        'Setup progress: step ${_stepIndex + 1} of $_stepCount',
+                  ),
+                  const SizedBox(height: 24),
+                  Semantics(
+                    header: true,
+                    child: Text(
+                      step.title,
                       style: const TextStyle(
-                        color: BaseboundColors.muted,
-                        fontSize: 16,
+                        color: BaseboundColors.ink,
+                        fontSize: 26,
                         fontWeight: FontWeight.w700,
+                        height: 1.2,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    LinearProgressIndicator(
-                      value: (_stepIndex + 1) / _stepCount,
-                      color: BaseboundColors.blue,
-                      backgroundColor: BaseboundColors.sky,
-                      semanticsLabel:
-                          'Setup progress: step ${_stepIndex + 1} of $_stepCount',
-                    ),
-                    const SizedBox(height: 24),
-                    Semantics(
-                      header: true,
-                      child: Text(
-                        step.title,
-                        style: const TextStyle(
-                          color: BaseboundColors.ink,
-                          fontSize: 26,
-                          fontWeight: FontWeight.w800,
-                          height: 1.2,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    ...step.children,
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 24),
+                  ...step.children,
+                ],
               ),
             ),
           ),
@@ -276,7 +273,7 @@ class _ParentEditorScaffoldState extends State<ParentEditorScaffold> {
       bottomNavigationBar: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -295,15 +292,6 @@ class _ParentEditorScaffoldState extends State<ParentEditorScaffold> {
                 onPressed: actionEnabled
                     ? (_isLastStep ? _save : _advance)
                     : null,
-                style: FilledButton.styleFrom(
-                  backgroundColor: BaseboundColors.blue,
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size(48, 58),
-                  padding: const EdgeInsets.all(18),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
                 icon: _saving
                     ? const SizedBox.square(
                         dimension: 20,

@@ -3,6 +3,7 @@ import 'package:do_bazy/features/mission/mission_audio.dart';
 import 'package:do_bazy/features/mission/mission_choice_card.dart';
 import 'package:do_bazy/features/mission/mission_scene.dart';
 import 'package:do_bazy/features/mission/mission_screen.dart';
+import 'package:do_bazy/ui/basebound_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -47,9 +48,10 @@ void main() {
 
     await _tap(tester, 'Find a place');
     expect(
-      tester.widget<MissionScene>(find.byType(MissionScene)).choices.length,
-      3,
+      tester.widget<MissionScene>(find.byType(MissionScene)).choices,
+      isEmpty,
     );
+    expect(find.byType(MissionChoiceCard), findsNWidgets(3));
     await _tap(tester, 'Go to the window');
     expect(
       find.text('Windows are less safe. Move away from them.'),
@@ -59,9 +61,10 @@ void main() {
     await _tap(tester, 'Move deeper inside');
     await _tap(tester, 'Next step');
     expect(
-      tester.widget<MissionScene>(find.byType(MissionScene)).choices.length,
-      4,
+      tester.widget<MissionScene>(find.byType(MissionScene)).choices,
+      isEmpty,
     );
+    expect(find.byType(MissionChoiceCard), findsNWidgets(4));
     await _tap(tester, 'Inside hallway');
     expect(
       tester.widget<MissionScene>(find.byType(MissionScene)).visual,
@@ -207,6 +210,7 @@ Future<void> _showMission(
 }) async {
   await tester.pumpWidget(
     MaterialApp(
+      theme: BaseboundTheme.training(),
       builder: (context, child) => MediaQuery(
         data: MediaQuery.of(context)
             .copyWith(textScaler: TextScaler.linear(textScale)),
@@ -237,26 +241,35 @@ Future<void> _tap(WidgetTester tester, String label) async {
   }
   await tester.tap(target);
   await tester.pumpAndSettle();
-  _expectSceneChoicesAreUsable(tester);
+  _expectMissionChoicesAreUsable(tester);
 }
 
-// Scene choices must remain attached to the illustration and independently
-// actionable as the journey changes between room, phone and outdoor scenes.
-void _expectSceneChoicesAreUsable(WidgetTester tester) {
+// Choices stay below the illustration, with independent accessible tap targets.
+void _expectMissionChoicesAreUsable(WidgetTester tester) {
   final sceneFinder = find.byType(MissionScene);
   if (sceneFinder.evaluate().isEmpty) return;
   final scene = tester.widget<MissionScene>(sceneFinder);
-  if (scene.selectedChoice != null) return;
-  final bounds = tester.getRect(sceneFinder).inflate(.5);
-  for (final choice in scene.choices) {
+  expect(scene.choices, isEmpty);
+  final bounds = tester.getRect(sceneFinder);
+  for (final card in tester.widgetList<MissionChoiceCard>(
+    find.byType(MissionChoiceCard),
+  )) {
+    final choice = card.choice;
     final target = find.byWidgetPredicate(
       (widget) =>
           widget is Semantics && widget.properties.label == choice.label,
     );
     expect(target, findsOneWidget);
     final rect = tester.getRect(target);
-    expect(bounds.contains(rect.topLeft), isTrue, reason: choice.label);
-    expect(bounds.contains(rect.bottomRight), isTrue, reason: choice.label);
+    // Scrolled content can extend above its clipped action viewport. Compare
+    // the illustration only when the control's top edge is actually visible.
+    if (target.hitTestable(at: Alignment.topCenter).evaluate().isNotEmpty) {
+      expect(
+        rect.top,
+        greaterThanOrEqualTo(bounds.bottom - .5),
+        reason: choice.label,
+      );
+    }
     expect(rect.width, greaterThanOrEqualTo(48), reason: choice.label);
     expect(rect.height, greaterThanOrEqualTo(48), reason: choice.label);
     final semantics = tester.widget<Semantics>(target).properties;
