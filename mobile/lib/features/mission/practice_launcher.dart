@@ -10,29 +10,59 @@ import 'lost_mission_launcher.dart';
 import 'mission_audio.dart';
 import 'mission_screen.dart';
 
-/// Offers fictional decision training and the shared familiar-place map.
-class PracticeLauncher extends StatefulWidget {
+/// Offers a scenario list and the shared familiar-place map as two activities.
+class PracticeLauncher extends StatelessWidget {
   const PracticeLauncher({super.key, this.child = const ChildProfile()});
 
   final ChildProfile child;
 
   @override
-  State<PracticeLauncher> createState() => _PracticeLauncherState();
+  Widget build(BuildContext context) => _PracticeSelectionScreen(
+    child: child,
+    initialSelection: _Selection.activity,
+  );
 }
 
-enum _Selection { activity, mode }
+/// Lists the available fictional training scenarios on a separate route.
+class PracticeScenarioScreen extends StatelessWidget {
+  const PracticeScenarioScreen({super.key, required this.child});
 
-class _PracticeLauncherState extends State<PracticeLauncher>
+  final ChildProfile child;
+
+  @override
+  Widget build(BuildContext context) => _PracticeSelectionScreen(
+    child: child,
+    initialSelection: _Selection.scenario,
+  );
+}
+
+enum _Selection { activity, scenario, mode }
+
+class _PracticeSelectionScreen extends StatefulWidget {
+  const _PracticeSelectionScreen({
+    required this.child,
+    required this.initialSelection,
+  });
+
+  final ChildProfile child;
+  final _Selection initialSelection;
+
+  @override
+  State<_PracticeSelectionScreen> createState() =>
+      _PracticeSelectionScreenState();
+}
+
+class _PracticeSelectionScreenState extends State<_PracticeSelectionScreen>
     with WidgetsBindingObserver {
   MissionAudio _audio = MissionAudio();
-  _Selection _selection = _Selection.activity;
+  late _Selection _selection = widget.initialSelection;
   bool _audioAvailable = true;
   bool _opening = false;
   int _audioRevision = 0;
 
   String get _instruction => switch (_selection) {
-    _Selection.activity =>
-      'Choose your practice. An alarm, being lost, or our map.',
+    _Selection.activity => 'Choose an activity. Practices, or our map.',
+    _Selection.scenario => 'Choose a scenario. An alarm, or being lost.',
     _Selection.mode => 'Choose where to practice. At home, or outside.',
   };
 
@@ -62,6 +92,15 @@ class _PracticeLauncherState extends State<PracticeLauncher>
     _speak();
   }
 
+  void _back() {
+    if (_opening) return;
+    if (_selection == _Selection.mode) {
+      _select(_Selection.scenario);
+      return;
+    }
+    Navigator.of(context).pop();
+  }
+
   void _openMission(MissionMode mode) => _open(
     MissionScreen(mode: mode, gender: widget.child.gender ?? ChildGender.girl),
   );
@@ -72,13 +111,15 @@ class _PracticeLauncherState extends State<PracticeLauncher>
     _audioRevision++;
     await _audio.dispose();
     if (!mounted) return;
-    await Navigator.of(context)
-        .push(MaterialPageRoute<void>(builder: (_) => screen));
+    final route = MaterialPageRoute<void>(builder: (_) => screen);
+    await Navigator.of(context).push(route);
+    // Native audio is shared; wait for the leaving screen to release it.
+    await route.completed;
     if (!mounted) return;
     _audio = MissionAudio();
     setState(() {
       _opening = false;
-      _selection = _Selection.activity;
+      _selection = widget.initialSelection;
     });
     _speak();
   }
@@ -104,80 +145,94 @@ class _PracticeLauncherState extends State<PracticeLauncher>
   @override
   Widget build(BuildContext context) {
     final title = switch (_selection) {
-      _Selection.activity => 'Choose practice',
+      _Selection.activity => 'Choose an activity',
+      _Selection.scenario => 'Choose a scenario',
       _Selection.mode => 'Where shall we practice?',
     };
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        leading: Navigator.canPop(context) ? const BaseboundBackButton() : null,
-        title: const Text('Practice only'),
-      ),
-      body: SafeArea(
-        child: IllustratedBackdrop(
-          warm: true,
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 480),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    if (widget.child.fullName.trim().isNotEmpty) ...[
-                      Text(
-                        'Hi, ${widget.child.fullName}!',
-                        style: const TextStyle(
-                          color: BaseboundColors.muted,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                    ],
-                    _PracticeHeading(
-                      title: title,
-                      instruction: _selection == _Selection.activity
-                          ? 'Pick one activity to start.'
-                          : 'Choose a scene for alarm practice.',
-                    ),
-                    const SizedBox(height: 24),
-                    ..._choices(),
-                    const SizedBox(height: 8),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: TextButton.icon(
-                        onPressed: _opening ? null : _speak,
-                        icon: const BaseboundIcon(
-                          BaseboundIconName.speaker,
-                          size: 24,
-                        ),
-                        label: const Text('Replay audio'),
-                      ),
-                    ),
-                    if (!_audioAvailable)
-                      const Padding(
-                        padding: EdgeInsets.only(top: 12),
-                        child: SoftPanel(
-                          child: Text(
-                            'Voice is unavailable. Ask an adult to help. '
-                            'An offline English voice is needed for spoken practice.',
-                            style: TextStyle(color: BaseboundColors.muted),
+    return PopScope(
+      canPop: !_opening && _selection != _Selection.mode,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _back();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          leading: Navigator.canPop(context) || _selection == _Selection.mode
+              ? BaseboundBackButton(enabled: !_opening, onPressed: _back)
+              : null,
+          title: Text(
+            _selection == _Selection.activity ? 'Safe Path' : 'Practice only',
+          ),
+        ),
+        body: SafeArea(
+          child: IllustratedBackdrop(
+            warm: true,
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 480),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (widget.child.fullName.trim().isNotEmpty) ...[
+                        Text(
+                          'Hi, ${widget.child.fullName}!',
+                          style: const TextStyle(
+                            color: BaseboundColors.muted,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
+                        const SizedBox(height: 12),
+                      ],
+                      _PracticeHeading(
+                        title: title,
+                        instruction: switch (_selection) {
+                          _Selection.activity => 'Pick one activity to start.',
+                          _Selection.scenario => 'Pick a story to practice.',
+                          _Selection.mode =>
+                            'Choose a scene for alarm practice.',
+                        },
                       ),
-                    if (_selection != _Selection.activity)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8),
+                      const SizedBox(height: 24),
+                      ..._choices(),
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.centerLeft,
                         child: TextButton.icon(
-                          onPressed: _opening
-                              ? null
-                              : () => _select(_Selection.activity),
-                          icon: const BaseboundIcon(BaseboundIconName.back),
-                          label: const Text('Choose practice'),
+                          onPressed: _opening ? null : _speak,
+                          icon: const BaseboundIcon(
+                            BaseboundIconName.speaker,
+                            size: 24,
+                          ),
+                          label: const Text('Replay audio'),
                         ),
                       ),
-                  ],
+                      if (!_audioAvailable)
+                        const Padding(
+                          padding: EdgeInsets.only(top: 12),
+                          child: SoftPanel(
+                            child: Text(
+                              'Voice is unavailable. Ask an adult to help. '
+                              'An offline English voice is needed for spoken practice.',
+                              style: TextStyle(color: BaseboundColors.muted),
+                            ),
+                          ),
+                        ),
+                      if (_selection == _Selection.mode)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: TextButton.icon(
+                            onPressed: _opening
+                                ? null
+                                : () => _select(_Selection.scenario),
+                            icon: const BaseboundIcon(BaseboundIconName.back),
+                            label: const Text('Choose a scenario'),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -190,6 +245,18 @@ class _PracticeLauncherState extends State<PracticeLauncher>
   List<Widget> _choices() => switch (_selection) {
     _Selection.activity => [
       _choice(
+        'Practices',
+        BaseboundIconName.child,
+        () => _open(PracticeScenarioScreen(child: widget.child)),
+      ),
+      _choice(
+        'Our map',
+        BaseboundIconName.map,
+        () => _open(const GameLauncher()),
+      ),
+    ],
+    _Selection.scenario => [
+      _choice(
         'Alarm practice',
         BaseboundIconName.alarm,
         () => _select(_Selection.mode),
@@ -198,11 +265,6 @@ class _PracticeLauncherState extends State<PracticeLauncher>
         "I'm lost practice",
         BaseboundIconName.lost,
         () => _open(LostMissionLauncher(child: widget.child)),
-      ),
-      _choice(
-        'Our map',
-        BaseboundIconName.map,
-        () => _open(const GameLauncher()),
       ),
     ],
     _Selection.mode => [

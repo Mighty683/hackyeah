@@ -1,6 +1,7 @@
 import 'package:do_bazy/features/mission/mission_scene.dart';
 import 'package:do_bazy/features/mission/mission_screen.dart';
 import 'package:do_bazy/features/mission/practice_launcher.dart';
+import 'package:do_bazy/ui/basebound_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,7 +10,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets(
-    '7+ launcher opens home mission directly and returns to practice',
+    'activities open a scenario list and home mission returns to that list',
     (tester) async {
       const channel = MethodChannel('basebound/mission_audio');
       final audioCalls = <MethodCall>[];
@@ -25,11 +26,26 @@ void main() {
 
       await tester.pumpWidget(const MaterialApp(home: PracticeLauncher()));
       await tester.pumpAndSettle();
-      expect(find.text('Choose practice'), findsOneWidget);
+      expect(find.text('Choose an activity'), findsOneWidget);
+      expect(find.byType(BaseboundActionTile), findsNWidgets(2));
+      expect(find.text('Practices'), findsOneWidget);
+      expect(find.text('Our map'), findsOneWidget);
+      expect(find.text('Alarm practice'), findsNothing);
+      expect(find.text("I'm lost practice"), findsNothing);
+      await _tap(tester, 'Practices');
+      expect(find.byType(PracticeScenarioScreen), findsOneWidget);
+      expect(find.text('Choose a scenario'), findsOneWidget);
+      expect(find.byType(BaseboundActionTile), findsNWidgets(2));
+      expect(find.text('Our map'), findsNothing);
       await _tap(tester, 'Alarm practice');
       expect(find.text('Where shall we practice?'), findsOneWidget);
       expect(find.text('At home'), findsOneWidget);
       expect(find.text('Outside'), findsOneWidget);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.text('Choose a scenario'), findsOneWidget);
+      expect(find.text('Alarm practice'), findsOneWidget);
+      await _tap(tester, 'Alarm practice');
       await _tap(tester, 'At home');
       expect(find.byType(MissionScreen), findsOneWidget);
       expect(find.text('An alarm at home'), findsOneWidget);
@@ -54,13 +70,27 @@ void main() {
       await tester.tap(find.byTooltip('Leave practice'));
       await tester.pumpAndSettle();
       expect(find.byType(MissionScreen), findsNothing);
-      expect(find.text('Choose practice'), findsOneWidget);
+      expect(find.text('Choose a scenario'), findsOneWidget);
       expect(find.text('Alarm practice'), findsOneWidget);
-      expect(find.text('Our map'), findsOneWidget);
+      expect(find.text('Our map'), findsNothing);
       expect(find.text('Landmark practice'), findsNothing);
       expect(find.text('Map practice'), findsNothing);
-      expect(audioCalls.where((call) => call.method == 'dispose').length, 2);
+      expect(audioCalls.where((call) => call.method == 'dispose').length, 3);
       expect(audioCalls.last.method, 'narrate');
+      expect(
+        (audioCalls.last.arguments as Map)['text'],
+        contains('Choose a scenario'),
+      );
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      expect(find.byType(PracticeScenarioScreen), findsNothing);
+      expect(find.text('Choose an activity'), findsOneWidget);
+      expect(find.text('Practices'), findsOneWidget);
+      expect(find.text('Our map'), findsOneWidget);
+      expect(
+        (audioCalls.last.arguments as Map)['text'],
+        contains('Choose an activity'),
+      );
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump();

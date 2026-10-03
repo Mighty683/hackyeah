@@ -120,7 +120,7 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
     ++_audioRevision;
     await _audio.dispose();
     if (!mounted) return;
-    // Keep one route so leaving practice returns directly to the activity list.
+    // Keep one route so leaving practice returns directly to the scenario list.
     setState(() => _variant = variant);
   }
 

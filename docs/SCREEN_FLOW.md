@@ -106,13 +106,16 @@ flowchart TD
     W -->|I'm a child| ON["CHILD ONBOARDING: NAME<br/>Name or nickname; saved details prefilled"]
     ON -->|Add my age| OA["CHILD ONBOARDING: AGE<br/>Enter age 1–99"]
     OA -->|Choose my character| OG["CHILD ONBOARDING: GENDER<br/>Girl or boy with character previews"]
-    OG -->|Start practice: save encrypted local details| PS["PRACTICE SELECTION<br/>Alarm, lost or Our map"]
+    OG -->|Start practice: save encrypted local details| PS["ACTIVITY SELECTION<br/>Practices or Our map"]
     OG -->|Save failed: retain edits and retry| OG
     OA -->|Back| ON
     OG -->|Back| OA
     ON -->|Back| W
     PS -->|Our map| F
-    PS -->|Alarm practice: ages 7+| MODE["CHOOSE SCENE<br/>At home or outside"]
+    PS -->|Practices| SC["PRACTICE SCENARIOS<br/>Alarm practice or I’m lost practice"]
+    SC -->|Back| PS
+    SC -->|Alarm practice: ages 7+| MODE["CHOOSE SCENE<br/>At home or outside"]
+    MODE -->|Back or Choose a scenario| SC
     MODE -->|At home| HOME["HOME ALARM TUTORIAL"]
     MODE -->|Outside| OUT["OUTDOOR ALARM SIMULATION"]
     HOME --> MR["MISSION RECALL<br/>Completion sticker; no score"]
@@ -120,9 +123,9 @@ flowchart TD
     MR -->|Replay| RE{"Selected mission mode"}
     RE -->|Home| HOME
     RE -->|Outside| OUT
-    HOME -->|Back| PS
-    OUT -->|Back| PS
-    MR -->|Choose practice| PS
+    HOME -->|Back| SC
+    OUT -->|Back| SC
+    MR -->|Back to practice choices| SC
     subgraph LOST["MISSION 02: FICTIONAL LOST PRACTICE, AGES 7+"]
         LL["LOAD PRACTICE FAMILY<br/>Read current encrypted record; display-only snapshot"]
         LE["READ ERROR<br/>Retry or explicitly use pretend family; preserve record"]
@@ -164,9 +167,9 @@ flowchart TD
         LRC --> LF
         LF -->|Play again: retain variant and display snapshot| LS
     end
-    PS -->|I'm lost practice; ages 7+| LL
-    LOST -->|Back or exit: stop narration| PS
-    LF -->|Back to practice choices| PS
+    SC -->|I'm lost practice; ages 7+| LL
+    LOST -->|Back or exit: stop narration| SC
+    LF -->|Back to practice choices| SC
     PS -->|Back| B
     A -->|Add child details| CN
     A -->|Skip child details| CT
@@ -266,8 +269,9 @@ flowchart TD
 | --- | --- | --- |
 | Welcome | Choose child or adult | Help prototype, without choosing a role |
 | Child onboarding | Enter name or nickname, age, then select girl or boy | Back keeps edits; load/save errors allow retry; saved details are prefilled |
-| Practice selection | Choose alarm, lost or Our map | Replay audio, back |
-| Mission mode (7+) | Choose home or outside | Replay audio, choose practice |
+| Activity selection | Choose Practices or Our map | Replay audio, back |
+| Practice scenarios | Choose alarm or lost practice | Replay audio, back to activities |
+| Mission mode (7+) | Choose home or outside | Replay audio, back to scenarios |
 | Mission scene | Tap a highlighted scene object to choose an action, or hear the situation | Replay audio, back |
 | Mission feedback | See the consequence and explanation | Retry the same decision or advance; replay audio |
 | Mission recall | See the six learned actions and completion sticker | Replay audio, replay mission, choose practice |
@@ -320,19 +324,19 @@ The new 7+ activity has two explicit variants: the agreed meeting point is visib
 
 Parent setup can save a practice Fountain or Information desk illustration and optional label within the existing safe-places stage. This field is independent of geographic pins. The same registry supplies setup, reminder and recognition art; it is not a photograph or a safety assessment. Contacts contribute display labels/avatar motifs only. Calls, replies and notifications are simulated; the mission never receives real phone numbers, addresses or map coordinates. Missing details use labelled fixtures, and an unknown landmark ID becomes Pretend fountain. Failed record reads require retry or explicit fictional practice and never overwrite the record.
 
-The lost selector and mission reuse offline English Android speech. Missing voice offers adult help and retry, with text retained. Leaving stops narration and returns directly to the activity list; replay resets transient progress and keeps the selected variant/snapshot. Re-entering lost practice reloads current saved details. Training is labelled unreviewed and not for real emergencies. Meeting-point/contact photos, younger-child support, familiar routes and actual parent notifications remain future work for Mission 02. See [MISSION_02_IMPLEMENTATION_PLAN.md](MISSION_02_IMPLEMENTATION_PLAN.md) for scope, references and verification.
+The lost selector and mission reuse offline English Android speech. Missing voice offers adult help and retry, with text retained. Leaving stops narration and returns directly to the scenario list; replay resets transient progress and keeps the selected variant/snapshot. Re-entering lost practice reloads current saved details. Training is labelled unreviewed and not for real emergencies. Meeting-point/contact photos, younger-child support, familiar routes and actual parent notifications remain future work for Mission 02. See [MISSION_02_IMPLEMENTATION_PLAN.md](MISSION_02_IMPLEMENTATION_PLAN.md) for scope, references and verification.
 
 ### Visual design system
 
 The implemented screens follow [UI_GUIDELINES.md](UI_GUIDELINES.md): warm neutral backgrounds, slate Nunito text, one muted blue action accent, flat white panels and consistent 12-pixel control corners. Shared action tiles use small icons and left-aligned labels. Equivalent choices stay neutral until selected; feedback adds a symbol and explanation. No control uses a decorative gradient, glow or raised game-button treatment.
 
-Welcome, child onboarding and practice selection use clear headings and calm choices. Maps and landmark photos remain the main content of their screens, with compact controls and preserved attribution. Adult onboarding uses a field-first layout with one detail per step, a compact progress indicator and a single save/next action. Help retains its separate cool theme, no training mascot and a visible prototype notice.
+Welcome, child onboarding, activity selection and practice scenarios use clear headings and calm choices. The first child activity screen has two choices: **Practices** opens a separate scenario list; **Our map** opens the familiar-place map. Alarm and lost practice return to the scenario list, whose back action returns to activities. Maps and landmark photos remain the main content of their screens, with compact controls and preserved attribution. Adult onboarding uses a field-first layout with one detail per step, a compact progress indicator and a single save/next action. Help retains its separate cool theme, no training mascot and a visible prototype notice.
 
 Mission 01 uses portrait environment backgrounds and a separate character layer. Decision targets highlight the pictured windows, doors, rooms and destinations, with readable captions and native labelled tap controls. Abstract actions and fictional contacts use separate illustrated targets within the scene. Mission 02 places selectable people, landmarks and action objects in its fictional square. Equivalent targets use the same neutral highlight before selection; feedback supplies the outcome colour and symbol. Training and adult-setup icons retain their original colours.
 
 Narration and feedback stay outside the scene; next/retry actions remain below it. Narrow and large-text layouts allow scenes to grow or scroll while retaining at least 48-pixel touch targets. The hallway and two-wall explanation stays visible. Completion keeps replay and exit actions available. Narration, decisions, consequences, explanations and return paths are preserved.
 
-This work changes presentation only. Neither the implemented graph nor the future graph changes, and no new mission content or real emergency assistance is introduced. Earlier verification records in [UI_IMPLEMENTATION_PLAN.md](UI_IMPLEMENTATION_PLAN.md) are historical; the current pass has its own integration checks.
+The current activity split adds a separate scenario-list route to the implemented graph. Mission content and the future graph remain unchanged. Earlier verification records in [UI_IMPLEMENTATION_PLAN.md](UI_IMPLEMENTATION_PLAN.md) are historical; the current pass has its own integration checks.
 
 ### Child map interaction
 
