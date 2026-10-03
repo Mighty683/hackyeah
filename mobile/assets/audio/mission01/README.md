@@ -48,3 +48,22 @@ activity stops audio; disposing the screen releases text-to-speech resources.
 Network-required voices and voices marked not installed are rejected. Android
 voice availability remains device-dependent; prepare an offline English voice
 before a child-facing demo.
+
+## Original interaction sounds
+
+`MissionCueAudio.kt` synthesizes four short mono cues locally at 22.05 kHz:
+
+| Cue | Sound | Duration |
+| --- | --- | --- |
+| `select` | Single soft tone | 150 ms |
+| `action` | Gentle descending tone for getting low | 420 ms |
+| `success` | Two warm ascending notes | 470 ms |
+| `retry` | Two neutral repeated notes | 380 ms |
+
+These are project-created interaction sounds, not official signals or real
+emergency recordings. They use sine tones, a quiet second harmonic, smooth
+onset and release, and reduced playback volume. They require no downloaded
+assets, network connection, third-party attribution, or installed speech voice.
+The `playCue` Dart method plays through the existing narration channel with an
+empty spoken instruction, preserving cancellation and activity lifecycle
+handling. Feedback remains visible in text and symbols when audio is muted.

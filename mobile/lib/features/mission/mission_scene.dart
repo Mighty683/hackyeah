@@ -6,6 +6,7 @@ import '../parent/data/family_plan.dart';
 import '../../ui/basebound_ui.dart';
 import 'air_raid_mission.dart';
 import 'mission_choice_card.dart';
+import 'mission_outdoor_action_scene.dart';
 import 'mission_scene_layout.dart';
 
 bool missionUsesSceneChoices(MissionVisual visual) => switch (visual) {
@@ -48,6 +49,26 @@ class MissionScene extends StatelessWidget {
       visual == MissionVisual.twoWalls ? null : stepId,
       visual,
     );
+    if (stepId == 'outdoor_noise' ||
+        stepId == 'outdoor_recover' ||
+        visual == MissionVisual.getDown ||
+        visual == MissionVisual.protectHead) {
+      return MissionOutdoorActionScene(
+        visual: visual,
+        stepId: stepId,
+        gender: gender,
+        choices: choices,
+        selectedChoice: selectedChoice,
+        rejectedChoiceIds: rejectedChoiceIds,
+        onChoose: onChoose,
+        backdrop: _PortraitBackdrop(
+          layout: layout,
+          visual: visual,
+          fit: BoxFit.cover,
+          alignment: Alignment.topCenter,
+        ),
+      );
+    }
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: AspectRatio(
@@ -137,7 +158,9 @@ class MissionScene extends StatelessWidget {
     BoxConstraints constraints,
     MissionSceneLayout layout,
   ) {
-    final destination = selectedChoice?.isCorrect == true
+    final destination =
+        selectedChoice?.isCorrect == true ||
+            selectedChoice?.continuesAfterFeedback == true
         ? layout.destinations[selectedChoice?.id]
         : null;
     final feet = destination ?? layout.childFeet;
@@ -168,10 +191,17 @@ class MissionScene extends StatelessWidget {
 }
 
 class _PortraitBackdrop extends StatelessWidget {
-  const _PortraitBackdrop({required this.layout, required this.visual});
+  const _PortraitBackdrop({
+    required this.layout,
+    required this.visual,
+    this.fit = BoxFit.contain,
+    this.alignment = Alignment.center,
+  });
 
   final MissionSceneLayout layout;
   final MissionVisual visual;
+  final BoxFit fit;
+  final Alignment alignment;
 
   @override
   Widget build(BuildContext context) {
@@ -183,7 +213,8 @@ class _PortraitBackdrop extends StatelessWidget {
           ? fallback
           : Image.asset(
               layout.asset!,
-              fit: BoxFit.contain,
+              fit: fit,
+              alignment: alignment,
               excludeFromSemantics: true,
               errorBuilder: (_, _, _) => fallback,
             ),
@@ -313,6 +344,10 @@ ChildPoseName _characterPose(
 }
 
 String _sceneDescription(MissionVisual visual, MissionChoice? choice) {
+  if (visual == MissionVisual.street &&
+      choice?.continuesAfterFeedback == true) {
+    return 'The child has started along the street and is still outside.';
+  }
   if (choice?.isCorrect == false) choice = null;
   if (choice?.icon == MissionActionIcon.window) {
     return 'The child has moved toward the window.';
@@ -374,7 +409,7 @@ class _PortraitScenePainter extends CustomPainter {
         _phone(canvas);
       case MissionVisual.getDown:
       case MissionVisual.protectHead:
-        _bodyPractice(canvas);
+        _street(canvas);
       case MissionVisual.twoWalls:
         _walls(canvas);
       case MissionVisual.sheltered:
@@ -949,59 +984,6 @@ class _PortraitScenePainter extends CustomPainter {
       BaseboundIconName.park,
       const Rect.fromLTWH(325, 405, 60, 80),
       color: BaseboundColors.green,
-    );
-  }
-
-  void _bodyPractice(Canvas canvas) {
-    _panel(
-      canvas,
-      const Rect.fromLTWH(0, 0, 400, 600),
-      BaseboundColors.sky,
-      radius: 0,
-    );
-    _panel(
-      canvas,
-      const Rect.fromLTWH(0, 314, 400, 286),
-      BaseboundColors.peach,
-      radius: 0,
-    );
-    _outlinedPanel(
-      canvas,
-      const Rect.fromLTWH(266, 92, 110, 168),
-      color: Colors.white,
-      radius: 2,
-    );
-    _line(
-      canvas,
-      const Offset(258, 89),
-      const Offset(384, 89),
-      color: BaseboundColors.muted,
-      width: 4,
-    );
-    _outlinedPanel(
-      canvas,
-      const Rect.fromLTWH(307, 177, 38, 83),
-      color: BaseboundColors.peach,
-      radius: 1,
-    );
-    _outlinedPanel(
-      canvas,
-      const Rect.fromLTWH(284, 118, 32, 33),
-      color: BaseboundColors.sky,
-      radius: 1,
-    );
-    _outlinedPanel(
-      canvas,
-      const Rect.fromLTWH(330, 118, 32, 33),
-      color: BaseboundColors.sky,
-      radius: 1,
-    );
-    _line(
-      canvas,
-      const Offset(28, 539),
-      const Offset(372, 539),
-      color: BaseboundColors.border,
-      width: 2,
     );
   }
 

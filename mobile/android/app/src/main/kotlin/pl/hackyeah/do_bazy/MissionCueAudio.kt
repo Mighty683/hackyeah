@@ -7,22 +7,20 @@ import android.media.AudioTrack
 import android.os.Handler
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
 
-/** Plays short, quiet excerpts; the official source WAV files remain unchanged. */
+/** Quiet teaching excerpts and original, gently enveloped interaction tones. */
 class MissionCueAudio(private val context: Context) {
+    private data class Cue(val samples: ShortArray, val sampleRate: Int, val volume: Float)
+
     private var track: AudioTrack? = null
     private var playbackGeneration = 0
 
     fun play(name: String, handler: Handler, onComplete: () -> Unit) {
         stop()
-        val (offset, duration) = when (name) {
-            "alarm" -> 6000 to 4000
-            "all_clear" -> 2000 to 3000
-            "noise" -> 0 to 1000
-            else -> throw IllegalArgumentException("Unknown training cue")
-        }
-        val wav = context.assets.open("flutter_assets/assets/audio/mission01/$name.wav").use { it.readBytes() }
-        val (samples, sampleRate) = decodeExcerpt(wav, offset, duration)
+        val (samples, sampleRate, volume) = createCue(name)
         val audio = AudioTrack.Builder()
             .setAudioAttributes(AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA)
                 .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build())
@@ -33,12 +31,61 @@ class MissionCueAudio(private val context: Context) {
             .setTransferMode(AudioTrack.MODE_STATIC).build()
         track = audio
         require(audio.write(samples, 0, samples.size) == samples.size) { "Cue write failed" }
-        audio.setVolume(if (name == "noise") 0.7f else 0.10f)
+        audio.setVolume(volume)
         val token = playbackGeneration
         audio.play()
         handler.postDelayed({
             if (token == playbackGeneration) { stop(); onComplete() }
         }, samples.size * 1000L / sampleRate + 100)
+    }
+
+    private fun createCue(name: String): Cue {
+        val tones = when (name) {
+            "select" -> listOf(Tone(0, 150, 520.0))
+            "action" -> listOf(Tone(0, 420, 620.0, 280.0))
+            "success" -> listOf(Tone(0, 180, 523.25), Tone(150, 320, 659.25))
+            "retry" -> listOf(Tone(0, 160, 392.0), Tone(200, 180, 392.0))
+            else -> null
+        }
+        if (tones != null) return synthesize(tones)
+        val (offset, duration) = when (name) {
+            "alarm" -> 6000 to 4000
+            "all_clear" -> 2000 to 3000
+            "noise" -> 0 to 1000
+            else -> throw IllegalArgumentException("Unknown training cue")
+        }
+        val wav = context.assets.open("flutter_assets/assets/audio/mission01/$name.wav").use { it.readBytes() }
+        val (samples, sampleRate) = decodeExcerpt(wav, offset, duration)
+        return Cue(samples, sampleRate, if (name == "noise") 0.7f else 0.10f)
+    }
+
+    private data class Tone(
+        val startMs: Int,
+        val durationMs: Int,
+        val frequency: Double,
+        val endFrequency: Double = frequency,
+    )
+
+    /** Smooth starts and endings avoid clicks; no warning-like buzz or sharp attack. */
+    private fun synthesize(tones: List<Tone>): Cue {
+        val sampleRate = 22050
+        val durationMs = tones.maxOf { it.startMs + it.durationMs }
+        val mixed = DoubleArray(sampleRate * durationMs / 1000)
+        tones.forEach { tone ->
+            val start = sampleRate * tone.startMs / 1000
+            val count = sampleRate * tone.durationMs / 1000
+            val duration = tone.durationMs / 1000.0
+            for (i in 0 until count) {
+                val seconds = i.toDouble() / sampleRate
+                val progress = i.toDouble() / (count - 1)
+                val envelope = (1.0 - cos(2.0 * PI * progress)) / 2.0
+                val phase = 2.0 * PI * (tone.frequency * seconds +
+                    (tone.endFrequency - tone.frequency) * seconds * seconds / (2.0 * duration))
+                mixed[start + i] += (sin(phase) + 0.12 * sin(2.0 * phase)) * envelope * 0.22
+            }
+        }
+        val samples = ShortArray(mixed.size) { (mixed[it].coerceIn(-1.0, 1.0) * 32767).toInt().toShort() }
+        return Cue(samples, sampleRate, 0.4f)
     }
 
     fun stop() {

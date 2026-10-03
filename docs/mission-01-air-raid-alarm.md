@@ -289,25 +289,20 @@ The scenario tests whether the child prefers a nearby solid shelter over remaini
 
 ## Outdoor Loud-Noise Branch
 
-If the child is still outside when a loud explosion-like sound is heard:
+The branch follows the destination the child just selected. Home and school are too far away; the open park and bus stop offer little protection in this fictional scene. Feedback explains that the child is still outside, then automatically opens a short story beat after narration and a reading pause:
 
-The game asks for a physical action.
+> “You start towards home. Before you get there, you hear a loud noise.”
 
-The child should:
+School, park and bus-stop choices have their own matching narration. A restrained sound cue accompanies this interruption. Do not use realistic explosions or jump scares.
 
-1. Get down.
-2. Protect their head.
+**Choose what to do** opens the physical-action decision. Keep the same street setting and show recognizable poses as equivalent choices:
 
-Use gesture-based interaction where possible.
+1. **Get down:** drag downward when the scene fits, or tap the pictured pose. “Keep standing” receives calm feedback and is disabled; the child can choose the other pose immediately.
+2. **Cover your head:** tap the pictured pose. “Keep hands down” receives calm feedback and is disabled; the child can choose the other pose immediately.
+3. **Stay down:** correct head-covering feedback advances automatically into a separate “An adult helps you” story beat, which explains that a trusted adult helps the child reach shelter when it is possible in the story.
+4. **Follow the adult:** show arrival inside the practice shelter before asking the child to tell a trusted adult.
 
-Example:
-
-- drag the character downward,
-- tap the head-protection icon.
-
-Voice:
-
-> “Get down and protect your head.”
+Selecting the nearby practice shelter goes directly to the arrival scene and skips the outdoor recovery. Replay starts a fresh story, without retaining the previous destination.
 
 ---
 
@@ -358,17 +353,21 @@ Implemented in three parallel areas, integrated through a shared mission-state c
 
 1. **Scenario logic:** home scenes, two to four choices, immediate dinosaur feedback, rejected-choice retry in place, automatic advancement after correct feedback, and focused flow checks.
 2. **Visual experience:** illustrated rooms/street, movement only after correct choices, grey disabled targets for wrong choices, two-wall diagram, fictional family avatars and messages, recall and completion sticker.
-3. **Offline audio:** Android embedded English speech, replay and cancellation, official alarm/all-clear playback excerpts, and a restrained environmental sound.
+3. **Offline audio:** Android embedded English speech, replay and cancellation, official alarm/all-clear playback excerpts, a restrained environmental sound, and gentle interaction feedback.
 
 Integration adds narrated practice selection beside the existing map game. Both child entry and parent “Play together” lead to the same 7+ MVP: choose alarm practice, then home or outside. There is no age-selection screen or younger-child implementation; saved age does not change the mission. No age verification is claimed. Screen-flow documentation records the implemented mission separately from future missions and reviewed emergency assistance.
 
 The home scene explicitly assumes the agreed shelter cannot be reached. An internal room and two walls are a fallback, not a verified shelter or guarantee of safety. “I am away from windows” replaces the example message’s unconditional safety claim. Outdoor destinations are fictional; the nearby building represents a practice shelter. Five possible destinations are split across two decisions to keep each screen at four choices or fewer. Saved trusted contacts are read locally only for the pretend keypad's number matching and optional hints. No real messages or calls are made, no typed digits are persisted, and no saved practice pins are used. All message feedback and replies remain simulated.
 
-Wrong destination taps keep the child in the same position and grey out that target. The dinosaur explains the wrong path below the scene, and another destination can be selected immediately. Correct decisions automatically advance after narration and a minimum three-second reading pause. The optional outdoor recovery sequence described in the scenario above is no longer reached from a wrong destination; the current interaction asks the child to choose another path instead.
+Home and physical-action mistakes keep the child in place, grey out the rejected target, and allow another choice immediately. Outdoor destination consequences instead lead into the guided recovery story, showing only partial progress along the street. Accepted choices and these story consequences advance after narration and a minimum three-second reading pause.
 
 Narration requires an installed offline English Android voice. If missing or playback fails, the app asks for adult help and retains text as a fallback; this device state does not satisfy independent play without reading. Alarm/all-clear sounds are short teaching excerpts from original Polish recordings, not the complete official-duration signal. Asset attribution and licensing are in `mobile/assets/audio/mission01/README.md`.
 
-## MVP verification — 2026-10-03
+Sound effects have a separate mute control that leaves spoken instructions and replay available. Selection cues mark outdoor destination choices; soft action cues accompany getting down and covering the head; success and retry cues support other feedback without replacing its words. Cues can play without an installed voice, but the adult-help fallback still applies. All playback stops on backgrounding or exit.
+
+## Initial MVP verification — 2026-10-03
+
+These results describe the initial MVP, before the outdoor-story and sound-effects revision. Current verification is reported with that revision.
 
 - Flutter analysis: no issues.
 - Nine focused tests passed: five scenario-flow tests, three mission-screen tests, and one launcher test confirming direct 7+ mode selection and return navigation.
