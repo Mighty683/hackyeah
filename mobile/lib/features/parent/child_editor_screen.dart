@@ -46,6 +46,7 @@ class _ChildEditorScreenState extends State<ChildEditorScreen> {
       age: int.tryParse(_age.text),
       address: _address.text.trim(),
       supportNotes: _notes.text.trim(),
+      gender: widget.child.gender,
     ),
   );
 

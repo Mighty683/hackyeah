@@ -1,4 +1,4 @@
-# Basebound visual design and parallel implementation plan
+# Safe Path visual design and parallel implementation plan
 
 The Android demo uses the supplied alarm-training image as its visual reference: warm illustrated rooms, navy rounded text, large white cards, blue audio controls and a friendly green guide. This work upgrades appearance across the existing screens. Game content, narration, decisions, navigation, storage and phone behavior remain the existing demo.
 

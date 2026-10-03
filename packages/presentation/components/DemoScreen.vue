@@ -53,7 +53,7 @@ function answerEmergency(answer: string) {
 <template>
   <div class="demo-screen" :class="{ 'help-screen': isEmergency }">
     <header class="demo-header">
-      <button class="brand" @click="go(1)"><span class="brand-icon">⌂</span> BASEBOUND<span class="brand-dot">●</span></button>
+      <button class="brand" @click="go(1)"><span class="brand-icon">⌂</span> SAFE PATH<span class="brand-dot">●</span></button>
       <nav class="mode-nav" aria-label="Demo modes"><button :class="{ active: !isEmergency }" @click="go(1)">Adventure</button><button :class="{ active: isEmergency }" @click="go(7)">I need help</button></nav>
       <span class="prototype-label">{{ isEmergency ? 'EMERGENCY MODE PROTOTYPE' : 'GAME DEMO' }}</span>
     </header>
@@ -111,6 +111,6 @@ function answerEmergency(answer: string) {
       <div class="plan-layout"><div class="plan-main"><div class="family-contact"><span>👩</span><div><small>YOUR CONTACT</small><h2>Mom</h2><p>A parent adds the number and photo.</p></div><button class="primary" @click="feedback = 'Demo only: no call was made.'">Contact</button></div><div class="meeting-card"><span>⌂</span><div><small>AGREED MEETING POINT</small><h2>At the library entrance</h2><p>An example place agreed on with a parent in advance.</p></div></div><div class="prototype-info">In the full app, guidance depends on the situation and a reviewed scenario. This screen shows an example family plan.</div><div v-if="feedback" class="feedback">{{ feedback }}</div></div><aside class="needs-card"><h2>How are you feeling?</h2><p>Example questions about your needs.</p><button @click="feedback = 'Demo selection: I need water.'">💧 I need water</button><button @click="feedback = 'Demo selection: I feel cold.'">🧥 I feel cold</button><button @click="feedback = 'Demo selection: I feel hungry.'">🍎 I need something to eat</button><button class="text-button" @click="go(1)">Back to the game →</button></aside></div>
     </main>
 
-    <footer class="demo-footer"><span>{{ isEmergency ? 'Example data · contact and navigation are simulated' : 'BASEBOUND · learn the places, remember the way' }}</span><div><button @click="go(1)">Start</button><span>{{ screens.indexOf(screen) + 1 }} / 8</span></div></footer>
+    <footer class="demo-footer"><span>{{ isEmergency ? 'Example data · contact and navigation are simulated' : 'SAFE PATH · learn the places, remember the way' }}</span><div><button @click="go(1)">Start</button><span>{{ screens.indexOf(screen) + 1 }} / 8</span></div></footer>
   </div>
 </template>

@@ -12,10 +12,17 @@ import '../help/help_screen.dart';
 import '../parent/data/family_plan.dart';
 
 class GameScreen extends StatefulWidget {
-  const GameScreen({this.destination, this.onNewGame, super.key});
+  const GameScreen({
+    this.destination,
+    this.onNewGame,
+    super.key,
+    this.gender = ChildGender.girl,
+  });
 
   final SafePoint? destination;
   final VoidCallback? onNewGame;
+
+  final ChildGender gender;
 
   @override
   State<GameScreen> createState() => _GameScreenState();
@@ -61,6 +68,7 @@ class _GameScreenState extends State<GameScreen> {
           });
         }
       },
+      gender: widget.gender,
       onArrived: () {
         if (mounted) setState(() => _arrived = true);
       },

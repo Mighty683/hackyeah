@@ -7,6 +7,7 @@ import 'package:do_bazy/game/components/practice_route_component.dart';
 import 'package:do_bazy/game/maps/demo_map.dart';
 import 'package:do_bazy/game/maps/offline_router.dart';
 import 'package:do_bazy/game/neighborhood_game.dart';
+import 'package:do_bazy/features/parent/data/family_plan.dart';
 
 DemoMap fixture(List<DemoMapFeature> features) =>
     DemoMap(bounds: [0, 0, 396, 396], center: [0, 0], features: features);
@@ -276,7 +277,10 @@ void main() {
     'game follow action arrives once and restart restores the route',
     (tester) async {
       var arrivals = 0;
-      final game = NeighborhoodGame(onArrived: () => arrivals++);
+      final game = NeighborhoodGame(
+        onArrived: () => arrivals++,
+        gender: ChildGender.boy,
+      );
       await tester.runAsync(() async {
         await tester.pumpWidget(
           Directionality(
@@ -298,6 +302,7 @@ void main() {
           .whereType<PracticeRouteComponent>()
           .single;
       final player = game.world.children.whereType<PlayerComponent>().single;
+      expect(player.gender, ChildGender.boy);
       game.togglePracticeBlockage();
       expect(game.hasPracticeBlockage, isTrue);
       expect(

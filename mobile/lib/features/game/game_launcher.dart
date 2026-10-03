@@ -15,7 +15,9 @@ import '../parent/data/family_plan_repository.dart';
 import 'game_screen.dart';
 
 class GameLauncher extends StatefulWidget {
-  const GameLauncher({super.key});
+  const GameLauncher({super.key, this.gender = ChildGender.girl});
+
+  final ChildGender gender;
 
   @override
   State<GameLauncher> createState() => _GameLauncherState();
@@ -74,6 +76,7 @@ class _GameLauncherState extends State<GameLauncher> {
           return GameScreen(
             key: ValueKey(_round),
             destination: snapshot.data,
+            gender: widget.gender,
             onNewGame: _newGame,
           );
         }
