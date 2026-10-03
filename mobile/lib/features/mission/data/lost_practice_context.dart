@@ -3,6 +3,21 @@ import '../lost_landmarks.dart';
 
 enum LostContactAvatar { mother, father, grandparent, adult }
 
+/// Photo recognition data only. Geographic pins stay with the map screen.
+class LostPracticePlace {
+  const LostPracticePlace({
+    required this.id,
+    required this.label,
+    required this.photoPath,
+    this.isDemo = false,
+  });
+
+  final String id;
+  final String label;
+  final String photoPath;
+  final bool isDemo;
+}
+
 class LostPracticeContact {
   const LostPracticeContact({
     required this.id,
@@ -25,13 +40,18 @@ class LostPracticeContext {
     required this.meetingPoint,
     required this.contacts,
     required this.fictionalMeetingPoint,
+    this.photoPlaces = const [],
   });
 
   factory LostPracticeContext.fromFamilyPlan(
     FamilyPlan plan, {
     ChildProfile fallbackChild = const ChildProfile(),
+    List<LostPracticePlace> photoPlaces = const [],
   }) {
     final configuredPoint = plan.practiceMeetingPoint;
+    final linkedPlace = photoPlaces
+        .where((place) => place.id == configuredPoint?.landmarkId)
+        .firstOrNull;
     final preset = resolveLostLandmark(configuredPoint?.presetId ?? 'fountain');
     final unknownPreset =
         configuredPoint != null && configuredPoint.presetId != preset.id;
@@ -77,14 +97,19 @@ class LostPracticeContext {
       gender: plan.child.gender ?? fallbackChild.gender ?? ChildGender.girl,
       meetingPoint: PracticeMeetingPoint(
         presetId: preset.id,
-        label: unknownPreset
-            ? 'Pretend fountain'
-            : savedLabel.isEmpty
-            ? preset.label
-            : savedLabel,
+        landmarkId: configuredPoint?.landmarkId,
+        label:
+            linkedPlace?.label ??
+            (unknownPreset
+                ? 'Pretend fountain'
+                : savedLabel.isEmpty
+                ? preset.label
+                : savedLabel),
       ),
       contacts: List.unmodifiable(contacts),
-      fictionalMeetingPoint: configuredPoint == null || unknownPreset,
+      fictionalMeetingPoint:
+          configuredPoint?.landmarkId == null || linkedPlace?.isDemo == true,
+      photoPlaces: List.unmodifiable(photoPlaces),
     );
   }
 
@@ -97,6 +122,14 @@ class LostPracticeContext {
   final PracticeMeetingPoint meetingPoint;
   final List<LostPracticeContact> contacts;
   final bool fictionalMeetingPoint;
+  final List<LostPracticePlace> photoPlaces;
+
+  LostPracticePlace? get photoMeetingPoint => photoPlaces
+      .where((place) => place.id == meetingPoint.landmarkId)
+      .firstOrNull;
+
+  bool get meetingPointUnavailable =>
+      meetingPoint.landmarkId != null && photoMeetingPoint == null;
 
   String get meetingPointLabel => meetingPoint.label;
 

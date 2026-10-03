@@ -93,7 +93,7 @@ void main() {
       expect(repository.reads, 2);
       expect(find.text('Could not read saved family details.'), findsOneWidget);
       await _tap(tester, 'Use pretend family');
-      expect(find.text('Some family details are pretend.'), findsOneWidget);
+      expect(find.text('Some contacts are pretend.'), findsOneWidget);
       await _tap(tester, 'Meeting point out of sight');
       final mission = tester.widget<LostMissionScreen>(
         find.byType(LostMissionScreen),

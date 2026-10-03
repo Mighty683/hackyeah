@@ -1,0 +1,388 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:do_bazy/features/landmarks/data/landmark.dart';
+import 'package:do_bazy/features/landmarks/data/landmark_repository.dart';
+import 'package:do_bazy/features/landmarks/widgets/landmark_map.dart';
+import 'package:do_bazy/features/landmarks/widgets/landmark_photo.dart';
+import 'package:do_bazy/features/mission/data/lost_practice_context.dart';
+import 'package:do_bazy/features/mission/lost_mission.dart';
+import 'package:do_bazy/features/mission/lost_mission_launcher.dart';
+import 'package:do_bazy/features/mission/lost_mission_scene.dart';
+import 'package:do_bazy/features/mission/lost_meeting_point_map.dart';
+import 'package:do_bazy/features/parent/data/family_plan.dart';
+import 'package:do_bazy/features/parent/data/family_plan_repository.dart';
+import 'package:do_bazy/features/parent/practice_meeting_point_editor_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+const _target = Landmark(
+  id: '1_1',
+  name: 'Library entrance',
+  photoName: '1_1.photo',
+  latitude: 50.0675,
+  longitude: 19.991,
+  icon: '📚',
+);
+// Duplicate names must never identify the correct place.
+const _other = Landmark(
+  id: '2_2',
+  isDemo: true,
+  name: 'Library entrance',
+  photoName: '2_2.photo',
+  latitude: 50.0705,
+  longitude: 19.995,
+);
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  late Directory directory;
+  late _PhotoRepository photos;
+  const audio = MethodChannel('basebound/mission_audio');
+  setUp(() async {
+    rootBundle.clear();
+    FlutterSecureStorage.setMockInitialValues({});
+    directory = await Directory.systemTemp.createTemp('lost-photo-practice-');
+    final image = base64Decode(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aOioAAAAASUVORK5CYII=',
+    );
+    for (final place in [_target, _other]) {
+      await File('${directory.path}/${place.photoName}').writeAsBytes(image);
+    }
+    photos = _PhotoRepository(directory, [_target, _other]);
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+          audio,
+          (call) async => call.method == 'initialize' ? true : null,
+        );
+  });
+  tearDown(() async {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(audio, null);
+    await directory.delete(recursive: true);
+  });
+
+  testWidgets(
+    'parent-selected photo leads to ID-based recognition and Our map',
+    (tester) async {
+      tester.view.physicalSize = const Size(430, 1100);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final family = FamilyPlanRepository();
+      await family.save(
+        const FamilyPlan(
+          contacts: [TrustedContact(name: 'Parent')],
+          safePoints: [
+            SafePoint(
+              name: 'Existing pin',
+              latitude: 50.0675,
+              longitude: 19.991,
+            ),
+          ],
+        ),
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: TextButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => PracticeMeetingPointEditorScreen(
+                      repository: photos,
+                      onSave: (point) async => family.save(
+                        (await family.load()).copyWith(
+                          practiceMeetingPoint: point,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                child: const Text('Choose meeting place'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await _tap(tester, find.text('Choose meeting place'));
+      await _pump(tester);
+      await _tap(tester, find.byKey(const ValueKey('meeting-place-1_1')));
+      await _tap(tester, find.text('Save practice meeting point'));
+      final saved = await family.load();
+      expect(saved.practiceMeetingPoint!.landmarkId, _target.id);
+      expect(saved.contacts.single.name, 'Parent');
+      expect(saved.safePoints.single.name, 'Existing pin');
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: LostMissionLauncher(
+            repository: family,
+            landmarkRepository: photos,
+          ),
+        ),
+      );
+      await _pump(tester);
+      expect(
+        tester.widget<LandmarkPhoto>(find.byType(LandmarkPhoto)).path,
+        '${directory.path}/1_1.photo',
+      );
+      expect(find.text('Demo meeting place.'), findsNothing);
+      await _tap(tester, find.text('Meeting point nearby'));
+      await _tap(tester, find.byKey(const ValueKey('lost-choice-stop')));
+      await _next(tester);
+      expect(
+        tester.widget<LandmarkPhoto>(find.byType(LandmarkPhoto)).path,
+        '${directory.path}/1_1.photo',
+      );
+      await _next(tester);
+      expect(find.text('Fictional demo photo'), findsOneWidget);
+      await _tap(tester, find.byKey(const ValueKey('lost-choice-2_2')));
+      expect(find.textContaining('That is a different place.'), findsOneWidget);
+      await _next(tester); // Retry the wrong photo.
+      await _tap(tester, find.byKey(const ValueKey('lost-choice-1_1')));
+      await _next(tester);
+      await _pump(tester);
+      expect(find.byType(LostMeetingPointMap), findsOneWidget);
+      final map = tester.widget<LandmarkMap>(find.byType(LandmarkMap));
+      expect(map.position, isNull);
+      expect(map.route, isEmpty);
+      expect(map.selectedId, isNull);
+      expect(find.byKey(const ValueKey('live-gps-marker')), findsNothing);
+      expect(find.text('Walk here together'), findsNothing);
+      // Exercise a map pin through the shared map's callback, then retry.
+      map.onSelected(_other);
+      await _pump(tester);
+      expect(
+        find.textContaining('That pin marks a different place.'),
+        findsOneWidget,
+      );
+      await _next(tester);
+      await _tap(tester, find.text('Places'));
+      await _tap(tester, find.text('Library entrance').first);
+      await _pump(tester);
+      // The list retains stored order: the first record is the target.
+      expect(find.textContaining('You have not walked there.'), findsOneWidget);
+      await _next(tester);
+      expect(_step(tester), 'arrive');
+      expect(
+        tester.widget<LandmarkPhoto>(find.byType(LandmarkPhoto)).path,
+        '${directory.path}/1_1.photo',
+      );
+      expect(find.textContaining('In this story, you reach'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+      await _pump(tester);
+    },
+  );
+
+  testWidgets('re-entry reloads a renamed linked landmark', (tester) async {
+    final family = FamilyPlanRepository();
+    await family.save(
+      const FamilyPlan(
+        practiceMeetingPoint: PracticeMeetingPoint(
+          landmarkId: '1_1',
+          label: 'Old name',
+        ),
+      ),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: LostMissionLauncher(
+          repository: family,
+          landmarkRepository: photos,
+        ),
+      ),
+    );
+    await _pump(tester);
+    expect(
+      find.text('Practice meeting point: Library entrance'),
+      findsOneWidget,
+    );
+    await tester.pumpWidget(const SizedBox.shrink());
+    await _pump(tester);
+    photos.places = [
+      const Landmark(
+        id: '1_1',
+        name: 'Main library door',
+        photoName: '1_1.photo',
+        latitude: 50.0675,
+        longitude: 19.991,
+      ),
+    ];
+    await tester.pumpWidget(
+      MaterialApp(
+        home: LostMissionLauncher(
+          repository: family,
+          landmarkRepository: photos,
+        ),
+      ),
+    );
+    await _pump(tester);
+    expect(
+      find.text('Practice meeting point: Main library door'),
+      findsOneWidget,
+    );
+    expect((await family.load()).practiceMeetingPoint!.label, 'Old name');
+    await tester.pumpWidget(const SizedBox.shrink());
+    await _pump(tester);
+  });
+
+  for (final missingPhoto in [true, false]) {
+    testWidgets(
+      'missing ${missingPhoto ? 'photo' : 'landmark'} requires setup or explicit demo',
+      (tester) async {
+        final family = FamilyPlanRepository();
+        await family.save(
+          const FamilyPlan(
+            practiceMeetingPoint: PracticeMeetingPoint(
+              landmarkId: '1_1',
+              label: 'Library entrance',
+            ),
+          ),
+        );
+        final before = (await family.load()).toJson();
+        if (missingPhoto) {
+          await tester.runAsync(
+            () => File('${directory.path}/1_1.photo').delete(),
+          );
+        } else {
+          photos.places = [_other];
+        }
+        await tester.pumpWidget(
+          MaterialApp(
+            home: LostMissionLauncher(
+              repository: family,
+              landmarkRepository: photos,
+            ),
+          ),
+        );
+        await _pump(tester);
+        expect(
+          find.text('Your meeting place or photo is unavailable.'),
+          findsOneWidget,
+          reason: _texts(tester),
+        );
+        expect(find.text('Meeting point nearby'), findsNothing);
+        expect(find.byType(LandmarkPhoto), findsNothing);
+        await _tap(tester, find.text('Use demo meeting place'));
+        expect(find.text('Demo meeting place.'), findsOneWidget);
+        expect(find.text('Meeting point nearby'), findsOneWidget);
+        expect((await family.load()).toJson(), before);
+        await tester.pumpWidget(const SizedBox.shrink());
+        await _pump(tester);
+      },
+    );
+  }
+
+  testWidgets('no chosen place does not silently substitute a fountain', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const MaterialApp(home: LostMissionLauncher()));
+    await _pump(tester);
+    expect(
+      find.text('Ask an adult to choose your meeting place.'),
+      findsOneWidget,
+    );
+    expect(find.text('Meeting point nearby'), findsNothing);
+    await _tap(tester, find.text('Use demo meeting place'));
+    expect(find.text('Practice meeting point: Fountain'), findsOneWidget);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await _pump(tester);
+  });
+
+  test('map help returns to staying nearby; selecting a pin does not confirm safety', () {
+    final context = LostPracticeContext.fromFamilyPlan(
+      const FamilyPlan(
+        practiceMeetingPoint: PracticeMeetingPoint(landmarkId: '1_1'),
+      ),
+      photoPlaces: [
+        LostPracticePlace(
+          id: '1_1',
+          label: 'Library entrance',
+          photoPath: '${directory.path}/1_1.photo',
+        ),
+        LostPracticePlace(
+          id: '2_2',
+          label: 'Library entrance',
+          photoPath: '${directory.path}/2_2.photo',
+        ),
+      ],
+    );
+    final session = LostMissionSession(
+      variant: LostPracticeVariant.meetingPointNearby,
+      context: context,
+    );
+    session.choose('stop');
+    session.advance();
+    session.advance();
+    session.choose('2_2');
+    session.advance();
+    expect(session.step.id, 'meeting_point');
+    session.retry();
+    session.choose('1_1');
+    session.advance();
+    expect(session.step.id, 'map_meeting_point');
+    session.advance();
+    expect(session.step.id, 'map_meeting_point');
+    session.useMapHelp();
+    expect(session.step.id, 'point_unavailable');
+    session.choose('stay');
+    session.advance();
+    expect(session.step.id, 'helper');
+    expect(session.safetyConfirmed, isFalse);
+    session.restart();
+    session.choose('stop');
+    session.advance();
+    session.advance();
+    session.choose('1_1');
+    session.advance();
+    session.choose('1_1');
+    session.advance();
+    expect(session.step.id, 'arrive');
+    expect(session.safetyConfirmed, isFalse);
+  });
+}
+
+class _PhotoRepository extends LandmarkRepository {
+  _PhotoRepository(this.directory, this.places);
+  final Directory directory;
+  List<Landmark> places;
+  @override
+  Future<List<Landmark>> load() async => places;
+  @override
+  Future<Directory> photoDirectory() async => directory;
+}
+
+String _step(WidgetTester tester) =>
+    tester.widget<LostMissionScene>(find.byType(LostMissionScene)).step.id;
+Future<void> _next(WidgetTester tester) =>
+    _tap(tester, find.byKey(const ValueKey('lost-primary-action')));
+Future<void> _tap(WidgetTester tester, Finder finder) async {
+  await tester.ensureVisible(finder);
+  await tester.tap(finder);
+  await _pump(tester);
+}
+
+Future<void> _pump(WidgetTester tester) async {
+  // Asset loading, image decoding and file checks cross the fake-async boundary.
+  for (var frame = 0; frame < 100; frame++) {
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.runAsync(
+      () async => Future<void>.delayed(const Duration(milliseconds: 20)),
+    );
+    if (frame >= 7 &&
+        find.byType(CircularProgressIndicator).evaluate().isEmpty) {
+      return;
+    }
+  }
+  fail('Loading did not finish: ${_texts(tester)}');
+}
+
+String _texts(WidgetTester tester) => find
+    .byType(Text)
+    .evaluate()
+    .map((element) => (element.widget as Text).data)
+    .join(" | ");

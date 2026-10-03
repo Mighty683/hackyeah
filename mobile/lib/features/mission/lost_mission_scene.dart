@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
 import '../../widgets/child_character.dart';
+import '../landmarks/widgets/landmark_photo.dart';
 import 'data/lost_practice_context.dart';
 import 'lost_landmarks.dart';
 import 'lost_mission.dart';
@@ -139,10 +140,18 @@ class LostMissionScene extends StatelessWidget {
   );
 
   Widget _motif(LostSceneMotif motif) => switch (motif) {
-    LostSceneMotif.landmark => LostLandmarkIllustration(
-      presetId: practiceContext.meetingPoint.presetId,
-      size: 126,
-    ),
+    LostSceneMotif.landmark =>
+      practiceContext.photoMeetingPoint != null
+          ? LandmarkPhoto(
+              fit: BoxFit.contain,
+              path: practiceContext.photoMeetingPoint!.photoPath,
+              label: practiceContext.meetingPointLabel,
+              height: 126,
+            )
+          : LostLandmarkIllustration(
+              presetId: practiceContext.meetingPoint.presetId,
+              size: 126,
+            ),
     LostSceneMotif.helper => const LostLandmarkIllustration(
       presetId: 'information_desk',
       size: 126,

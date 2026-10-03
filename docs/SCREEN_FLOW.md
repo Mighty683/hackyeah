@@ -181,8 +181,11 @@ flowchart TD
         LE["READ ERROR<br/>Retry or explicitly use pretend family; preserve record"]
         LV["CHOOSE LOST SCENE<br/>Meeting point nearby or out of sight"]
         LS["STOP<br/>Stop instead of running or leaving"]
-        LO["LOOK<br/>Remember the same configured landmark illustration"]
-        LP["NEARBY POINT<br/>Recognize it; pretend short movement"]
+        LO["LOOK<br/>Remember the parent-selected photo and name"]
+        LP["NEARBY POINT<br/>Recognize the exact saved photo"]
+        LMAP["OUR MAP PRACTICE<br/>Find the same photo pin; drag, pinch or use Places"]
+        LARR["STORY ARRIVAL<br/>Fictional movement; no GPS arrival claim"]
+        LMISSING["MEETING PLACE UNAVAILABLE<br/>Ask for parent setup; retry or explicitly use demo"]
         LN["POINT OUT OF SIGHT<br/>Stay nearby and ask for help"]
         LH["HELPER<br/>Ask staff at a visible public desk"]
         LU["STAY HERE<br/>Decline leaving with an unknown person"]
@@ -195,7 +198,11 @@ flowchart TD
         LD["PRETEND CONFIRMATION<br/>No message was sent"]
         LRC["LOST RECALL<br/>Seven actions; no score"]
         LF["LOST COMPLETE<br/>Replay or return to practice"]
-        LL -->|Loaded; missing optional details use labelled fixtures| LV
+        LL -->|Chosen photo or explicit saved demo picture| LV
+        LL -->|No chosen point, deleted photo or unavailable pin| LMISSING
+        LMISSING -->|Parent setup; reload on return| AL
+        LMISSING -->|Retry| LL
+        LMISSING -->|Use demo meeting place; preserve saved details| LV
         LL -->|Read failed| LE
         LE -->|Try again| LL
         LE -->|Use pretend family| LV
@@ -203,7 +210,12 @@ flowchart TD
         LS -->|Safe choice; acknowledge feedback| LO
         LO -->|Nearby variant| LP
         LO -->|Out-of-sight variant| LN
-        LP --> LH
+        LP -->|Recognized saved photo| LMAP
+        LP -->|Demo picture only| LARR
+        LMAP -->|Wrong pin; feedback and retry| LMAP
+        LMAP -->|Correct pin; recognition only| LARR
+        LMAP -->|I cannot find it| LN
+        LARR --> LH
         LN --> LH
         LH --> LU
         LU --> LC
@@ -233,12 +245,13 @@ flowchart TD
     TR -->|Save contact| CT
     CT -->|Choose safe places or Skip contacts| SP
     SP -->|Add or edit safe place| M
-    SP -->|Add or edit practice meeting point| PMI["PRACTICE LANDMARK PICTURE<br/>Fountain or information desk"]
-    PMI -->|Name this meeting point| PMN["PRACTICE LANDMARK NAME<br/>Optional label; same picture used in lost practice"]
-    PMN -->|Save practice meeting point| SP
-    PMN -->|Back| PMI
-    PMI -->|Back: discard unsaved edits| SP
-    PMN -->|Save failed: retain edits| SE
+    SP -->|Add or edit practice meeting point| PMI["MEETING PLACE PHOTO<br/>Select an existing photo landmark by ID"]
+    PMI -->|Add or edit photos| LP
+    LRETURN -->|Meeting-point editor; reload photos| PMI
+    PMI -->|Explicit pretend picture; optional demo label| PMI
+    PMI -->|Save practice meeting point| SP
+    PMI -->|Back: discard unsaved selection| SP
+    PMI -->|Save failed: retain selection| SE
     M -->|Choose position| MP
     MP -->|Save safe place after choosing a pin| SP
     SP -->|Finish setup or Skip safe places| DONE
@@ -263,7 +276,7 @@ flowchart TD
     RETRY -->|Child| CS
     RETRY -->|Contact| TR
     RETRY -->|Safe place| MP
-    RETRY -->|Practice meeting point| PMN
+    RETRY -->|Practice meeting point| PMI
     MP -->|Map load failed| ME
     ME -->|Back| M
     CT -->|Delete contact or all saved details| DEL
@@ -335,7 +348,7 @@ flowchart TD
 | Mission recall/completion | Read three numbered reminders with short descriptions and Dino’s “You did a great job!” | Finish practice; replay audio, Play again, Back to practice choices |
 | Lost practice loading/error | Load the current display-only family snapshot | Retry or explicitly use pretend family; back preserves saved details |
 | Lost scene selection (7+) | Choose meeting point nearby or out of sight | Replay audio, back; unavailable voice offers adult help and retry |
-| Lost decision/feedback | Tap a highlighted person, object or landmark; hear a calm consequence | Retry unsafe choice or advance; replay audio, exit |
+| Lost decision/feedback | Recognize the chosen photo; find its pin on the shared Our map; hear calm feedback | Map drag/pinch and Places; I cannot find it returns to staying nearby; retry or advance, replay audio, exit |
 | Lost reunion/confirmation | Tap I'M SAFE after the fictional reunion | Explicit local confirmation; no message sent |
 | Lost recall/completion | Recall seven actions, including meeting point only if nearby | Replay audio, Play again with the same snapshot/variant, Back to practice choices |
 | Parent intro | Add child details | Walk together; Skip child details, demo/privacy details, confirmed Delete all and explicit location recovery in Setup options, back |
@@ -343,7 +356,7 @@ flowchart TD
 | Trusted contacts | Add or review up to three contacts | Edit or confirmed delete; Choose safe places or Skip contacts; Setup options, back to intro |
 | Contact name, phone, relationship | Enter one optional detail per screen | Next with value or empty field, previous step; final step saves contact |
 | Safe places | Add or review optional map places or a lost-practice landmark | Edit or confirmed delete; Finish setup or Skip safe places; Setup options, back to contacts |
-| Practice landmark picture/name | Choose one bundled illustration, then an optional label | Previous step, save with retained edits on failure; back without saving |
+| Practice meeting point | Choose an existing photo landmark by ID; its name and photo stay linked | Add/edit in Walk together; explicit pretend-picture alternative; save with retained edits on failure; back without saving |
 | Safe place name | Name one safe place and choose an emoji icon | Choose position, back without saving |
 | Safe place pin | Choose one geographic position | Tap or accessible centre/direction controls; save, previous step |
 | Setup complete | Play together | Walk together; Review setup returns to intro; Setup options, back to safe places |
@@ -395,9 +408,11 @@ On **It is quiet now**, the child stays inside the hallway. After either choice,
 
 The new 7+ activity has two explicit variants: the agreed meeting point is visible nearby, or it is out of sight. Both practice stopping, looking, asking at a nearby public desk, declining to leave with an unknown person, a pretend call with no answer, trying a different contact, waiting, reunion, an explicit I'M SAFE tap and seven-action recall. Wrong choices get calm feedback and retry the same decision. There is no score or timer.
 
-Parent setup can save a practice Fountain or Information desk illustration and optional label within the existing safe-places stage. This field is independent of geographic pins. The same registry supplies setup, reminder and recognition art; it is not a photograph or a safety assessment. Contacts contribute display labels/avatar motifs only. Calls, replies and notifications are simulated; the mission never receives real phone numbers, addresses or map coordinates. Missing details use labelled fixtures, and an unknown landmark ID becomes Pretend fountain. Failed record reads require retry or explicit fictional practice and never overwrite the record.
+Parent setup selects a meeting point from the existing Walk together photo landmarks and stores its stable ID. The lesson loads the current photo/name, so renaming a landmark changes the next lesson without replacing the link. Reminder, recognition choices and story arrival show the same photo. Choices use IDs, including when names repeat. The nearby branch adds an Our map exercise using the shared map, photo pins, drag/pinch and an accessible Places list. At most three saved photo places participate in this exercise. Tapping the correct pin confirms recognition only; no GPS, route, physical movement or real arrival is inferred. I cannot find it leads to the stay-nearby branch. The out-of-sight variant retains that branch without a map exercise.
 
-The lost selector and mission reuse offline English Android speech. Missing voice offers adult help and retry, with text retained. Leaving stops narration and returns directly to the scenario list; replay resets transient progress and keeps the selected variant/snapshot. Re-entering lost practice reloads current saved details. Training is labelled unreviewed and not for real emergencies. Meeting-point/contact photos, younger-child support, familiar routes and actual parent notifications remain future work for Mission 02. See [MISSION_02_IMPLEMENTATION_PLAN.md](MISSION_02_IMPLEMENTATION_PLAN.md) for scope, references and verification.
+No chosen point, a deleted landmark/photo or a pin outside the bundled map offers parent setup, retry or an explicit demo meeting place. Record read failures offer retry or explicit pretend practice. None of these actions overwrite saved records. Existing Fountain/Information desk records remain readable as labelled demo pictures with no map exercise. Generated demo photos retain their fictional label. Missing contacts still receive labelled pretend cards. Contacts contribute display labels/avatar motifs only; real phone numbers and addresses remain outside play. Calls, replies and notifications are simulated.
+
+The lost selector and mission reuse offline English Android speech. Missing voice offers adult help and retry, with text retained. Leaving stops narration and returns directly to the scenario list; replay resets transient progress and keeps the selected variant/snapshot. Re-entering lost practice reloads current saved details. Training is labelled unreviewed and not for real emergencies. Contact photos, younger-child support, familiar routes and actual parent notifications remain future work for Mission 02. See [MISSION_02_IMPLEMENTATION_PLAN.md](MISSION_02_IMPLEMENTATION_PLAN.md) for scope, references and verification.
 
 ### Visual design system
 
@@ -442,7 +457,7 @@ Names, emoji icons, coordinates and photo references persist in a separate encry
 ### Data and demo boundaries
 
 - One child; optional full name, age, address and support notes, entered one detail per screen. The child record is saved after the support-needs step. Photo landmarks are separate recognition records; child-profile photographs are not collected.
-- One optional practice meeting point; a bundled landmark illustration and display label, saved separately from map pins. Existing schema-v1 records without this field still load; deleting it preserves other entries. Lost practice reads display information only and uses no real communications.
+- One optional practice meeting point linked by ID to an existing photo landmark; legacy illustration/label records remain demo-only options. Schema-v1 records without this field still load. Clearing the meeting-point link preserves landmarks and other family entries. Deleting its landmark or photo requires reselection or explicit demo practice. Lost practice uses no real communications.
 - Up to three trusted contacts; optional name, phone and relationship, entered one detail per screen. Each completed contact and safe-place editor saves its record immediately. Back from the first editor step discards only unsaved edits. Saving a number does not make calls or verify it.
 - Safe places are parent-selected destinations, stored as named geographic pins inside the bundled TAURON Arena area. Their safety and opening hours are not checked. Our map offers GPS-based walking guidance to selected named pins; it does not verify safety, access, entrances or emergency suitability.
 - No random destination, fictional starting position, tap movement, automatic character movement or synthetic blockage controls remain. Parents may still tap to place a saved pin; that never moves a child’s location.

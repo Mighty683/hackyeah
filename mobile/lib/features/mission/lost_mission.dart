@@ -45,6 +45,8 @@ class LostMissionChoice {
     required this.feedback,
     this.contactId,
     this.landmarkPresetId,
+    this.photoPath,
+    this.isDemoPhoto = false,
   });
 
   final String id;
@@ -54,6 +56,8 @@ class LostMissionChoice {
   final String feedback;
   final String? contactId;
   final String? landmarkPresetId;
+  final String? photoPath;
+  final bool isDemoPhoto;
 }
 
 class LostMissionStep {
@@ -143,13 +147,21 @@ class LostMissionSession {
     _isComplete = false;
   }
 
+  /// Map exploration never implies walking. Asking for help uses the stay branch.
+  void useMapHelp() {
+    if (_stepId != 'map_meeting_point' || hasFeedback || _isComplete) return;
+    _stepId = 'point_unavailable';
+  }
+
   String? _nextStepId() => switch (_stepId) {
     'stop' => 'look',
     'look' =>
       variant == LostPracticeVariant.meetingPointNearby
           ? 'meeting_point'
           : 'point_unavailable',
-    'meeting_point' => 'arrive',
+    'meeting_point' =>
+      context.photoMeetingPoint == null ? 'arrive' : 'map_meeting_point',
+    'map_meeting_point' => 'arrive',
     'arrive' || 'point_unavailable' => 'helper',
     'helper' => 'stranger',
     'stranger' => 'contact',
@@ -169,6 +181,10 @@ class LostMissionSession {
     final otherLandmark = resolveLostLandmark(
       landmark.id == 'fountain' ? 'information_desk' : 'fountain',
     );
+    final photoTarget = context.photoMeetingPoint;
+    final photoChoices = photoTarget == null
+        ? <LostMissionChoice>[]
+        : _photoChoices(photoTarget);
     final steps = <LostMissionStep>[
       LostMissionStep(
         id: 'stop',
@@ -216,23 +232,28 @@ class LostMissionSession {
         narration: 'Your meeting place is visible nearby. Choose it.',
         visual: LostMissionVisual.meetingPoint,
         choices: [
-          LostMissionChoice(
-            id: landmark.id,
-            label: context.meetingPointLabel,
-            icon: LostActionIcon.meetingPoint,
-            isCorrect: true,
-            feedback: 'Yes. You recognize your nearby practice meeting place.',
-            landmarkPresetId: landmark.id,
-          ),
-          LostMissionChoice(
-            id: otherLandmark.id,
-            label: otherLandmark.label,
-            icon: LostActionIcon.meetingPoint,
-            isCorrect: false,
-            feedback:
-                'That is a different landmark. Remember your meeting place.',
-            landmarkPresetId: otherLandmark.id,
-          ),
+          if (photoTarget != null)
+            ...photoChoices
+          else ...[
+            LostMissionChoice(
+              id: landmark.id,
+              label: context.meetingPointLabel,
+              icon: LostActionIcon.meetingPoint,
+              isCorrect: true,
+              feedback:
+                  'Yes. You recognize your nearby practice meeting place.',
+              landmarkPresetId: landmark.id,
+            ),
+            LostMissionChoice(
+              id: otherLandmark.id,
+              label: otherLandmark.label,
+              icon: LostActionIcon.meetingPoint,
+              isCorrect: false,
+              feedback:
+                  'That is a different landmark. Remember your meeting place.',
+              landmarkPresetId: otherLandmark.id,
+            ),
+          ],
           _choice(
             'leave',
             'Go to the exit',
@@ -242,6 +263,32 @@ class LostMissionSession {
           ),
         ],
       ),
+      if (photoTarget != null)
+        LostMissionStep(
+          id: 'map_meeting_point',
+          title: 'Find your meeting place on Our map',
+          narration:
+              'Find ${context.meetingPointLabel}. Tap its photo pin. '
+              'Drag to explore. Pinch to zoom. This is map practice only.',
+          visual: LostMissionVisual.meetingPoint,
+          choices: [
+            for (final choice in photoChoices.where(
+              (choice) => choice.photoPath != null,
+            ))
+              LostMissionChoice(
+                id: choice.id,
+                label: choice.label,
+                icon: choice.icon,
+                isCorrect: choice.isCorrect,
+                photoPath: choice.photoPath,
+                isDemoPhoto: choice.isDemoPhoto,
+                feedback: choice.isCorrect
+                    ? 'Yes. This pin marks ${context.meetingPointLabel}. '
+                          'You found it on the map. You have not walked there.'
+                    : 'That pin marks a different place. Look for your meeting place photo.',
+              ),
+          ],
+        ),
       LostMissionStep(
         id: 'arrive',
         title: 'At your practice meeting place',
@@ -402,6 +449,36 @@ class LostMissionSession {
       ),
     ];
     return {for (final step in steps) step.id: step};
+  }
+
+  List<LostMissionChoice> _photoChoices(LostPracticePlace target) {
+    final others =
+        context.photoPlaces.where((place) => place.id != target.id).toList()
+          ..shuffle();
+    final choices = [
+      for (final place in [target, ...others.take(2)])
+        LostMissionChoice(
+          id: place.id,
+          label: place.label,
+          icon: LostActionIcon.meetingPoint,
+          isCorrect: place.id == target.id,
+          photoPath: place.photoPath,
+          isDemoPhoto: place.isDemo,
+          feedback: place.id == target.id
+              ? 'Yes. This is your meeting place: ${target.label}.'
+              : 'That is a different place. Look at your meeting place photo again.',
+        ),
+      if (others.isEmpty)
+        LostMissionChoice(
+          id: 'different-landmark',
+          label: 'A different information desk',
+          icon: LostActionIcon.meetingPoint,
+          isCorrect: false,
+          landmarkPresetId: 'information_desk',
+          feedback: 'That is a pretend picture. Look for your saved meeting place photo.',
+        ),
+    ]..shuffle();
+    return choices;
   }
 
   LostMissionStep _noAnswerStep() => LostMissionStep(

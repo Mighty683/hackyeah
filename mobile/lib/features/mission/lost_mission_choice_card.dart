@@ -4,6 +4,7 @@ import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
 import '../../widgets/child_character.dart';
 import '../parent/data/family_plan.dart';
+import '../landmarks/widgets/landmark_photo.dart';
 import 'lost_landmarks.dart';
 import 'lost_mission.dart';
 
@@ -39,7 +40,8 @@ class LostMissionChoiceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Semantics(
-    label: choice.label,
+    label:
+        '${choice.label}${choice.isDemoPhoto ? '. Fictional demo photo.' : ''}',
     button: true,
     enabled: onPressed != null,
     onTap: onPressed,
@@ -81,6 +83,7 @@ class LostMissionChoiceCard extends StatelessWidget {
                   ),
                 ),
               ),
+              if (choice.isDemoPhoto) const Text('Fictional demo photo'),
             ],
           ),
         ),
@@ -89,6 +92,14 @@ class LostMissionChoiceCard extends StatelessWidget {
   );
 
   Widget _illustration() {
+    if (choice.photoPath case final path?) {
+      return LandmarkPhoto(
+        fit: BoxFit.contain,
+        path: path,
+        label: choice.label,
+        height: 108,
+      );
+    }
     if (choice.landmarkPresetId case final presetId?) {
       return LostLandmarkIllustration(presetId: presetId, size: 108);
     }

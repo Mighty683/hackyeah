@@ -5,7 +5,10 @@ import 'package:flutter/material.dart';
 import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
 import '../../widgets/basebound_mascot.dart';
+import '../../game/maps/demo_map.dart';
+import '../landmarks/data/landmark.dart';
 import 'data/lost_practice_context.dart';
+import 'lost_meeting_point_map.dart';
 import 'lost_mission.dart';
 import 'lost_mission_scene.dart';
 import 'mission_audio.dart';
@@ -17,11 +20,17 @@ class LostMissionScreen extends StatefulWidget {
     required this.variant,
     required this.practiceContext,
     this.audio,
+    this.map,
+    this.mapLandmarks = const [],
+    this.photoDirectory = '',
   });
 
   final LostPracticeVariant variant;
   final LostPracticeContext practiceContext;
   final MissionAudio? audio;
+  final DemoMap? map;
+  final List<Landmark> mapLandmarks;
+  final String photoDirectory;
 
   @override
   State<LostMissionScreen> createState() => _LostMissionScreenState();
@@ -133,6 +142,13 @@ class _LostMissionScreenState extends State<LostMissionScreen>
   void _restart() {
     if (_exiting) return;
     setState(_session.restart);
+    _returnToTop();
+    unawaited(_narrate());
+  }
+
+  void _mapHelp() {
+    if (_exiting) return;
+    setState(_session.useMapHelp);
     _returnToTop();
     unawaited(_narrate());
   }
@@ -251,7 +267,23 @@ class _LostMissionScreenState extends State<LostMissionScreen>
               const SizedBox(height: 10),
               _instruction(),
               const SizedBox(height: 12),
-              if (_session.step.isDecision && !_session.hasFeedback)
+              if (_session.step.id == 'map_meeting_point' &&
+                  !_session.hasFeedback)
+                LostMeetingPointMap(
+                  map: widget.map,
+                  target: widget.practiceContext.photoMeetingPoint!,
+                  photoDirectory: widget.photoDirectory,
+                  landmarks: widget.mapLandmarks
+                      .where(
+                        (place) => _session.step.choices.any(
+                          (choice) => choice.id == place.id,
+                        ),
+                      )
+                      .toList(),
+                  onSelected: _choose,
+                  onHelp: _mapHelp,
+                )
+              else if (_session.step.isDecision && !_session.hasFeedback)
                 LostMissionScene(
                   step: _session.step,
                   practiceContext: widget.practiceContext,
@@ -290,11 +322,17 @@ class _LostMissionScreenState extends State<LostMissionScreen>
         textAlign: TextAlign.center,
         style: TextStyle(fontSize: 13, color: BaseboundColors.muted),
       ),
-      if (widget.practiceContext.usesFictionalDetails)
+      if (widget.practiceContext.fictionalMeetingPoint)
+        const Text(
+          'Demo meeting place.',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 13, color: BaseboundColors.muted),
+        ),
+      if (widget.practiceContext.contacts.any((contact) => contact.isFictional))
         const Padding(
           padding: EdgeInsets.only(top: 5),
           child: Text(
-            'Some family details are pretend.',
+            'Some contacts are pretend.',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 13, color: BaseboundColors.muted),
           ),

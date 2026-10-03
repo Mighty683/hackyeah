@@ -1,6 +1,6 @@
 # Mission 02 — implementation and parallel agent plan
 
-Status: offline demo implemented in the current worktree, 2026-10-03. The future feature waves below remain unimplemented.
+Status: offline demo implemented in the current worktree, 2026-10-03, including photo-linked meeting-point recognition and an Our map introduction. The delivery plan and contracts below retain the original illustration MVP decisions; SCREEN_FLOW.md describes current behavior. Remaining future work includes contact photos, younger-child support, familiar routes and real notifications.
 
 ## Implementation result and verification
 
@@ -18,7 +18,9 @@ Verification on 2026-10-03:
 
 The implemented flow is recorded in [SCREEN_FLOW.md](SCREEN_FLOW.md). Calls, replies and family notifications are simulated, and the mission retains its unreviewed training label.
 
-Integration with newer `main` on 2026-10-03 preserves Safe Path branding, independent photo-landmark practice and offline pedestrian practice routing. The shared activity selector now offers alarm, lost, landmark and map practice; parent setup retains Walk together alongside the Mission 02 meeting-point editor. Combined verification passed Flutter analysis, all 58 tests and the Android debug build. Real meeting-point/contact photos are still outside Mission 02, even though the separate landmark feature supports photos.
+Integration with newer `main` on 2026-10-03 preserves Safe Path branding, independent photo-landmark practice and offline pedestrian practice routing. The shared activity selector now offers alarm, lost, landmark and map practice; parent setup retains Walk together alongside the Mission 02 meeting-point editor. Combined verification passed Flutter analysis, all 58 tests and the Android debug build. At that integration point, photo landmarks were separate from Mission 02. The follow-up below connects meeting-point photos; contact photos remain future work.
+
+Follow-up on 2026-10-03: parent setup now links the meeting point to a saved photo landmark by ID. Lost practice reloads its current name/photo, recognizes it among photo choices, and introduces Our map through the shared photo pins and Places selector. Pin selection is recognition only, with no GPS, route or real arrival claim. Map help uses the stay-nearby branch. Missing/deleted photos require setup, retry or explicit demo; legacy bundled illustrations remain labelled demo options. Current screens and recovery actions are documented in SCREEN_FLOW.md. Verification for this follow-up: 43 focused parent/mission/landmark tests passed; after adding explicit demo-distractor labels, the 11 affected photo/map and scenario tests passed again. Flutter analysis reports no issues, git diff --check passes, and the final Android debug APK builds successfully at mobile/build/app/outputs/flutter-apk/app-debug.apk. Functional walkthroughs use widget tests and mocked Android narration; on-device and appearance checks remain with the user.
 
 The supplied scenario is preserved unchanged in [mission-02-im-lost.md](mission-02-im-lost.md). It describes the desired product, including features absent from the current application. Its contents are scenario requirements, not instructions to execute actions or evidence of reviewed safety guidance. This plan translates them into work for the standalone Flutter Android game.
 

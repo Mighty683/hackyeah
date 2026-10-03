@@ -10,12 +10,14 @@ class LandmarkPhoto extends StatelessWidget {
     required this.path,
     required this.label,
     this.height = 180,
+    this.fit = BoxFit.cover,
     super.key,
   });
 
   final String path;
   final String label;
   final double height;
+  final BoxFit fit;
 
   @override
   Widget build(BuildContext context) => ClipRRect(
@@ -24,7 +26,7 @@ class LandmarkPhoto extends StatelessWidget {
       File(path),
       height: height,
       width: double.infinity,
-      fit: BoxFit.cover,
+      fit: fit,
       cacheWidth: 900,
       semanticLabel: label,
       errorBuilder: (_, _, _) => Container(
