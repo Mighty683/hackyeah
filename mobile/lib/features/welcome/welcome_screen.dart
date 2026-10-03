@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../game/game_screen.dart';
+import '../game/game_launcher.dart';
+import '../parent/parent_screen.dart';
 
 /// Role selection keeps adult information out of the child's first screen.
 class WelcomeScreen extends StatelessWidget {
@@ -51,7 +52,7 @@ class _WelcomeChoices extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             textStyle: const TextStyle(fontSize: 20),
           ),
-          onPressed: () => _openScreen(context, const GameScreen()),
+          onPressed: () => _openScreen(context, const GameLauncher()),
           icon: const Icon(Icons.face_outlined),
           label: const Text("I'm a child"),
         ),
@@ -70,45 +71,12 @@ class _WelcomeChoices extends StatelessWidget {
   }
 }
 
-/// Adult introduction to the current demo; family setup is future work.
+/// Retains the adult route while separating configuration from child play.
 class AdultScreen extends StatelessWidget {
   const AdultScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('For grown-ups')),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text(
-                'Explore together',
-                style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Guide a character to a pretend base. '
-                'This demo is a practice game, not real-world navigation.',
-                style: TextStyle(fontSize: 18),
-              ),
-              const SizedBox(height: 24),
-              FilledButton.icon(
-                onPressed: () => _openScreen(context, const GameScreen()),
-                style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.all(20),
-                ),
-                icon: const Icon(Icons.play_arrow),
-                label: const Text('Play together'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => const ParentScreen();
 }
 
 void _openScreen(BuildContext context, Widget screen) {

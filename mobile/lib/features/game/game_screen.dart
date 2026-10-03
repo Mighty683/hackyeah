@@ -5,9 +5,13 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../../game/neighborhood_game.dart';
+import '../parent/data/family_plan.dart';
 
 class GameScreen extends StatefulWidget {
-  const GameScreen({super.key});
+  const GameScreen({this.destination, this.onNewGame, super.key});
+
+  final SafePoint? destination;
+  final VoidCallback? onNewGame;
 
   @override
   State<GameScreen> createState() => _GameScreenState();
@@ -25,6 +29,7 @@ class _GameScreenState extends State<GameScreen> {
   void initState() {
     super.initState();
     _game = NeighborhoodGame(
+      destination: widget.destination,
       onArrived: () {
         if (mounted) setState(() => _arrived = true);
       },
@@ -37,6 +42,10 @@ class _GameScreenState extends State<GameScreen> {
   void _restart() {
     if (!_game.isMapReady) return;
     _tapBlocked = true;
+    if (widget.onNewGame != null) {
+      widget.onNewGame!();
+      return;
+    }
     _game.restart();
     setState(() => _arrived = false);
   }
@@ -47,9 +56,10 @@ class _GameScreenState extends State<GameScreen> {
       builder: (context) => AlertDialog(
         title: const Text('About this demo'),
         scrollable: true,
-        content: const Text(
+        content: Text(
           'This is a practice game, not real-world navigation. '
-          'The base is pretend. Your character can move freely.\n\n'
+          '${widget.destination == null ? 'The base is pretend.' : 'The target is a parent-selected practice place, not a verified safe destination.'} '
+          'Your character can move freely.\n\n'
           'This simplified map leaves out small streets and buildings. '
           'Trees and buildings are illustrations, not exact outlines.\n\n'
           'The source map covers 2 × 2 km around TAURON Arena in Kraków. '
@@ -154,15 +164,16 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   Widget _buildInstructions({required bool compact}) {
+    final target = widget.destination?.displayName;
     final title = _failed
         ? compact
               ? 'Go back and try again.'
               : 'The map could not load'
         : _arrived
-        ? 'You reached the base!'
+        ? 'You reached ${target ?? 'the base'}!'
         : compact
-        ? 'Tap the pretend base.'
-        : 'Reach the pretend base';
+        ? 'Tap ${target ?? 'the pretend base'}.'
+        : 'Reach ${target ?? 'the pretend base'}';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -171,6 +182,8 @@ class _GameScreenState extends State<GameScreen> {
           header: true,
           child: Text(
             title,
+            maxLines: compact ? 2 : 3,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: compact ? 18 : 26,
               fontWeight: FontWeight.w800,
@@ -183,7 +196,7 @@ class _GameScreenState extends State<GameScreen> {
             _failed
                 ? 'Go back and try again.'
                 : _arrived
-                ? 'You guided your character to the base.'
+                ? 'You guided your character to the practice target.'
                 : 'Tap to move. Drag or pinch to explore.',
             style: const TextStyle(fontSize: 18),
           ),

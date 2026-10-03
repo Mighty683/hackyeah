@@ -31,14 +31,22 @@ Release signing is not configured; the generated release configuration uses the 
 
 ## Current scope
 
-Welcome asks whether the player is an adult or a child. Children open the game directly; adults see a short introduction before playing together. The game uses an offline OpenStreetMap snapshot of a 2 × 2 km area around TAURON Arena Kraków, rendered by Flame. The character starts at the arena and moves toward tapped points; the base in the northeast is fictional. Movement is free across the map. Inactive resource cards are removed, and optional map details live behind the info button. GPS, road routing, building collisions, Street View, family-plan setup and emergency assistance are outside this phase. See [`../docs/SCREEN_FLOW.md`](../docs/SCREEN_FLOW.md) for implemented and future journeys.
+Welcome asks whether the player is an adult or a child. Adults open parent setup; children open the practice game. Parent setup saves one child's optional full name, age, address and support notes, up to three trusted contacts (optional name, phone and relationship), and named practice places. No photo feature is included.
+
+The place editor reuses the offline OpenStreetMap snapshot of a 2 × 2 km area around TAURON Arena Kraków. Tap to select a pin, or use the arena-centre and direction buttons. Places can be edited or deleted. Each game launch/replay randomly chooses a valid saved pin; repeats are possible. With no places, the northeast fictional base remains the target. The character starts at the arena and moves toward tapped points. Movement is simulated, not a walking route, and parent-selected places are not verified safe destinations.
+
+The family plan is stored locally using `flutter_secure_storage` (Android RSA-OAEP/AES-GCM defaults, no biometric requirement). Cloud backup and device-transfer exclusions are configured in the Android manifest and XML resources; recovery/migration is not promised. Failed reads show a retry/delete option rather than silently overwriting data. **Delete all saved details** removes the family-plan record after confirmation. There is no parent lock: anyone using the app can view saved details. Use fictional personal information for demo sessions. The setup screen does not make calls.
+
+Online map area selection, GPS, road routing, Street View, multi-device sync and emergency assistance are outside this branch. Inactive resource cards remain removed; optional map details live behind the info button. See [`../docs/SCREEN_FLOW.md`](../docs/SCREEN_FLOW.md) for implemented and future journeys.
 
 The child map is a custom schematic, not an OSM image or detailed street-map style. It uses the same geographic extent and projected locations, but keeps only broad park/pond/river outlines and a few major roads. Arena, shop and base are illustrated landmarks; trees are decorative, not surveyed positions. Small streets, building footprints and POIs are omitted even when zoomed in. Secondary labels are hidden in very small overviews or when they would overlap; zooming reveals them. This intentionally incomplete diagram is for practice, never real navigation.
 
-Map controls: tap to move the character; drag to pan; pinch or use the zoom buttons to zoom 1–4×. **Show whole map** restores the full source area without resetting the character. **Start again / Play again** resets both character and overview. Dragging/pinching does not select a destination. After arrival, the map remains explorable without accepting new movement. This is practice only, not real navigation.
+Map controls: tap to move the character; drag to pan; pinch or use the zoom buttons to zoom 1–4×. **Show whole map** restores the full source area without resetting the character. **Start again / Play again** reloads saved places, randomly picks a target, and resets character and overview (or uses the fictional fallback when no valid pins exist). Dragging/pinching does not select a destination. After arrival, the map remains explorable without accepting new movement. This is practice only, not real navigation.
 
 - `lib/app.dart`: Flutter application and theme.
-- `lib/features/welcome/welcome_screen.dart`: role selection and adult introduction.
+- `lib/features/welcome/welcome_screen.dart`: role selection and adult setup entry.
+- `lib/features/parent/`: child/contact/place editors, local models and encrypted repository.
+- `lib/features/game/game_launcher.dart`: load saved places and randomly select a valid practice target.
 - `lib/features/game/game_screen.dart`: game screen and Flutter UI.
 - `lib/game/neighborhood_game.dart`: Flame scene and demo mission.
 - `lib/game/components/`: map rendering and player movement.

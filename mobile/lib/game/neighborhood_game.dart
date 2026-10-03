@@ -3,13 +3,14 @@ import 'dart:ui';
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 
+import '../features/parent/data/family_plan.dart';
 import 'components/neighborhood_component.dart';
 import 'components/player_component.dart';
 import 'maps/demo_map.dart';
 
 /// Offline arena neighborhood with a touch-controlled demo mission.
 class NeighborhoodGame extends FlameGame {
-  NeighborhoodGame({required this.onArrived})
+  NeighborhoodGame({required this.onArrived, this.destination})
     : super(
         camera: CameraComponent.withFixedResolution(
           width: DemoMap.mapSize,
@@ -18,6 +19,7 @@ class NeighborhoodGame extends FlameGame {
       );
 
   final VoidCallback onArrived;
+  final SafePoint? destination;
   late final Vector2 _start;
   late final Vector2 _home;
   late final PlayerComponent _player;
@@ -40,13 +42,16 @@ class NeighborhoodGame extends FlameGame {
     _showWholeMap();
     final map = await DemoMapRepository().load();
     _start = map.project(map.center);
-    // Fictional home inside the real map, used only as a demo destination.
-    _home = map.project([20.0013, 50.0730]);
+    final target = destination;
+    _home = map.project(
+      target == null ? [20.0013, 50.0730] : [target.longitude, target.latitude],
+    );
     _player = PlayerComponent(startPosition: _start.clone());
     await world.add(
       NeighborhoodComponent(
         map: map,
         home: _home,
+        homeLabel: destination?.displayName ?? 'Pretend base',
         // Flutter resolves taps versus pan/pinch before selecting a destination.
         onDestinationSelected: (_) {},
       ),

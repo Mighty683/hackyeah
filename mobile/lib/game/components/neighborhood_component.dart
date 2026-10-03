@@ -154,6 +154,7 @@ class NeighborhoodComponent extends PositionComponent with TapCallbacks {
     center - Offset(horizontalDistance ?? distance + 20, 0),
   ];
 
+  /// Saved pins can reach map edges; keep their clipped artwork visible.
   void _drawBase(Canvas canvas, double scale) {
     final inset = math.min(
       math.min(home.x - _mapRect.left, _mapRect.right - home.x),
@@ -161,7 +162,7 @@ class NeighborhoodComponent extends PositionComponent with TapCallbacks {
     );
     canvas.save();
     canvas.translate(home.x, home.y);
-    canvas.scale(math.max(0, math.min(1 / scale, inset / 21)));
+    canvas.scale(math.max(0.5 / scale, math.min(1 / scale, inset / 21)));
     _paint
       ..style = PaintingStyle.fill
       ..color = const Color(0xFFFFFCF1);
