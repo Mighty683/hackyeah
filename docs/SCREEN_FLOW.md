@@ -70,7 +70,7 @@ flowchart TD
     W -->|I'm a child| ON["CHILD ONBOARDING: NAME<br/>Name or nickname; saved details prefilled"]
     ON -->|Add my age| OA["CHILD ONBOARDING: AGE<br/>Enter age 1–99"]
     OA -->|Choose my character| OG["CHILD ONBOARDING: GENDER<br/>Girl or boy with character previews"]
-    OG -->|Start practice: save encrypted local details| PS["PRACTICE SELECTION<br/>Alarm practice or map practice"]
+    OG -->|Start practice: save encrypted local details| PS["PRACTICE SELECTION<br/>Alarm, lost or map practice"]
     OG -->|Save failed: retain edits and retry| OG
     OA -->|Back| ON
     OG -->|Back| OA
@@ -87,6 +87,50 @@ flowchart TD
     HOME -->|Back| PS
     OUT -->|Back| PS
     MR -->|Choose practice| PS
+    subgraph LOST["MISSION 02: FICTIONAL LOST PRACTICE, AGES 7+"]
+        LL["LOAD PRACTICE FAMILY<br/>Read current encrypted record; display-only snapshot"]
+        LE["READ ERROR<br/>Retry or explicitly use pretend family; preserve record"]
+        LV["CHOOSE LOST SCENE<br/>Meeting point nearby or out of sight"]
+        LS["STOP<br/>Stop instead of running or leaving"]
+        LO["LOOK<br/>Remember the same configured landmark illustration"]
+        LP["NEARBY POINT<br/>Recognize it; pretend short movement"]
+        LN["POINT OUT OF SIGHT<br/>Stay nearby and ask for help"]
+        LH["HELPER<br/>Ask staff at a visible public desk"]
+        LU["STAY HERE<br/>Decline leaving with an unknown person"]
+        LC["FAMILY CARDS<br/>Choose a pretend call"]
+        LA["NO ANSWER<br/>Stay; try a different trusted person"]
+        LR["PRETEND REPLY<br/>Family knows the story location"]
+        LW["WAIT<br/>Stay with staff"]
+        LJ["REUNION<br/>Parent arrives in the story"]
+        LI["I'M SAFE<br/>Explicit tap; local training state only"]
+        LD["PRETEND CONFIRMATION<br/>No message was sent"]
+        LRC["LOST RECALL<br/>Seven actions; no score"]
+        LF["LOST COMPLETE<br/>Replay or return to practice"]
+        LL -->|Loaded; missing optional details use labelled fixtures| LV
+        LL -->|Read failed| LE
+        LE -->|Try again| LL
+        LE -->|Use pretend family| LV
+        LV -->|Choose variant| LS
+        LS -->|Safe choice; acknowledge feedback| LO
+        LO -->|Nearby variant| LP
+        LO -->|Out-of-sight variant| LN
+        LP --> LH
+        LN --> LH
+        LH --> LU
+        LU --> LC
+        LC --> LA
+        LA --> LR
+        LR --> LW
+        LW --> LJ
+        LJ --> LI
+        LI -->|I'M SAFE; no communication| LD
+        LD --> LRC
+        LRC --> LF
+        LF -->|Play again: retain variant and display snapshot| LS
+    end
+    PS -->|I'm lost practice; ages 7+| LL
+    LOST -->|Back or exit: stop narration| PS
+    LF -->|Back to practice choices| PS
     PS -->|Back| B
     A -->|Add child details| CN
     A -->|Skip child details| CT
@@ -100,6 +144,12 @@ flowchart TD
     TR -->|Save contact| CT
     CT -->|Choose safe places or Skip contacts| SP
     SP -->|Add or edit safe place| M
+    SP -->|Add or edit practice meeting point| PMI["PRACTICE LANDMARK PICTURE<br/>Fountain or information desk"]
+    PMI -->|Name this meeting point| PMN["PRACTICE LANDMARK NAME<br/>Optional label; same picture used in lost practice"]
+    PMN -->|Save practice meeting point| SP
+    PMN -->|Back| PMI
+    PMI -->|Back: discard unsaved edits| SP
+    PMN -->|Save failed: retain edits| SE
     M -->|Choose position| MP
     MP -->|Save safe place after choosing a pin| SP
     SP -->|Finish setup or Skip safe places| DONE
@@ -124,6 +174,7 @@ flowchart TD
     RETRY -->|Child| CS
     RETRY -->|Contact| TR
     RETRY -->|Safe place| MP
+    RETRY -->|Practice meeting point| PMN
     MP -->|Map load failed| ME
     ME -->|Back| M
     CT -->|Delete contact or all saved details| DEL
@@ -172,16 +223,22 @@ flowchart TD
 | --- | --- | --- |
 | Welcome | Choose child or adult | Help prototype, without choosing a role |
 | Child onboarding | Enter name or nickname, age, then select girl or boy | Back keeps edits; load/save errors allow retry; saved details are prefilled |
-| Practice selection | Choose alarm or map practice | Replay audio, back |
+| Practice selection | Choose alarm, lost or map practice | Replay audio, back |
 | Mission mode (7+) | Choose home or outside | Replay audio, choose practice |
 | Mission scene | Make one visual decision or hear the situation | Replay audio, back |
 | Mission feedback | See the consequence and explanation | Retry the same decision or advance; replay audio |
 | Mission recall | See the six learned actions and completion sticker | Replay audio, replay mission, choose practice |
+| Lost practice loading/error | Load the current display-only family snapshot | Retry or explicitly use pretend family; back preserves saved details |
+| Lost scene selection (7+) | Choose meeting point nearby or out of sight | Replay audio, back; unavailable voice offers adult help and retry |
+| Lost decision/feedback | Make one choice; hear a calm consequence | Retry unsafe choice or advance; replay audio, exit |
+| Lost reunion/confirmation | Tap I'M SAFE after the fictional reunion | Explicit local confirmation; no message sent |
+| Lost recall/completion | Recall seven actions, including meeting point only if nearby | Replay audio, Play again with the same snapshot/variant, Back to practice choices |
 | Parent intro | Add child details | Skip child details, demo/privacy details, confirmed Delete all in Setup options, back |
 | Child name, age, address, support needs | Enter one optional detail per screen | Next with value or empty field, previous step; final step saves child record |
 | Trusted contacts | Add or review up to three contacts | Edit or confirmed delete; Choose safe places or Skip contacts; Setup options, back to intro |
 | Contact name, phone, relationship | Enter one optional detail per screen | Next with value or empty field, previous step; final step saves contact |
-| Safe places | Add or review optional safe places | Edit or confirmed delete; Finish setup or Skip safe places; Setup options, back to contacts |
+| Safe places | Add or review optional map places or a lost-practice landmark | Edit or confirmed delete; Finish setup or Skip safe places; Setup options, back to contacts |
+| Practice landmark picture/name | Choose one bundled illustration, then an optional label | Previous step, save with retained edits on failure; back without saving |
 | Safe place name | Name one safe place | Choose position, back without saving |
 | Safe place pin | Choose one geographic position | Tap or accessible centre/direction controls; save, previous step |
 | Setup complete | Play together | Review setup returns to intro; Setup options, back to safe places |
@@ -210,6 +267,14 @@ The MVP targets children aged 7+ with two to four choices and optional fictional
 
 Instructions, feedback, and replay use an installed offline English Android speech voice. If unavailable, the app shows an adult-help message; text remains as a fallback. Short warning and all-clear playback excerpts are teaching samples, not complete alarm signals. Contacts, messages, replies, shelter selection and movement are fictional; this mission neither calls nor sends messages nor uses saved personal contacts or map pins. See [mission-01-air-raid-alarm.md](mission-01-air-raid-alarm.md) for the scenario and source notes.
 
+### Mission 02 — lost practice
+
+The new 7+ activity has two explicit variants: the agreed meeting point is visible nearby, or it is out of sight. Both practice stopping, looking, asking at a nearby public desk, declining to leave with an unknown person, a pretend call with no answer, trying a different contact, waiting, reunion, an explicit I'M SAFE tap and seven-action recall. Wrong choices get calm feedback and retry the same decision. There is no score or timer.
+
+Parent setup can save a practice Fountain or Information desk illustration and optional label within the existing safe-places stage. This field is independent of geographic pins. The same registry supplies setup, reminder and recognition art; it is not a photograph or a safety assessment. Contacts contribute display labels/avatar motifs only. Calls, replies and notifications are simulated; the mission never receives real phone numbers, addresses or map coordinates. Missing details use labelled fixtures, and an unknown landmark ID becomes Pretend fountain. Failed record reads require retry or explicit fictional practice and never overwrite the record.
+
+The lost selector and mission reuse offline English Android speech. Missing voice offers adult help and retry, with text retained. Leaving stops narration and returns directly to the activity list; replay resets transient progress and keeps the selected variant/snapshot. Re-entering lost practice reloads current saved details. Training is labelled unreviewed and not for real emergencies. Photos, younger-child support, familiar routes and actual parent notifications remain future work. See [MISSION_02_IMPLEMENTATION_PLAN.md](MISSION_02_IMPLEMENTATION_PLAN.md) for scope, references and verification.
+
 ### Visual design system
 
 The implemented screens share rounded Nunito typography, navy text, blue actions and white panels. The current visual refinement adds a bespoke colourful vector icon family and six decorative dinosaur poses: wave, point, think, listen, celebrate and calm. Custom icons cover navigation, narration/replay, map controls, forms, mission choices and help; mission Canvas drawings and default back/close controls also use the family instead of Material font glyphs. Labels, tooltips, focus and disabled state remain on the native controls.
@@ -231,12 +296,13 @@ Map update checks on 2026-10-03: Flutter analysis reported no issues, all 14 exi
 ### Data and demo boundaries
 
 - One child; optional full name, age, address and support notes, entered one detail per screen. The child record is saved after the support-needs step. No photo feature.
+- One optional practice meeting point; a bundled landmark illustration and display label, saved separately from map pins. Existing schema-v1 records without this field still load; deleting it preserves other entries. Lost practice reads display information only and uses no real communications.
 - Up to three trusted contacts; optional name, phone and relationship, entered one detail per screen. Each completed contact and safe-place editor saves its record immediately. Back from the first editor step discards only unsaved edits. Saving a number does not make calls or verify it.
 - Safe places are parent-selected destinations, stored as named geographic pins inside the bundled TAURON Arena area. Their safety and opening hours are not checked. The current demo uses them only for simulated character movement; it provides no walking route or emergency instructions.
 - Each game launch and replay chooses a random valid saved safe place. Repeats are possible. No safe places means the original fictional base.
 - The family plan persists in `flutter_secure_storage` using Android encryption. Android cloud backup and device-transfer rules exclude app data. No sync, migration or restore is promised.
 - Encryption is not a parent gate: anyone using this unlocked app can view the records. Recommend fictional personal details for demonstrations. **Delete all saved details** removes this feature's child/contact/place record after confirmation; it does not silently reset failed reads.
-- Keep map attribution visible. Preserve the distinction between real geography and simulated movement. Mission 01 implements fictional alarm decision training; validated real emergency assistance remains unimplemented. The separate help prototype is unreviewed.
+- Keep map attribution visible. Preserve the distinction between real geography and simulated movement. Missions 01 and 02 implement fictional alarm and lost decision training; validated real emergency assistance remains unimplemented. The separate help prototype is unreviewed.
 
 ## Proposed future product flow — not implemented
 

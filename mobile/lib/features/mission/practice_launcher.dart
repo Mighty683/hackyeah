@@ -6,10 +6,11 @@ import '../../widgets/basebound_mascot.dart';
 import '../game/game_launcher.dart';
 import '../parent/data/family_plan.dart';
 import 'air_raid_mission.dart';
+import 'lost_mission_launcher.dart';
 import 'mission_audio.dart';
 import 'mission_screen.dart';
 
-/// Keeps fictional alarm training separate from the existing map practice.
+/// Offers fictional decision practice beside the existing map game.
 class PracticeLauncher extends StatefulWidget {
   const PracticeLauncher({super.key, this.child = const ChildProfile()});
 
@@ -31,7 +32,7 @@ class _PracticeLauncherState extends State<PracticeLauncher>
 
   String get _instruction => switch (_selection) {
     _Selection.activity =>
-      'Choose your practice. An alarm at home, or the map game.',
+      'Choose your practice. An alarm, being lost, or the map game.',
     _Selection.mode => 'Choose where to practice. At home, or outside.',
   };
 
@@ -184,6 +185,11 @@ class _PracticeLauncherState extends State<PracticeLauncher>
         'Alarm practice',
         BaseboundIconName.alarm,
         () => _select(_Selection.mode),
+      ),
+      _card(
+        "I'm lost practice",
+        BaseboundIconName.lost,
+        () => _open(LostMissionLauncher(child: widget.child)),
       ),
       _card(
         'Map practice',

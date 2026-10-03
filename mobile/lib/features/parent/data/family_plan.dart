@@ -4,6 +4,7 @@ class FamilyPlan {
     this.child = const ChildProfile(),
     this.contacts = const [],
     this.safePoints = const [],
+    this.practiceMeetingPoint,
   });
 
   static const maxContacts = 3;
@@ -26,21 +27,33 @@ class FamilyPlan {
           (entry) => SafePoint.fromJson(entry as Map<String, dynamic>),
         ),
       ),
+      practiceMeetingPoint: json['practiceMeetingPoint'] == null
+          ? null
+          : PracticeMeetingPoint.fromJson(
+              json['practiceMeetingPoint'] as Map<String, dynamic>,
+            ),
     );
   }
 
   final ChildProfile child;
   final List<TrustedContact> contacts;
   final List<SafePoint> safePoints;
+  final PracticeMeetingPoint? practiceMeetingPoint;
 
+  /// Set [clearPracticeMeetingPoint] to remove the optional practice landmark.
   FamilyPlan copyWith({
     ChildProfile? child,
     List<TrustedContact>? contacts,
     List<SafePoint>? safePoints,
+    PracticeMeetingPoint? practiceMeetingPoint,
+    bool clearPracticeMeetingPoint = false,
   }) => FamilyPlan(
     child: child ?? this.child,
     contacts: List.unmodifiable(contacts ?? this.contacts),
     safePoints: List.unmodifiable(safePoints ?? this.safePoints),
+    practiceMeetingPoint: clearPracticeMeetingPoint
+        ? null
+        : practiceMeetingPoint ?? this.practiceMeetingPoint,
   );
 
   Map<String, dynamic> toJson() => {
@@ -48,7 +61,25 @@ class FamilyPlan {
     'child': child.toJson(),
     'contacts': contacts.map((contact) => contact.toJson()).toList(),
     'safePoints': safePoints.map((point) => point.toJson()).toList(),
+    if (practiceMeetingPoint != null)
+      'practiceMeetingPoint': practiceMeetingPoint!.toJson(),
   };
+}
+
+/// A parent-selected illustration for practice, independent of geographic pins.
+class PracticeMeetingPoint {
+  const PracticeMeetingPoint({required this.presetId, required this.label});
+
+  factory PracticeMeetingPoint.fromJson(Map<String, dynamic> json) =>
+      PracticeMeetingPoint(
+        presetId: json['presetId'] as String,
+        label: json['label'] as String,
+      );
+
+  final String presetId;
+  final String label;
+
+  Map<String, dynamic> toJson() => {'presetId': presetId, 'label': label};
 }
 
 enum ChildGender { girl, boy }

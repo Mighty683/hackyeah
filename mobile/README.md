@@ -30,11 +30,19 @@ flutter build apk --debug
 The debug APK is generated at `build/app/outputs/flutter-apk/app-debug.apk`.
 Release signing is not configured; the generated release configuration uses the debug key for local development.
 
+## Mission 02 verification — 2026-10-03
+
+Combined Flutter analysis found no issues; all 39 tests passed; the Android debug APK built successfully. Tests include both complete lost branches, narration recovery/lifecycle, launcher entry/return and parent-record compatibility/preservation. The connected phone was locked, so an on-device walkthrough and actual voice playback were not verified. Appearance review is left to the user.
+
 ## Current scope
 
-Welcome asks whether the player is an adult or a child. Adults start family onboarding; children choose alarm practice or the map game. Onboarding asks for one action or detail per screen: intro → child name → age → address → support needs → trusted contacts → safe places → completion. Child details are optional; each contact uses name → phone → relationship, with up to three contacts. Each optional safe place uses name → offline map pin. Completed editor records save immediately. Parents can skip optional sections, review setup from the intro, edit or confirm deletion, then choose Play together on completion. No photo feature is included.
+Welcome asks whether the player is an adult or a child. Adults start family onboarding; children choose alarm practice, lost practice or the map game. Onboarding asks for one action or detail per screen: intro → child name → age → address → support needs → trusted contacts → safe places → completion. Child details are optional; each contact uses name → phone → relationship, with up to three contacts. Each optional safe place uses name → offline map pin. Completed editor records save immediately. Parents can skip optional sections, review setup from the intro, edit or confirm deletion, then choose Play together on completion. No photo feature is included.
 
 Mission 01 is fictional air-raid-alarm practice for ages 7+, with a home tutorial and an outdoor simulation using two to four visual choices per decision. The MVP has no younger-child branch or age selection. The home premise is an interior fallback when the agreed shelter cannot be reached, not a guarantee that a home is safe. Children practice moving away from windows, choosing an interior place, sending a pretend message, staying through noise and silence, and waiting for an explicit all-clear. Outdoor mistakes teach getting down and protecting the head. Wrong choices get calm feedback and retries; the reward is for completion, with no score or timer.
+
+Mission 02 is fictional lost practice for ages 7+, with explicit nearby-meeting-point and out-of-sight variants. Parent setup can add an optional practice Fountain or Information desk illustration and name within the safe-places stage; it is independent of map pins and is not a real-location photograph. Training shows the same landmark picture/name and trusted-person display cards. Missing details use labelled pretend family cards, including a second contact for the unanswered-call lesson. Failed reads offer retry or explicit pretend practice without modifying saved records.
+
+The lost mission practices stop/look, nearby landmark recognition or staying nearby, asking at a public desk, declining to leave with an unknown person, pretend calls to two different contacts, waiting, reunion and an explicit I'M SAFE action. No call or notification is made; completion says no message was sent. It retains unreviewed/not-for-real-emergencies labels, calm retry feedback, seven-action recall and no score. Replay keeps the same variant/context; re-entry loads the current family plan. Actual photos, routes, younger-child support and parent-device notifications remain future work. See [`../docs/MISSION_02_IMPLEMENTATION_PLAN.md`](../docs/MISSION_02_IMPLEMENTATION_PLAN.md) for scope and verification.
 
 Android narration requires an installed **offline English TTS voice**. Instructions play automatically and have a Replay audio control. Voice initialization/playback failure displays an adult-help message rather than silently claiming narration works. Official Polish warning/all-clear recordings play as short teaching excerpts at restrained volume; the complete source files are bundled unchanged. See [`assets/audio/mission01/README.md`](assets/audio/mission01/README.md) for attribution and licensing. The scene and message exchange are fictional and never use real contact numbers, send messages, or verify shelters. No network is needed once the speech voice is installed.
 
@@ -54,7 +62,7 @@ Map controls: the game starts at **4× zoom**, showing roughly 500 × 500 metres
 - `lib/features/welcome/welcome_screen.dart`: role selection and adult setup entry.
 - `lib/features/parent/`: family onboarding, child/contact/safe-place steps, local models and encrypted repository.
 - `lib/features/game/game_launcher.dart`: load saved safe places and randomly select a valid target for the practice game.
-- `lib/features/mission/`: practice selection, air-raid scenario state, illustrated decisions and offline Android audio.
+- `lib/features/mission/`: practice selection, air-raid/lost scenario state, display-only family context, illustrated decisions and offline Android audio.
 - `lib/features/game/game_screen.dart`: game screen and Flutter UI; help pauses the game.
 - `lib/features/help/`: separate offline help prototype and explicit dialler handoff.
 - `lib/widgets/basebound_mascot.dart`: static guide shared by welcome, game and help.
