@@ -22,13 +22,14 @@ class HelpEntryButton extends StatelessWidget {
   final VoidCallback? onPressed;
 
   @override
-  Widget build(BuildContext context) => OutlinedButton.icon(
+  Widget build(BuildContext context) => FilledButton.icon(
     onPressed: onPressed ?? () => openHelpScreen(context),
-    icon: const BaseboundIcon(BaseboundIconName.help, calm: true),
-    label: const Text(
-      'Potrzebuję pomocy · prototyp',
-      textAlign: TextAlign.center,
+    style: FilledButton.styleFrom(
+      backgroundColor: BaseboundColors.coral,
+      foregroundColor: Colors.white,
     ),
+    icon: const BaseboundIcon(BaseboundIconName.help),
+    label: const Text('Potrzebuję pomocy', textAlign: TextAlign.center),
   );
 }
 

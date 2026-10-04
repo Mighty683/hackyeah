@@ -19,7 +19,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.text('Nie udało się przygotować ćwiczenia.'), findsOneWidget);
-    await tester.tap(find.text('Potrzebuję pomocy · prototyp'));
+    await tester.tap(find.text('Potrzebuję pomocy'));
     await tester.pumpAndSettle();
     expect(find.text('Nie udało się przygotować ćwiczenia.'), findsNothing);
     tester.state<NavigatorState>(find.byType(Navigator)).pop();
@@ -34,7 +34,7 @@ void main() {
     final ready = Completer<void>();
     await tester.pumpWidget(BaseboundApp(initialize: () => ready.future));
     await tester.pump();
-    await tester.tap(find.text('Potrzebuję pomocy · prototyp'));
+    await tester.tap(find.text('Potrzebuję pomocy'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
     expect(find.byType(HelpScreen), findsOneWidget);

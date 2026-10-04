@@ -136,7 +136,7 @@ void main() {
     'help emergency and trusted contact calls remain pretend',
     (tester) async {
       await _start(tester);
-      await _tap(tester, 'Potrzebuję pomocy · prototyp');
+      await _tap(tester, 'Potrzebuję pomocy');
       await _tap(tester, 'Ktoś nie reaguje');
       await _wait(tester, find.text('Przećwicz telefon pod 112'));
       await _tap(tester, 'Przećwicz telefon pod 112');

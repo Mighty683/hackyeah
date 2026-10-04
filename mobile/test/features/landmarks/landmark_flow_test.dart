@@ -299,7 +299,7 @@ void main() {
     expect(location.isTracking, isTrue);
     expect(source.requests, 0);
 
-    await tester.tap(find.byTooltip('Potrzebuję pomocy · prototyp'));
+    await tester.tap(find.byTooltip('Potrzebuję pomocy'));
     await _pumpTransition(tester);
     expect(find.byTooltip('Zamknij pomoc'), findsOneWidget);
     expect(location.state, LocationState.paused);
@@ -318,7 +318,7 @@ void main() {
     expect(location.isTracking, isTrue);
     expect(source.requests, 0);
 
-    await tester.tap(find.byTooltip('Potrzebuję pomocy · prototyp'));
+    await tester.tap(find.byTooltip('Potrzebuję pomocy'));
     await _pumpTransition(tester);
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
     await tester.pump();

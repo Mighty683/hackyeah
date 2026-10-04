@@ -236,7 +236,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
         IconButton(
           onPressed: _openHelp,
           icon: const BaseboundIcon(BaseboundIconName.help, size: 24),
-          tooltip: 'Potrzebuję pomocy · prototyp',
+          tooltip: 'Potrzebuję pomocy',
         ),
         IconButton(
           onPressed: _about,
