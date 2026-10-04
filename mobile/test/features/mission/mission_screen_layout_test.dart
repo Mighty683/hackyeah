@@ -1,4 +1,5 @@
 import 'package:do_bazy/features/mission/air_raid_mission.dart';
+import 'package:do_bazy/features/mission/mission_decision_layout.dart';
 import 'package:do_bazy/features/mission/mission_scene.dart';
 import 'package:do_bazy/features/parent/data/family_plan.dart';
 import 'package:flutter/material.dart';
@@ -24,6 +25,40 @@ void main() {
   tearDown(() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(audioChannel, null);
+  });
+
+  testWidgets('portrait artwork fills the width without reserving feedback', (
+    tester,
+  ) async {
+    const sceneKey = ValueKey('test-scene');
+    Future<void> showLayout(bool hasFeedback) => tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SizedBox(
+            width: 320,
+            height: 480,
+            child: MissionDecisionLayout(
+              instruction: const SizedBox(height: 80),
+              scene: const AspectRatio(
+                key: sceneKey,
+                aspectRatio: 2 / 3,
+                child: ColoredBox(color: Colors.blue),
+              ),
+              feedback: const SizedBox(height: 120),
+              hasFeedback: hasFeedback,
+            ),
+          ),
+        ),
+      ),
+    );
+    await showLayout(false);
+    final sceneBounds = tester.getRect(find.byKey(sceneKey));
+    expect(sceneBounds.size, const Size(320, 480));
+    expect(sceneBounds.top, 96);
+    await showLayout(true);
+    expect(tester.getRect(find.byKey(sceneKey)), sceneBounds);
+    await tester.ensureVisible(find.byKey(sceneKey));
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets(
@@ -58,11 +93,15 @@ void main() {
                   widget is Semantics &&
                   widget.properties.label == choice.label,
             );
+            await tester.ensureVisible(choiceTarget);
+            await tester.pumpAndSettle();
             final bounds = tester.getRect(choiceTarget);
             expect(bounds.top, greaterThanOrEqualTo(0));
             expect(bounds.bottom, lessThanOrEqualTo(size.height));
             expect(choiceTarget.hitTestable(), findsOneWidget);
           }
+          await tester.ensureVisible(target);
+          await tester.pumpAndSettle();
           expect(target.hitTestable(), findsOneWidget, reason: '$size: $label');
           await tester.tap(target);
           await tester.pumpAndSettle();

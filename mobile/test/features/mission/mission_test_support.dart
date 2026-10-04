@@ -2,7 +2,6 @@ import 'package:do_bazy/features/mission/air_raid_mission.dart';
 import 'package:do_bazy/audio/practice_audio.dart';
 import 'package:do_bazy/features/mission/mission_scene.dart';
 import 'package:do_bazy/features/mission/mission_screen.dart';
-import 'package:do_bazy/features/mission/practice_phone_keypad.dart';
 import 'package:do_bazy/features/parent/data/family_plan.dart';
 import 'package:do_bazy/features/parent/data/family_plan_repository.dart';
 import 'package:do_bazy/ui/basebound_ui.dart';
@@ -55,13 +54,9 @@ Future<void> tapMissionAction(
       ? find.text(label)
       : accessibleAction;
   expect(target, findsOneWidget);
-  final context = tester.element(find.byType(MissionScreen));
-  if (MediaQuery.textScalerOf(context).scale(1) <= 1.1 &&
-      find.byType(PracticePhoneKeypad).evaluate().isEmpty) {
-    expect(target.hitTestable(), findsOneWidget, reason: label);
-  } else {
-    await tester.ensureVisible(target);
-  }
+  await tester.ensureVisible(target);
+  await tester.pumpAndSettle();
+  expect(target.hitTestable(), findsOneWidget, reason: label);
   await tester.tap(target);
   await tester.pumpAndSettle();
   final sceneFinder = find.byType(MissionScene);
