@@ -9,6 +9,12 @@ A Flutter + Flame Android game with a Slidev pitch deck. The mobile game is the 
 
 ## Android game
 
+### Download and install
+
+Download [Tuptu for Android](https://github.com/Mighty683/hackyeah/raw/refs/heads/codex/android-release-apk/releases/tuptu-release.apk) on your Android phone. Open the APK, allow installation from your browser or file manager if Android asks, then tap **Install** and open **Tuptu**. No Flutter or development tools are required.
+
+This is a demo release signed with the project's debug key. Use fictional personal details; training and the unreviewed help prototype are not for real emergencies. See [`releases/README.md`](releases/README.md) for build details.
+
 Install Flutter and the Android SDK, then run:
 
 ```sh

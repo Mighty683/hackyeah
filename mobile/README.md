@@ -137,6 +137,8 @@ flutter build apk --debug
 The debug APK is generated at `build/app/outputs/flutter-apk/app-debug.apk`.
 Release signing is not configured; the generated release configuration uses the debug key for local development.
 
+For direct installation, download the committed [release APK](../releases/tuptu-release.apk). Build it with `flutter build apk --release`; distribution details and refresh instructions are in [`../releases/README.md`](../releases/README.md).
+
 ## Mission 02 verification — 2026-10-03
 
 Combined Flutter analysis found no issues; all 39 tests passed; the Android debug APK built successfully. Tests include both complete lost branches, narration recovery/lifecycle, launcher entry/return and parent-record compatibility/preservation. The connected phone was locked, so an on-device walkthrough and actual voice playback were not verified. Appearance review is left to the user.
