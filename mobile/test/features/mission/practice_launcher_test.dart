@@ -113,7 +113,7 @@ void main() {
       expect(find.text('Nasza mapa'), findsNothing);
       const unavailableNotice =
           'Tutaj nie można ćwiczyć z mapą. '
-          'Wróć i wybierz „Nasza mapa”.';
+          'Wybierz scenariusz „Słyszysz alarm”.';
       final lostTile = tester
           .widgetList<BaseboundActionTile>(find.byType(BaseboundActionTile))
           .singleWhere((tile) => tile.label == 'Ćwicz z mapą');

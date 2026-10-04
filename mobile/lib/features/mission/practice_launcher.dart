@@ -59,7 +59,7 @@ class _PracticeSelectionScreenState extends State<_PracticeSelectionScreen>
     with WidgetsBindingObserver {
   static const _lostScenarioNotice =
       'Tutaj nie można ćwiczyć z mapą. '
-      'Wróć i wybierz „Nasza mapa”.';
+      'Wybierz scenariusz „Słyszysz alarm”.';
 
   PracticeAudio _audio = PracticeAudio();
   late _Selection _selection = widget.initialSelection;
@@ -71,7 +71,7 @@ class _PracticeSelectionScreenState extends State<_PracticeSelectionScreen>
     _Selection.activity => 'Wybierz zajęcie. Ćwiczenia lub Nasza mapa.',
     _Selection.scenario =>
       'Wybierz scenariusz. Słyszysz alarm jest gotowy do testów. '
-          'Aby ćwiczyć z mapą, wróć i wybierz Nasza mapa.',
+          'Ćwicz z mapą jest niedostępne. Wybierz Słyszysz alarm.',
     _Selection.mode => 'Wybierz miejsce ćwiczenia. W domu lub na zewnątrz.',
   };
 
