@@ -270,7 +270,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('Help and background pause GPS until foreground map returns', (
+  testWidgets('Map labels real geography and resumes GPS after backgrounding', (
     tester,
   ) async {
     const audioChannel = MethodChannel('basebound/mission_audio');
@@ -304,36 +304,16 @@ void main() {
     expect(location.isTracking, isTrue);
     expect(source.requests, 0);
 
-    await tester.tap(find.byTooltip('Potrzebuję pomocy'));
-    await _pumpTransition(tester);
-    expect(find.byTooltip('Zamknij pomoc'), findsOneWidget);
+    expect(
+      find.text('Prawdziwa mapa offline · TAURON Arena, Kraków · 2 × 2 km'),
+      findsOneWidget,
+    );
+    expect(find.byTooltip('Potrzebuję pomocy'), findsNothing);
+    expect(find.byTooltip('O Naszej mapie'), findsNothing);
+    expect(find.byTooltip('Posłuchaj ponownie'), findsNothing);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    await tester.pump();
     expect(location.state, LocationState.paused);
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
-    await tester.pump();
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-    await tester.pump();
-    expect(
-      location.state,
-      LocationState.paused,
-      reason: 'Help keeps GPS paused',
-    );
-
-    await tester.tap(find.byTooltip('Zamknij pomoc'));
-    await _pumpTransition(tester);
-    expect(location.isTracking, isTrue);
-    expect(source.requests, 0);
-
-    await tester.tap(find.byTooltip('Potrzebuję pomocy'));
-    await _pumpTransition(tester);
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
-    await tester.pump();
-    await tester.tap(find.byTooltip('Zamknij pomoc'));
-    await _pumpTransition(tester);
-    expect(
-      location.state,
-      LocationState.paused,
-      reason: 'Closing Help in background cannot resume GPS',
-    );
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
     await tester.pump();
     await tester.pump();
