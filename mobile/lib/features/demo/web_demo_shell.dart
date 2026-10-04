@@ -16,7 +16,7 @@ class WebDemoShell extends StatelessWidget {
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -25,11 +25,21 @@ class WebDemoShell extends StatelessWidget {
                     'Demo w przeglądarce',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12,
+                      height: 1.2,
+                      color: BaseboundColors.muted,
+                    ),
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 8),
                 TextButton(
                   onPressed: onReset,
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    minimumSize: const Size(48, 48),
+                    textStyle: const TextStyle(fontSize: 12, height: 1.2),
+                  ),
                   child: const Text('Zresetuj demo', maxLines: 1),
                 ),
               ],
