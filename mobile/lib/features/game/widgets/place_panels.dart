@@ -34,7 +34,7 @@ class SelectedPlacePanel extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  place.isDestination
+                  place.isDestination && !place.hasPhoto
                       ? '${place.icon} ${place.name}'
                       : place.name,
                   style: const TextStyle(

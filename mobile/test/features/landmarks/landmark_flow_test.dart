@@ -127,19 +127,28 @@ void main() {
     await _pumpMap(tester);
     expect(find.byKey(const ValueKey('live-gps-marker')), findsNothing);
     expect(find.text('🏪'), findsNothing);
-    expect(find.text('🏠'), findsOneWidget);
+    expect(find.text('🏠'), findsNothing);
     expect(
       find.descendant(of: find.byTooltip('Dom'), matching: find.byType(Image)),
       findsOneWidget,
     );
     await tester.tap(find.byTooltip('Dom'));
     await tester.pump();
-    expect(find.text('🏠 Dom'), findsOneWidget);
+    expect(find.text('🏠 Dom'), findsNothing);
+    expect(find.text('Dom'), findsOneWidget);
     expect(find.text('Idźcie tutaj razem'), findsNothing);
     expect(
       tester.widget<LandmarkPhoto>(find.byType(LandmarkPhoto)).assetPath,
       'assets/landmarks/demo-home.png',
     );
+    await tester.tap(find.byTooltip('Zamknij miejsce'));
+    await tester.pump();
+    await tester.tap(find.text('Miejsca'));
+    await _pumpTransition(tester);
+    expect(find.text('🏠'), findsNothing);
+    expect(find.byType(LandmarkPhoto), findsNWidgets(2));
+    await tester.tap(find.text('Dom'));
+    await _pumpTransition(tester);
     await tester.tap(find.byTooltip('Zamknij miejsce'));
     await tester.pump();
     await tester.tap(find.byTooltip('Photo shop'));

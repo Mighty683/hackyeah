@@ -266,17 +266,11 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
           for (final place in widget.landmarks)
             ListTile(
               title: Text(place.name),
-              leading: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (place.isDestination)
-                    Text(place.icon, style: const TextStyle(fontSize: 24)),
-                  if (place.isDestination && place.hasPhoto)
-                    const SizedBox(width: 8),
-                  if (place.hasPhoto)
-                    SizedBox(width: 48, child: _photo(place, height: 48)),
-                ],
-              ),
+              leading: place.hasPhoto
+                  ? SizedBox(width: 48, child: _photo(place, height: 48))
+                  : place.isDestination
+                  ? Text(place.icon, style: const TextStyle(fontSize: 24))
+                  : null,
               onTap: () {
                 Navigator.pop(sheetContext);
                 _choose(place);

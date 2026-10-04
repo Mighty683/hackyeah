@@ -62,7 +62,7 @@ class LandmarkPin extends StatelessWidget {
                           ),
                         ),
                       ),
-                    if (landmark.isDestination)
+                    if (!landmark.hasPhoto && landmark.isDestination)
                       Expanded(
                         child: Center(
                           child: Text(

@@ -60,7 +60,7 @@ class LostMeetingPointMap extends StatelessWidget {
                             label: place.name,
                             height: 100,
                           ),
-                        if (place.isDestination)
+                        if (!place.hasPhoto && place.isDestination)
                           const BaseboundIcon(BaseboundIconName.home, size: 64),
                         Text(place.name),
                       ],
