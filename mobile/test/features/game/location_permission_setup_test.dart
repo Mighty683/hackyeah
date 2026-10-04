@@ -135,7 +135,7 @@ void main() {
     expect(source.requests, 1);
   });
 
-  testWidgets('welcome gates both roles, keeps Help, then accepts denial', (
+  testWidgets('welcome gates both roles, hides Help, then accepts denial', (
     tester,
   ) async {
     source.allowed = LocationPermission.denied;
@@ -153,10 +153,7 @@ void main() {
     );
     expect(choices, hasLength(2));
     expect(choices.every((choice) => choice.onPressed == null), isTrue);
-    expect(
-      tester.widget<HelpEntryButton>(find.byType(HelpEntryButton)).onPressed,
-      isNotNull,
-    );
+    expect(find.byType(HelpEntryButton), findsNothing);
     source.pendingRequest!.complete(LocationPermission.denied);
     await tester.pumpAndSettle();
     expect(
@@ -168,32 +165,6 @@ void main() {
     expect(find.textContaining('Zdjęcia i ćwiczenia działają'), findsOneWidget);
     expect(source.requests, 1);
     expect(source.streams, 0);
-  });
-
-  testWidgets('Help defers welcome prompt until it closes', (tester) async {
-    source.allowed = LocationPermission.denied;
-    source.pendingCheck = Completer<LocationPermission>();
-    await tester.pumpWidget(
-      MaterialApp(
-        home: WelcomeScreen(
-          locationPermission: LocationPermissionSetup(source: source),
-        ),
-      ),
-    );
-    final help = find.byType(HelpEntryButton);
-    await tester.ensureVisible(help);
-    await tester.tap(help);
-    await tester.pumpAndSettle();
-    source.pendingCheck!.complete(LocationPermission.denied);
-    await tester.pumpAndSettle();
-    expect(find.byType(HelpScreen), findsOneWidget);
-    expect(source.requests, 0);
-    await tester.binding.handlePopRoute();
-    await tester.pumpAndSettle();
-    expect(find.byType(WelcomeScreen), findsOneWidget);
-    expect(source.requests, 1);
-    expect(source.streams, 0);
-    expect(tester.takeException(), isNull);
   });
 
   testWidgets('platform failure leaves welcome roles available', (

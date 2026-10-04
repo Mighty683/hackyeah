@@ -1,4 +1,5 @@
 import 'package:do_bazy/features/child/child_onboarding_screen.dart';
+import 'package:do_bazy/features/help/help_screen.dart';
 import 'package:do_bazy/features/mission/air_raid_mission.dart';
 import 'package:do_bazy/features/mission/mission_screen.dart';
 import 'package:do_bazy/features/mission/mission_scene.dart';
@@ -67,6 +68,7 @@ void main() {
         MaterialApp(home: ChildOnboardingScreen(repository: repository)),
       );
       await tester.pumpAndSettle();
+      expect(find.byType(HelpEntryButton), findsNothing);
       if (gender == ChildGender.boy) {
         await _tap(tester, 'Podaj imię');
         expect(
@@ -109,6 +111,12 @@ void main() {
         repository.failSave = false;
       }
       await _tap(tester, 'Rozpocznij ćwiczenie');
+      expect(find.byType(PracticeLauncher), findsOneWidget);
+      expect(find.byType(HelpEntryButton), findsOneWidget);
+      await _tap(tester, 'Potrzebuję pomocy');
+      expect(find.byType(HelpScreen), findsOneWidget);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
       expect(find.byType(PracticeLauncher), findsOneWidget);
       expect(repository.plan.child.fullName, 'Demo child');
       expect(repository.plan.child.age, 9);

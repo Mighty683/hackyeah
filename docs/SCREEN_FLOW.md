@@ -1,7 +1,7 @@
 # Tuptu screen and action reference
 
 The implemented Android app and browser demo use Polish throughout, including accessibility labels and narration. Key labels: “Jestem dzieckiem”, “Jestem osobą dorosłą”, “Ustawienia rodziny”, “Ćwiczenia”, “Nasza mapa”, “Wspólny spacer” and “Potrzebuję pomocy · prototyp”. Android narration requires an installed Polish offline voice. The English labels below remain descriptive references to the same screens and actions.
-Updated: 2026-10-03. Android is the application; Flutter web is a shared-code demo
+Updated: 2026-10-04. Android is the application; Flutter web is a shared-code demo
 with mocked device features. The Slidev screens are pitch prototypes.
 
 ## Implemented Android flow
@@ -77,7 +77,7 @@ flowchart TD
     LP -->|Load failed| LERR
     LERR -->|Retry| LP
 
-    W -->|I need help: bypass role selection| H
+    PS -->|I need help: after child onboarding; pause narration| H
     F -->|I need help: defer map creation| H
     FE -->|I need help| H
     L -->|I need help: pause map GPS and narration| H
@@ -101,7 +101,7 @@ flowchart TD
     H -->|Close: stop help GPS; restore opener| HP{"Help opened by"}
     HP -->|First-launch loading| BOOT
     HP -->|Startup error| BE
-    HP -->|Welcome| W
+    HP -->|Activity selection: resume narration| PS
     HP -->|Saved-place loading| F
     HP -->|Saved-details error| FE
     HP -->|Map loading| L
@@ -324,9 +324,9 @@ flowchart TD
 | Screen/state | One primary task | Secondary actions |
 | --- | --- | --- |
 | First-launch loading/error | Prepare three photo landmarks, fictional Home and a linked meeting place | Retry on failure; Help prototype; existing records preserved |
-| Welcome | Foreground location permission once, then choose child or adult | Denial permits navigation; Help prototype, without choosing a role |
+| Welcome | Foreground location permission once, then choose child or adult | Denial permits navigation; two role choices |
 | Child onboarding | Enter name or nickname, age, then select girl or boy | Back keeps edits; load/save errors allow retry; saved details are prefilled |
-| Activity selection | Choose Practices or Our map | Replay audio, back |
+| Activity selection | Choose Practices or Our map | Help prototype after child onboarding; replay audio, back |
 | Practice scenarios | Choose alarm or lost practice | Replay audio, back to activities |
 | Mission mode (7+) | Choose home or outside | Replay audio, back to scenarios |
 | Mission scene | Tap a pictured scene object to choose an action, or hear the situation | Replay audio, mute/unmute sound effects, back |
@@ -408,7 +408,7 @@ The lost selector and mission reuse offline Polish Android speech. Missing voice
 
 The implemented screens follow [UI_GUIDELINES.md](UI_GUIDELINES.md): warm neutral backgrounds, slate Nunito text, one muted blue action accent, flat white panels and consistent 12-pixel control corners. Shared action tiles use small icons and left-aligned labels. Equivalent choices stay neutral until selected; feedback adds a symbol and explanation. No control uses a decorative gradient, glow or raised game-button treatment.
 
-Welcome, child onboarding, activity selection and practice scenarios use clear headings and calm choices. The first child activity screen has two choices: **Practices** opens a separate scenario list; **Our map** opens the familiar-place map. Alarm and lost practice return to the scenario list, whose back action returns to activities. Maps and landmark photos remain the main content of their screens, with compact controls and preserved attribution. Adult onboarding uses a field-first layout with one detail per step, a compact progress indicator and a single save/next action. Help retains its separate cool theme, no training mascot and a visible prototype notice.
+Welcome, child onboarding, activity selection and practice scenarios use clear headings and calm choices. The first child activity screen has two choices: **Practices** opens a separate scenario list; **Our map** opens the familiar-place map. **I need help** is available here after child onboarding, rather than on welcome; opening it pauses activity narration, and closing it restores activity selection and narration. Alarm and lost practice return to the scenario list, whose back action returns to activities. Maps and landmark photos remain the main content of their screens, with compact controls and preserved attribution. Adult onboarding uses a field-first layout with one detail per step, a compact progress indicator and a single save/next action. Help retains its separate cool theme, no training mascot and a visible prototype notice.
 
 Mission 01 uses portrait environment backgrounds and a separate character layer. Decision targets are the pictured windows, doors, rooms and destinations, with blue outlines on the pictured objects and native tap controls. Physical scene choices have no visible captions or button surfaces; spoken instructions, accessibility labels, keyboard focus and tap feedback remain available. The apartment composes a bundled transparent furniture sprite sheet over a warm timber floor, with softly painted dollhouse walls, windows in wall openings and simple wooden doors. A single central hallway connects the living room and kitchen on the left, a bedroom with a reading corner along the whole right side, and the front door at the bottom. There is no nested bottom-right room or duplicated outer wall. The loud-noise decision targets the actual living-room window, front door and child in the central inside hallway. Abstract actions and fictional contacts use separate illustrated targets within the scene. Each fictional contact target shows an avatar with its visible name beside it; narration and screen-reader labels remain available. The guided call and SMS targets show their action names beside the icons. Mission 02 places selectable people, landmarks and action objects in its fictional square. Equivalent targets use the same object-outline treatment before selection; feedback supplies the outcome colour and symbol. Training and adult-setup icons retain their original colours.
 
@@ -487,7 +487,7 @@ flowchart TD
     WC -->|Save session profile| WA
     WA -->|Our map| WM
     WA -->|Practices| WT
-    WW -->|I need help| WH
+    WA -->|I need help: after child onboarding| WH
     WM -->|I need help| WH
     WH -->|Explicit pretend phone action| WD
     WD -->|Close| WH

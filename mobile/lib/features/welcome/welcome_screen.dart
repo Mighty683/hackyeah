@@ -8,7 +8,6 @@ import '../../ui/basebound_ui.dart';
 import '../../widgets/basebound_mascot.dart';
 import '../child/child_onboarding_screen.dart';
 import '../game/location_permission_setup.dart';
-import '../help/help_screen.dart';
 import '../parent/parent_screen.dart';
 
 /// Role selection keeps adult information out of the child's first screen.
@@ -28,11 +27,9 @@ class _WelcomeScreenState extends State<WelcomeScreen>
   bool _checkingLocation = true;
   LocationPermissionStatus? _locationStatus;
   Completer<void>? _permissionReady;
-  bool _helpOpen = false;
 
   bool get _canRequest =>
       mounted &&
-      !_helpOpen &&
       (WidgetsBinding.instance.lifecycleState == null ||
           WidgetsBinding.instance.lifecycleState ==
               AppLifecycleState.resumed) &&
@@ -68,17 +65,6 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     _permissionReady = null;
   }
 
-  Future<void> _openHelp() async {
-    if (_helpOpen) return;
-    _helpOpen = true;
-    try {
-      await openHelpScreen(context);
-    } finally {
-      _helpOpen = false;
-      if (mounted) _releasePermissionGate();
-    }
-  }
-
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) _releasePermissionGate();
@@ -104,7 +90,6 @@ class _WelcomeScreenState extends State<WelcomeScreen>
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 440),
                 child: _WelcomeChoices(
-                  onHelp: _openHelp,
                   rolesEnabled: !_checkingLocation,
                   locationMessage: kIsWeb
                       ? 'Wypróbuj ekrany Androida z fikcyjnymi danymi. Funkcje urządzenia są symulowane.'
@@ -126,12 +111,10 @@ class _WelcomeScreenState extends State<WelcomeScreen>
 class _WelcomeChoices extends StatelessWidget {
   const _WelcomeChoices({
     required this.rolesEnabled,
-    required this.onHelp,
     this.locationMessage,
   });
 
   final bool rolesEnabled;
-  final VoidCallback onHelp;
   final String? locationMessage;
 
   @override
@@ -190,8 +173,6 @@ class _WelcomeChoices extends StatelessWidget {
               ? () => _openScreen(context, const ParentScreen())
               : null,
         ),
-        const SizedBox(height: 24),
-        HelpEntryButton(onPressed: onHelp),
       ],
     );
   }

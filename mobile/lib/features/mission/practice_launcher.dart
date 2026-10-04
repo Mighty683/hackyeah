@@ -5,6 +5,7 @@ import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
 import '../../widgets/basebound_mascot.dart';
 import '../game/game_launcher.dart';
+import '../help/help_screen.dart';
 import '../parent/data/family_plan.dart';
 import 'air_raid_mission.dart';
 import 'lost_mission_launcher.dart';
@@ -200,6 +201,12 @@ class _PracticeSelectionScreenState extends State<_PracticeSelectionScreen>
                       ),
                       const SizedBox(height: 24),
                       ..._choices(),
+                      if (_selection == _Selection.activity) ...[
+                        const SizedBox(height: 12),
+                        HelpEntryButton(
+                          onPressed: () => _open(const HelpScreen()),
+                        ),
+                      ],
                       const SizedBox(height: 8),
                       Align(
                         alignment: Alignment.centerLeft,
