@@ -253,25 +253,23 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
         else
           ..._variantContent(),
         const SizedBox(height: 16),
-        if (!kIsWeb)
-          OutlinedButton.icon(
-            onPressed: _opening ? null : _speak,
-            icon: const BaseboundIcon(BaseboundIconName.speaker),
-            label: const Text('Posłuchaj ponownie'),
-          ),
+        OutlinedButton.icon(
+          onPressed: _opening ? null : _speak,
+          icon: const BaseboundIcon(BaseboundIconName.speaker),
+          label: const Text('Posłuchaj ponownie'),
+        ),
         if (!_audioAvailable) ...[
           const SizedBox(height: 12),
           const Text(
             kIsWeb
-                ? 'Demo w przeglądarce: głos i dźwięki są wyłączone. Czytaj instrukcje z dorosłym.'
+                ? 'Głos w przeglądarce jest niedostępny. Dotknij Posłuchaj ponownie lub czytaj z dorosłym.'
                 : 'Głos jest niedostępny. Poproś dorosłego o pomoc. '
                       'Potrzebny jest polski głos offline.',
           ),
-          if (!kIsWeb)
-            TextButton(
-              onPressed: _opening ? null : _speak,
-              child: const Text('Spróbuj włączyć głos ponownie'),
-            ),
+          TextButton(
+            onPressed: _opening ? null : _speak,
+            child: const Text('Spróbuj włączyć głos ponownie'),
+          ),
         ],
       ],
     );

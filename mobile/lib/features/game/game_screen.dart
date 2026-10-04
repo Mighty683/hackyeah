@@ -435,7 +435,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       if (!_voiceAvailable)
         const Text(
           kIsWeb
-              ? 'Demo w przeglądarce nie ma narracji. Poproś dorosłego o wspólne czytanie.'
+              ? 'Głos w przeglądarce jest niedostępny. Czytaj z dorosłym.'
               : 'Głos jest niedostępny. Poproś dorosłego o pomoc.',
           style: TextStyle(fontSize: 12),
         ),

@@ -21,8 +21,9 @@ flutter run -d <android-device-id>
 ## Browser demo
 
 The browser runs the same Flutter entry point, screens, illustrations, missions,
-and offline map as Android. Native device features use explicit web mocks; the
-Android implementation continues to use its normal device services.
+and offline map as Android. GPS, camera and phone actions use explicit web
+mocks; narration uses browser speech synthesis. Android continues to use its
+normal device services.
 
 From `mobile/`:
 
@@ -56,8 +57,11 @@ Web device behavior:
 - Camera/gallery actions offer bundled example photos instead of device access.
 - Phone-service availability is simulated. Calls and contact actions show a
   pretend-call dialog; no dialler, telephone call, SMS, or external app opens.
-- Android narration and sound cues are silent; screens disclose the text-only
-  demo and preserve the training instructions.
+- Narration uses the browser Web Speech API with an available Polish voice.
+  Local voices are preferred; remote voices may need a network connection.
+  Use **Replay audio** or the voice retry action if the browser blocks automatic
+  playback. Missing voices retain text instructions and the adult-help fallback.
+  Android teaching sound cues remain silent in the browser.
 
 Demo walkthrough: choose **I'm a child**, keep the prefilled profile, then open
 **Practices → Alarm practice** (home or outside), or **I'm lost practice** (nearby

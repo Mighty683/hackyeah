@@ -201,25 +201,24 @@ class _PracticeSelectionScreenState extends State<_PracticeSelectionScreen>
                       const SizedBox(height: 24),
                       ..._choices(),
                       const SizedBox(height: 8),
-                      if (!kIsWeb)
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: TextButton.icon(
-                            onPressed: _opening ? null : _speak,
-                            icon: const BaseboundIcon(
-                              BaseboundIconName.speaker,
-                              size: 24,
-                            ),
-                            label: const Text('Posłuchaj ponownie'),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton.icon(
+                          onPressed: _opening ? null : _speak,
+                          icon: const BaseboundIcon(
+                            BaseboundIconName.speaker,
+                            size: 24,
                           ),
+                          label: const Text('Posłuchaj ponownie'),
                         ),
+                      ),
                       if (!_audioAvailable)
                         const Padding(
                           padding: EdgeInsets.only(top: 12),
                           child: SoftPanel(
                             child: Text(
                               kIsWeb
-                                  ? 'Demo w przeglądarce: głos i dźwięki są wyłączone. Czytaj instrukcje z dorosłym.'
+                                  ? 'Głos w przeglądarce jest niedostępny. Dotknij Posłuchaj ponownie lub czytaj z dorosłym.'
                                   : 'Głos jest niedostępny. Poproś dorosłego o pomoc. '
                                         'Do ćwiczeń z narracją potrzebny jest polski głos offline.',
                               style: TextStyle(color: BaseboundColors.muted),

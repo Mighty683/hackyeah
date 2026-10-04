@@ -367,20 +367,19 @@ class _LostMissionScreenState extends State<LostMissionScreen>
           children: [
             const Text(
               kIsWeb
-                  ? 'Demo w przeglądarce nie ma narracji. Poproś dorosłego o przeczytanie kolejnych kroków.'
+                  ? 'Głos w przeglądarce jest niedostępny. Spróbuj włączyć głos lub czytaj z dorosłym.'
                   : 'Głos jest niedostępny. Poproś dorosłego o przeczytanie kolejnych kroków.',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 17),
             ),
-            if (!kIsWeb)
-              TextButton.icon(
-                onPressed: _exiting
-                    ? null
-                    : () => unawaited(_initializeAudio(retry: true)),
-                icon: const BaseboundIcon(BaseboundIconName.replay),
-                label: const Text('Spróbuj włączyć głos ponownie'),
-                style: TextButton.styleFrom(minimumSize: const Size(64, 52)),
-              ),
+            TextButton.icon(
+              onPressed: _exiting
+                  ? null
+                  : () => unawaited(_initializeAudio(retry: true)),
+              icon: const BaseboundIcon(BaseboundIconName.replay),
+              label: const Text('Spróbuj włączyć głos ponownie'),
+              style: TextButton.styleFrom(minimumSize: const Size(64, 52)),
+            ),
           ],
         ),
       ),

@@ -362,19 +362,18 @@ class _MissionScreenState extends State<MissionScreen>
                     Expanded(
                       child: Text(
                         kIsWeb
-                            ? 'Demo w przeglądarce nie ma narracji. Poproś dorosłego o przeczytanie kolejnych kroków.'
+                            ? 'Głos w przeglądarce jest niedostępny. Spróbuj włączyć głos lub czytaj z dorosłym.'
                             : 'Głos jest niedostępny. Poproś dorosłego o przeczytanie kolejnych kroków.',
                         style: TextStyle(fontSize: 16, height: 1.4),
                       ),
                     ),
                   ],
                 ),
-                if (!kIsWeb)
-                  TextButton.icon(
-                    onPressed: () => unawaited(_initializeAudio(retry: true)),
-                    icon: const BaseboundIcon(BaseboundIconName.replay),
-                    label: const Text('Spróbuj włączyć głos ponownie'),
-                  ),
+                TextButton.icon(
+                  onPressed: () => unawaited(_initializeAudio(retry: true)),
+                  icon: const BaseboundIcon(BaseboundIconName.replay),
+                  label: const Text('Spróbuj włączyć głos ponownie'),
+                ),
               ],
             ),
           ),

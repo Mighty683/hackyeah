@@ -458,8 +458,9 @@ Landmark names, coordinates and photo references persist in a separate encrypted
 ## Implemented Flutter web demo
 
 The web demo runs the same Flutter screen tree and scenario logic described
-above. Device operations are mocked only in the browser; Android retains its
-encrypted local records, photo files, GPS, audio and explicit dialler behavior.
+above. Browser GPS, camera and phone actions are mocked; narration uses browser
+speech synthesis. Android retains its encrypted local records, photo files,
+GPS, audio and explicit dialler behavior.
 A persistent **Web demo · practice only** label and presenter reset control sit
 outside the phone-width child screens. All pushed routes and dialogs stay in
 that frame. This is a browser demonstration, not a real-help release.
@@ -502,8 +503,12 @@ Camera/gallery selections use bundled example photos. The fixed demo position
 and one-shot placement substitute never request browser GPS. Seeded fictional
 pins remain excluded from walking guidance; there is no simulated movement or
 arrival claim. Phone-service state is simulated, and every phone action opens a
-pretend dialog without launching an external app. Narration and sound cues are
-silent; text instructions and an explicit web audio explanation remain visible.
+pretend dialog without launching an external app. Narration uses the browser
+Web Speech API with an available Polish voice, preferring a local voice. Remote
+voices may need connectivity. Replay and voice retry controls let users start
+speech after a tap if automatic playback is blocked. Missing voices or playback
+errors retain text instructions and an adult-help message. Narration stops when
+leaving or pausing a screen; Android teaching sound cues remain silent on web.
 Map attribution, fictional-place flags, practice labels and the unreviewed help
 warning remain in the shared UI.
 
