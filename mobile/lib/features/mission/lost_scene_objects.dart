@@ -26,6 +26,8 @@ class LostSceneIllustration extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => switch (object.kind) {
+    // This target outlines artwork already present in the plaza background.
+    LostSceneObjectKind.backgroundBuilding => const SizedBox.expand(),
     LostSceneObjectKind.standingChild => _child(ChildPoseName.stand),
     LostSceneObjectKind.walkingChild => Transform.flip(
       flipX: true,
@@ -144,6 +146,18 @@ class LostSceneObjectOutline extends CustomPainter {
     Paint paint,
   ) {
     switch (objectKind) {
+      case LostSceneObjectKind.backgroundBuilding:
+        canvas.drawPath(
+          Path()
+            ..moveTo(0, size.height * .29)
+            ..lineTo(size.width * .18, 0)
+            ..lineTo(size.width * .82, 0)
+            ..lineTo(size.width, size.height * .29)
+            ..lineTo(size.width, size.height)
+            ..lineTo(0, size.height)
+            ..close(),
+          paint,
+        );
       case LostSceneObjectKind.standingChild:
       case LostSceneObjectKind.walkingChild:
         _person(canvas, size, paint, child: true);

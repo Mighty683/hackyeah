@@ -5,6 +5,7 @@ import 'package:do_bazy/features/mission/lost_mission.dart';
 import 'package:do_bazy/features/mission/lost_adult_sprite.dart';
 import 'package:do_bazy/features/mission/scene_object_target.dart';
 import 'package:do_bazy/features/mission/lost_mission_scene.dart';
+import 'package:do_bazy/features/mission/lost_mission_scene_layout.dart';
 import 'package:do_bazy/features/mission/lost_mission_screen.dart';
 import 'package:do_bazy/audio/practice_audio.dart';
 import 'package:do_bazy/features/mission/practice_recap.dart';
@@ -68,6 +69,23 @@ void main() {
         expect(find.text("JESTEM W BEZPIECZNYM MIEJSCU"), findsNothing);
         expect(_lastNarration(audioCalls), contains('Biegnij i szukaj'));
         expect(_lastNarration(audioCalls), contains('Zatrzymaj się i spójrz'));
+        final openingScene = tester.widget<LostMissionScene>(
+          find.byType(LostMissionScene),
+        );
+        final openingLayout = lostMissionSceneLayout(
+          openingScene.step,
+          openingScene.practiceContext,
+          null,
+        );
+        expect(find.byType(LostAdultSprite), findsNothing);
+        expect(
+          openingLayout.objects.map((object) => object.kind),
+          contains(LostSceneObjectKind.backgroundBuilding),
+        );
+        expect(
+          openingLayout.objects.map((object) => object.kind),
+          isNot(contains(LostSceneObjectKind.exit)),
+        );
         expect(
           find.descendant(
             of: find.byType(LostMissionScene),
@@ -76,6 +94,16 @@ void main() {
           findsNWidgets(3),
         );
 
+        await _choose(tester, 'leave');
+        expect(_stepId(tester), 'stop');
+        expect(
+          tester
+              .widget<SceneObjectTarget>(
+                find.byKey(const ValueKey('lost-choice-leave')),
+              )
+              .onTap,
+          isNull,
+        );
         await _choose(tester, 'search');
         expect(find.text('Spróbuj ponownie'), findsNothing);
         expect(find.byType(SceneObjectTarget), findsNWidgets(3));

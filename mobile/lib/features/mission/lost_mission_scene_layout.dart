@@ -12,6 +12,7 @@ enum LostSceneObjectKind {
   standingChild,
   walkingChild,
   exit,
+  backgroundBuilding,
   fountain,
   informationDesk,
   adult,
@@ -78,11 +79,6 @@ List<LostSceneObject> _decisionObjects(LostMissionStep step) => [
       kind: LostSceneObjectKind.childWithStaff,
       bounds: _waitingBounds,
     ),
-  if (step.id == 'stop')
-    const LostSceneObject(
-      kind: LostSceneObjectKind.informationDesk,
-      bounds: _deskBounds,
-    ),
   if (step.id == 'meeting_point')
     const LostSceneObject(
       kind: LostSceneObjectKind.standingChild,
@@ -124,6 +120,8 @@ LostSceneObject _choiceObject(
       LostActionIcon.leave =>
         step.id == 'stranger'
             ? LostSceneObjectKind.adult
+            : step.id == 'stop'
+            ? LostSceneObjectKind.backgroundBuilding
             : LostSceneObjectKind.exit,
       LostActionIcon.staff => LostSceneObjectKind.informationDesk,
       LostActionIcon.unknownAdult ||
@@ -167,6 +165,12 @@ Rect _choiceBounds(LostMissionStep step, LostSceneObjectKind kind, int index) {
     };
   }
   return switch (kind) {
+    LostSceneObjectKind.backgroundBuilding => const Rect.fromLTWH(
+      .20,
+      .085,
+      .43,
+      .24,
+    ),
     LostSceneObjectKind.exit => _exitBounds,
     LostSceneObjectKind.adult => _adultBounds,
     LostSceneObjectKind.informationDesk => _deskBounds,
