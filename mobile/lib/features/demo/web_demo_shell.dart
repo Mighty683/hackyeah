@@ -17,16 +17,20 @@ class WebDemoShell extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Wrap(
-              alignment: WrapAlignment.center,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: 16,
-              runSpacing: 4,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text('Demo w przeglądarce · tylko ćwiczenie'),
+                const Flexible(
+                  child: Text(
+                    'Demo w przeglądarce',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 16),
                 TextButton(
                   onPressed: onReset,
-                  child: const Text('Zresetuj demo'),
+                  child: const Text('Zresetuj demo', maxLines: 1),
                 ),
               ],
             ),

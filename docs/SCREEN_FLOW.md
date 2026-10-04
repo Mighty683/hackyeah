@@ -370,7 +370,7 @@ flowchart TD
 | Shelter fallback | Follow official instructions | App cannot find a safe route; choose location again; optional adult support |
 | Operator practice | Follow operator instructions | No connected call claimed; Back; optional adult support |
 
-Child onboarding stores name, age and optional serialized gender in the existing encrypted family record, preserving address, support notes, contacts and practice places. Older records without gender still load. The selected girl or boy appears in mission poses; the map uses a blue GPS dot; adult Play together also uses the saved character. Age entry is personalization, not age verification. Returning to the child route allows editing the three steps.
+Child onboarding stores name, age and optional serialized gender in the existing encrypted family record, preserving address, support notes, contacts and practice places. Older records without gender still load. Character selection shows front-facing girl and boy illustrations side by side, each with its text-only selection button directly below. The selected girl or boy appears in mission poses; the map uses a blue GPS dot; adult Play together also uses the saved character. Age entry is personalization, not age verification. Returning to the child route allows editing the three steps.
 
 Each parent stage offers **Setup options → Delete all saved details**, with confirmation. Completed child, contact and safe-place editors save their records before returning; completing onboarding launches practice without an additional bulk save. **Review setup** returns to the intro and preserves saved records.
 
