@@ -103,8 +103,8 @@
       "bridge": "Państwo dostarcza instrukcje. Szkoła przekazuje wiedzę. Służby reagują, gdy coś już się wydarzy.",
       "promise": "Ćwiczymy wcześniej, krok po kroku.",
       "prototypeLabel": "Wypróbuj demo przeglądarkowe",
-      "prototypePlaceholder": "Miejsce na link do prototypu",
-      "prototypeUrl": "http://10.166.146.210:3030/prototype/index.html",
+      "prototypePlaceholder": "Link do prototypu",
+      "prototypeUrl": "https://mighty683.github.io/hackyeah/",
       "screenshotSrc": "/images/tuptu-prototype.jpg",
       "screenshotAlt": "Prawdziwy ekran ćwiczenia alarmowego w demo Tuptu",
       "screenshotPlaceholder": "Miejsce na zrzut ekranu prototypu",
@@ -115,9 +115,9 @@
         "Demo przeglądarkowe korzysta z tych samych ekranów co Android, ale symuluje GPS, połączenia i dane urządzenia. Link działa w sieci komputera prezentującego; nie jest publicznym hostingiem. Zrzut pokazuje rzeczywisty ekran aplikacji. Pełny rodzinny plan kryzysowy pozostaje kierunkiem rozwoju.",
         "Narracja poleceń działa w ćwiczeniach alarmu i zagubienia na Androidzie. Wymaga zainstalowanego angielskiego głosu offline. Aplikacja pozostaje po angielsku. Demo przeglądarkowe nie odtwarza narracji ani dźwięków; ikona na slajdzie przypomina o dźwięku w aplikacji Android, nie jest przełącznikiem audio."
       ],
-      "prototypeCaption": "Zapraszamy do kontaktu, aby posłuchać, jak Tuptu prowadzi głosem.",
+      "prototypeCaption": "Zapraszamy do testu aplikacji mobilnej, aby posłuchać, jak Tuptu prowadzi głosem.",
       "narration": "Tuptu prowadzi także głosem. W ćwiczeniach lektor czyta polecenia, a dziecko słucha i wybiera kolejny krok.",
-      "audioHint": "Demo w przeglądarce jest bez dźwięku"
+      "audioHint": "Tuptu w przeglądarce może być bez dźwięku"
     },
     "family": {
       "label": "Scenariusze treningowe",
@@ -239,9 +239,9 @@
       "title": "Dziękujemy",
       "tagline": "Tuptu — małe kroki do odważnych decyzji",
       "prototypeLabel": "Prototyp",
-      "prototypeUrl": "http://10.166.146.210:3030/prototype/index.html",
+      "prototypeUrl": "https://mighty683.github.io/hackyeah/",
       "prototypeLinkLabel": "Wypróbuj Tuptu",
-      "prototypeCaption": "Demo dostępne w lokalnej sieci",
+      "prototypeCaption": "Demo dostępne na portalu github",
       "analysisLabel": "Analiza",
       "analysisUrl": "https://drive.proton.me/urls/41AA97RYSM#GeQamlYw5s3J",
       "analysisLinkLabel": "Poznaj założenia projektu",

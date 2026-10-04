@@ -138,7 +138,7 @@ class TrustedContact {
   });
 
   factory TrustedContact.fromJson(Map<String, dynamic> json) => TrustedContact(
-    name: json['name'] as String,
+    name: _withoutLegacyDemoSuffix(json['name'] as String),
     phone: json['phone'] as String,
     relationship: json['relationship'] as String,
   );
@@ -166,7 +166,9 @@ class SafePoint {
 
   factory SafePoint.fromJson(Map<String, dynamic> json) {
     final point = SafePoint(
-      name: json['name'] as String,
+      name: json['isDemo'] == true
+          ? _withoutLegacyDemoSuffix(json['name'] as String)
+          : json['name'] as String,
       icon: json['icon'] as String? ?? '📍',
       latitude: (json['latitude'] as num).toDouble(),
       longitude: (json['longitude'] as num).toDouble(),
@@ -197,3 +199,13 @@ class SafePoint {
     'icon': icon,
   };
 }
+
+/// Normalize the original seeded labels when loading existing installations.
+String _withoutLegacyDemoSuffix(String name) => switch (name) {
+  'Mama (demo)' => 'Mama',
+  'Tata (demo)' => 'Tata',
+  'Babcia (demo)' => 'Babcia',
+  'Szkoła (demo)' => 'Szkoła',
+  'Park (demo)' => 'Park',
+  _ => name,
+};

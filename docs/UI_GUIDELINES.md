@@ -47,13 +47,19 @@ Avoid the appearance of a mobile game advertisement.
   for visibility against scene artwork. This is an exception to the flat-control
   rule above: keep ordinary buttons, panels and text flat. Give every available
   choice the same highlight; rejected choices stay muted. Do not pulse or flash.
-- Keep narration and feedback outside the scene, with next/retry actions below.
+- Keep narration and feedback outside the scene, with explicit story actions below.
   Preserve the hallway/two-wall explanation and make the scene scroll or grow
   when needed for narrow screens and large text.
 - Show feedback with a symbol and a short explanation. Never pre-highlight the
   correct answer, add scores, or shame a child for choosing differently.
 - Use `BaseboundFeedbackPanel` for mission choice feedback. Keep Dino and the
   message together inside its green success or coral retry tile.
+- Missions share `PracticeStepHeader`, `PracticeFeedback`,
+  `MissionDecisionLayout` and `MissionRecapLayout`. Incorrect choices keep
+  the scene available and mute only the rejected pictured target. Wrong map
+  pins remain selectable and repeat their recognition feedback. Accepted decisions
+  advance after narration and a minimum three-second reading pause. Story
+  actions and the lost mission safety confirmation remain explicit taps.
 
 ## Adult forms, maps and help
 

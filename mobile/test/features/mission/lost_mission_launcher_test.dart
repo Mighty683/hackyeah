@@ -1,7 +1,6 @@
 import 'package:do_bazy/features/mission/lost_mission.dart';
 import 'package:do_bazy/features/mission/lost_mission_launcher.dart';
 import 'package:do_bazy/features/mission/lost_mission_screen.dart';
-import 'package:do_bazy/features/mission/practice_launcher.dart';
 import 'package:do_bazy/features/parent/data/family_plan.dart';
 import 'package:do_bazy/features/parent/data/family_plan_repository.dart';
 import 'package:flutter/material.dart';
@@ -30,53 +29,51 @@ void main() {
   });
 
   for (final variant in [LostPracticeVariant.meetingPointNearby]) {
-    testWidgets('lost entry opens ${variant.name} and returns directly', (
-      tester,
-    ) async {
-      await FamilyPlanRepository().save(_configuredPlan);
-      await tester.pumpWidget(const MaterialApp(home: PracticeLauncher()));
-      await tester.pumpAndSettle();
-      expect(find.text('Ćwiczenia'), findsOneWidget);
-      expect(find.text('Nasza mapa'), findsOneWidget);
-      expect(find.text('Landmark practice'), findsNothing);
-      await _tap(tester, 'Ćwiczenia');
-      expect(find.text('Słyszysz alarm'), findsOneWidget);
-      expect(find.text('Nasza mapa'), findsNothing);
-      await _tap(tester, 'Ćwicz z mapą');
-      expect(
-        find.text('Punkt spotkania na niby: Blue help desk'),
-        findsOneWidget,
-      );
-      await _tap(
-        tester,
-        variant == LostPracticeVariant.meetingPointNearby
-            ? 'Punkt spotkania w pobliżu'
-            : 'Punkt spotkania poza zasięgiem wzroku',
-      );
-      final mission = tester.widget<LostMissionScreen>(
-        find.byType(LostMissionScreen),
-      );
-      expect(mission.variant, variant);
-      expect(mission.practiceContext.meetingPoint.presetId, 'information_desk');
-      expect(mission.practiceContext.contacts.first.label, 'Demo adult');
-      // The scenario list must not resume its speech under the mission.
-      expect((audioCalls.last.arguments as Map)['text'], contains('rodzica'));
-      expect(
-        (audioCalls.last.arguments as Map)['text'],
-        isNot(contains('Wybierz scenariusz')),
-      );
-      await tester.tap(find.byTooltip('Opuść ćwiczenie'));
-      await tester.pumpAndSettle();
-      expect(find.byType(LostMissionLauncher), findsNothing);
-      expect(find.text('Wybierz scenariusz'), findsOneWidget);
-      expect(
-        (audioCalls.last.arguments as Map)['text'],
-        contains('Wybierz scenariusz'),
-      );
-      expect(tester.takeException(), isNull);
-      await tester.pumpWidget(const SizedBox.shrink());
-      await tester.pump();
-    });
+    testWidgets(
+      'internal lost launcher opens ${variant.name} and returns directly',
+      (tester) async {
+        await FamilyPlanRepository().save(_configuredPlan);
+        await tester.pumpWidget(_internalLauncherHost());
+        await tester.pumpAndSettle();
+        await _tap(tester, _internalEntryLabel);
+        expect(
+          find.text('Punkt spotkania na niby: Blue help desk'),
+          findsOneWidget,
+        );
+        final selectorDisposals = _disposalCount(audioCalls);
+        await _tap(
+          tester,
+          variant == LostPracticeVariant.meetingPointNearby
+              ? 'Punkt spotkania w pobliżu'
+              : 'Punkt spotkania poza zasięgiem wzroku',
+        );
+        final mission = tester.widget<LostMissionScreen>(
+          find.byType(LostMissionScreen),
+        );
+        expect(mission.variant, variant);
+        expect(
+          mission.practiceContext.meetingPoint.presetId,
+          'information_desk',
+        );
+        expect(mission.practiceContext.contacts.first.label, 'Demo adult');
+        expect(_disposalCount(audioCalls), greaterThan(selectorDisposals));
+        // The internal selector's narrator is disposed before mission narration.
+        expect((audioCalls.last.arguments as Map)['text'], contains('rodzica'));
+        expect(
+          (audioCalls.last.arguments as Map)['text'],
+          isNot(contains('Wybierz scenę')),
+        );
+        final missionDisposals = _disposalCount(audioCalls);
+        await tester.tap(find.byTooltip('Opuść ćwiczenie'));
+        await tester.pumpAndSettle();
+        expect(find.byType(LostMissionLauncher), findsNothing);
+        expect(find.text(_internalEntryLabel), findsOneWidget);
+        expect(_disposalCount(audioCalls), greaterThan(missionDisposals));
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.pump();
+      },
+    );
   }
 
   testWidgets(
@@ -148,35 +145,35 @@ void main() {
     await tester.pump();
   });
 
-  testWidgets('re-entering lost practice reloads the latest parent selection', (
-    tester,
-  ) async {
-    final repository = FamilyPlanRepository();
-    await repository.save(
-      const FamilyPlan(
-        practiceMeetingPoint: PracticeMeetingPoint(
-          presetId: 'fountain',
-          label: 'First point',
+  testWidgets(
+    'internal launcher re-entry reloads the latest parent selection',
+    (tester) async {
+      final repository = FamilyPlanRepository();
+      await repository.save(
+        const FamilyPlan(
+          practiceMeetingPoint: PracticeMeetingPoint(
+            presetId: 'fountain',
+            label: 'First point',
+          ),
         ),
-      ),
-    );
-    await tester.pumpWidget(const MaterialApp(home: PracticeLauncher()));
-    await tester.pumpAndSettle();
-    await _tap(tester, 'Ćwiczenia');
-    await _tap(tester, 'Ćwicz z mapą');
-    expect(find.text('Punkt spotkania na niby: First point'), findsOneWidget);
-    await tester.pageBack();
-    await tester.pumpAndSettle();
-    await repository.save(_configuredPlan);
-    await _tap(tester, 'Ćwicz z mapą');
-    expect(
-      find.text('Punkt spotkania na niby: Blue help desk'),
-      findsOneWidget,
-    );
-    expect(tester.takeException(), isNull);
-    await tester.pumpWidget(const SizedBox.shrink());
-    await tester.pump();
-  });
+      );
+      await tester.pumpWidget(_internalLauncherHost());
+      await tester.pumpAndSettle();
+      await _tap(tester, _internalEntryLabel);
+      expect(find.text('Punkt spotkania na niby: First point'), findsOneWidget);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      await repository.save(_configuredPlan);
+      await _tap(tester, _internalEntryLabel);
+      expect(
+        find.text('Punkt spotkania na niby: Blue help desk'),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
+    },
+  );
 }
 
 const _configuredPlan = FamilyPlan(
@@ -186,6 +183,24 @@ const _configuredPlan = FamilyPlan(
   ),
   contacts: [TrustedContact(name: 'Demo adult', relationship: 'Tata')],
 );
+
+const _internalEntryLabel = 'Open internal lost practice';
+
+Widget _internalLauncherHost() => MaterialApp(
+  home: Builder(
+    builder: (context) => Scaffold(
+      body: TextButton(
+        onPressed: () => Navigator.of(context).push<void>(
+          MaterialPageRoute(builder: (_) => const LostMissionLauncher()),
+        ),
+        child: const Text(_internalEntryLabel),
+      ),
+    ),
+  ),
+);
+
+int _disposalCount(List<MethodCall> calls) =>
+    calls.where((call) => call.method == 'dispose').length;
 
 class _FailingReadRepository extends FamilyPlanRepository {
   int reads = 0;

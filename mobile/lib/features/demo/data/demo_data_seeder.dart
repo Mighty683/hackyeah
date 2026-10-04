@@ -22,17 +22,17 @@ const demoFamilyPlan = FamilyPlan(
   // Demo-only training numbers. Never dial these or claim they are unassigned.
   contacts: [
     TrustedContact(
-      name: 'Mama (demo)',
+      name: 'Mama',
       phone: '555333444',
       relationship: 'Mama',
     ),
     TrustedContact(
-      name: 'Tata (demo)',
+      name: 'Tata',
       phone: '555333445',
       relationship: 'Tata',
     ),
     TrustedContact(
-      name: 'Babcia (demo)',
+      name: 'Babcia',
       phone: '555333446',
       relationship: 'Babcia',
     ),
@@ -40,14 +40,14 @@ const demoFamilyPlan = FamilyPlan(
   safePoints: [
     demoHome,
     SafePoint(
-      name: 'Szkoła (demo)',
+      name: 'Szkoła',
       icon: '🏫',
       latitude: 50.0688,
       longitude: 19.9950,
       isDemo: true,
     ),
     SafePoint(
-      name: 'Park (demo)',
+      name: 'Park',
       icon: '🌳',
       latitude: 50.0721,
       longitude: 19.9915,

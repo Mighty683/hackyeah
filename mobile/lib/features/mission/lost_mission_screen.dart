@@ -7,16 +7,19 @@ import '../../ui/unavailable_audio_tooltip.dart';
 
 import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
-import '../../widgets/basebound_mascot.dart';
 import '../../game/maps/demo_map.dart';
 import '../landmarks/data/landmark.dart';
 import 'data/lost_practice_context.dart';
 import 'lost_meeting_point_map.dart';
 import 'lost_mission.dart';
 import 'lost_mission_scene.dart';
+import 'mission_decision_layout.dart';
+import 'mission_recap_layout.dart';
 import '../../audio/practice_audio.dart';
 import '../../audio/practice_narration_controller.dart';
 import 'practice_recap.dart';
+import 'practice_feedback.dart';
+import 'practice_step_header.dart';
 
 /// Offline decision practice; calls and safety confirmation are pretend.
 class LostMissionScreen extends StatefulWidget {
@@ -54,6 +57,7 @@ class _LostMissionScreenState extends State<LostMissionScreen>
   final _scroll = ScrollController();
   bool _exiting = false;
   bool _foreground = true;
+  int _feedbackRequest = 0;
 
   @override
   void initState() {
@@ -68,9 +72,10 @@ class _LostMissionScreenState extends State<LostMissionScreen>
   }
 
   Future<void> _initializeAudio({bool retry = false}) async {
+    ++_feedbackRequest;
     await _narration.initialize(retry: retry);
     if (!mounted || _exiting) return;
-    if (_narration.ready) await _narrate();
+    await _playCurrent();
   }
 
   String get _spokenText {
@@ -85,35 +90,57 @@ class _LostMissionScreenState extends State<LostMissionScreen>
   Future<void> _narrate() =>
       _narration.ready ? _narration.narrate(_spokenText) : Future<void>.value();
 
+  Future<void> _playCurrent() =>
+      _session.hasFeedback ? _respondToChoice() : _narrate();
+
+  Future<void> _respondToChoice() async {
+    if (_narration.initializing) return;
+    final request = ++_feedbackRequest;
+    final advances = _session.selectedChoice?.isCorrect == true;
+    final readingTime = advances
+        ? Future<void>.delayed(const Duration(seconds: 3))
+        : Future<void>.value();
+    await _narrate();
+    await readingTime;
+    if (!mounted ||
+        _exiting ||
+        !_foreground ||
+        request != _feedbackRequest ||
+        !advances) {
+      return;
+    }
+    _next();
+  }
+
   void _choose(String id) {
-    if (_exiting || _session.hasFeedback || _session.isComplete) return;
+    if (_exiting ||
+        !_session.canChoose ||
+        _session.rejectedChoiceIds.contains(id)) {
+      return;
+    }
     setState(() => _session.choose(id));
-    _returnToTop();
-    unawaited(_narrate());
+    unawaited(_playCurrent());
   }
 
   void _next() {
     if (_exiting || _session.isComplete) return;
-    setState(() {
-      if (_session.selectedChoice?.isCorrect == false) {
-        _session.retry();
-      } else {
-        _session.advance();
-      }
-    });
+    ++_feedbackRequest;
+    setState(_session.advance);
     _returnToTop();
     unawaited(_narrate());
   }
 
   void _restart() {
     if (_exiting) return;
+    ++_feedbackRequest;
     setState(_session.restart);
     _returnToTop();
     unawaited(_narrate());
   }
 
   void _mapHelp() {
-    if (_exiting) return;
+    if (_exiting || !_session.canChoose) return;
+    ++_feedbackRequest;
     setState(_session.useMapHelp);
     _returnToTop();
     unawaited(_narrate());
@@ -125,6 +152,7 @@ class _LostMissionScreenState extends State<LostMissionScreen>
 
   Future<void> _exit() async {
     if (_exiting) return;
+    ++_feedbackRequest;
     setState(() => _exiting = true);
     await _narration.close();
     if (mounted) Navigator.of(context).pop();
@@ -133,14 +161,16 @@ class _LostMissionScreenState extends State<LostMissionScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     _foreground = state == AppLifecycleState.resumed;
+    ++_feedbackRequest;
     _narration.setForeground(_foreground);
     if (_foreground) {
-      unawaited(_narrate());
+      unawaited(_playCurrent());
     }
   }
 
   @override
   void dispose() {
+    ++_feedbackRequest;
     WidgetsBinding.instance.removeObserver(this);
     _narration.removeListener(_narrationChanged);
     _narration.dispose();
@@ -156,6 +186,8 @@ class _LostMissionScreenState extends State<LostMissionScreen>
     },
     child: Scaffold(
       appBar: AppBar(
+        backgroundColor: BaseboundColors.cream,
+        foregroundColor: BaseboundColors.ink,
         leading: BaseboundBackButton(
           enabled: !_exiting,
           tooltip: 'Opuść ćwiczenie',
@@ -174,9 +206,9 @@ class _LostMissionScreenState extends State<LostMissionScreen>
           warm: true,
           child: Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 600),
+              constraints: const BoxConstraints(maxWidth: 640),
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
                 child: _session.isComplete ? _completion() : _practice(),
               ),
             ),
@@ -192,11 +224,13 @@ class _LostMissionScreenState extends State<LostMissionScreen>
       label: 'Posłuchaj ponownie',
       button: true,
       enabled: _narration.ready && !_exiting,
-      onTap: _narration.ready && !_exiting ? () => unawaited(_narrate()) : null,
+      onTap: _narration.ready && !_exiting
+          ? () => unawaited(_playCurrent())
+          : null,
       child: ExcludeSemantics(
         child: IconButton(
           onPressed: _narration.ready && !_exiting
-              ? () => unawaited(_narrate())
+              ? () => unawaited(_playCurrent())
               : null,
           tooltip: 'Posłuchaj ponownie',
           icon: BaseboundIcon(
@@ -208,8 +242,59 @@ class _LostMissionScreenState extends State<LostMissionScreen>
     ),
   );
 
-  Widget _practice() =>
-      _session.step.id == 'recall' ? _recall() : _practiceSteps();
+  Widget _practice() {
+    if (_session.step.id == 'recall') return _recall();
+    if (_session.step.isDecision) {
+      return MissionDecisionLayout(
+        instruction: _header(),
+        scene: _decisionScene(),
+        feedback: _session.hasFeedback ? _feedback() : const SizedBox.shrink(),
+        hasFeedback: _session.hasFeedback,
+        scrollController: _scroll,
+      );
+    }
+    return _practiceSteps();
+  }
+
+  Widget _header() => PracticeStepHeader(
+    title: _session.step.title,
+    titleKey: const ValueKey('lost-step-title'),
+    narration: _session.step.id == 'stop' ? null : _session.step.narration,
+    hint: _session.step.isDecision && _session.step.id != 'map_meeting_point'
+        ? 'Dotknij podświetlonego obiektu, aby go wybrać.'
+        : null,
+    audioControls: _audioControls(),
+    notice: _practiceNotice(),
+  );
+
+  Widget _decisionScene() {
+    if (_session.step.id == 'map_meeting_point') {
+      return IgnorePointer(
+        ignoring: _exiting || !_session.canChoose,
+        child: LostMeetingPointMap(
+          map: widget.map,
+          target: widget.practiceContext.photoMeetingPoint!,
+          photoDirectory: widget.photoDirectory,
+          landmarks: widget.mapLandmarks
+              .where(
+                (place) => _session.step.choices.any(
+                  (choice) => choice.id == place.id,
+                ),
+              )
+              .toList(),
+          onSelected: _choose,
+          onHelp: _mapHelp,
+        ),
+      );
+    }
+    return LostMissionScene(
+      step: _session.step,
+      practiceContext: widget.practiceContext,
+      selectedChoice: _session.selectedChoice,
+      rejectedChoiceIds: _session.rejectedChoiceIds,
+      onChoice: _exiting || !_session.canChoose ? null : _choose,
+    );
+  }
 
   Widget _practiceSteps() => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -220,71 +305,22 @@ class _LostMissionScreenState extends State<LostMissionScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _practiceNotice(),
-              _audioControls(),
-              const SizedBox(height: 12),
-              Text(
-                _session.step.title,
-                key: const ValueKey('lost-step-title'),
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w800,
-                ),
+              _header(),
+              const SizedBox(height: 16),
+              LostMissionScene(
+                step: _session.step,
+                practiceContext: widget.practiceContext,
+                selectedChoice: _session.selectedChoice,
               ),
-              if (_session.step.id != 'stop') ...[
-                const SizedBox(height: 10),
-                _instruction(),
-              ],
-              const SizedBox(height: 12),
-              if (_session.step.id == 'map_meeting_point' &&
-                  !_session.hasFeedback)
-                LostMeetingPointMap(
-                  map: widget.map,
-                  target: widget.practiceContext.photoMeetingPoint!,
-                  photoDirectory: widget.photoDirectory,
-                  landmarks: widget.mapLandmarks
-                      .where(
-                        (place) => _session.step.choices.any(
-                          (choice) => choice.id == place.id,
-                        ),
-                      )
-                      .toList(),
-                  onSelected: _choose,
-                  onHelp: _mapHelp,
-                )
-              else if (_session.step.visual == LostMissionVisual.contacts ||
-                  (_session.step.isDecision && !_session.hasFeedback))
-                LostMissionScene(
-                  step: _session.step,
-                  practiceContext: widget.practiceContext,
-                  selectedChoice: _session.selectedChoice,
-                  onChoice: _exiting || _session.hasFeedback ? null : _choose,
-                )
-              else
-                SizedBox(
-                  height: _sceneHeight,
-                  child: LostMissionScene(
-                    step: _session.step,
-                    practiceContext: widget.practiceContext,
-                    selectedChoice: _session.selectedChoice,
-                  ),
-                ),
-              if (_session.hasFeedback) _feedback(),
               const SizedBox(height: 8),
             ],
           ),
         ),
       ),
-      if (!_session.step.isDecision || _session.hasFeedback) ...[
-        const SizedBox(height: 10),
-        _primaryAction(),
-      ],
+      const SizedBox(height: 16),
+      _primaryAction(),
     ],
   );
-
-  double get _sceneHeight =>
-      (MediaQuery.sizeOf(context).height * .24).clamp(130.0, 220.0);
 
   Widget _practiceNotice() => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -306,55 +342,31 @@ class _LostMissionScreenState extends State<LostMissionScreen>
     ],
   );
 
-  Widget _instruction() => SoftPanel(
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-    child: Column(
-      children: [
-        Text(
-          _session.step.narration,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            height: 1.3,
-          ),
-        ),
-      ],
-    ),
-  );
-
-  Widget _feedback() => Semantics(
-    liveRegion: true,
-    child: BaseboundFeedbackPanel(
-      message: _session.feedback!,
-      positive: _session.selectedChoice!.isCorrect,
-      pose: _session.selectedChoice!.isCorrect
-          ? DinoPose.celebrate
-          : DinoPose.think,
-    ),
+  Widget _feedback() => PracticeFeedback(
+    message: _session.feedback!,
+    positive: _session.selectedChoice!.isCorrect,
   );
 
   Widget _primaryAction() {
-    final retry = _session.selectedChoice?.isCorrect == false;
+    final expectedStepId = _session.step.id;
     return FilledButton.icon(
       key: const ValueKey('lost-primary-action'),
-      onPressed: _exiting ? null : _next,
+      onPressed: _exiting
+          ? null
+          : () {
+              if (_exiting ||
+                  _session.isComplete ||
+                  _session.step.id != expectedStepId) {
+                return;
+              }
+              _next();
+            },
       icon: BaseboundIcon(
-        retry
-            ? BaseboundIconName.replay
-            : _session.step.id == 'confirm_safe'
+        _session.step.id == 'confirm_safe'
             ? BaseboundIconName.check
             : BaseboundIconName.next,
       ),
-      label: Text(
-        retry
-            ? 'Spróbuj ponownie'
-            : _session.hasFeedback
-            ? 'Następny krok'
-            : _session.step.actionLabel,
-        textAlign: TextAlign.center,
-      ),
-      style: FilledButton.styleFrom(minimumSize: const Size(64, 64)),
+      label: Text(_session.step.actionLabel, textAlign: TextAlign.center),
     );
   }
 
@@ -411,50 +423,38 @@ class _LostMissionScreenState extends State<LostMissionScreen>
           BaseboundIconName.family,
         ],
       ),
-      const Text(
-        LostPracticeRecap.notice,
-        style: TextStyle(fontSize: 16, color: BaseboundColors.muted),
-      ),
-      _audioControls(),
     ],
   );
 
-  Widget _recall() => Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      Expanded(
-        child: SingleChildScrollView(
-          controller: _scroll,
-          child: _summaryContent(_session.step.title),
-        ),
-      ),
-      const SizedBox(height: 16),
-      _primaryAction(),
-    ],
+  Widget get _recapNotice => const Text(
+    LostPracticeRecap.notice,
+    style: TextStyle(fontSize: 16, color: BaseboundColors.muted),
   );
 
-  Widget _completion() => Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      Expanded(
-        child: SingleChildScrollView(
-          controller: _scroll,
-          child: _summaryContent('Ćwiczenie ukończone'),
-        ),
-      ),
-      const SizedBox(height: 16),
+  Widget _recall() => MissionRecapLayout(
+    audioControls: _audioControls(),
+    scrollController: _scroll,
+    recapContent: _summaryContent(_session.step.title),
+    notice: _recapNotice,
+    actions: [_primaryAction()],
+  );
+
+  Widget _completion() => MissionRecapLayout(
+    audioControls: _audioControls(),
+    scrollController: _scroll,
+    recapContent: _summaryContent('Ćwiczenie ukończone'),
+    notice: _recapNotice,
+    actions: [
       FilledButton.icon(
         key: const ValueKey('lost-restart'),
         onPressed: _exiting ? null : _restart,
         icon: const BaseboundIcon(BaseboundIconName.replay),
         label: const Text('Ćwicz ponownie'),
-        style: FilledButton.styleFrom(minimumSize: const Size(64, 64)),
       ),
       TextButton.icon(
         onPressed: _exiting ? null : () => unawaited(_exit()),
         icon: const BaseboundIcon(BaseboundIconName.home),
         label: const Text('Wróć do wyboru ćwiczeń'),
-        style: TextButton.styleFrom(minimumSize: const Size(64, 56)),
       ),
     ],
   );

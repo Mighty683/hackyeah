@@ -40,7 +40,9 @@ void main() {
   late Directory directory;
   late _PhotoRepository photos;
   const audio = MethodChannel('basebound/mission_audio');
+  final audioCalls = <MethodCall>[];
   setUp(() async {
+    audioCalls.clear();
     rootBundle.clear();
     FlutterSecureStorage.setMockInitialValues({});
     directory = await Directory.systemTemp.createTemp('lost-photo-practice-');
@@ -52,10 +54,10 @@ void main() {
     }
     photos = _PhotoRepository(directory, [_target, _other]);
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(
-          audio,
-          (call) async => call.method == 'initialize' ? true : null,
-        );
+        .setMockMethodCallHandler(audio, (call) async {
+          audioCalls.add(call);
+          return call.method == 'initialize' ? true : null;
+        });
   });
   tearDown(() async {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -132,7 +134,7 @@ void main() {
       expect(find.text('Demo meeting place.'), findsNothing);
       await _tap(tester, find.text('Punkt spotkania w pobliżu'));
       await _tap(tester, find.byKey(const ValueKey('lost-choice-stop')));
-      await _next(tester);
+      await _finishFeedback(tester);
       expect(
         tester.widget<LandmarkPhoto>(find.byType(LandmarkPhoto)).path,
         '${directory.path}/1_1.photo',
@@ -141,9 +143,9 @@ void main() {
       expect(find.text('Fictional demo photo'), findsNothing);
       await _tap(tester, find.byKey(const ValueKey('lost-choice-2_2')));
       expect(find.textContaining('To inne miejsce.'), findsOneWidget);
-      await _next(tester);
+      expect(find.byKey(const ValueKey('lost-primary-action')), findsNothing);
       await _tap(tester, find.byKey(const ValueKey('lost-choice-1_1')));
-      await _next(tester);
+      await _finishFeedback(tester);
       await _pump(tester);
       expect(find.byType(LostMeetingPointMap), findsOneWidget);
       final map = tester.widget<LandmarkMap>(find.byType(LandmarkMap));
@@ -166,22 +168,36 @@ void main() {
       expect(find.text('Fictional demo place'), findsNothing);
       await _tap(tester, find.text('Dom'));
       expect(find.textContaining('Dom to inne miejsce.'), findsOneWidget);
-      await _next(tester);
+      expect(find.byType(LostMeetingPointMap), findsOneWidget);
+      const homeFeedback =
+          'Dom to inne miejsce. Poszukaj zdjęcia miejsca spotkania.';
+      int homeNarrationCount() => audioCalls
+          .where(
+            (call) =>
+                call.method == 'narrate' &&
+                (call.arguments as Map)['text'] == homeFeedback,
+          )
+          .length;
+      final firstHomeNarrationCount = homeNarrationCount();
+      expect(firstHomeNarrationCount, greaterThan(0));
+      await _tap(tester, find.text('Miejsca'));
+      await _tap(tester, find.text('Dom'));
+      expect(find.text(homeFeedback), findsOneWidget);
+      expect(homeNarrationCount(), firstHomeNarrationCount + 1);
       expect((await family.load()).toJson(), saved.toJson());
-      // Exercise a map pin through the shared map's callback, then retry.
+      // Another map pin remains available immediately after retry feedback.
       map.onSelected(_other);
       await _pump(tester);
       expect(
         find.textContaining('Ten znacznik wskazuje inne miejsce.'),
         findsOneWidget,
       );
-      await _next(tester);
       await _tap(tester, find.text('Miejsca'));
       await _tap(tester, find.text('Library entrance').first);
       await _pump(tester);
       // The list retains stored order: the first record is the target.
       expect(find.textContaining('Jeszcze tam nie jesteś.'), findsOneWidget);
-      await _next(tester);
+      await _finishFeedback(tester);
       expect(_step(tester), 'arrive');
       expect(
         tester.widget<LandmarkPhoto>(find.byType(LandmarkPhoto)).path,
@@ -333,6 +349,11 @@ String _step(WidgetTester tester) =>
     tester.widget<LostMissionScene>(find.byType(LostMissionScene)).step.id;
 Future<void> _next(WidgetTester tester) =>
     _tap(tester, find.byKey(const ValueKey('lost-primary-action')));
+Future<void> _finishFeedback(WidgetTester tester) async {
+  await tester.pump(const Duration(seconds: 3));
+  await _pump(tester);
+}
+
 Future<void> _tap(WidgetTester tester, Finder finder) async {
   await tester.ensureVisible(finder);
   await tester.tap(finder);

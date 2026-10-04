@@ -60,44 +60,51 @@ void main() {
     }
   });
 
-  test('unsafe decisions lock feedback and cannot advance until retried', () {
-    for (final variant in LostPracticeVariant.values) {
-      final session = _session(variant: variant);
-      for (var steps = 0; steps < 30 && !session.isComplete; steps++) {
-        final step = session.step;
-        if (!step.isDecision) {
-          session.advance();
-          continue;
-        }
-        expect(step.choices.length, inInclusiveRange(2, 4));
-        session.advance();
-        expect(session.step.id, step.id);
-        session.choose('not-a-choice');
-        expect(session.hasFeedback, isFalse);
-        final correct = step.choices.firstWhere((choice) => choice.isCorrect);
-        for (final unsafe in step.choices.where(
-          (choice) => !choice.isCorrect,
-        )) {
-          session.choose(unsafe.id);
-          expect(session.feedback, isNotEmpty);
-          session.choose(correct.id);
-          expect(session.selectedChoice?.id, unsafe.id);
-          session.advance();
+  test(
+    'unsafe choices stay rejected while another choice remains available',
+    () {
+      for (final variant in LostPracticeVariant.values) {
+        final session = _session(variant: variant);
+        for (var steps = 0; steps < 30 && !session.isComplete; steps++) {
+          final step = session.step;
+          if (!step.isDecision) {
+            session.advance();
+            continue;
+          }
+          expect(step.choices.length, inInclusiveRange(2, 4));
           session.advance();
           expect(session.step.id, step.id);
-          expect(session.safetyConfirmed, isFalse);
-          session.retry();
+          session.choose('not-a-choice');
           expect(session.hasFeedback, isFalse);
-          expect(session.feedback, isNull);
+          final correct = step.choices.firstWhere((choice) => choice.isCorrect);
+          for (final unsafe in step.choices.where(
+            (choice) => !choice.isCorrect,
+          )) {
+            session.choose(unsafe.id);
+            expect(session.feedback, isNotEmpty);
+            expect(session.canChoose, isTrue);
+            expect(session.rejectedChoiceIds, contains(unsafe.id));
+            session.choose(unsafe.id);
+            expect(session.selectedChoice?.id, unsafe.id);
+            session.advance();
+            session.advance();
+            expect(session.step.id, step.id);
+            expect(session.safetyConfirmed, isFalse);
+          }
+          session.choose(correct.id);
+          expect(session.canChoose, isFalse);
+          expect(session.selectedChoice?.id, correct.id);
+          session.choose(step.choices.first.id);
+          expect(session.selectedChoice?.id, correct.id);
+          session.retry();
+          expect(session.selectedChoice?.id, correct.id);
+          session.advance();
+          expect(session.rejectedChoiceIds, isEmpty);
         }
-        session.choose(correct.id);
-        session.retry();
-        expect(session.selectedChoice?.id, correct.id);
-        session.advance();
+        expect(session.isComplete, isTrue);
       }
-      expect(session.isComplete, isTrue);
-    }
-  });
+    },
+  );
 
   test(
     'unanswered call offers a different trusted person for every first choice',
@@ -132,7 +139,6 @@ void main() {
           session.choose('leave');
           session.advance();
           expect(session.step.id, 'no_answer');
-          session.retry();
           expect(session.firstContactId, first.id);
           session.choose(alternates.first.id);
           expect(session.feedback, contains('na niby'));
@@ -181,6 +187,7 @@ void main() {
     session.choose('leave');
     expect(session.firstContactId, isNotNull);
     expect(session.hasFeedback, isTrue);
+    expect(session.rejectedChoiceIds, contains('leave'));
     session.restart();
     _expectFresh(session);
     _progressTo(session, 'recall');
@@ -261,14 +268,21 @@ void main() {
     session.choose('2_2');
     session.advance();
     expect(session.step.id, 'meeting_point');
-    session.retry();
     session.choose('1_1');
     session.advance();
     expect(session.step.id, 'map_meeting_point');
     session.advance();
     expect(session.step.id, 'map_meeting_point');
+    session.choose('2_2');
+    expect(session.hasFeedback, isTrue);
+    expect(session.rejectedChoiceIds, isEmpty);
+    session.choose('2_2');
+    expect(session.selectedChoice?.id, '2_2');
+    expect(session.feedback, isNotEmpty);
     session.useMapHelp();
     expect(session.step.id, 'point_unavailable');
+    expect(session.selectedChoice, isNull);
+    expect(session.rejectedChoiceIds, isEmpty);
     session.choose('stay');
     session.advance();
     expect(session.step.id, 'helper');
@@ -341,4 +355,6 @@ void _expectFresh(LostMissionSession session) {
   expect(session.isComplete, isFalse);
   expect(session.selectedChoice, isNull);
   expect(session.feedback, isNull);
+  expect(session.canChoose, isTrue);
+  expect(session.rejectedChoiceIds, isEmpty);
 }

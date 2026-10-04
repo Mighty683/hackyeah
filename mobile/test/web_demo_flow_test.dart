@@ -1,7 +1,6 @@
 import 'package:do_bazy/app.dart';
 import 'package:do_bazy/features/game/game_screen.dart';
 import 'package:do_bazy/features/landmarks/data/landmark_repository.dart';
-import 'package:do_bazy/features/landmarks/widgets/landmark_photo.dart';
 import 'package:do_bazy/features/mission/lost_mission_screen.dart';
 import 'package:do_bazy/features/parent/data/family_plan_repository.dart';
 import 'package:do_bazy/features/parent/data/family_plan.dart';
@@ -54,25 +53,20 @@ void main() {
   );
 
   testWidgets(
-    'seeded photos open in lost practice and shared map',
+    'unfinished lost practice stays disabled while shared map remains available',
     (tester) async {
       await _start(tester);
       await _child(tester);
       await _tap(tester, 'Ćwiczenia');
-      await _tap(tester, 'Ćwicz z mapą');
-      await _wait(
-        tester,
-        find.text('Punkt spotkania na niby: Czerwony sklep na rogu'),
-      );
-      expect(find.byType(LandmarkPhoto), findsWidgets);
-      await _tap(tester, 'Punkt spotkania w pobliżu');
-      await _wait(tester, find.byType(LostMissionScreen));
-      final mission = tester.widget<LostMissionScreen>(
-        find.byType(LostMissionScreen),
-      );
-      expect(mission.practiceContext.photoMeetingPoint, isNotNull);
-      await tester.tap(find.byTooltip('Opuść ćwiczenie'));
-      await _wait(tester, find.text('Wybierz scenariusz'));
+      const unavailableNotice =
+          'Ten scenariusz nie jest jeszcze gotowy. '
+          'Scenariusz „Słyszysz alarm” jest gotowy do testów.';
+      await tester.tap(find.byTooltip(unavailableNotice));
+      await _wait(tester, find.text(unavailableNotice));
+      expect(find.byType(LostMissionScreen), findsNothing);
+      expect(find.text('Wybierz scenariusz'), findsOneWidget);
+      await _tap(tester, 'Słyszysz alarm');
+      await _wait(tester, find.text('Gdzie ćwiczymy?'));
       await _tap(tester, 'Zresetuj demo');
       await _wait(tester, find.text('Witaj w Tuptu'));
       await _child(tester);

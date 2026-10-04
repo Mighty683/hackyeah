@@ -118,6 +118,9 @@ importers:
       osmtogeojson:
         specifier: 3.0.0-beta.5
         version: 3.0.0-beta.5
+      playwright-chromium:
+        specifier: ^1.63.0
+        version: 1.63.0
       turbo:
         specifier: latest
         version: 2.11.7
@@ -126,7 +129,7 @@ importers:
     devDependencies:
       '@slidev/cli':
         specifier: latest
-        version: 53.0.0(@nuxt/kit@3.21.11)(@oxc-project/types@0.152.0)(@types/markdown-it@14.2.0)(@types/node@24.19.1)(@vitejs/devtools-kit@0.4.12(@modelcontextprotocol/server@2.3.0)(cac@7.0.0)(srvx@1.0.5)(vite@8.3.2(@types/node@24.19.1)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1)))(@vue/compiler-sfc@3.5.43)(cac@7.0.0)(esbuild@0.28.2)(lightningcss@1.33.0)(markdown-it@14.3.2)(oxc-parser@0.150.0)(postcss@8.5.28)(react@19.3.0)(rolldown@1.2.12)(srvx@1.0.5)(tsx@4.23.15)
+        version: 53.0.0(@nuxt/kit@3.21.11)(@oxc-project/types@0.152.0)(@types/markdown-it@14.2.0)(@types/node@24.19.1)(@vitejs/devtools-kit@0.4.12(@modelcontextprotocol/server@2.3.0)(cac@7.0.0)(srvx@1.0.5)(vite@8.3.2(@types/node@24.19.1)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1)))(@vue/compiler-sfc@3.5.43)(cac@7.0.0)(esbuild@0.28.2)(lightningcss@1.33.0)(markdown-it@14.3.2)(oxc-parser@0.150.0)(playwright-chromium@1.63.0)(postcss@8.5.28)(react@19.3.0)(rolldown@1.2.12)(srvx@1.0.5)(tsx@4.23.15)
       '@slidev/theme-default':
         specifier: latest
         version: 0.25.0
@@ -2721,6 +2724,16 @@ packages:
   plantuml-encoder@1.4.0:
     resolution: {integrity: sha512-sxMwpDw/ySY1WB2CE3+IdMuEcWibJ72DDOsXLkSmEaSzwEUaYBT6DWgOfBiHGCux4q433X6+OEFWjlVqp7gL6g==}
 
+  playwright-chromium@1.63.0:
+    resolution: {integrity: sha512-Bb0ZqhnFFcY8KTFl4XphnqEpZv/BU1flx9apJ4l/UfOBsNppWg6AEue51uuvsrOEZnsPQXf0+C53uzLjhA4Q6w==}
+    engines: {node: '>=20'}
+    hasBin: true
+
+  playwright-core@1.63.0:
+    resolution: {integrity: sha512-rYCsBF/M5HjUch52bbtVONEFjv6Xu8sm8h72dNlR5bzIE1fvC/bxgspzkjSfU+MweEMmPM8KJebG6nnyxo5mCg==}
+    engines: {node: '>=20'}
+    hasBin: true
+
   points-on-curve@0.2.0:
     resolution: {integrity: sha512-0mYKnYYe9ZcqMCWhUjItv/oHjvgEsfKvnUTg8sAtnHr3GVy7rGkXCb6d5cSyqrWqL4k81b9CPg3urd+T7aop3A==}
 
@@ -4049,7 +4062,7 @@ snapshots:
 
   '@shikijs/vscode-textmate@10.0.2': {}
 
-  '@slidev/cli@53.0.0(@nuxt/kit@3.21.11)(@oxc-project/types@0.152.0)(@types/markdown-it@14.2.0)(@types/node@24.19.1)(@vitejs/devtools-kit@0.4.12(@modelcontextprotocol/server@2.3.0)(cac@7.0.0)(srvx@1.0.5)(vite@8.3.2(@types/node@24.19.1)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1)))(@vue/compiler-sfc@3.5.43)(cac@7.0.0)(esbuild@0.28.2)(lightningcss@1.33.0)(markdown-it@14.3.2)(oxc-parser@0.150.0)(postcss@8.5.28)(react@19.3.0)(rolldown@1.2.12)(srvx@1.0.5)(tsx@4.23.15)':
+  '@slidev/cli@53.0.0(@nuxt/kit@3.21.11)(@oxc-project/types@0.152.0)(@types/markdown-it@14.2.0)(@types/node@24.19.1)(@vitejs/devtools-kit@0.4.12(@modelcontextprotocol/server@2.3.0)(cac@7.0.0)(srvx@1.0.5)(vite@8.3.2(@types/node@24.19.1)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1)))(@vue/compiler-sfc@3.5.43)(cac@7.0.0)(esbuild@0.28.2)(lightningcss@1.33.0)(markdown-it@14.3.2)(oxc-parser@0.150.0)(playwright-chromium@1.63.0)(postcss@8.5.28)(react@19.3.0)(rolldown@1.2.12)(srvx@1.0.5)(tsx@4.23.15)':
     dependencies:
       '@antfu/ni': 30.6.0
       '@antfu/utils': 9.3.0
@@ -4126,6 +4139,8 @@ snapshots:
       yaml: 2.9.1
       yargs: 18.2.0
       zod: 4.6.5
+    optionalDependencies:
+      playwright-chromium: 1.63.0
     transitivePeerDependencies:
       - '@devframes/agentic'
       - '@farmfe/core'
@@ -6479,6 +6494,12 @@ snapshots:
       pathe: 2.0.3
 
   plantuml-encoder@1.4.0: {}
+
+  playwright-chromium@1.63.0:
+    dependencies:
+      playwright-core: 1.63.0
+
+  playwright-core@1.63.0: {}
 
   points-on-curve@0.2.0: {}
 

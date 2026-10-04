@@ -10,7 +10,6 @@ import '../game/game_launcher.dart';
 import '../help/help_screen.dart';
 import '../parent/data/family_plan.dart';
 import 'air_raid_mission.dart';
-import 'lost_mission_launcher.dart';
 import '../../audio/practice_audio.dart';
 import 'mission_screen.dart';
 
@@ -58,6 +57,10 @@ class _PracticeSelectionScreen extends StatefulWidget {
 
 class _PracticeSelectionScreenState extends State<_PracticeSelectionScreen>
     with WidgetsBindingObserver {
+  static const _lostScenarioNotice =
+      'Ten scenariusz nie jest jeszcze gotowy. '
+      'Scenariusz „Słyszysz alarm” jest gotowy do testów.';
+
   PracticeAudio _audio = PracticeAudio();
   late _Selection _selection = widget.initialSelection;
   bool _audioAvailable = true;
@@ -67,7 +70,8 @@ class _PracticeSelectionScreenState extends State<_PracticeSelectionScreen>
   String get _instruction => switch (_selection) {
     _Selection.activity => 'Wybierz zajęcie. Ćwiczenia lub Nasza mapa.',
     _Selection.scenario =>
-      'Wybierz scenariusz. Słyszysz alarm lub ćwicz z mapą.',
+      'Wybierz scenariusz. Słyszysz alarm jest gotowy do testów. '
+          'Ćwicz z mapą nie jest jeszcze gotowy.',
     _Selection.mode => 'Wybierz miejsce ćwiczenia. W domu lub na zewnątrz.',
   };
 
@@ -292,10 +296,22 @@ class _PracticeSelectionScreenState extends State<_PracticeSelectionScreen>
         BaseboundIconName.alarm,
         () => _select(_Selection.mode),
       ),
-      _choice(
-        'Ćwicz z mapą',
-        BaseboundIconName.lost,
-        () => _open(LostMissionLauncher(child: widget.child)),
+      Tooltip(
+        message: _lostScenarioNotice,
+        triggerMode: TooltipTriggerMode.tap,
+        showDuration: const Duration(seconds: 4),
+        excludeFromSemantics: true,
+        child: Semantics(
+          label: 'Ćwicz z mapą',
+          hint: _lostScenarioNotice,
+          button: true,
+          enabled: false,
+          child: ExcludeSemantics(
+            child: IgnorePointer(
+              child: _choice('Ćwicz z mapą', BaseboundIconName.lost, null),
+            ),
+          ),
+        ),
       ),
     ],
     _Selection.mode => [
@@ -315,7 +331,7 @@ class _PracticeSelectionScreenState extends State<_PracticeSelectionScreen>
   Widget _choice(
     String label,
     BaseboundIconName icon,
-    VoidCallback onPressed, {
+    VoidCallback? onPressed, {
     bool compact = false,
   }) => Padding(
     padding: EdgeInsets.only(bottom: compact ? 8 : 12),

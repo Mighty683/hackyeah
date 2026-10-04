@@ -10,10 +10,16 @@ class MissionRecapLayout extends StatelessWidget {
     super.key,
     required this.audioControls,
     required this.actions,
+    this.recapContent,
+    this.notice,
+    this.scrollController,
   });
 
   final Widget audioControls;
   final List<Widget> actions;
+  final Widget? recapContent;
+  final Widget? notice;
+  final ScrollController? scrollController;
 
   @override
   Widget build(BuildContext context) => Column(
@@ -21,18 +27,21 @@ class MissionRecapLayout extends StatelessWidget {
     children: [
       Expanded(
         child: SingleChildScrollView(
+          controller: scrollController,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              PracticeRecap(
-                praise: AirRaidPracticeRecap.praise,
-                points: AirRaidPracticeRecap.points,
-                pointIcons: const [
-                  BaseboundIconName.hallway,
-                  BaseboundIconName.phone,
-                  BaseboundIconName.wait,
-                ],
-              ),
+              recapContent ??
+                  PracticeRecap(
+                    praise: AirRaidPracticeRecap.praise,
+                    points: AirRaidPracticeRecap.points,
+                    pointIcons: const [
+                      BaseboundIconName.hallway,
+                      BaseboundIconName.phone,
+                      BaseboundIconName.wait,
+                    ],
+                  ),
+              ?notice,
               audioControls,
             ],
           ),

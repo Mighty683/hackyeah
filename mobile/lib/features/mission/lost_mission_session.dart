@@ -3,7 +3,8 @@ import 'lost_mission_models.dart';
 import 'lost_mission_content.dart';
 
 /// Offline decision practice. Calls, reunion and confirmation are fictional.
-/// Each decision waits for feedback acknowledgment; mistakes retry in place.
+/// Mistakes disable only that choice; accepted decisions lock until advancement.
+/// Map recognition keeps its native pins selectable and repeats their feedback.
 class LostMissionSession {
   LostMissionSession({required this.variant, required this.context}) {
     _steps = buildLostMissionSteps(context, variant);
@@ -16,6 +17,7 @@ class LostMissionSession {
   late final Map<String, LostMissionStep> _steps;
   late String _stepId;
   LostMissionChoice? _selectedChoice;
+  final Set<String> _rejectedChoiceIds = {};
   String? _firstContactId;
   bool _safetyConfirmed = false;
   bool _isComplete = false;
@@ -29,12 +31,17 @@ class LostMissionSession {
   bool get isComplete => _isComplete;
   String? get firstContactId => _firstContactId;
   bool get safetyConfirmed => _safetyConfirmed;
+  bool get canChoose => !_isComplete && _selectedChoice?.isCorrect != true;
+  Set<String> get rejectedChoiceIds => Set.unmodifiable(_rejectedChoiceIds);
 
   void choose(String id) {
-    if (_isComplete || hasFeedback) return;
+    if (!canChoose || _rejectedChoiceIds.contains(id)) return;
     for (final choice in step.choices) {
       if (choice.id == id) {
         _selectedChoice = choice;
+        if (!choice.isCorrect && _stepId != 'map_meeting_point') {
+          _rejectedChoiceIds.add(id);
+        }
         return;
       }
     }
@@ -56,6 +63,7 @@ class LostMissionSession {
     }
     _stepId = nextId;
     _selectedChoice = null;
+    _rejectedChoiceIds.clear();
   }
 
   void retry() {
@@ -66,6 +74,7 @@ class LostMissionSession {
   void restart() {
     _stepId = 'stop';
     _selectedChoice = null;
+    _rejectedChoiceIds.clear();
     _firstContactId = null;
     _safetyConfirmed = false;
     _isComplete = false;
@@ -73,8 +82,10 @@ class LostMissionSession {
 
   /// Map exploration never implies walking. Asking for help uses the stay branch.
   void useMapHelp() {
-    if (_stepId != 'map_meeting_point' || hasFeedback || _isComplete) return;
+    if (_stepId != 'map_meeting_point' || !canChoose) return;
     _stepId = 'point_unavailable';
+    _selectedChoice = null;
+    _rejectedChoiceIds.clear();
   }
 
   String? _nextStepId() => switch (_stepId) {

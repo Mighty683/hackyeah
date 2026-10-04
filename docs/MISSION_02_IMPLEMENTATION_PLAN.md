@@ -2,6 +2,45 @@
 
 Status: offline demo implemented in the current worktree, 2026-10-03, including photo-linked meeting-point recognition and an Our map introduction. The delivery plan and contracts below retain the original illustration MVP decisions; SCREEN_FLOW.md describes current behavior. Remaining future work includes contact photos, younger-child support, familiar routes and real notifications.
 
+## Shared illustrated mission update 2026-10-04
+
+Lost practice now uses the same presentation and interaction pattern as air raid.
+Its **Ćwicz z mapą** scenario-list entry is disabled while work continues; its
+tap/hover tooltip identifies **Słyszysz alarm** as ready for testing. The internal
+launcher and scenarios remain available to focused tests.
+The current behavior here supersedes the original feedback acknowledgment and
+illustration-grid decisions in the delivery plan below.
+
+- Both screens use `PracticeStepHeader`, `PracticeFeedback`,
+  `MissionDecisionLayout` and `MissionRecapLayout`; success and correction reuse
+  `BaseboundFeedbackPanel`, and recall reuses `PracticeRecap`.
+- Lost decisions place child/adult sprites, saved photos and pictured landmarks
+  in a portrait public-place scene. Artwork, object outlines and accessible
+  controls share normalized geometry. Targets remain at least 48 pixels, with
+  scrolling instead of shrinking overlapping controls on compact screens.
+- Incorrect scene choices stay muted and alternatives work immediately. Correct
+  choices advance after narration and at least three seconds. Replay, lifecycle,
+  restart and exit invalidate pending advancement.
+- Map recognition stays specialized: wrong pins remain selectable and repeat
+  their explanation. Actual photos, stable landmark IDs, map gestures and
+  pretend contact selection retain their existing behavior.
+- Story actions remain explicit. Each manual callback is tied to its displayed
+  step, so repeated taps cannot skip the visible post-reunion confirmation.
+- The main lost entry and unfinished out-of-sight selector remain disabled. No real communications,
+  navigation or safety claims are added.
+
+The background and transparent adult sheet were created with the built-in
+imagegen tool. Prompts, provenance and fictional-place scope are recorded in
+`mobile/assets/illustrations/LOST_SCENE_ASSETS.md`; original assets remain intact.
+User appearance review and on-device narration checks remain separate from
+automated functional checks.
+
+Integration verification on 2026-10-04: `flutter analyze` reports no issues and
+all 49 tests in `test/features/mission` pass, including the disabled-entry
+tooltip, shared air-raid flows, sprite targets, short landscape interaction,
+photo/map recognition and narration cancellation. Narration tests use mock
+platform channels; no on-device or rendered appearance review was performed.
+
 ## Implementation result and verification
 
 Implemented with three parallel agents and an integrator: both lost-practice variants, optional local parent landmark setup, a display-only family snapshot, labelled fictional fallbacks, narrated choices and feedback, unanswered-call recovery, reunion, explicit local I'M SAFE confirmation and recall/replay. Mission 01, map practice and the help prototype remain available.

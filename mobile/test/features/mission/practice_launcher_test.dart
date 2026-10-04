@@ -1,3 +1,5 @@
+import 'dart:ui' show PointerDeviceKind;
+
 import 'package:do_bazy/features/demo/web_demo_shell.dart';
 import 'package:do_bazy/features/parent/data/family_plan.dart';
 import 'package:do_bazy/widgets/basebound_mascot.dart';
@@ -42,7 +44,7 @@ void main() {
         home: WebDemoShell(
           onReset: () {},
           child: const PracticeLauncher(
-            child: ChildProfile(fullName: 'Aleks Przykładowy (demo)'),
+            child: ChildProfile(fullName: 'Aleks Przykładowy'),
           ),
         ),
       ),
@@ -109,6 +111,42 @@ void main() {
       expect(find.text('Wybierz scenariusz'), findsOneWidget);
       expect(find.byType(BaseboundActionTile), findsNWidgets(2));
       expect(find.text('Nasza mapa'), findsNothing);
+      const unavailableNotice =
+          'Ten scenariusz nie jest jeszcze gotowy. '
+          'Scenariusz „Słyszysz alarm” jest gotowy do testów.';
+      final lostTile = tester
+          .widgetList<BaseboundActionTile>(find.byType(BaseboundActionTile))
+          .singleWhere((tile) => tile.label == 'Ćwicz z mapą');
+      expect(lostTile.onPressed, isNull);
+      final lostSemantics = tester.widget<Semantics>(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is Semantics && widget.properties.label == 'Ćwicz z mapą',
+        ),
+      );
+      expect(lostSemantics.properties.enabled, isFalse);
+      expect(lostSemantics.properties.onTap, isNull);
+      expect(lostSemantics.properties.hint, unavailableNotice);
+      expect(find.byTooltip(unavailableNotice), findsOneWidget);
+      await tester.tap(find.byTooltip(unavailableNotice));
+      await tester.pumpAndSettle();
+      expect(find.text(unavailableNotice), findsOneWidget);
+      expect(find.byType(PracticeScenarioScreen), findsOneWidget);
+      expect(find.text('Wybierz scenę'), findsNothing);
+      expect(
+        (audioCalls.last.arguments as Map)['text'],
+        contains('Słyszysz alarm jest gotowy do testów'),
+      );
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pumpAndSettle();
+      final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+      await mouse.addPointer(location: Offset.zero);
+      await mouse.moveTo(tester.getCenter(find.text('Ćwicz z mapą')));
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pumpAndSettle();
+      expect(find.text(unavailableNotice), findsOneWidget);
+      await mouse.removePointer();
+      await tester.pumpAndSettle();
       await _tap(tester, 'Słyszysz alarm');
       expect(find.text('Gdzie ćwiczymy?'), findsOneWidget);
       expect(find.text('W domu'), findsOneWidget);

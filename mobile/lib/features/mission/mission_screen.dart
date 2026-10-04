@@ -22,6 +22,8 @@ import 'practice_message_conversation.dart';
 import 'mission_phone_practice.dart';
 import 'mission_decision_layout.dart';
 import 'mission_viewport_layout.dart';
+import 'practice_feedback.dart';
+import 'practice_step_header.dart';
 
 /// An explicitly fictional training session, separate from the help prototype.
 class MissionScreen extends StatefulWidget {
@@ -424,27 +426,10 @@ class _MissionScreenState extends State<MissionScreen>
                 LayoutId(
                   id: MissionRegion.instruction,
                   child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(
-                          step.title,
-                          style: const TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w700,
-                            height: 1.2,
-                          ),
-                        ),
-                        if (!_session.hasFeedback)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 8),
-                            child: Text(
-                              step.narration,
-                              style: const TextStyle(fontSize: 17, height: 1.4),
-                            ),
-                          ),
-                        _audioControls(),
-                      ],
+                    child: PracticeStepHeader(
+                      title: step.title,
+                      narration: _session.hasFeedback ? null : step.narration,
+                      audioControls: _audioControls(),
                     ),
                   ),
                 ),
@@ -514,31 +499,13 @@ class _MissionScreenState extends State<MissionScreen>
     onChoose: _session.canChoose ? _choose : null,
   );
 
-  Widget _decisionInstruction() => Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      Text(
-        _session.step.title,
-        style: const TextStyle(
-          fontSize: 28,
-          fontWeight: FontWeight.w700,
-          height: 1.2,
-        ),
-      ),
-      const SizedBox(height: 8),
-      Text(
-        _session.step.narration,
-        style: const TextStyle(fontSize: 17, height: 1.4),
-      ),
-      const SizedBox(height: 8),
-      Text(
-        _session.step.id == 'get_down' || _session.step.id == 'protect_head'
-            ? 'Dotknij pozy, aby ją wybrać.'
-            : 'Dotknij podświetlonego obiektu, aby go wybrać.',
-        style: const TextStyle(color: BaseboundColors.muted),
-      ),
-      _audioControls(),
-    ],
+  Widget _decisionInstruction() => PracticeStepHeader(
+    title: _session.step.title,
+    narration: _session.step.narration,
+    hint: _session.step.id == 'get_down' || _session.step.id == 'protect_head'
+        ? 'Dotknij pozy, aby ją wybrać.'
+        : 'Dotknij podświetlonego obiektu, aby go wybrać.',
+    audioControls: _audioControls(),
   );
 
   Widget _decisionLayout(MissionVisual visual) => MissionDecisionLayout(
@@ -548,20 +515,10 @@ class _MissionScreenState extends State<MissionScreen>
     hasFeedback: _session.hasFeedback,
   );
 
-  Widget _feedback() => Semantics(
-    liveRegion: true,
-    child: _feedbackPanel(
-      _session.feedback!,
-      _session.selectedChoice!.isCorrect,
-    ),
+  Widget _feedback() => PracticeFeedback(
+    message: _session.feedback!,
+    positive: _session.selectedChoice!.isCorrect,
   );
-
-  Widget _feedbackPanel(String message, bool positive) =>
-      BaseboundFeedbackPanel(
-        message: message,
-        positive: positive,
-        compact: true,
-      );
 
   Widget _nextButton() {
     return FilledButton.icon(

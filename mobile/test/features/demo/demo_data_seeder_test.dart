@@ -48,15 +48,15 @@ void main() {
       expect(plan.child.toJson(), const ChildProfile().toJson());
       expect(plan.contacts.length, FamilyPlan.maxContacts);
       for (final contact in plan.contacts) {
-        expect(contact.name, contains('demo'));
+        expect(contact.name, isNot(contains('demo')));
         expect(contact.relationship, isNotEmpty);
         expect(normalizeTrustedPhone(contact.phone), isNotNull);
       }
       expect(plan.contacts.map((contact) => contact.phone).toSet().length, 3);
       expect(plan.safePoints.map((point) => point.name), [
         'Dom',
-        'Szkoła (demo)',
-        'Park (demo)',
+        'Szkoła',
+        'Park',
       ]);
       final saved = await landmarks.load();
       expect(saved.length, 3);

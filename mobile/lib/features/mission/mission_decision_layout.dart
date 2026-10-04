@@ -8,12 +8,14 @@ class MissionDecisionLayout extends StatelessWidget {
     required this.scene,
     required this.feedback,
     required this.hasFeedback,
+    this.scrollController,
   });
 
   final Widget instruction;
   final Widget scene;
   final Widget feedback;
   final bool hasFeedback;
+  final ScrollController? scrollController;
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
@@ -25,6 +27,7 @@ class MissionDecisionLayout extends StatelessWidget {
           children: [
             Expanded(
               child: SingleChildScrollView(
+                controller: scrollController,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [instruction, const SizedBox(height: 16), scene],
@@ -50,7 +53,12 @@ class MissionDecisionLayout extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(child: SingleChildScrollView(child: instruction)),
+                Expanded(
+                  child: SingleChildScrollView(
+                    controller: scrollController,
+                    child: instruction,
+                  ),
+                ),
                 if (hasFeedback)
                   Flexible(child: SingleChildScrollView(child: feedback)),
               ],
