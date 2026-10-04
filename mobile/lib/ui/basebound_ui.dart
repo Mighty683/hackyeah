@@ -65,6 +65,8 @@ class BaseboundActionTile extends StatelessWidget {
     this.description,
     this.selected = false,
     this.large = false,
+    this.leading,
+    this.padding,
   });
 
   final String label;
@@ -74,16 +76,19 @@ class BaseboundActionTile extends StatelessWidget {
   final bool selected;
   final bool large;
 
+  /// Decorative artwork remains inside the tile's single navigation target.
+  final Widget? leading;
+  final EdgeInsetsGeometry? padding;
+
   @override
   Widget build(BuildContext context) => Semantics(
     selected: selected,
     child: OutlinedButton(
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
-        padding: EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: large ? 24 : 16,
-        ),
+        padding:
+            padding ??
+            EdgeInsets.symmetric(horizontal: 16, vertical: large ? 24 : 16),
         backgroundColor: selected ? BaseboundColors.sky : Colors.white,
         side: BorderSide(
           color: selected ? BaseboundColors.blue : BaseboundColors.border,
@@ -92,7 +97,9 @@ class BaseboundActionTile extends StatelessWidget {
       ),
       child: Row(
         children: [
-          ExcludeSemantics(child: BaseboundIcon(icon, size: large ? 32 : 24)),
+          ExcludeSemantics(
+            child: leading ?? BaseboundIcon(icon, size: large ? 32 : 24),
+          ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(

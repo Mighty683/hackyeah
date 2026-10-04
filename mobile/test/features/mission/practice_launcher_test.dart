@@ -1,3 +1,7 @@
+import 'package:do_bazy/features/demo/web_demo_shell.dart';
+import 'package:do_bazy/features/parent/data/family_plan.dart';
+import 'package:do_bazy/widgets/basebound_mascot.dart';
+import 'package:do_bazy/widgets/child_character.dart';
 import 'package:do_bazy/features/mission/mission_scene.dart';
 import 'package:do_bazy/features/mission/mission_screen.dart';
 import 'package:do_bazy/features/mission/practice_launcher.dart';
@@ -8,6 +12,74 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  testWidgets('phone activity menu keeps dino and controls without scrolling', (
+    tester,
+  ) async {
+    await tester.runAsync(() async {
+      final fonts = FontLoader('Nunito')
+        ..addFont(rootBundle.load('assets/fonts/Nunito-Variable.ttf'));
+      await fonts.load();
+    });
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(360, 577);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    const channel = MethodChannel('basebound/mission_audio');
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+          channel,
+          (call) async => call.method == 'initialize' ? false : null,
+        );
+    addTearDown(() {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, null);
+    });
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: BaseboundTheme.training(),
+        home: WebDemoShell(
+          onReset: () {},
+          child: const PracticeLauncher(
+            child: ChildProfile(fullName: 'Aleks Przykładowy (demo)'),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(BaseboundMascot), findsOneWidget);
+    final scrollable = tester.state<ScrollableState>(find.byType(Scrollable));
+    expect(scrollable.position.maxScrollExtent, 0);
+    for (final label in ['Ćwiczenia', 'Nasza mapa', 'Potrzebuję pomocy']) {
+      expect(find.text(label).hitTestable(), findsOneWidget);
+    }
+    expect(find.byTooltip('Posłuchaj ponownie').hitTestable(), findsOneWidget);
+    final activities = find.byType(BaseboundActionTile);
+    for (final tile in activities.evaluate()) {
+      expect(
+        tester.getSize(find.byWidget(tile.widget)).height,
+        greaterThanOrEqualTo(80),
+      );
+    }
+    expect(
+      find.descendant(
+        of: activities.first,
+        matching: find.byType(ChildCharacter),
+      ),
+      findsOneWidget,
+    );
+    // Artwork and label are part of the same button, including its navigation.
+    await tester.tap(find.byType(ChildCharacter));
+    await tester.pumpAndSettle();
+    expect(find.text('Wybierz scenariusz'), findsOneWidget);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(find.text('Brak głosu? Czytaj z dorosłym.'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+  });
 
   testWidgets(
     'activities open a scenario list and home mission returns to that list',
@@ -30,22 +102,22 @@ void main() {
       expect(find.byType(BaseboundActionTile), findsNWidgets(2));
       expect(find.text('Ćwiczenia'), findsOneWidget);
       expect(find.text('Nasza mapa'), findsOneWidget);
-      expect(find.text('Ćwiczenie alarmu'), findsNothing);
-      expect(find.text("Ćwiczenie zgubienia się"), findsNothing);
+      expect(find.text('Słyszysz alarm'), findsNothing);
+      expect(find.text('Ćwicz z mapą'), findsNothing);
       await _tap(tester, 'Ćwiczenia');
       expect(find.byType(PracticeScenarioScreen), findsOneWidget);
       expect(find.text('Wybierz scenariusz'), findsOneWidget);
       expect(find.byType(BaseboundActionTile), findsNWidgets(2));
       expect(find.text('Nasza mapa'), findsNothing);
-      await _tap(tester, 'Ćwiczenie alarmu');
+      await _tap(tester, 'Słyszysz alarm');
       expect(find.text('Gdzie ćwiczymy?'), findsOneWidget);
       expect(find.text('W domu'), findsOneWidget);
       expect(find.text('Na zewnątrz'), findsOneWidget);
       await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
       expect(find.text('Wybierz scenariusz'), findsOneWidget);
-      expect(find.text('Ćwiczenie alarmu'), findsOneWidget);
-      await _tap(tester, 'Ćwiczenie alarmu');
+      expect(find.text('Słyszysz alarm'), findsOneWidget);
+      await _tap(tester, 'Słyszysz alarm');
       await _tap(tester, 'W domu');
       expect(find.byType(MissionScreen), findsOneWidget);
       expect(find.text('Alarm w domu'), findsOneWidget);
@@ -71,7 +143,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(MissionScreen), findsNothing);
       expect(find.text('Wybierz scenariusz'), findsOneWidget);
-      expect(find.text('Ćwiczenie alarmu'), findsOneWidget);
+      expect(find.text('Słyszysz alarm'), findsOneWidget);
       expect(find.text('Nasza mapa'), findsNothing);
       expect(find.text('Landmark practice'), findsNothing);
       expect(find.text('Map practice'), findsNothing);

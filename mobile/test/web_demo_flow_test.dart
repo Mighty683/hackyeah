@@ -34,7 +34,7 @@ void main() {
       expect(await LandmarkRepository().load(), hasLength(3));
       await _child(tester);
       await _tap(tester, 'Ćwiczenia');
-      await _tap(tester, 'Ćwiczenie alarmu');
+      await _tap(tester, 'Słyszysz alarm');
       await _tap(tester, 'W domu');
       await _wait(tester, find.text('Alarm w domu'));
       await _tap(tester, 'Znajdź miejsce');
@@ -59,7 +59,7 @@ void main() {
       await _start(tester);
       await _child(tester);
       await _tap(tester, 'Ćwiczenia');
-      await _tap(tester, "Ćwiczenie zgubienia się");
+      await _tap(tester, 'Ćwicz z mapą');
       await _wait(
         tester,
         find.text('Punkt spotkania do ćwiczeń: Czerwony sklep na rogu'),

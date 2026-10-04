@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
 import '../../widgets/basebound_mascot.dart';
+import '../../widgets/child_character.dart';
 import '../game/game_launcher.dart';
 import '../help/help_screen.dart';
 import '../parent/data/family_plan.dart';
@@ -64,7 +65,8 @@ class _PracticeSelectionScreenState extends State<_PracticeSelectionScreen>
 
   String get _instruction => switch (_selection) {
     _Selection.activity => 'Wybierz zajęcie. Ćwiczenia lub Nasza mapa.',
-    _Selection.scenario => 'Wybierz scenariusz. Alarm lub zgubienie się.',
+    _Selection.scenario =>
+      'Wybierz scenariusz. Słyszysz alarm lub ćwicz z mapą.',
     _Selection.mode => 'Wybierz miejsce ćwiczenia. W domu lub na zewnątrz.',
   };
 
@@ -169,84 +171,134 @@ class _PracticeSelectionScreenState extends State<_PracticeSelectionScreen>
         body: SafeArea(
           child: IllustratedBackdrop(
             warm: true,
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 480),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      if (widget.child.fullName.trim().isNotEmpty) ...[
-                        Text(
-                          'Cześć, ${widget.child.fullName}!',
-                          style: const TextStyle(
-                            color: BaseboundColors.muted,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                      ],
-                      _PracticeHeading(
-                        title: title,
-                        instruction: switch (_selection) {
-                          _Selection.activity =>
-                            'Wybierz jedno zajęcie na początek.',
-                          _Selection.scenario =>
-                            'Wybierz historię do ćwiczenia.',
-                          _Selection.mode =>
-                            'Wybierz scenę do ćwiczenia alarmu.',
-                        },
-                      ),
-                      const SizedBox(height: 24),
-                      ..._choices(),
-                      if (_selection == _Selection.activity) ...[
-                        const SizedBox(height: 12),
-                        HelpEntryButton(
-                          onPressed: () => _open(const HelpScreen()),
-                        ),
-                      ],
-                      const SizedBox(height: 8),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: TextButton.icon(
-                          onPressed: _opening ? null : _speak,
-                          icon: const BaseboundIcon(
-                            BaseboundIconName.speaker,
-                            size: 24,
-                          ),
-                          label: const Text('Posłuchaj ponownie'),
-                        ),
-                      ),
-                      if (!_audioAvailable)
-                        const Padding(
-                          padding: EdgeInsets.only(top: 12),
-                          child: SoftPanel(
-                            child: Text(
-                              kIsWeb
-                                  ? 'Głos w przeglądarce jest niedostępny. Dotknij Posłuchaj ponownie lub czytaj z dorosłym.'
-                                  : 'Głos jest niedostępny. Poproś dorosłego o pomoc. '
-                                        'Do ćwiczeń z narracją potrzebny jest polski głos offline.',
-                              style: TextStyle(color: BaseboundColors.muted),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final compact =
+                    _selection == _Selection.activity &&
+                    constraints.maxHeight < 600;
+                return Center(
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.fromLTRB(
+                      24,
+                      compact ? 4 : 16,
+                      24,
+                      compact ? 4 : 24,
+                    ),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 480),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          if (widget.child.fullName.trim().isNotEmpty) ...[
+                            Text(
+                              'Cześć, ${widget.child.fullName}!',
+                              maxLines: compact ? 1 : null,
+                              overflow: compact ? TextOverflow.ellipsis : null,
+                              style: const TextStyle(
+                                color: BaseboundColors.muted,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
+                            SizedBox(height: compact ? 4 : 12),
+                          ],
+                          _PracticeHeading(
+                            title: title,
+                            compact: compact,
+                            instruction: switch (_selection) {
+                              _Selection.activity =>
+                                'Wybierz jedno zajęcie na początek.',
+                              _Selection.scenario =>
+                                'Wybierz historię do ćwiczenia.',
+                              _Selection.mode =>
+                                'Wybierz scenę do ćwiczenia alarmu.',
+                            },
                           ),
-                        ),
-                      if (_selection == _Selection.mode)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: TextButton.icon(
-                            onPressed: _opening
-                                ? null
-                                : () => _select(_Selection.scenario),
-                            icon: const BaseboundIcon(BaseboundIconName.back),
-                            label: const Text('Wybierz scenariusz'),
-                          ),
-                        ),
-                    ],
+                          SizedBox(height: compact ? 8 : 24),
+                          ..._choices(compact: compact),
+                          if (compact) ...[
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: HelpEntryButton(
+                                    onPressed: () => _open(const HelpScreen()),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                IconButton(
+                                  onPressed: _opening ? null : _speak,
+                                  tooltip: 'Posłuchaj ponownie',
+                                  icon: const BaseboundIcon(
+                                    BaseboundIconName.speaker,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                          if (_selection == _Selection.activity &&
+                              !compact) ...[
+                            const SizedBox(height: 12),
+                            HelpEntryButton(
+                              onPressed: () => _open(const HelpScreen()),
+                            ),
+                          ],
+                          if (!compact) ...[
+                            const SizedBox(height: 8),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: TextButton.icon(
+                                onPressed: _opening ? null : _speak,
+                                icon: const BaseboundIcon(
+                                  BaseboundIconName.speaker,
+                                  size: 24,
+                                ),
+                                label: const Text('Posłuchaj ponownie'),
+                              ),
+                            ),
+                          ],
+                          if (!_audioAvailable && compact)
+                            const Padding(
+                              padding: EdgeInsets.only(top: 4),
+                              child: Text(
+                                'Brak głosu? Czytaj z dorosłym.',
+                                style: TextStyle(color: BaseboundColors.muted),
+                              ),
+                            ),
+                          if (!_audioAvailable && !compact)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 12),
+                              child: SoftPanel(
+                                padding: const EdgeInsets.all(20),
+                                child: Text(
+                                  kIsWeb
+                                      ? 'Brak głosu? Posłuchaj ponownie lub czytaj z dorosłym.'
+                                      : 'Głos jest niedostępny. Poproś dorosłego o pomoc. '
+                                            'Do ćwiczeń z narracją potrzebny jest polski głos offline.',
+                                  style: TextStyle(
+                                    color: BaseboundColors.muted,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          if (_selection == _Selection.mode)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: TextButton.icon(
+                                onPressed: _opening
+                                    ? null
+                                    : () => _select(_Selection.scenario),
+                                icon: const BaseboundIcon(
+                                  BaseboundIconName.back,
+                                ),
+                                label: const Text('Wybierz scenariusz'),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-              ),
+                );
+              },
             ),
           ),
         ),
@@ -254,27 +306,29 @@ class _PracticeSelectionScreenState extends State<_PracticeSelectionScreen>
     );
   }
 
-  List<Widget> _choices() => switch (_selection) {
+  List<Widget> _choices({required bool compact}) => switch (_selection) {
     _Selection.activity => [
       _choice(
         'Ćwiczenia',
         BaseboundIconName.child,
         () => _open(PracticeScenarioScreen(child: widget.child)),
+        compact: compact,
       ),
       _choice(
         'Nasza mapa',
         BaseboundIconName.map,
         () => _open(const GameLauncher()),
+        compact: compact,
       ),
     ],
     _Selection.scenario => [
       _choice(
-        'Ćwiczenie alarmu',
+        'Słyszysz alarm',
         BaseboundIconName.alarm,
         () => _select(_Selection.mode),
       ),
       _choice(
-        "Ćwiczenie zgubienia się",
+        'Ćwicz z mapą',
         BaseboundIconName.lost,
         () => _open(LostMissionLauncher(child: widget.child)),
       ),
@@ -296,23 +350,44 @@ class _PracticeSelectionScreenState extends State<_PracticeSelectionScreen>
   Widget _choice(
     String label,
     BaseboundIconName icon,
-    VoidCallback onPressed,
-  ) => Padding(
-    padding: const EdgeInsets.only(bottom: 12),
+    VoidCallback onPressed, {
+    bool compact = false,
+  }) => Padding(
+    padding: EdgeInsets.only(bottom: compact ? 8 : 12),
     child: BaseboundActionTile(
       label: label,
       icon: icon,
       onPressed: _opening ? null : onPressed,
       large: _selection == _Selection.activity,
+      padding: _selection == _Selection.activity
+          ? EdgeInsets.symmetric(horizontal: 16, vertical: compact ? 8 : 16)
+          : null,
+      leading: _selection == _Selection.activity
+          ? SizedBox(
+              width: 48,
+              height: 64,
+              child: icon == BaseboundIconName.child
+                  ? ChildCharacter(
+                      pose: ChildPoseName.stand,
+                      gender: widget.child.gender ?? ChildGender.girl,
+                    )
+                  : Center(child: BaseboundIcon(icon, size: 48)),
+            )
+          : null,
     ),
   );
 }
 
 class _PracticeHeading extends StatelessWidget {
-  const _PracticeHeading({required this.title, required this.instruction});
+  const _PracticeHeading({
+    required this.title,
+    required this.instruction,
+    this.compact = false,
+  });
 
   final String title;
   final String instruction;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
@@ -329,20 +404,21 @@ class _PracticeHeading extends StatelessWidget {
               fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            instruction,
-            style: const TextStyle(
-              color: BaseboundColors.muted,
-              fontSize: 16,
-              height: 1.4,
+          if (!compact) ...[
+            const SizedBox(height: 8),
+            Text(
+              instruction,
+              style: const TextStyle(
+                color: BaseboundColors.muted,
+                fontSize: 16,
+                height: 1.4,
+              ),
             ),
-          ),
+          ],
         ],
       );
-      if (constraints.maxWidth < 280 ||
-          MediaQuery.textScalerOf(context).scale(28) > 38 ||
-          MediaQuery.sizeOf(context).height < 600) {
+      if (constraints.maxWidth < 240 ||
+          MediaQuery.textScalerOf(context).scale(28) > 38) {
         return heading;
       }
       return Row(
@@ -350,7 +426,10 @@ class _PracticeHeading extends StatelessWidget {
         children: [
           Expanded(child: heading),
           const SizedBox(width: 16),
-          const BaseboundMascot(size: 64, pose: DinoPose.point),
+          BaseboundMascot(
+            size: constraints.maxWidth < 360 ? 48 : 64,
+            pose: DinoPose.point,
+          ),
         ],
       );
     },

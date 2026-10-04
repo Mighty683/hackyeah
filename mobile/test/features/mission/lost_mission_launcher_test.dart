@@ -40,9 +40,9 @@ void main() {
       expect(find.text('Nasza mapa'), findsOneWidget);
       expect(find.text('Landmark practice'), findsNothing);
       await _tap(tester, 'Ćwiczenia');
-      expect(find.text('Ćwiczenie alarmu'), findsOneWidget);
+      expect(find.text('Słyszysz alarm'), findsOneWidget);
       expect(find.text('Nasza mapa'), findsNothing);
-      await _tap(tester, "Ćwiczenie zgubienia się");
+      await _tap(tester, 'Ćwicz z mapą');
       expect(
         find.text('Punkt spotkania do ćwiczeń: Blue help desk'),
         findsOneWidget,
@@ -133,7 +133,7 @@ void main() {
     await tester.pumpWidget(const MaterialApp(home: PracticeLauncher()));
     await tester.pumpAndSettle();
     await _tap(tester, 'Ćwiczenia');
-    await _tap(tester, "Ćwiczenie zgubienia się");
+    await _tap(tester, 'Ćwicz z mapą');
     expect(
       find.text('Punkt spotkania do ćwiczeń: First point'),
       findsOneWidget,
@@ -141,7 +141,7 @@ void main() {
     await tester.pageBack();
     await tester.pumpAndSettle();
     await repository.save(_configuredPlan);
-    await _tap(tester, "Ćwiczenie zgubienia się");
+    await _tap(tester, 'Ćwicz z mapą');
     expect(
       find.text('Punkt spotkania do ćwiczeń: Blue help desk'),
       findsOneWidget,

@@ -131,7 +131,7 @@ void main() {
       );
       expect(repository.plan.practiceMeetingPoint!.label, 'Demo help desk');
       await _tap(tester, 'Ćwiczenia');
-      await _tap(tester, 'Ćwiczenie alarmu');
+      await _tap(tester, 'Słyszysz alarm');
       await _tap(tester, 'W domu');
       final mission = tester.widget<MissionScreen>(find.byType(MissionScreen));
       expect(mission.mode, MissionMode.home);
