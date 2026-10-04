@@ -1,5 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:js_interop';
+
+import 'package:flutter/services.dart';
+
+import 'training_cue.dart';
 
 @JS('window.speechSynthesis')
 external _SpeechSynthesis? get _synthesis;
@@ -47,8 +52,9 @@ extension type _CueAudio._(JSObject _) implements JSObject {
 }
 
 /// Browser-provided Polish narration; local voices are preferred, not required.
-/// Remote voices may require connectivity. The busy cue uses a local asset.
+/// Remote voices may require connectivity. Teaching cues use local assets.
 class BrowserNarration {
+  int _cueRequest = 0;
   _CueAudio? _cue;
   Completer<void>? _cuePlayback;
   Timer? _cueTimeout;
@@ -116,21 +122,26 @@ class BrowserNarration {
     }
   }
 
-  /// Play the simulated busy signal even when no Polish voice is available.
+  /// Play a short teaching excerpt even when no Polish voice is available.
   Future<void> playCue(String sound) async {
     stop();
-    if (sound != 'busy') return;
+    final training = TrainingCue.bundled[sound];
+    if (training == null) return;
+    final request = _cueRequest;
+    final source = await rootBundle.load(training.asset);
+    if (request != _cueRequest) return;
+    final wav = training.browserWav(source);
     final playback = Completer<void>();
-    final cue = _CueAudio('assets/assets/audio/mission01/busy.wav')
-      ..volume = 0.4;
+    final cue = _CueAudio('data:audio/wav;base64,${base64Encode(wav)}')
+      ..volume = training.volume;
     _cue = cue;
     _cuePlayback = playback;
     cue.onended = ((JSAny? event) => _finishCue()).toJS;
     cue.onerror = ((JSAny? event) {
-      _finishCue(StateError('Browser busy signal failed.'));
+      _finishCue(StateError('Browser $sound cue failed.'));
     }).toJS;
-    _cueTimeout = Timer(const Duration(seconds: 5), () {
-      _finishCue(StateError('Browser busy signal timed out.'));
+    _cueTimeout = Timer(Duration(milliseconds: training.durationMs + 5000), () {
+      _finishCue(StateError('Browser $sound cue timed out.'));
     });
     final finished = playback.future;
     unawaited(
@@ -227,6 +238,7 @@ class BrowserNarration {
   }
 
   void stop() {
+    ++_cueRequest;
     _finishCue();
     _voiceTimeout?.cancel();
     final loading = _voiceLoading;

@@ -474,11 +474,16 @@ pins remain excluded from walking guidance; there is no simulated movement or
 arrival claim. Help choices open a future-guide placeholder without phone actions or GPS. Narration uses the browser
 Web Speech API with an available Polish voice, preferring a local voice. Remote
 voices may need connectivity. Replay starts speech after a tap when available.
-Missing voices or playback errors retain text instructions; the web replay button
-is muted and cannot start audio. Tapping it shows a tooltip explaining that
+Missing voices or playback errors retain text instructions; when there is no
+bundled teaching cue to replay, the web replay button is muted. Tapping it shows a tooltip explaining that
 browser narration is unavailable and suggesting reading with an adult. Web screens
 do not show a persistent missing-audio message or a voice retry action. Narration stops when
-leaving or pausing a screen; Android teaching sound cues remain silent on web.
+leaving or pausing a screen. Web plays the same short warning, all-clear,
+environmental-noise and busy-call excerpts as Android, at reduced volume and
+independently of Polish voice availability. Official A-law recordings are decoded
+into PCM only in memory for browser playback; bundled originals are unchanged.
+Browser autoplay restrictions may require a replay tap. Synthesized Android
+selection, action, success and retry tones remain silent on web.
 Map attribution, fictional-place flags, practice labels and the unreviewed help
 warning remain in the shared UI.
 

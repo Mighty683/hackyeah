@@ -14,6 +14,7 @@ import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
 import 'air_raid_mission.dart';
 import '../../audio/practice_audio.dart';
+import '../../audio/training_cue.dart';
 import '../../audio/practice_narration_controller.dart';
 import 'mission_scene.dart';
 import 'mission_recap_layout.dart';
@@ -126,7 +127,10 @@ class _MissionScreenState extends State<MissionScreen>
   bool get _canReplay =>
       !_narration.initializing &&
       !_exiting &&
-      (_narration.ready || _soundCue != null);
+      (_narration.ready ||
+          (kIsWeb
+              ? TrainingCue.bundled.containsKey(_soundCue)
+              : _soundCue != null));
 
   void _choose(String id) {
     if (!_session.canChoose ||
@@ -306,7 +310,10 @@ class _MissionScreenState extends State<MissionScreen>
           ),
           UnavailableAudioTooltip(
             unavailable:
-                kIsWeb && !_narration.initializing && !_narration.ready,
+                kIsWeb &&
+                !_narration.initializing &&
+                !_narration.ready &&
+                !TrainingCue.bundled.containsKey(_soundCue),
             child: Semantics(
               label: 'Posłuchaj ponownie',
               button: true,

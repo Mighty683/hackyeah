@@ -7,8 +7,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'support/browser_assets.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  setUp(installBrowserAssetLoader);
+  tearDown(removeBrowserAssetLoader);
 
   test('browser audio never invokes native channels', () async {
     const channel = MethodChannel('web-test/native-audio');
@@ -24,10 +28,32 @@ void main() {
     expect(await audio.initialize(), isA<bool>());
     // An empty instruction verifies web routing without playing device audio.
     await audio.narrate('');
-    await audio.playCue('alarm');
+    await audio.playCue('unsupported');
     await audio.stop();
     await audio.dispose();
     expect(calls, 0);
+  }, skip: !kIsWeb);
+
+  test(
+    'browser siren finishes its four-second excerpt without a speech voice',
+    () async {
+      final audio = PracticeAudio();
+      addTearDown(audio.dispose);
+      final elapsed = Stopwatch()..start();
+      await audio.playCue('alarm');
+      expect(elapsed.elapsedMilliseconds, greaterThanOrEqualTo(3900));
+      expect(elapsed.elapsedMilliseconds, lessThan(8500));
+    },
+    skip: !kIsWeb,
+  );
+
+  test('stopping browser siren completes playback promptly', () async {
+    final audio = PracticeAudio();
+    addTearDown(audio.dispose);
+    final playback = audio.playCue('alarm');
+    await Future<void>.delayed(const Duration(milliseconds: 200));
+    await audio.stop();
+    await playback.timeout(const Duration(seconds: 1));
   }, skip: !kIsWeb);
 
   test('browser location and permission use the same fictional fix', () async {
