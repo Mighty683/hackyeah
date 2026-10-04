@@ -2,25 +2,18 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import '../../../ui/unavailable_audio_tooltip.dart';
-
-import '../../../ui/basebound_icons.dart';
 import '../../../ui/basebound_ui.dart';
 
 class GameMapLayout extends StatelessWidget {
   const GameMapLayout({
     required this.instruction,
-    required this.onReplay,
     required this.map,
     required this.controls,
-    this.audioUnavailable = false,
     super.key,
   });
   final String instruction;
-  final VoidCallback onReplay;
   final Widget map;
   final Widget controls;
-  final bool audioUnavailable;
 
   Widget _squareMap() => LayoutBuilder(
     builder: (context, bounds) {
@@ -41,39 +34,27 @@ class GameMapLayout extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Semantics(
-                    liveRegion: true,
-                    header: true,
-                    child: Text(
-                      instruction,
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                        height: 1.2,
-                      ),
-                    ),
-                  ),
+            Semantics(
+              liveRegion: true,
+              header: true,
+              child: Text(
+                instruction,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  height: 1.2,
                 ),
-                UnavailableAudioTooltip(
-                  unavailable: audioUnavailable,
-                  child: IconButton(
-                    onPressed: onReplay,
-                    tooltip: 'Posłuchaj ponownie',
-                    icon: const BaseboundIcon(
-                      BaseboundIconName.speaker,
-                      size: 24,
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
             const SizedBox(height: 8),
             const Text(
-              'Spaceruj z dorosłym · Północ jest u góry',
+              'Prawdziwa mapa offline · TAURON Arena, Kraków · 2 × 2 km',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Spaceruj z dorosłym · Północ jest u góry.\n'
+              'Trasy i bezpieczeństwo zapisanych miejsc nie są sprawdzane.',
               style: TextStyle(fontSize: 12, color: BaseboundColors.muted),
             ),
             const SizedBox(height: 8),

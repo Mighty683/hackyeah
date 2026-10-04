@@ -41,7 +41,6 @@ flowchart TD
     G["OUR MAP<br/>Photo landmarks, destination icons/photos and GPS walking guidance"]
     R["NEAR PLACE<br/>Accurate GPS is within 20 m; child confirms recognition"]
     E["OUR MAP: MAP ERROR<br/>Go back and try again"]
-    I["ABOUT OUR MAP<br/>GPS, offline route limits and map credits"]
     H["HELP PROTOTYPE: WHAT IS HAPPENING?<br/>Not responding, air raid, lost, unsure"]
     GUIDE["PLANNED INTERACTIVE GUIDE<br/>Placeholder only; no emergency instructions"]
 
@@ -75,8 +74,6 @@ flowchart TD
     F -->|I need help: defer map creation| H
     FE -->|I need help| H
     L -->|I need help: pause map GPS and narration| H
-    G -->|I need help: pause map GPS and narration| H
-    R -->|I need help: pause map GPS and narration| H
     E -->|I need help: pause map GPS and narration| H
     H -->|Any of the four scenarios| GUIDE
     GUIDE -->|Return to choose scenario or Back| H
@@ -86,8 +83,6 @@ flowchart TD
     HP -->|Saved-place loading| F
     HP -->|Saved-details error| FE
     HP -->|Map loading| L
-    HP -->|Map: obtain fresh GPS| G
-    HP -->|Near place: obtain fresh GPS| R
     HP -->|Map error| E
     W -->|Tap disabled adult button| AD["DEMO TOOLTIP<br/>Choose child features"]
     AL -->|Details loaded| A
@@ -285,11 +280,6 @@ flowchart TD
     NAV -->|Stop directions| G
     G -->|Drag to pan; pinch to zoom 1–8×; GPS never changes camera| G
     G -->|Places: open accessible place selection| G
-    G -->|About our map| I
-    R -->|About our map| I
-    I -->|Close| G
-    NAV -->|I need help: pause map GPS and narration| H
-    HP -->|Walking guidance: obtain a fresh GPS fix| G
     F -->|Back| B{"Opened by"}
     FE -->|Back| B
     L -->|Back| B
@@ -334,7 +324,7 @@ flowchart TD
 | Setup load error | Recover saved details | Retry, confirmed Delete all in Setup options, back |
 | Form save error | Retry saving without losing edits | Back without saving |
 | Our map loading/error | Load named places, photo metadata and offline map | Retry without resetting records; Help prototype, back |
-| Our map | Select a familiar place or inspect the nearest landmark | Places selector, automatic foreground GPS, gesture pan/zoom, audio replay, info, Help prototype |
+| Our map | Select a familiar place or inspect the nearest landmark | Places selector, automatic foreground GPS, gesture pan/zoom; visible real offline map label, coverage, adult-accompaniment and unverified-route notice |
 | Walking guidance | Follow the next mapped turn with an adult | Route distance, destination photo, stop directions, change destination |
 | Near place | Confirm recognising the original photo place | Accurate GPS required; path endpoint alone does not confirm arrival |
 | Map information | Read optional GPS and coverage details | Close |
@@ -352,7 +342,7 @@ Each parent stage offers **Setup options → Delete all saved details**, with co
 
 Help opens with four situation choices. Every choice opens the same **Interaktywny przewodnik** placeholder, explaining that a future guide will show children what to do step by step. **Wróć do wyboru scenariusza** and Back return to these four help choices. Closing the situation screen restores the opener. The visible notice labels the feature as in preparation and not for real emergencies.
 
-The previous emergency instructions, helper branches, phone actions, contact loading, telephone-service monitoring and help-owned GPS are no longer connected to the UI. Help does not call, show pretend-call dialogs or send messages. Opening it still pauses the map GPS and narration; closing it restores them. See [the decision diagram](I_NEED_HELP_DECISION_DIAGRAM.md) and [EMERGENCY_HELP.md](EMERGENCY_HELP.md).
+The previous emergency instructions, helper branches, phone actions, contact loading, telephone-service monitoring and help-owned GPS are no longer connected to the UI. Help does not call, show pretend-call dialogs or send messages. Help remains reachable from activity selection and map loading/error states; the loaded map has no Help entry. See [the decision diagram](I_NEED_HELP_DECISION_DIAGRAM.md) and [EMERGENCY_HELP.md](EMERGENCY_HELP.md).
 
 ### Mission 01 — air-raid alarm practice
 
@@ -394,9 +384,11 @@ The current activity split adds a separate scenario-list route to the implemente
 
 ### Child map interaction
 
+**Our map** visibly identifies the real offline TAURON Arena, Kraków map and its 2 × 2 km coverage above the map. Adult accompaniment, unverified routes/places and OSM attribution remain visible. The navigation bar contains the title and back action; info, audio replay and Help controls are removed.
+
 **Our map** combines independent photo landmarks, saved named parent pins, recognition and walking guidance. Opening it shows the full bundled 2 × 2 km TAURON Arena, Kraków area, without an invented player position or random destination. Landmark pins show only their photo thumbnail. Family destinations keep their saved icon; Home shows a home icon and a fictional demo photo. Tap a pin to inspect its name/photo. **Walk here together** starts guidance to that selected real place. Fictional demo pins are for recognition only and have no walking action.
 
-The welcome screen requests foreground location permission once on first launch before role navigation. Denial permits practice; explicit permission retry or Android settings access is available in parent Setup options. Welcome does not start location tracking. **Our map** starts foreground GPS automatically without requesting permission. Only received phone positions set the blue dot; the accuracy circle shows uncertainty. An accepted fix is at most 30 seconds old, and turn guidance requires reported accuracy at most 25 m. Approximate fixes may show a dot but pause directions. Old fixes remove both dot and route. Denied permission, disabled GPS, stream failure and out-of-area positions are explicit states. Out-of-area coordinates are never clamped onto the arena map. Backgrounding, leaving this screen or opening Help cancels the map's GPS subscription; returning while foreground obtains a fresh fix without another permission prompt. Help itself does not request or track location. No background permission or location history is added.
+The welcome screen requests foreground location permission once on first launch before role navigation. Denial permits practice; explicit permission retry or Android settings access is available in parent Setup options. Welcome does not start location tracking. **Our map** starts foreground GPS automatically without requesting permission. Only received phone positions set the blue dot; the accuracy circle shows uncertainty. An accepted fix is at most 30 seconds old, and turn guidance requires reported accuracy at most 25 m. Approximate fixes may show a dot but pause directions. Old fixes remove both dot and route. Denied permission, disabled GPS, stream failure and out-of-area positions are explicit states. Out-of-area coordinates are never clamped onto the arena map. Backgrounding or leaving this screen cancels the map's GPS subscription; returning while foreground obtains a fresh fix without another permission prompt. Help itself does not request or track location. No background permission or location history is added.
 
 The map stays north-up and starts with the whole area visible. Dragging and pinching are the only camera controls, with 1–8× zoom. GPS updates the dot and route without recentering or zooming. There are no GPS-toggle, zoom, recenter or overview buttons. An accessible **Places** selector opens on demand; a contextual panel shows exploration, the selected place or walking guidance. The closest photo landmark within 50 m appears beneath the map, or beside it in landscape. Photo markers retain a 48-pixel touch target at each zoom. Directions, map attribution and scrolling secondary controls remain outside the map gesture area. Landscape places controls beside the map. Appearance verification remains with the user.
 
@@ -416,7 +408,7 @@ On a fresh installation, startup leaves every child-profile field empty, adds th
 
 **Load example landmarks** remains an explicit parent action to add missing generated photo landmarks: red shop, yellow slide and blue bus stop. Existing records and edited demo records are preserved; repeated imports add only missing demo IDs. Map, landmark, Home and photo-practice screens show names and photos without fictional/demo badges or descriptions. The underlying demo flags and routing eligibility are retained. These images do not depict the real map locations. Bundled source assets remain available after deleting saved copies, but they are not automatically restored.
 
-Children choose **Our map** from activity selection to explore photos and locations. The nearest photo landmark within 50 m of precise, fresh live GPS is shown with its photo, name and approximate straight-line distance. Family destinations, including Home, do not appear as nearby landmarks. Tapping its name opens the existing place details. Only one nearest landmark is shown; it updates as GPS moves. The card is hidden with no nearby landmark, approximate/stale/paused GPS or a position outside coverage. Photo recall and numbered pin choices have been removed. Offline narration and replay remain available for walking instructions; nearby landmarks do not start routes or move the GPS dot.
+Children choose **Our map** from activity selection to explore photos and locations. The nearest photo landmark within 50 m of precise, fresh live GPS is shown with its photo, name and approximate straight-line distance. Family destinations, including Home, do not appear as nearby landmarks. Tapping its name opens the existing place details. Only one nearest landmark is shown; it updates as GPS moves. The card is hidden with no nearby landmark, approximate/stale/paused GPS or a position outside coverage. Photo recall and numbered pin choices have been removed. Automatic offline narration remains available for walking instructions; the map has no replay, info tooltip or Help button; nearby landmarks do not start routes or move the GPS dot.
 
 Landmark names, coordinates and photo references persist in a separate encrypted `flutter_secure_storage` record. Photos are ordinary app-private files, not encrypted by that metadata store. Parent **Delete all saved details** now removes the family record, landmark record and saved app photo copies; gallery originals remain untouched. The app has no parent lock, cloud sync or photo backup/restore promise. Live walking guidance is implemented only within the bundled map. Reviewed emergency assistance and validated pedestrian routing remain future work.
 
@@ -464,7 +456,6 @@ flowchart TD
     WA -->|Our map| WM
     WA -->|Practices| WT
     WA -->|I need help: after child onboarding| WH
-    WM -->|I need help| WH
     WH -->|Any scenario| WG
     WG -->|Return to choose scenario| WH
     WR --> WS
@@ -566,7 +557,7 @@ Preference costs multiply map distance: dedicated pedestrian paths 1.0, roads wi
 
 Start and target must each be within 12 map units (about 60 m) of a graph node. The route starts/ends on nearby mapped paths, with no invented connectors to GPS or a photo pin. A start more than 15 m from the route asks the child to find the path with their adult. Missing/disconnected paths show a calm message. The pin and the endpoint ring remain separate.
 
-GPS fixes drive progress along the directed route. Significant geometry bends produce left/right/back cues; OSM names, steps and crossings enrich the instructions. Turn cues use route direction, not device orientation. Accurate positions more than 25 m off the mapped line trigger a new A* route. Narration plays on route creation and approaching turns; Replay audio reads the current instruction. Turn guidance pauses outside coverage or on stale/approximate fixes. Opening Help pauses map GPS and guidance; Help itself does not use GPS.
+GPS fixes drive progress along the directed route. Significant geometry bends produce left/right/back cues; OSM names, steps and crossings enrich the instructions. Turn cues use route direction, not device orientation. Accurate positions more than 25 m off the mapped line trigger a new A* route. Narration plays on route creation and approaching turns; the map has no replay button. Turn guidance pauses outside coverage or on stale/approximate fixes. Help itself does not use GPS.
 
 The snapshot lacks original OSM node IDs, validated access, entrance connections, barrier handling and live hazards. Coordinate-based topology and nearby snapping can select the wrong path or leave a pin unreachable. Live GPS does not validate those limitations. Routes must not be described as fastest, safest, verified shelter access or real emergency guidance. The application keeps the adult-accompaniment instruction visible.
 

@@ -117,7 +117,7 @@
       ],
       "prototypeCaption": "Zapraszamy do testu aplikacji mobilnej, aby posłuchać, jak Tuptu prowadzi głosem.",
       "narration": "Tuptu prowadzi także głosem. W ćwiczeniach lektor czyta polecenia, a dziecko słucha i wybiera kolejny krok.",
-      "audioHint": "Tuptu w przeglądarce może być bez dźwięku"
+      "audioHint": "Tuptu w przeglądarce może działać bez dźwięku"
     },
     "family": {
       "label": "Scenariusze treningowe",
@@ -152,7 +152,7 @@
         {
           "need": "Stały dostęp do ćwiczeń",
           "choice": "Scenariusze w aplikacji Flutter + Flame",
-          "result": "Ćwiczenia alarmu i zagubienia bez backendu"
+          "result": "Ćwiczenia syreny alarmowej i mapa okolicy bez backendu"
         },
         {
           "need": "Znajomy kontekst",

@@ -6,7 +6,6 @@ import '../../game/maps/demo_map.dart';
 import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
 import '../../widgets/basebound_mascot.dart';
-import '../help/help_screen.dart';
 import '../landmarks/data/landmark.dart';
 import '../landmarks/widgets/landmark_map.dart';
 import '../landmarks/widgets/landmark_photo.dart';
@@ -41,7 +40,6 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   );
   final _audio = PracticeAudio();
   Landmark? _selected;
-  bool _helpOpen = false;
   bool _foreground = true;
   bool _voiceAvailable = true;
   bool _recognised = false;
@@ -87,14 +85,14 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     _navigation.addListener(_routeChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && _foreground && !_helpOpen) {
+      if (mounted && _foreground) {
         _location.start(requestPermission: false);
       }
     });
   }
 
   void _routeChanged() {
-    if (!mounted || _helpOpen || _navigation.isCalculating) return;
+    if (!mounted || _navigation.isCalculating) return;
     final route = _navigation.route;
     if (route == null && _announcedRoute != null) {
       _announcedRoute = null;
@@ -127,28 +125,13 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     final revision = ++_audioRevision;
     try {
       final available = await _audio.initialize();
-      if (!mounted || revision != _audioRevision || _helpOpen) return;
+      if (!mounted || revision != _audioRevision) return;
       setState(() => _voiceAvailable = available);
       if (available) await _audio.narrate(_instruction);
     } catch (_) {
       if (mounted && revision == _audioRevision) {
         setState(() => _voiceAvailable = false);
       }
-    }
-  }
-
-  Future<void> _openHelp() async {
-    if (_helpOpen) return;
-    _helpOpen = true;
-    _location.pause();
-    _audioRevision++;
-    await _audio.stop();
-    if (!mounted) return;
-    try {
-      await openHelpScreen(context);
-    } finally {
-      _helpOpen = false;
-      if (mounted && _foreground) await _location.resume();
     }
   }
 
@@ -159,7 +142,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       _location.pause();
       _audioRevision++;
       _audio.stop();
-    } else if (!_helpOpen) {
+    } else {
       _location.resume();
     }
   }
@@ -192,39 +175,11 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     _recognised = false;
     _navigation.navigateTo(target);
     setState(() => _selected = null);
-    if (_foreground && !_helpOpen && !_location.isTracking) {
+    if (_foreground && !_location.isTracking) {
       await _location.start(requestPermission: false);
     }
     _speak();
   }
-
-  String get _mapLocationExplanation => kIsWeb
-      ? 'Demo w przeglądarce: niebieska kropka to fikcyjna, stała pozycja. Nie wykrywamy GPS, ruchu ani rzeczywistego dotarcia.\n\n'
-      : 'Niebieska kropka wynika wyłącznie z GPS telefonu. Dotknięcie jej nie przesuwa. Lokalizacja działa na otwartym ekranie; trasa nie jest zapisywana.\n\n';
-
-  void _about() => showDialog<void>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: const Text('O Naszej mapie'),
-      scrollable: true,
-      content: Text(
-        '$_mapLocationExplanation'
-        'Mapa offline: 2 × 2 km wokół TAURON Areny w Krakowie. Spaceruj z dorosłym. '
-        'Trasy korzystają z zapisanych ścieżek i lokalnych dróg OpenStreetMap. Dostęp, bariery, wejścia i zagrożenia nie są sprawdzane. '
-        'Przy drogach i przejściach kieruj się oceną dorosłego. Pierścień końca trasy wskazuje ścieżkę na mapie blisko znacznika.\n\n'
-        'Wskazówki skrętów wynikają z mapy, a nie z kierunku telefonu. Północ jest u góry mapy. '
-        'Niedokładna, stara lub znajdująca się poza mapą pozycja GPS wstrzymuje wskazówki. '
-        'Zapisane miejsca wybiera rodzic. Ich bezpieczeństwo nie jest sprawdzane.\n\n'
-        'Dane mapy © autorzy OpenStreetMap · ODbL 1.0.',
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Zamknij'),
-        ),
-      ],
-    ),
-  );
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -232,18 +187,6 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       automaticallyImplyLeading: false,
       leading: Navigator.canPop(context) ? const BaseboundBackButton() : null,
       title: const Text('Nasza mapa'),
-      actions: [
-        IconButton(
-          onPressed: _openHelp,
-          icon: const BaseboundIcon(BaseboundIconName.help, size: 24),
-          tooltip: 'Potrzebuję pomocy',
-        ),
-        IconButton(
-          onPressed: _about,
-          icon: const BaseboundIcon(BaseboundIconName.info, size: 24),
-          tooltip: 'O Naszej mapie',
-        ),
-      ],
     ),
     body: SafeArea(
       child: IllustratedBackdrop(
@@ -256,8 +199,6 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                 instruction: _recognised
                     ? 'Rozpoznajesz to miejsce!'
                     : _instruction,
-                onReplay: _speak,
-                audioUnavailable: kIsWeb && !_voiceAvailable,
                 controls: _controls(),
                 map: LandmarkMap(
                   map: widget.map,
