@@ -7,14 +7,14 @@ import '../../ui/basebound_ui.dart';
 class PracticeRecap extends StatelessWidget {
   const PracticeRecap({
     super.key,
-    required this.title,
+    this.title,
     required this.praise,
     required this.points,
     required this.pointIcons,
     this.titleKey,
   }) : assert(points.length == pointIcons.length);
 
-  final String title;
+  final String? title;
   final String praise;
   final List<({String title, String description})> points;
 
@@ -26,16 +26,18 @@ class PracticeRecap extends StatelessWidget {
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
-      Text(
-        title,
-        key: titleKey,
-        style: const TextStyle(
-          fontSize: 28,
-          fontWeight: FontWeight.w700,
-          height: 1.2,
+      if (title != null) ...[
+        Text(
+          title!,
+          key: titleKey,
+          style: const TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.w700,
+            height: 1.2,
+          ),
         ),
-      ),
-      const SizedBox(height: 12),
+        const SizedBox(height: 12),
+      ],
       BaseboundGuide(message: praise),
       const SizedBox(height: 16),
       for (var index = 0; index < points.length; index++)

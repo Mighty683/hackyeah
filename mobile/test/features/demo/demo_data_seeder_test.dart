@@ -96,18 +96,18 @@ void main() {
         tester.widget<TextField>(find.byType(TextField)).controller!.text,
         '',
       );
-      await tester.tap(find.text('Podaj imię'));
+      await tester.tap(find.text('Zatwierdź wiek'));
       await tester.pumpAndSettle();
       expect(find.text('Podaj swój wiek, aby przejść dalej.'), findsOneWidget);
       await tester.enterText(find.byType(TextField), '9');
-      await tester.tap(find.text('Podaj imię'));
+      await tester.tap(find.text('Zatwierdź wiek'));
       await tester.pumpAndSettle();
       expect(
         tester.widget<TextField>(find.byType(TextField)).controller!.text,
         '',
       );
       await tester.enterText(find.byType(TextField), 'Demo child');
-      await tester.tap(find.text('Wybierz postać'));
+      await tester.tap(find.text('Zatwierdź imię'));
       await tester.pumpAndSettle();
       final start = find.text('Rozpocznij ćwiczenie');
       await tester.ensureVisible(start);

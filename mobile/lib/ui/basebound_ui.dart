@@ -164,15 +164,15 @@ class BaseboundGuide extends StatelessWidget {
         textDirection: mascotOnRight ? TextDirection.rtl : TextDirection.ltr,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          if (!compact &&
+          if ((!compact || positive) &&
               constraints.maxWidth >= 220 &&
               MediaQuery.textScalerOf(context).scale(1) < 1.6) ...[
             BaseboundMascot(
-              size: 76,
+              size: compact ? 48 : 76,
               pose: pose ?? (positive ? DinoPose.celebrate : DinoPose.calm),
               faceLeft: mascotOnRight,
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: compact ? 12 : 16),
           ],
           Expanded(
             child: Column(

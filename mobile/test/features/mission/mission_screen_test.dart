@@ -244,7 +244,7 @@ void main() {
       AirRaidPracticeRecap.narration,
     );
     await tapMissionAction(tester, 'Zakończ ćwiczenie');
-    expect(find.text('Ćwiczenie ukończone'), findsOneWidget);
+    expect(find.text('Ćwiczenie ukończone'), findsNothing);
     expect(find.text('Czekaj na odwołanie alarmu'), findsOneWidget);
     expect(find.text(AirRaidPracticeRecap.praise), findsOneWidget);
     expect(

@@ -589,13 +589,11 @@ class _MissionScreenState extends State<MissionScreen>
   };
 
   Widget _recallLayout() => MissionRecapLayout(
-    title: _session.step.title,
     audioControls: _audioControls(),
     actions: [_nextButton()],
   );
 
   Widget _completionLayout() => MissionRecapLayout(
-    title: 'Ćwiczenie ukończone',
     audioControls: _audioControls(),
     actions: [
       FilledButton.icon(

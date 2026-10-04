@@ -250,7 +250,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
     await tapMissionAction(tester, 'Zakończ ćwiczenie');
-    expect(find.text('Ćwiczenie ukończone'), findsOneWidget);
+    expect(find.text('Ćwiczenie ukończone'), findsNothing);
     expect(find.text('Czekaj na odwołanie alarmu'), findsOneWidget);
     await tapMissionAction(tester, 'Ćwicz ponownie');
     expect(find.text('Alarm w domu'), findsOneWidget);

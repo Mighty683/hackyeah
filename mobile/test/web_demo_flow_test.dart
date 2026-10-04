@@ -183,7 +183,7 @@ Future<void> _child(WidgetTester tester) async {
     '',
   );
   await tester.enterText(find.byKey(const ValueKey('child-age')), '9');
-  await _tap(tester, 'Podaj imię');
+  await _tap(tester, 'Zatwierdź wiek');
   expect(
     tester
         .widget<TextField>(find.byKey(const ValueKey('child-name')))
@@ -195,7 +195,7 @@ Future<void> _child(WidgetTester tester) async {
     find.byKey(const ValueKey('child-name')),
     'Demo child',
   );
-  await _tap(tester, 'Wybierz postać');
+  await _tap(tester, 'Zatwierdź imię');
   await _tap(tester, 'Chłopiec');
   await _tap(tester, 'Rozpocznij ćwiczenie');
   await _wait(tester, find.text('Wybierz zajęcie'));

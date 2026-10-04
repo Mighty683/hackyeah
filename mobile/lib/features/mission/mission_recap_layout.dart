@@ -8,12 +8,10 @@ import 'practice_recap.dart';
 class MissionRecapLayout extends StatelessWidget {
   const MissionRecapLayout({
     super.key,
-    required this.title,
     required this.audioControls,
     required this.actions,
   });
 
-  final String title;
   final Widget audioControls;
   final List<Widget> actions;
 
@@ -27,7 +25,6 @@ class MissionRecapLayout extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               PracticeRecap(
-                title: title,
                 praise: AirRaidPracticeRecap.praise,
                 points: AirRaidPracticeRecap.points,
                 pointIcons: const [
