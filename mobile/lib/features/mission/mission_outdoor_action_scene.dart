@@ -7,6 +7,7 @@ import '../parent/data/family_plan.dart';
 import 'air_raid_mission.dart';
 import 'scene_object_target.dart';
 import 'mission_outdoor_painters.dart';
+import 'lost_adult_sprite.dart';
 
 /// Keeps the street in view while making each physical action recognisable.
 /// The poses share a ground line and scale; a lower pose is actually lower.
@@ -32,14 +33,14 @@ class MissionOutdoorActionScene extends StatelessWidget {
   final ValueChanged<String>? onChoose;
   final Widget backdrop;
 
-  OutdoorPose _poseFor(String? choiceId) {
+  ChildPoseName _poseFor(String? choiceId) {
     if (stepId == 'outdoor_recover' || choiceId == 'protect_head') {
-      return OutdoorPose.protected;
+      return ChildPoseName.protect;
     }
     if (visual == MissionVisual.protectHead || choiceId == 'down') {
-      return OutdoorPose.lowered;
+      return ChildPoseName.crouch;
     }
-    return OutdoorPose.standing;
+    return ChildPoseName.stand;
   }
 
   @override
@@ -165,10 +166,11 @@ class MissionOutdoorActionScene extends StatelessWidget {
       label: withAdult
           ? 'Zaufana osoba dorosła jest blisko. Dziecko zostaje nisko z osłoniętą głową.'
           : switch (pose) {
-              OutdoorPose.standing =>
+              ChildPoseName.stand =>
                 'Dziecko nadal jest na zewnątrz, na tej samej ulicy.',
-              OutdoorPose.lowered => 'Dziecko leży nisko na ulicy.',
-              OutdoorPose.protected =>
+              ChildPoseName.crouch => 'Dziecko jest nisko na ulicy.',
+              ChildPoseName.walk => 'Dziecko idzie z dorosłym.',
+              ChildPoseName.protect =>
                 'Dziecko zostaje nisko i osłania głowę obiema rękami.',
             },
       child: Stack(
@@ -179,21 +181,13 @@ class MissionOutdoorActionScene extends StatelessWidget {
               alignment: Alignment(-.6, .55),
               widthFactor: .36,
               heightFactor: .7,
-              child: CustomPaint(
-                painter: OutdoorPosePainter(
-                  OutdoorPose.standing,
-                  ChildGender.boy,
-                  helper: true,
-                ),
-              ),
+              child: LostAdultSprite(pose: LostAdultPose.trustedAdult),
             ),
           FractionallySizedBox(
             alignment: Alignment(withAdult ? .5 : 0, .7),
             widthFactor: .55,
             heightFactor: .57,
-            child: pose == OutdoorPose.standing
-                ? ChildCharacter(pose: ChildPoseName.stand, gender: gender)
-                : CustomPaint(painter: OutdoorPosePainter(pose, gender)),
+            child: ChildCharacter(pose: pose, gender: gender),
           ),
         ],
       ),
@@ -212,7 +206,7 @@ class _PoseChoice extends StatelessWidget {
   });
 
   final MissionChoice choice;
-  final OutdoorPose pose;
+  final ChildPoseName pose;
   final ChildGender gender;
   final double poseHeight;
   final VoidCallback? onTap;
@@ -230,7 +224,7 @@ class _PoseChoice extends StatelessWidget {
         foregroundPainter: SceneObjectHalo(rejected: rejected),
         child: Padding(
           padding: const EdgeInsets.all(8),
-          child: CustomPaint(painter: OutdoorPosePainter(pose, gender)),
+          child: ChildCharacter(pose: pose, gender: gender),
         ),
       ),
     ),

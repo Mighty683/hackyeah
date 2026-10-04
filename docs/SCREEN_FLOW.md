@@ -538,6 +538,8 @@ The future help entry must be reachable without completing onboarding. It must u
 
 Full reviewed emergency procedures, background messaging, worldwide map coverage and validated real assistance remain future work. The current GPS walking mode is limited to the bundled arena area and unverified OSM access data. The implemented prototype is not a promotion of the future reviewed-help graph.
 
+The outdoor alarm action choices and consequence scenes use the selected boy/girl avatar’s shared standing, crouching and head-protection sprites. Recovery shows the existing trusted-adult sprite beside the child; the separate outdoor figure painter has been removed.
+
 ## Offline walking pathfinding
 
 The Android map builds a distance-and-preference-weighted graph from bundled GeoJSON and runs A* locally. Routing needs no service or internet connection. Its source is the current accurate foreground GPS fix; no virtual character moves. Shared source coordinates connect ways; visual intersections do not create connections. Line segments are subdivided for accurate nearby snapping without connecting their interior crossings. Polygons are not treated as walkable networks.
