@@ -1,8 +1,8 @@
 # Portrait practice artwork
 
-## Current restrained revision — 2026-10-03
+## Current restrained revision — 2026-10-04
 
-The app now uses `home-practice-v2.png`, `hallway-practice-v2.png` and
+The app now uses `home-practice-v2.png`, `hallway-practice-v3.png` and
 `street-practice-v2.png` (1024 × 1536 each), created with built-in imagegen.
 The original portrait files remain available. Home was regenerated after rejecting
 an inset corridor that looked like a doorway rising out of the floor. Its hallway
@@ -14,6 +14,14 @@ code-native drawings in `mission_scene.dart` and `mission_home_plan.dart`, with 
 ### Final prompt: home-practice-v2.png
 
 Use case: illustration-story. Asset: portrait 2:3 environment illustration for a children's learning app. Create one architecturally coherent ordinary European apartment entry/living room, seen at standing eye height from the front of the room. This must be a single believable three-dimensional space, not a collage or inset. Matte understated contemporary picture-book art with thin simple linework, muted warm off-white plaster, natural light oak, sage and slate blue, minimal decoration. One window in the left vertical wall, with a small plain sofa partly cropped at lower left. One ordinary exterior door in the right vertical wall, open to a plain outdoor path. One rectangular doorway in the REAR VERTICAL WALL at CENTER leads to a modest windowless interior hallway with closed solid doors set into that hallway's VERTICAL SIDE WALLS. Every door and doorway stands upright and reaches the SAME continuous floor plane. Show continuous natural wood flooring leading from foreground through the rear hallway. No doorway or arch emerging from the floor, no inset hallway in bottom right, no floor hatch, no dollhouse cutaway, no impossible architecture or multiple perspective scenes. The rear hallway is clearly recessed and ends with a plain closed door. Keep foreground floor open for a separately overlaid child (feet around x .39,y .95); interior hallway destination around x .52,y .61. Window upper left and exterior door upper right should be equally readable choices, not highlighted. Diffuse ordinary daylight, spare calm room, no shiny glow. No people, no text, no icons, no buttons, no arrows, no watermarks, no danger. Full bleed portrait image.
+
+### Exterior entrance revision: hallway-practice-v3.png — 2026-10-04
+
+Created with the built-in imagegen editing tool from `hallway-practice-v2.png`. The original remains available. Used by the quiet decision and shared hallway scenes; existing targets and child placement are preserved. Appearance review is left to the user.
+
+Final prompt:
+
+Use case: precise-object-edit. Asset type: portrait 2:3 hallway background for a child-focused practice game, no UI. Input image is the edit target. Change ONLY the nearest right-hand door to clearly read as a CLOSED exterior/front entrance rather than an interior room door: a substantial muted slate-blue solid panel with restrained recessed panels, a small peephole at adult eye height, separate deadbolt above a sturdy silver lever, reinforced frame and a small plain coir threshold mat tucked immediately against that door. Keep it opaque and fully closed; no windows or outside view. Preserve the exact position, shape, perspective and dimensions of the right-hand doorway because an interactive target overlays it at normalized x=.815-.975,y=0-.68. Preserve all other pixels as closely as possible: pale left and rear interior doors, corridor walls, ceiling light, framed print, plant, wood flooring, lighting, camera and portrait framing. Keep the lower middle floor empty for a separate child character. Match existing soft matte warm picture-book illustration. No people, text, icons, arrows, highlights, UI or watermarks. Full bleed 1024x1536 composition.
 
 ### Final prompt: hallway-practice-v2.png
 
