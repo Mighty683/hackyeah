@@ -4,6 +4,9 @@ import 'dart:js_interop';
 @JS('window.speechSynthesis')
 external _SpeechSynthesis? get _synthesis;
 
+@JS('console.warn')
+external void _warn(String message);
+
 extension type _SpeechSynthesis(JSObject _) implements JSObject {
   external JSArray<_Voice> getVoices();
   external void addEventListener(String type, JSFunction listener);
@@ -13,8 +16,13 @@ extension type _SpeechSynthesis(JSObject _) implements JSObject {
 }
 
 extension type _Voice(JSObject _) implements JSObject {
+  external String get name;
   external String get lang;
   external bool get localService;
+}
+
+extension type _SpeechError(JSObject _) implements JSObject {
+  external String get error;
 }
 
 @JS('SpeechSynthesisUtterance')
@@ -51,6 +59,16 @@ class BrowserNarration {
   Completer<bool>? _voiceLoading;
   Timer? _voiceTimeout;
 
+  void _reportUnavailable(_SpeechSynthesis synthesis) {
+    final voices = synthesis.getVoices().toDart;
+    final available = voices.map((voice) => '${voice.name} (${voice.lang})');
+    _warn(
+      '[Tuptu speech] No Polish voice available. '
+      'Browser voices: ${voices.isEmpty ? "none" : available.join(", ")}. '
+      'Retry after a Polish voice becomes available to the browser.',
+    );
+  }
+
   bool _selectVoice(_SpeechSynthesis synthesis) {
     final voices = synthesis.getVoices().toDart.where(
       (voice) =>
@@ -69,7 +87,10 @@ class BrowserNarration {
     final pending = _voiceLoading;
     if (pending != null) return pending.future;
     final synthesis = _synthesis;
-    if (synthesis == null) return false;
+    if (synthesis == null) {
+      _warn('[Tuptu speech] This browser does not expose speechSynthesis.');
+      return false;
+    }
     if (_selectVoice(synthesis)) return true;
     // Chromium can populate voices asynchronously after the first getVoices.
     final loaded = Completer<bool>();
@@ -81,7 +102,10 @@ class BrowserNarration {
     try {
       if (_selectVoice(synthesis)) return true;
       _voiceTimeout = Timer(const Duration(seconds: 2), () {
-        if (!loaded.isCompleted) loaded.complete(_selectVoice(synthesis));
+        if (loaded.isCompleted) return;
+        final ready = _selectVoice(synthesis);
+        if (!ready) _reportUnavailable(synthesis);
+        loaded.complete(ready);
       });
       return await loaded.future;
     } finally {
@@ -139,8 +163,11 @@ class BrowserNarration {
     stop();
     final synthesis = _synthesis;
     final voice = _voice;
-    if (text.trim().isEmpty || synthesis == null || voice == null) {
-      return Future<void>.value();
+    if (text.trim().isEmpty) return Future<void>.value();
+    if (synthesis == null || voice == null) {
+      return Future<void>.error(
+        StateError('No browser Polish voice is ready.'),
+      );
     }
     final playback = Completer<void>();
     final utterance = _Utterance(text)
@@ -158,8 +185,13 @@ class BrowserNarration {
     }).toJS;
     utterance.onend = ((JSAny? event) => _finish()).toJS;
     utterance.onerror = ((JSAny? event) {
+      final code = event == null
+          ? 'unknown'
+          : _SpeechError(event as JSObject).error;
       _finish(
-        StateError('Browser narration failed. Tap retry to enable speech.'),
+        StateError(
+          'Browser narration failed: $code. Tap retry to enable speech.',
+        ),
       );
     }).toJS;
     // Some browsers silently block speech until a user gesture. Do not leave
@@ -177,6 +209,7 @@ class BrowserNarration {
   }
 
   void _finish([Object? error]) {
+    if (error != null) _warn('[Tuptu speech] $error');
     _timeout?.cancel();
     _timeout = null;
     _utterance?.onstart = null;

@@ -12,7 +12,13 @@ import 'package:flutter_test/flutter_test.dart';
 
 class _MemoryRepository extends FamilyPlanRepository {
   FamilyPlan plan = const FamilyPlan(
-    child: ChildProfile(address: 'Demo home', supportNotes: 'Demo note'),
+    child: ChildProfile(
+      fullName: 'Saved child',
+      age: 12,
+      gender: ChildGender.boy,
+      address: 'Demo home',
+      supportNotes: 'Demo note',
+    ),
     contacts: [TrustedContact(name: 'Demo adult')],
     safePoints: [SafePoint(name: 'Practice', latitude: 50, longitude: 20)],
     practiceMeetingPoint: PracticeMeetingPoint(
@@ -69,6 +75,10 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.byType(HelpEntryButton), findsNothing);
+      expect(
+        tester.widget<TextField>(find.byType(TextField)).controller!.text,
+        '',
+      );
       if (gender == ChildGender.boy) {
         await _tap(tester, 'Podaj imię');
         expect(
@@ -95,8 +105,14 @@ void main() {
         await _tap(tester, 'Wybierz postać');
         expect(find.text('Podaj imię lub pseudonim.'), findsOneWidget);
       }
+      expect(
+        tester.widget<TextField>(find.byType(TextField)).controller!.text,
+        '',
+      );
       await tester.enterText(find.byType(TextField), 'Demo child');
       await _tap(tester, 'Wybierz postać');
+      await _tap(tester, 'Rozpocznij ćwiczenie');
+      expect(find.text('Wybierz dziewczynkę lub chłopca.'), findsOneWidget);
       await _tap(
         tester,
         gender == ChildGender.boy ? 'Chłopiec' : 'Dziewczynka',

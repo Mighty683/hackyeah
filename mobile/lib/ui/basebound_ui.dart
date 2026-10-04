@@ -147,22 +147,25 @@ class BaseboundGuide extends StatelessWidget {
     this.positive = true,
     this.pose,
     this.mascotOnRight = false,
+    this.compact = false,
   });
 
   final String message;
   final bool positive;
   final DinoPose? pose;
   final bool mascotOnRight;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+    padding: EdgeInsets.symmetric(horizontal: 4, vertical: compact ? 4 : 12),
     child: LayoutBuilder(
       builder: (context, constraints) => Row(
         textDirection: mascotOnRight ? TextDirection.rtl : TextDirection.ltr,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          if (constraints.maxWidth >= 220 &&
+          if (!compact &&
+              constraints.maxWidth >= 220 &&
               MediaQuery.textScalerOf(context).scale(1) < 1.6) ...[
             BaseboundMascot(
               size: 76,
@@ -182,8 +185,8 @@ class BaseboundGuide extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   message,
-                  style: const TextStyle(
-                    fontSize: 20,
+                  style: TextStyle(
+                    fontSize: compact ? 17 : 20,
                     height: 1.35,
                     fontWeight: FontWeight.w700,
                   ),

@@ -1,6 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+
+import '../../ui/unavailable_audio_tooltip.dart';
+
 import 'package:flutter/foundation.dart';
 
 import '../../ui/basebound_icons.dart';
@@ -253,12 +256,15 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
         else
           ..._variantContent(),
         const SizedBox(height: 16),
-        OutlinedButton.icon(
-          onPressed: _opening ? null : _speak,
-          icon: const BaseboundIcon(BaseboundIconName.speaker),
-          label: const Text('Posłuchaj ponownie'),
+        UnavailableAudioTooltip(
+          unavailable: kIsWeb && !_audioAvailable,
+          child: OutlinedButton.icon(
+            onPressed: _opening ? null : _speak,
+            icon: const BaseboundIcon(BaseboundIconName.speaker),
+            label: const Text('Posłuchaj ponownie'),
+          ),
         ),
-        if (!_audioAvailable) ...[
+        if (!kIsWeb && !_audioAvailable) ...[
           const SizedBox(height: 12),
           const Text(
             kIsWeb

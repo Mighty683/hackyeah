@@ -53,7 +53,7 @@ class MissionDecisionLayout extends StatelessWidget {
       }
       // Reserve the same footer before and after a tap so wrong answers do not
       // resize the scene or shift the child's on-screen position.
-      final feedbackHeight = (constraints.maxHeight * .22).clamp(96.0, 160.0);
+      const feedbackHeight = 160.0;
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

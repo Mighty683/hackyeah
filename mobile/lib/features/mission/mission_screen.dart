@@ -5,6 +5,9 @@ import '../parent/data/family_plan_repository.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+import '../../ui/unavailable_audio_tooltip.dart';
+
 import 'package:flutter/services.dart';
 
 import '../../ui/basebound_icons.dart';
@@ -301,19 +304,25 @@ class _MissionScreenState extends State<MissionScreen>
               color: BaseboundColors.muted,
             ),
           ),
-          Semantics(
-            label: 'Posłuchaj ponownie',
-            button: true,
-            enabled: _canReplay,
-            onTap: _canReplay ? () => unawaited(_playCurrent()) : null,
-            child: ExcludeSemantics(
-              child: IconButton(
-                onPressed: _canReplay ? () => unawaited(_playCurrent()) : null,
-                tooltip: 'Posłuchaj ponownie',
-                icon: BaseboundIcon(
-                  BaseboundIconName.speaker,
-                  size: 24,
-                  color: _narration.speaking ? BaseboundColors.blue : null,
+          UnavailableAudioTooltip(
+            unavailable:
+                kIsWeb && !_narration.initializing && !_narration.ready,
+            child: Semantics(
+              label: 'Posłuchaj ponownie',
+              button: true,
+              enabled: _canReplay,
+              onTap: _canReplay ? () => unawaited(_playCurrent()) : null,
+              child: ExcludeSemantics(
+                child: IconButton(
+                  onPressed: _canReplay
+                      ? () => unawaited(_playCurrent())
+                      : null,
+                  tooltip: 'Posłuchaj ponownie',
+                  icon: BaseboundIcon(
+                    BaseboundIconName.speaker,
+                    size: 24,
+                    color: _narration.speaking ? BaseboundColors.blue : null,
+                  ),
                 ),
               ),
             ),
@@ -351,7 +360,7 @@ class _MissionScreenState extends State<MissionScreen>
             style: TextStyle(color: BaseboundColors.muted),
           ),
         ),
-      if (!_narration.ready && !_narration.initializing)
+      if (!kIsWeb && !_narration.ready && !_narration.initializing)
         Padding(
           padding: const EdgeInsets.only(top: 12),
           child: SoftPanel(
@@ -534,16 +543,16 @@ class _MissionScreenState extends State<MissionScreen>
 
   Widget _feedback() => Semantics(
     liveRegion: true,
-    child: SoftPanel(
-      color: _session.selectedChoice!.isCorrect
-          ? BaseboundColors.greenLight
-          : BaseboundColors.coralLight,
-      padding: const EdgeInsets.all(12),
-      child: BaseboundGuide(
-        message: _session.feedback!,
-        positive: _session.selectedChoice!.isCorrect,
-      ),
+    child: _feedbackPanel(
+      _session.feedback!,
+      _session.selectedChoice!.isCorrect,
     ),
+  );
+
+  Widget _feedbackPanel(String message, bool positive) => SoftPanel(
+    color: positive ? BaseboundColors.greenLight : BaseboundColors.coralLight,
+    padding: const EdgeInsets.all(12),
+    child: BaseboundGuide(message: message, positive: positive, compact: true),
   );
 
   Widget _nextButton() {

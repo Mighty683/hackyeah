@@ -26,7 +26,7 @@ class _PracticePhoneKeypadState extends State<PracticePhoneKeypad> {
       'Wpisz numer telefonu zaufanej osoby dorosłej. '
       'To tylko ćwiczenie. Nie wykonujemy połączeń ani nie wysyłamy wiadomości.';
   static const _mismatch =
-      'Numer jeszcze się nie zgadza. Spróbuj ponownie lub użyj podpowiedzi.';
+      'Numer jeszcze się nie zgadza. Wpisz pokazany numer.';
   static const _matched = 'Numer zgadza się z zapisanym kontaktem.';
 
   String _digits = '';
@@ -81,6 +81,7 @@ class _PracticePhoneKeypadState extends State<PracticePhoneKeypad> {
     setState(() {
       _matches = matches;
       _feedback = matches ? _matched : _mismatch;
+      if (!matches) _showHint = true;
     });
     widget.onInstructionChanged(
       matches ? '$_matched Dotknij Zadzwoń na niby.' : _mismatch,
@@ -136,7 +137,10 @@ class _PracticePhoneKeypadState extends State<PracticePhoneKeypad> {
             child: const Text('Ćwicz dalej bez numeru'),
           ),
         ] else ...[
-          if (_showHint) ...[_buildHint(contacts), const SizedBox(height: 16)],
+          if (_showHint) ...[
+            _buildHint([contacts.first]),
+            const SizedBox(height: 16),
+          ],
           SoftPanel(
             padding: const EdgeInsets.all(16),
             child: Column(

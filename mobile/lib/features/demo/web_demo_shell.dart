@@ -84,15 +84,6 @@ class WebDemoShell extends StatelessWidget {
               },
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Text(
-              'Funkcje urządzenia są symulowane. Fikcyjne dane pozostają w tej karcie. '
-              'Odświeżenie lub reset usuwa zmiany.',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12, color: BaseboundColors.muted),
-            ),
-          ),
         ],
       ),
     ),

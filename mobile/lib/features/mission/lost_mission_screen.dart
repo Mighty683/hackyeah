@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../../ui/unavailable_audio_tooltip.dart';
+
 import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
 import '../../widgets/basebound_mascot.dart';
@@ -184,20 +186,23 @@ class _LostMissionScreenState extends State<LostMissionScreen>
     ),
   );
 
-  Widget _replayButton() => Semantics(
-    label: 'Posłuchaj ponownie',
-    button: true,
-    enabled: _narration.ready && !_exiting,
-    onTap: _narration.ready && !_exiting ? () => unawaited(_narrate()) : null,
-    child: ExcludeSemantics(
-      child: IconButton(
-        onPressed: _narration.ready && !_exiting
-            ? () => unawaited(_narrate())
-            : null,
-        tooltip: 'Posłuchaj ponownie',
-        icon: BaseboundIcon(
-          BaseboundIconName.speaker,
-          color: _narration.speaking ? BaseboundColors.blue : null,
+  Widget _replayButton() => UnavailableAudioTooltip(
+    unavailable: kIsWeb && !_narration.initializing && !_narration.ready,
+    child: Semantics(
+      label: 'Posłuchaj ponownie',
+      button: true,
+      enabled: _narration.ready && !_exiting,
+      onTap: _narration.ready && !_exiting ? () => unawaited(_narrate()) : null,
+      child: ExcludeSemantics(
+        child: IconButton(
+          onPressed: _narration.ready && !_exiting
+              ? () => unawaited(_narrate())
+              : null,
+          tooltip: 'Posłuchaj ponownie',
+          icon: BaseboundIcon(
+            BaseboundIconName.speaker,
+            color: _narration.speaking ? BaseboundColors.blue : null,
+          ),
         ),
       ),
     ),
@@ -356,7 +361,7 @@ class _LostMissionScreenState extends State<LostMissionScreen>
         child: Text('Przygotowywanie głosu…', textAlign: TextAlign.center),
       );
     }
-    if (_narration.ready) return const SizedBox.shrink();
+    if (kIsWeb || _narration.ready) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(top: 10),
       child: SoftPanel(

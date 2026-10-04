@@ -1,5 +1,6 @@
 import 'package:do_bazy/features/mission/air_raid_mission.dart';
 import 'package:do_bazy/features/mission/mission_scene.dart';
+import 'package:do_bazy/ui/basebound_ui.dart';
 import 'package:do_bazy/features/parent/data/family_plan.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -66,6 +67,23 @@ void main() {
           expect(target.hitTestable(), findsOneWidget, reason: '$size: $label');
           await tester.tap(target);
           await tester.pumpAndSettle();
+          if (size.height > size.width &&
+              find.byType(BaseboundGuide).evaluate().isNotEmpty) {
+            final feedbackScroll = find
+                .ancestor(
+                  of: find.byType(BaseboundGuide),
+                  matching: find.byType(Scrollable),
+                )
+                .first;
+            expect(
+              tester
+                  .state<ScrollableState>(feedbackScroll)
+                  .position
+                  .maxScrollExtent,
+              0,
+              reason: '$size: feedback should fit without scrolling',
+            );
+          }
           if (tester
                   .widget<MissionScene>(find.byType(MissionScene))
                   .selectedChoice

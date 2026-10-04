@@ -29,22 +29,16 @@ class PracticeMessageConversation extends StatelessWidget {
           style: textTheme.bodyMedium?.copyWith(color: BaseboundColors.muted),
         ),
         const SizedBox(height: 24),
-        const Padding(
-          padding: EdgeInsets.only(left: 16),
-          child: _MessageBubble(
-            sender: 'Ty',
-            message: 'Jestem z dala od okien.',
-            color: BaseboundColors.sky,
-          ),
+        const _MessageBubble(
+          sender: 'Ty',
+          message: 'Jestem z dala od okien.',
+          color: BaseboundColors.sky,
         ),
         const SizedBox(height: 16),
-        const Padding(
-          padding: EdgeInsets.only(right: 16),
-          child: _MessageBubble(
-            sender: 'Zaufana osoba dorosła',
-            message: 'Dobrze. Zostań tam i czekaj na odwołanie alarmu.',
-            color: BaseboundColors.peach,
-          ),
+        const _MessageBubble(
+          sender: 'Zaufana osoba dorosła',
+          message: 'Dobrze. Zostań tam i czekaj na odwołanie alarmu.',
+          color: BaseboundColors.peach,
         ),
       ],
     );

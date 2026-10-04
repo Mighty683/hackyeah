@@ -2,6 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../../ui/unavailable_audio_tooltip.dart';
+
 import '../../../ui/basebound_icons.dart';
 import '../../../ui/basebound_ui.dart';
 
@@ -11,12 +13,14 @@ class GameMapLayout extends StatelessWidget {
     required this.onReplay,
     required this.map,
     required this.controls,
+    this.audioUnavailable = false,
     super.key,
   });
   final String instruction;
   final VoidCallback onReplay;
   final Widget map;
   final Widget controls;
+  final bool audioUnavailable;
 
   Widget _squareMap() => LayoutBuilder(
     builder: (context, bounds) {
@@ -54,12 +58,15 @@ class GameMapLayout extends StatelessWidget {
                     ),
                   ),
                 ),
-                IconButton(
-                  onPressed: onReplay,
-                  tooltip: 'Posłuchaj ponownie',
-                  icon: const BaseboundIcon(
-                    BaseboundIconName.speaker,
-                    size: 24,
+                UnavailableAudioTooltip(
+                  unavailable: audioUnavailable,
+                  child: IconButton(
+                    onPressed: onReplay,
+                    tooltip: 'Posłuchaj ponownie',
+                    icon: const BaseboundIcon(
+                      BaseboundIconName.speaker,
+                      size: 24,
+                    ),
                   ),
                 ),
               ],

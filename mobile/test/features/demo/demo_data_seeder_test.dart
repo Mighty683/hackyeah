@@ -41,15 +41,11 @@ void main() {
   tearDown(() async => directory.delete(recursive: true));
 
   test(
-    'fresh install fills the family plan and adds readable fictional photos',
+    'fresh install leaves child empty and seeds adult contacts and places',
     () async {
       await seeder().seed();
       final plan = await family.load();
-      expect(plan.child.fullName, 'Aleks Przykładowy (demo)');
-      expect(plan.child.age, 9);
-      expect(plan.child.address, isNotEmpty);
-      expect(plan.child.supportNotes, isNotEmpty);
-      expect(plan.child.gender, ChildGender.boy);
+      expect(plan.child.toJson(), const ChildProfile().toJson());
       expect(plan.contacts.length, FamilyPlan.maxContacts);
       for (final contact in plan.contacts) {
         expect(contact.name, contains('demo'));
@@ -87,33 +83,52 @@ void main() {
     },
   );
 
-  testWidgets('seeded child starts practice without entering any details', (
-    tester,
-  ) async {
-    await tester.runAsync(() => seeder().seed());
-    final original = await family.load();
-    await tester.pumpWidget(
-      MaterialApp(home: ChildOnboardingScreen(repository: family)),
-    );
-    await tester.pumpAndSettle();
-    expect(
-      tester.widget<TextField>(find.byType(TextField)).controller!.text,
-      original.child.age.toString(),
-    );
-    for (final action in [
-      'Podaj imię',
-      'Wybierz postać',
-      'Rozpocznij ćwiczenie',
-    ]) {
-      final button = find.text(action);
-      await tester.ensureVisible(button);
-      await tester.tap(button);
+  testWidgets(
+    'fresh child onboarding requires details and preserves adult demo setup',
+    (tester) async {
+      await tester.runAsync(() => seeder().seed());
+      final original = await family.load();
+      await tester.pumpWidget(
+        MaterialApp(home: ChildOnboardingScreen(repository: family)),
+      );
       await tester.pumpAndSettle();
-    }
-    expect(find.byType(PracticeLauncher), findsOneWidget);
-    expect((await family.load()).toJson(), original.toJson());
-    expect(tester.takeException(), isNull);
-  });
+      expect(
+        tester.widget<TextField>(find.byType(TextField)).controller!.text,
+        '',
+      );
+      await tester.tap(find.text('Podaj imię'));
+      await tester.pumpAndSettle();
+      expect(find.text('Podaj swój wiek, aby przejść dalej.'), findsOneWidget);
+      await tester.enterText(find.byType(TextField), '9');
+      await tester.tap(find.text('Podaj imię'));
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<TextField>(find.byType(TextField)).controller!.text,
+        '',
+      );
+      await tester.enterText(find.byType(TextField), 'Demo child');
+      await tester.tap(find.text('Wybierz postać'));
+      await tester.pumpAndSettle();
+      final start = find.text('Rozpocznij ćwiczenie');
+      await tester.ensureVisible(start);
+      await tester.tap(start);
+      await tester.pumpAndSettle();
+      expect(find.text('Wybierz dziewczynkę lub chłopca.'), findsOneWidget);
+      await tester.ensureVisible(find.text('Chłopiec'));
+      await tester.tap(find.text('Chłopiec'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(start);
+      await tester.tap(start);
+      await tester.pumpAndSettle();
+      expect(find.byType(PracticeLauncher), findsOneWidget);
+      final saved = await family.load();
+      expect(saved.child.fullName, 'Demo child');
+      expect(saved.child.age, 9);
+      expect(saved.child.gender, ChildGender.boy);
+      expect(saved.copyWith(child: original.child).toJson(), original.toJson());
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   test(
     'existing family details are preserved without adding demo data',

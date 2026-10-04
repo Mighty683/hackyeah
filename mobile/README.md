@@ -59,11 +59,34 @@ Web device behavior:
   pretend-call dialog; no dialler, telephone call, SMS, or external app opens.
 - Narration uses the browser Web Speech API with an available Polish voice.
   Local voices are preferred; remote voices may need a network connection.
-  Use **Replay audio** or the voice retry action if the browser blocks automatic
-  playback. Missing voices retain text instructions and the adult-help fallback.
+  Use **Replay audio** if the browser blocks automatic playback. Missing voices
+  or playback failures mute the replay control; tapping it shows an explanatory
+  tooltip suggesting reading with an adult. Text instructions remain available,
+  without a persistent audio warning or retry panel on web.
   Android teaching sound cues remain silent in the browser.
 
-Demo walkthrough: choose **I'm a child**, keep the prefilled profile, then open
+For silent narration, inspect the browser's DevTools console. `[Tuptu speech]`
+warnings distinguish a missing Web Speech API, no available Polish voice,
+playback errors (including the browser's error code), and a playback timeout.
+Voice availability depends on the browser and OS; exposing `speechSynthesis`
+alone does not guarantee a Polish voice. To inspect available voices after the
+page has loaded, run:
+
+```js
+speechSynthesis.getVoices().map(v => ({ name: v.name, lang: v.lang, local: v.localService }))
+```
+
+An empty list or a list without `pl` / `pl-PL` means this demo cannot narrate in
+that browser. Retrying cannot supply a missing voice. If a Polish voice exists,
+inspect the reported playback error and reload to retry; `not-allowed`
+indicates the browser refused playback. Console diagnostics do not log spoken
+instructions or saved personal details.
+
+Child onboarding starts with empty age and name fields and no selected character
+on every visit. Demo parent contacts, places and photo landmarks remain seeded.
+
+Demo walkthrough: choose **I'm a child**, enter age and a nickname, select a
+character, then open
 **Practices → Alarm practice** (home or outside), or **I'm lost practice** (nearby
 or out-of-sight meeting place). **Our map** shows the bundled photo pins and named
 places. The adult journey supports editing fictional setup, choosing example

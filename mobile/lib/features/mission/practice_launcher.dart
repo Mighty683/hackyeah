@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 
+import '../../ui/unavailable_audio_tooltip.dart';
 import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
 import '../../widgets/basebound_mascot.dart';
@@ -225,11 +226,14 @@ class _PracticeSelectionScreenState extends State<_PracticeSelectionScreen>
                                   ),
                                 ),
                                 const SizedBox(width: 8),
-                                IconButton(
-                                  onPressed: _opening ? null : _speak,
-                                  tooltip: 'Posłuchaj ponownie',
-                                  icon: const BaseboundIcon(
-                                    BaseboundIconName.speaker,
+                                UnavailableAudioTooltip(
+                                  unavailable: kIsWeb && !_audioAvailable,
+                                  child: IconButton(
+                                    onPressed: _opening ? null : _speak,
+                                    tooltip: 'Posłuchaj ponownie',
+                                    icon: const BaseboundIcon(
+                                      BaseboundIconName.speaker,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -246,17 +250,20 @@ class _PracticeSelectionScreenState extends State<_PracticeSelectionScreen>
                             const SizedBox(height: 8),
                             Align(
                               alignment: Alignment.centerLeft,
-                              child: TextButton.icon(
-                                onPressed: _opening ? null : _speak,
-                                icon: const BaseboundIcon(
-                                  BaseboundIconName.speaker,
-                                  size: 24,
+                              child: UnavailableAudioTooltip(
+                                unavailable: kIsWeb && !_audioAvailable,
+                                child: TextButton.icon(
+                                  onPressed: _opening ? null : _speak,
+                                  icon: const BaseboundIcon(
+                                    BaseboundIconName.speaker,
+                                    size: 24,
+                                  ),
+                                  label: const Text('Posłuchaj ponownie'),
                                 ),
-                                label: const Text('Posłuchaj ponownie'),
                               ),
                             ),
                           ],
-                          if (!_audioAvailable && compact)
+                          if (!kIsWeb && !_audioAvailable && compact)
                             const Padding(
                               padding: EdgeInsets.only(top: 4),
                               child: Text(
@@ -264,7 +271,7 @@ class _PracticeSelectionScreenState extends State<_PracticeSelectionScreen>
                                 style: TextStyle(color: BaseboundColors.muted),
                               ),
                             ),
-                          if (!_audioAvailable && !compact)
+                          if (!kIsWeb && !_audioAvailable && !compact)
                             Padding(
                               padding: const EdgeInsets.only(top: 12),
                               child: SoftPanel(

@@ -30,6 +30,43 @@ void main() {
         .setMockMethodCallHandler(audioChannel, null);
   });
 
+  testWidgets('incorrect number shows one hint above the keypad', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: PracticePhoneKeypad(
+              contacts: const [
+                TrustedContact(name: 'Mama', phone: '123 456 789'),
+                TrustedContact(name: 'Tata', phone: '987 654 321'),
+              ],
+              onComplete: () {},
+              onInstructionChanged: (_) {},
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.ensureVisible(find.text('1').first);
+    await tester.tap(find.text('1').first);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Sprawdź numer').first);
+    await tester.tap(find.text('Sprawdź numer').first);
+    await tester.pumpAndSettle();
+    expect(find.text('123 456 789'), findsOneWidget);
+    expect(find.text('987 654 321'), findsNothing);
+    expect(
+      tester.getTopLeft(find.text('123 456 789')).dy,
+      lessThan(tester.getTopLeft(find.widgetWithText(OutlinedButton, '1')).dy),
+    );
+    await tester.ensureVisible(find.text('2').first);
+    await tester.tap(find.text('2').first);
+    await tester.pumpAndSettle();
+    expect(find.text('123 456 789'), findsOneWidget);
+  });
+
   testWidgets('home practice retries, speaks, finishes and replays', (
     tester,
   ) async {
@@ -43,8 +80,8 @@ void main() {
       MissionMode.home,
       repository: PracticeRepository(
         contacts: const [
-          TrustedContact(name: 'Demo adult', phone: '987 654 321'),
           TrustedContact(name: 'Demo parent', phone: '+48 (123) 456-789'),
+          TrustedContact(name: 'Demo adult', phone: '987 654 321'),
         ],
       ),
     );
@@ -69,7 +106,7 @@ void main() {
       find.text('Przy oknach jest mniej bezpiecznie. Odsuń się od nich.'),
       findsOneWidget,
     );
-    expect(find.byType(BaseboundMascot), findsOneWidget);
+    expect(find.byType(BaseboundMascot), findsNothing);
     expect(find.text('Spróbuj ponownie'), findsNothing);
     expect(find.text('Następny krok'), findsNothing);
     await tapMissionAction(tester, 'Przejdź w głąb domu');
@@ -99,14 +136,16 @@ void main() {
     await tapMissionAction(tester, '1');
     await tapMissionAction(tester, 'Sprawdź numer');
     expect(
-      find.text(
-        'Numer jeszcze się nie zgadza. Spróbuj ponownie lub użyj podpowiedzi.',
-      ),
+      find.text('Numer jeszcze się nie zgadza. Wpisz pokazany numer.'),
       findsOneWidget,
     );
     expect(find.text('Zadzwoń na niby'), findsNothing);
-    await tapMissionAction(tester, 'Potrzebujesz podpowiedzi?');
     expect(find.text('+48 (123) 456-789'), findsOneWidget);
+    expect(find.text('987 654 321'), findsNothing);
+    expect(
+      tester.getTopLeft(find.text('+48 (123) 456-789')).dy,
+      lessThan(tester.getTopLeft(find.widgetWithText(OutlinedButton, '1')).dy),
+    );
     await tapMissionAction(tester, 'Ukryj podpowiedź');
     await tapMissionAction(tester, 'Wyczyść numer');
     for (final digit in '48123456780'.split('')) {
@@ -161,7 +200,7 @@ void main() {
     );
     await tapMissionAction(tester, 'Wyjdź teraz');
     expect(find.textContaining('Zostań w domu.'), findsOneWidget);
-    expect(find.byType(BaseboundMascot), findsOneWidget);
+    expect(find.byType(BaseboundMascot), findsNothing);
     expect(
       lastMissionNarration(audioCalls)['text'],
       contains('Zostań w domu.'),

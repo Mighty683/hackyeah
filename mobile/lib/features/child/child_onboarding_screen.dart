@@ -7,7 +7,7 @@ import '../mission/practice_launcher.dart';
 import '../parent/data/family_plan.dart';
 import '../parent/data/family_plan_repository.dart';
 
-/// Three small steps reuse encrypted local storage and preserve adult details.
+/// Each visit starts blank; saving preserves the adult setup in local storage.
 class ChildOnboardingScreen extends StatefulWidget {
   const ChildOnboardingScreen({super.key, this.repository});
 
@@ -43,9 +43,6 @@ class _ChildOnboardingScreenState extends State<ChildOnboardingScreen> {
       if (!mounted) return;
       setState(() {
         _plan = plan;
-        _name.text = plan.child.fullName;
-        _age.text = plan.child.age?.toString() ?? '';
-        _gender = plan.child.gender;
       });
     } catch (_) {
       if (mounted) {

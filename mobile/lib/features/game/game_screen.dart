@@ -257,6 +257,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                     ? 'Rozpoznajesz to miejsce!'
                     : _instruction,
                 onReplay: _speak,
+                audioUnavailable: kIsWeb && !_voiceAvailable,
                 controls: _controls(),
                 map: LandmarkMap(
                   map: widget.map,
@@ -432,7 +433,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
           style: const TextStyle(fontSize: 12, color: BaseboundColors.muted),
         ),
       ],
-      if (!_voiceAvailable)
+      if (!kIsWeb && !_voiceAvailable)
         const Text(
           kIsWeb
               ? 'Głos w przeglądarce jest niedostępny. Czytaj z dorosłym.'

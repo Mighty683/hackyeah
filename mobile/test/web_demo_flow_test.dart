@@ -29,7 +29,7 @@ void main() {
     (tester) async {
       await _start(tester);
       final plan = await FamilyPlanRepository().load();
-      expect(plan.child.age, 9);
+      expect(plan.child.toJson(), const ChildProfile().toJson());
       expect(plan.contacts, hasLength(3));
       expect(await LandmarkRepository().load(), hasLength(3));
       await _child(tester);
@@ -114,14 +114,11 @@ void main() {
             .widget<TextField>(find.byKey(const ValueKey('child-age')))
             .controller!
             .text,
-        '11',
+        '',
       );
       await _tap(tester, 'Zresetuj demo');
       await _wait(tester, find.text('Witaj w Tuptu'));
-      expect(
-        (await repository.load()).child.fullName,
-        'Aleks Przykładowy (demo)',
-      );
+      expect((await repository.load()).child.fullName, '');
       expect(await LandmarkRepository().load(), hasLength(3));
       expect(find.byKey(const ValueKey('child-age')), findsNothing);
       final error = tester.takeException();
@@ -183,17 +180,23 @@ Future<void> _child(WidgetTester tester) async {
         .widget<TextField>(find.byKey(const ValueKey('child-age')))
         .controller!
         .text,
-    '9',
+    '',
   );
+  await tester.enterText(find.byKey(const ValueKey('child-age')), '9');
   await _tap(tester, 'Podaj imię');
   expect(
     tester
         .widget<TextField>(find.byKey(const ValueKey('child-name')))
         .controller!
         .text,
-    'Aleks Przykładowy (demo)',
+    '',
+  );
+  await tester.enterText(
+    find.byKey(const ValueKey('child-name')),
+    'Demo child',
   );
   await _tap(tester, 'Wybierz postać');
+  await _tap(tester, 'Chłopiec');
   await _tap(tester, 'Rozpocznij ćwiczenie');
   await _wait(tester, find.text('Wybierz zajęcie'));
 }

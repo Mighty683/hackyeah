@@ -17,15 +17,8 @@ const demoHome = SafePoint(
   isDemo: true,
 );
 
-/// Complete fictional setup for a fresh install, editable like ordinary records.
+/// Fictional adult contacts and places; child details start empty.
 const demoFamilyPlan = FamilyPlan(
-  child: ChildProfile(
-    fullName: 'Aleks Przykładowy (demo)',
-    age: 9,
-    address: 'ul. Przykładowa 12, Miasto Demo (fikcyjne)',
-    supportNotes: 'Demo: mów powoli i podawaj jedną instrukcję naraz.',
-    gender: ChildGender.boy,
-  ),
   // Demo-only training numbers. Never dial these or claim they are unassigned.
   contacts: [
     TrustedContact(
