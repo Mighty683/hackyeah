@@ -214,7 +214,7 @@ void main() {
     );
     await _pump(tester);
     expect(
-      find.text('Punkt spotkania do ćwiczeń: Library entrance'),
+      find.text('Punkt spotkania na niby: Library entrance'),
       findsOneWidget,
     );
     await tester.pumpWidget(const SizedBox.shrink());
@@ -238,7 +238,7 @@ void main() {
     );
     await _pump(tester);
     expect(
-      find.text('Punkt spotkania do ćwiczeń: Main library door'),
+      find.text('Punkt spotkania na niby: Main library door'),
       findsOneWidget,
     );
     expect((await family.load()).practiceMeetingPoint!.label, 'Old name');
@@ -307,7 +307,7 @@ void main() {
       );
       await _pump(tester);
       expect(
-        find.text('Punkt spotkania do ćwiczeń: Library entrance'),
+        find.text('Punkt spotkania na niby: Library entrance'),
         findsOneWidget,
       );
       expect(find.text('Punkt spotkania w pobliżu'), findsOneWidget);

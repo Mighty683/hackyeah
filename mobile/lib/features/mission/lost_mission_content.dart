@@ -17,8 +17,8 @@ Map<String, LostMissionStep> buildLostMissionSteps(
   final steps = <LostMissionStep>[
     LostMissionStep(
       id: 'stop',
-      title: 'Nie widzisz rodzica',
-      narration: 'Nie widzisz rodzica. Co zrobisz?',
+      title: 'Nie widzisz rodzica. Co robisz?',
+      narration: 'Nie widzisz rodzica. Co robisz?',
       visual: LostMissionVisual.square,
       choices: [
         _choice(
