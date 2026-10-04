@@ -156,11 +156,18 @@ void main() {
     await tester.pumpAndSettle();
     await tapMissionAction(tester, '9');
     await tapMissionAction(tester, 'Sprawdź numer');
-    expect(find.text('Numer zgadza się z zapisanym kontaktem.'), findsNothing);
+    expect(
+      find.text('Numer zgadza się z zapisanym kontaktem.'),
+      findsOneWidget,
+    );
     expect(find.text('Wpisz numer telefonu'), findsNothing);
     expect(
       tester.widget<BaseboundMascot>(find.byType(BaseboundMascot)).pose,
       DinoPose.celebrate,
+    );
+    expect(
+      tester.widget<BaseboundMascot>(find.byType(BaseboundMascot)).holdingPhone,
+      isTrue,
     );
     expect(
       find.bySemanticsLabel('Numer zgadza się z zapisanym kontaktem.'),

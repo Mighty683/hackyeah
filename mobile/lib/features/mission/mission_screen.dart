@@ -556,11 +556,12 @@ class _MissionScreenState extends State<MissionScreen>
     ),
   );
 
-  Widget _feedbackPanel(String message, bool positive) => SoftPanel(
-    color: positive ? BaseboundColors.greenLight : BaseboundColors.coralLight,
-    padding: const EdgeInsets.all(12),
-    child: BaseboundGuide(message: message, positive: positive, compact: true),
-  );
+  Widget _feedbackPanel(String message, bool positive) =>
+      BaseboundFeedbackPanel(
+        message: message,
+        positive: positive,
+        compact: true,
+      );
 
   Widget _nextButton() {
     return FilledButton.icon(

@@ -135,39 +135,56 @@ void main() {
     expect(source.requests, 1);
   });
 
-  testWidgets('welcome gates both roles, hides Help, then accepts denial', (
-    tester,
-  ) async {
-    source.allowed = LocationPermission.denied;
-    source.pendingRequest = Completer<LocationPermission>();
-    await tester.pumpWidget(
-      MaterialApp(
-        home: WelcomeScreen(
-          locationPermission: LocationPermissionSetup(source: source),
+  testWidgets(
+    'welcome gates roles, then enables child and explains adult demo lock',
+    (tester) async {
+      source.allowed = LocationPermission.denied;
+      source.pendingRequest = Completer<LocationPermission>();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: WelcomeScreen(
+            locationPermission: LocationPermissionSetup(source: source),
+          ),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    final choices = tester.widgetList<BaseboundActionTile>(
-      find.byType(BaseboundActionTile),
-    );
-    expect(choices, hasLength(2));
-    expect(choices.every((choice) => choice.onPressed == null), isTrue);
-    expect(find.byType(HelpEntryButton), findsNothing);
-    source.pendingRequest!.complete(LocationPermission.denied);
-    await tester.pumpAndSettle();
-    expect(
-      tester
-          .widgetList<BaseboundActionTile>(find.byType(BaseboundActionTile))
-          .every((choice) => choice.onPressed != null),
-      isTrue,
-    );
-    expect(find.textContaining('Zdjęcia i ćwiczenia działają'), findsOneWidget);
-    expect(source.requests, 1);
-    expect(source.streams, 0);
-  });
+      );
+      await tester.pumpAndSettle();
+      final choices = tester.widgetList<BaseboundActionTile>(
+        find.byType(BaseboundActionTile),
+      );
+      expect(choices, hasLength(2));
+      expect(choices.every((choice) => choice.onPressed == null), isTrue);
+      expect(find.byType(HelpEntryButton), findsNothing);
+      source.pendingRequest!.complete(LocationPermission.denied);
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widgetList<BaseboundActionTile>(find.byType(BaseboundActionTile))
+            .map((choice) => choice.onPressed != null),
+        [true, false],
+      );
+      await tester.tap(
+        find.byTooltip(
+          'W wersji demo wybierz „Jestem dzieckiem”, aby poznać funkcje dla dzieci.',
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(ParentScreen), findsNothing);
+      expect(
+        find.text(
+          'W wersji demo wybierz „Jestem dzieckiem”, aby poznać funkcje dla dzieci.',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('Zdjęcia i ćwiczenia działają'),
+        findsOneWidget,
+      );
+      expect(source.requests, 1);
+      expect(source.streams, 0);
+    },
+  );
 
-  testWidgets('platform failure leaves welcome roles available', (
+  testWidgets('platform failure leaves child available and adult disabled', (
     tester,
   ) async {
     source.failCheck = true;
@@ -182,8 +199,8 @@ void main() {
     expect(
       tester
           .widgetList<BaseboundActionTile>(find.byType(BaseboundActionTile))
-          .every((choice) => choice.onPressed != null),
-      isTrue,
+          .map((choice) => choice.onPressed != null),
+      [true, false],
     );
     expect(source.requests, 0);
     expect(tester.takeException(), isNull);

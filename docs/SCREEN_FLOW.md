@@ -6,13 +6,13 @@ with mocked device features. The Slidev screens are pitch prototypes.
 
 ## Implemented Android flow
 
-Solid arrows describe working navigation and actions. Loading, result and error are screen states. Role selection changes the journey; it is not age verification or access control. Parent onboarding is freely accessible in this demo. It asks for one action or piece of information per screen.
+Solid arrows describe working navigation and actions. Loading, result and error are screen states. Role selection changes the journey; it is not age verification or access control. The adult welcome button is disabled for the demo. Tapping it shows a tooltip directing users to child features. Adult setup functions remain implemented; their retained flows are documented below. Parent onboarding asks for one action or piece of information per screen.
 
 ```mermaid
 flowchart TD
     BOOT["FIRST LAUNCH<br/>Fill fictional child, contacts, places and linked photos; preserve saved records"]
     BE["STARTUP ERROR<br/>Retry; saved records remain intact"]
-    W["WELCOME<br/>Ask foreground location once; choose adult or child"]
+    W["WELCOME<br/>Ask foreground location once; choose child; adult disabled"]
     BOOT -->|Ready| W
     BOOT -->|Initialization failed| BE
     BE -->|Retry| BOOT
@@ -89,7 +89,7 @@ flowchart TD
     HP -->|Map: obtain fresh GPS| G
     HP -->|Near place: obtain fresh GPS| R
     HP -->|Map error| E
-    W -->|I'm an adult| AL
+    W -->|Tap disabled adult button| AD["DEMO TOOLTIP<br/>Choose child features"]
     AL -->|Details loaded| A
     AL -->|Read failed| AE
     AE -->|Retry loading| AL
@@ -148,7 +148,7 @@ flowchart TD
     subgraph LOST["MISSION 02: FICTIONAL LOST PRACTICE, AGES 7+"]
         LL["LOAD PRACTICE FAMILY<br/>Read current encrypted record; display-only snapshot"]
         LE["READ ERROR<br/>Retry or explicitly use pretend family; preserve record"]
-        LV["CHOOSE LOST SCENE<br/>Meeting point nearby or out of sight"]
+        LV["CHOOSE LOST SCENE<br/>Nearby available; out of sight unfinished"]
         LS["STOP<br/>Stop instead of running or leaving"]
         LO["LOOK<br/>Remember the parent-selected photo and name"]
         LP["NEARBY POINT<br/>Recognize the exact saved photo"]
@@ -174,7 +174,8 @@ flowchart TD
         LL -->|Read failed| LE
         LE -->|Try again| LL
         LE -->|Use pretend family| LV
-        LV -->|Choose variant| LS
+        LV -->|Choose nearby variant| LS
+        LV -->|Tap disabled out-of-sight variant: unfinished tooltip| LV
         LS -->|Safe choice; acknowledge feedback| LO
         LO -->|Nearby variant| LP
         LO -->|Out-of-sight variant| LN
@@ -315,7 +316,7 @@ flowchart TD
 | Mission feedback | See the consequence and explanation | Choose another action after a mistake; accepted actions advance automatically; replay audio, mute/unmute sound effects |
 | Mission recall/completion | Read three numbered reminders with short descriptions and Dino’s praise once, without a duplicate completion heading | Finish practice; replay audio, Play again, Back to practice choices |
 | Lost practice loading/error | Load the current display-only family snapshot | Retry or explicitly use pretend family; back preserves saved details |
-| Lost scene selection (7+) | Choose meeting point nearby or out of sight | Replay audio, back; unavailable voice offers adult help and retry |
+| Lost scene selection (7+) | Choose meeting point nearby; out-of-sight option disabled with unfinished tooltip | Replay audio, back; unavailable voice offers adult help and retry |
 | Lost decision/feedback | Recognize the chosen photo; find its pin on the shared Our map; hear calm feedback | Map drag/pinch and Places include the saved Home practice point when inside the demo map; I cannot find it returns to staying nearby; retry or advance, replay audio, exit |
 | Lost reunion/confirmation | Tap I'M SAFE after the fictional reunion | Explicit local confirmation; no message sent |
 | Lost recall/completion | Dino praise and three numbered reminders, including meeting point only if visible nearby | Replay audio, Play again with the same snapshot/variant, Back to practice choices |
@@ -326,7 +327,7 @@ flowchart TD
 | Safe places | Add or review optional map places or a lost-practice landmark | Edit or confirmed delete; Finish setup or Skip safe places; Setup options, back to contacts |
 | Practice meeting point | Choose an existing photo landmark by ID; its name and photo stay linked | Add/edit in Walk together; explicit pretend-picture alternative; save with retained edits on failure; back without saving |
 | Safe place name | Name one safe place and choose an emoji icon | Choose position, back without saving |
-| Safe place pin | Choose one geographic position | Tap or accessible centre/direction controls; save, previous step |
+| Safe place pin | Choose one geographic position | Tap the map to place or move the pin; save, previous step |
 | Setup complete | Play together | Walk together; Review setup returns to intro; Setup options, back to safe places |
 | Setup load error | Recover saved details | Retry, confirmed Delete all in Setup options, back |
 | Form save error | Retry saving without losing edits | Back without saving |
@@ -337,7 +338,7 @@ flowchart TD
 | Map information | Read optional GPS and coverage details | Close |
 | Parent landmark library | Add a photo of one familiar place | Camera/gallery choice, explicit Load demo landmarks, tap a pin for details, edit name/pin, confirmed delete or delete all, back to opener |
 | Landmark name | Name the photographed place; photo only | Choose map position, back without saving |
-| Landmark pin | Confirm one position inside the demo map | Manual tap/accessible direction controls, optional foreground GPS, previous step; saving preserves edits on failure |
+| Landmark pin | Confirm one position inside the demo map | Tap the map to place or move the pin, optional foreground GPS, previous step; saving preserves edits on failure |
 | Landmark load error | Retry reading saved landmarks | Back; no silent deletion or reset |
 | Help prototype entry | Choose the situation | Not responding / Słyszysz syrenę / lost / unsure; close |
 | Help guide preview | Read that a child-friendly interactive guide is planned | Wróć do wyboru scenariusza or Back restores the four help choices |
@@ -355,7 +356,7 @@ The previous emergency instructions, helper branches, phone actions, contact loa
 
 The home tutorial practices alarm recognition, moving away from windows, choosing an interior hallway, a pretend call followed by an SMS when there is no answer, staying after a noise, waiting through silence, and following an explicit all-clear. The premise is a fallback when the agreed shelter cannot be reached. An interior area and two walls offer some protection; the game does not certify a home as safe.
 
-The home alarm bell appears at the window to show the sound coming from outside. Each fictional Mom, Dad or Grandparent portrait has its name beside it. After choosing an adult, **Try one call** practices a single pretend call. Choosing **Try one call** opens a pretend numeric keypad within the mission. The child practices a number from the encrypted local trusted-contact records, with digits, backspace and Clear. Any saved usable contact number matches after removing formatting such as `+`, spaces and separators; country-code digits remain required. **Need a hint?** reveals the first saved contact’s number above the keypad, with a bold blue number on a pale blue bordered panel. Only the screen title appears above the number; the instructions remain available through narration. An incorrect number shows this hint automatically. The browser demo’s Mom number is `555333444`, without a country code (Dad: `555333445`, Grandparent: `555333446`). A correct match replaces the introductory text with Dino celebrating directly above the entered number, without a coloured tile or visible confirmation text below. The hint is hidden after a match. Success remains available to screen readers and narration. **Call on pretend phone** then becomes available. A quiet local busy signal plays, then narration explains that the line is busy and the call could not connect. After this feedback, **Send an SMS** becomes available. Effects can be muted; the written explanation remains. These are guided actions, each with one target. One conversation screen then shows the outgoing “I am away from windows.” and adult reply “Good. Stay there and wait for the all-clear.” together, labelled **Practice only. Nothing was sent.** **Stay here** advances directly to the loud-noise decision. If no usable number is saved, the screen explains adult setup and offers **Continue without a number**. A failed read offers **Try loading again** or **Continue without a number**, preserving saved records. Both fallback actions continue through the simulated busy call and SMS choice.
+The home alarm bell appears at the window to show the sound coming from outside. Each fictional Mom, Dad or Grandparent portrait has its name beside it. After choosing an adult, **Try one call** practices a single pretend call. Choosing **Try one call** opens a pretend numeric keypad within the mission. The child practices a number from the encrypted local trusted-contact records, with digits, backspace and Clear. Any saved usable contact number matches after removing formatting such as `+`, spaces and separators; country-code digits remain required. **Need a hint?** reveals the first saved contact’s number above the keypad, with a bold blue number on a pale blue bordered panel. Only the screen title appears above the number; the instructions remain available through narration. An incorrect number shows this hint automatically. The browser demo’s Mom number is `555333444`, without a country code (Dad: `555333445`, Grandparent: `555333446`). A correct match replaces the introductory text with Dino celebrating while holding a phone directly above the entered number. A green success tile below the number shows a check symbol and “Numer zgadza się z zapisanym kontaktem.” The hint is hidden after a match. Success remains available to screen readers and narration. **Call on pretend phone** then becomes available. A quiet local busy signal plays, then narration explains that the line is busy and the call could not connect. After this feedback, **Send an SMS** becomes available. Effects can be muted; the written explanation remains. These are guided actions, each with one target. One conversation screen then shows the outgoing “I am away from windows.” and adult reply “Good. Stay there and wait for the all-clear.” together, labelled **Practice only. Nothing was sent.** **Stay here** advances directly to the loud-noise decision. If no usable number is saved, the screen explains adult setup and offers **Continue without a number**. A failed read offers **Try loading again** or **Continue without a number**, preserving saved records. Both fallback actions continue through the simulated busy call and SMS choice.
 
 The MVP targets children aged 7+ with two to four choices and optional fictional outdoor practice: compare nearby shelter against distant destinations and exposed places. Child onboarding collects age, but there is no younger-child branch; saved age does not change this mission. An outdoor mistake first explains why the child remains outside, then a short “Still outside” scene names the chosen destination as a sound interrupts the journey. The next two decisions practice getting down (drag or tap) and covering the head. An explicit story scene keeps the child down while a trusted adult helps them reach shelter when possible; arriving at the shelter then leads to fictional contact selection. Choosing the nearby shelter skips this recovery branch. Home and physical-action mistakes show immediate dinosaur feedback, grey out the rejected target, and let the child choose again without moving. Accepted actions and outdoor destination consequences advance automatically after narration and a minimum three-second reading pause. Both modes finish with three numbered reminders, matching icons and short descriptions: find a protected place away from windows, call a trusted adult then send an SMS if there is no answer, and wait for the all-clear even when it is quiet. Dino celebrates with “You did a great job! You finished the practice.” The same recap appears before Finish practice and on completion, and narration reads the displayed text. There is no score or countdown.
 
@@ -365,13 +366,13 @@ On **It is quiet now**, the child stays inside the hallway. After either choice,
 
 ### Mission 02 — lost practice
 
-The new 7+ activity has two explicit variants: the agreed meeting point is visible nearby, or it is out of sight. Both practice stopping, looking, asking at a nearby public desk, declining to leave with an unknown person, a pretend call with no answer, trying a different contact, waiting, reunion, an explicit I'M SAFE tap and a short recall. Lost and air raid reuse `PracticeContactPicker`: a pretend phone list with an avatar and a visible name for each contact. Lost practice uses its configured or explicitly fictional display contacts; its no-answer screen excludes the first contact and keeps the separate stay/leave decision. Contact selection does not call anyone. Lost and air raid share the same recap component before Finish practice and on completion: Dino’s “You did a great job!” and three numbered reminders with matching icons. Lost groups the practiced actions into stopping/looking (meeting place only if visible nearby), asking for help/contacting family/waiting, and confirming after reunion. The pretend-message notice remains visible; narration reads the same praise and reminders. Wrong choices get calm feedback and retry the same decision. There is no score or timer.
+The new 7+ activity offers the nearby meeting-point variant. The out-of-sight variant is unfinished and disabled in the selector; tapping it explains that the child should choose the nearby scenario. The existing scenario code covers both variants, which practice stopping, looking, asking at a nearby public desk, declining to leave with an unknown person, a pretend call with no answer, trying a different contact, waiting, reunion, an explicit I'M SAFE tap and a short recall. Lost and air raid reuse `PracticeContactPicker`: a pretend phone list with an avatar and a visible name for each contact. Lost practice uses its configured or explicitly fictional display contacts; its no-answer screen excludes the first contact and keeps the separate stay/leave decision. Contact selection does not call anyone. Lost and air raid share the same recap component before Finish practice and on completion: Dino’s “You did a great job!” and three numbered reminders with matching icons. Lost groups the practiced actions into stopping/looking (meeting place only if visible nearby), asking for help/contacting family/waiting, and confirming after reunion. The pretend-message notice remains visible; narration reads the same praise and reminders. Dino and the feedback message share a green tile after a correct choice, or a coral tile for retry feedback, matching other practice screens. Wrong choices get calm feedback and retry the same decision. There is no score or timer.
 
 First installation links the bundled Red corner shop photo as the initial meeting place, so lost practice opens directly to scene selection. Parent setup can select another existing Walk together photo landmark and stores its stable ID. The lesson loads the current photo/name, so renaming a landmark changes the next lesson without replacing the link. Reminder, recognition choices and story arrival show the same photo. Choices use IDs, including when names repeat. The nearby branch adds an Our map exercise using the shared map, photo pins, drag/pinch and an accessible Places list. At most three saved photo places and one saved Home practice point participate in this exercise. Home uses its saved coordinates when inside the demo map; it is tappable and gives retry feedback while the lesson asks for the meeting-place photo. Tapping the correct pin confirms recognition only; no GPS, route, physical movement or real arrival is inferred. I cannot find it leads to the stay-nearby branch. The out-of-sight variant retains that branch without a map exercise.
 
 When no meeting point has been chosen, the launcher uses the first available saved photo for the current practice without overwriting family details. No available photo, a deleted chosen landmark/photo or a pin outside the bundled map offers parent setup or retry. The separate Use demo meeting place button has been removed. Record read failures offer retry or explicit pretend practice. Existing Fountain/Information desk records remain readable as labelled demo pictures with no map exercise. Generated demo photos retain their fictional label. Missing contacts still receive labelled pretend cards. Contacts contribute display labels/avatar motifs only; real phone numbers and addresses remain outside play. Calls, replies and notifications are simulated.
 
-The lost selector is headed **Zgubienie się · 7+**, shows a large meeting-place photo, and groups **Punkt spotkania na niby: [name]** with **Bez połączeń i wiadomości.** underneath. **Wybierz scenę** introduces the two variants. The first decision uses **Nie widzisz rodzica. Co robisz?** as its heading, without a duplicate instruction panel; narration reads the same question. The lost selector and mission reuse offline Polish Android speech. Missing voice offers adult help and retry, with text retained. Leaving stops narration and returns directly to the scenario list; replay resets transient progress and keeps the selected variant/snapshot. Re-entering lost practice reloads current saved details. Training is labelled unreviewed and not for real emergencies. Contact photos, younger-child support, familiar routes and actual parent notifications remain future work for Mission 02. See [MISSION_02_IMPLEMENTATION_PLAN.md](MISSION_02_IMPLEMENTATION_PLAN.md) for scope, references and verification.
+The lost selector is headed **Zgubienie się · 7+**, shows a large meeting-place photo, and groups **Punkt spotkania na niby: [name]** with **Bez połączeń i wiadomości.** underneath. **Wybierz scenę** introduces the two variants. The selector’s **Posłuchaj ponownie** speaker button sits in the top navigation bar. The first decision uses **Nie widzisz rodzica. Co robisz?** as its heading, without a duplicate instruction panel; narration reads the same question. The lost selector and mission reuse offline Polish Android speech. Missing voice offers adult help and retry, with text retained. Leaving stops narration and returns directly to the scenario list; replay resets transient progress and keeps the selected variant/snapshot. Re-entering lost practice reloads current saved details. Training is labelled unreviewed and not for real emergencies. Contact photos, younger-child support, familiar routes and actual parent notifications remain future work for Mission 02. See [MISSION_02_IMPLEMENTATION_PLAN.md](MISSION_02_IMPLEMENTATION_PLAN.md) for scope, references and verification.
 
 ### Visual design system
 
@@ -437,7 +438,7 @@ that frame. This is a browser demonstration, not a real-help release.
 ```mermaid
 flowchart TD
     WS["WEB STARTUP<br/>Seed fictional profile, contacts, places and bundled photos in tab memory"]
-    WW["SHARED WELCOME<br/>Mock location permission; choose adult or child"]
+    WW["SHARED WELCOME<br/>Mock location permission; choose child; adult disabled"]
     WP["SHARED PARENT SETUP<br/>Edit session details and select meeting place"]
     WL["SHARED WALK TOGETHER<br/>Pick bundled example photo; name and pin"]
     WC["SHARED CHILD ONBOARDING<br/>Prefilled fictional profile"]
@@ -448,7 +449,7 @@ flowchart TD
     WG["INTERACTIVE GUIDE PREVIEW<br/>Future feature placeholder"]
     WR["PRESENTER RESET OR BROWSER REFRESH<br/>Discard session edits and current route"]
     WS --> WW
-    WW -->|Adult| WP
+    WW -->|Tap disabled adult button| WD["DEMO TOOLTIP<br/>Choose child features"]
     WP -->|Walk together| WL
     WL -->|Save example photo and pin| WP
     WP -->|Start practice| WA

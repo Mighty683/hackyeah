@@ -139,6 +139,34 @@ class BaseboundActionTile extends StatelessWidget {
   );
 }
 
+/// Shared outcome tile keeps the mascot, symbol and feedback together.
+class BaseboundFeedbackPanel extends StatelessWidget {
+  const BaseboundFeedbackPanel({
+    super.key,
+    required this.message,
+    this.positive = true,
+    this.pose,
+    this.compact = false,
+  });
+
+  final String message;
+  final bool positive;
+  final DinoPose? pose;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) => SoftPanel(
+    color: positive ? BaseboundColors.greenLight : BaseboundColors.coralLight,
+    padding: EdgeInsets.all(compact ? 12 : 16),
+    child: BaseboundGuide(
+      message: message,
+      positive: positive,
+      pose: pose,
+      compact: compact,
+    ),
+  );
+}
+
 /// Calm practice feedback; a symbol supplements color for every outcome.
 class BaseboundGuide extends StatelessWidget {
   const BaseboundGuide({

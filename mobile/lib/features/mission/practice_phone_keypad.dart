@@ -105,11 +105,11 @@ class _PracticePhoneKeypadState extends State<PracticePhoneKeypad> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (_matches)
-          Semantics(
-            label: _matched,
-            liveRegion: true,
-            child: const Center(
-              child: BaseboundMascot(size: 160, pose: DinoPose.celebrate),
+          const Center(
+            child: BaseboundMascot(
+              size: 160,
+              pose: DinoPose.celebrate,
+              holdingPhone: true,
             ),
           )
         else ...[
@@ -179,9 +179,16 @@ class _PracticePhoneKeypadState extends State<PracticePhoneKeypad> {
               ],
             ),
           ),
-          if (_feedback != null && !_matches) ...[
+          if (_feedback != null) ...[
             const SizedBox(height: 16),
-            _buildFeedback(),
+            if (_matches)
+              SoftPanel(
+                color: BaseboundColors.greenLight,
+                padding: const EdgeInsets.all(16),
+                child: _buildFeedback(),
+              )
+            else
+              _buildFeedback(),
           ],
           const SizedBox(height: 16),
           if (!_matches) ...[

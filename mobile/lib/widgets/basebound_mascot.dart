@@ -12,26 +12,29 @@ class BaseboundMascot extends StatelessWidget {
     this.size = 72,
     this.pose = DinoPose.wave,
     this.faceLeft = false,
+    this.holdingPhone = false,
   });
 
   final double size;
   final DinoPose pose;
   final bool faceLeft;
+  final bool holdingPhone;
 
   @override
   Widget build(BuildContext context) => ExcludeSemantics(
     child: SizedBox.square(
       dimension: size,
-      child: CustomPaint(painter: _MascotPainter(pose, faceLeft)),
+      child: CustomPaint(painter: _MascotPainter(pose, faceLeft, holdingPhone)),
     ),
   );
 }
 
 class _MascotPainter extends CustomPainter {
-  const _MascotPainter(this.pose, this.faceLeft);
+  const _MascotPainter(this.pose, this.faceLeft, this.holdingPhone);
 
   final DinoPose pose;
   final bool faceLeft;
+  final bool holdingPhone;
 
   static const green = Color(0xFF66D649);
   static const darkGreen = Color(0xFF14974E);
@@ -256,8 +259,19 @@ class _MascotPainter extends CustomPainter {
       ),
     };
     _arm(canvas, const Offset(42, 68), leftElbow, leftHand);
-    _arm(canvas, const Offset(88, 68), rightElbow, rightHand);
-    if (pose == DinoPose.wave || pose == DinoPose.celebrate) {
+    if (holdingPhone) {
+      _arm(
+        canvas,
+        const Offset(88, 68),
+        const Offset(102, 65),
+        const Offset(103, 49),
+      );
+      _drawPhone(canvas);
+    } else {
+      _arm(canvas, const Offset(88, 68), rightElbow, rightHand);
+    }
+    if (!holdingPhone &&
+        (pose == DinoPose.wave || pose == DinoPose.celebrate)) {
       _openHand(canvas, rightHand);
     }
     if (pose == DinoPose.celebrate) _openHand(canvas, leftHand);
@@ -277,6 +291,38 @@ class _MascotPainter extends CustomPainter {
           ..strokeCap = StrokeCap.round,
       );
     }
+  }
+
+  void _drawPhone(Canvas canvas) {
+    canvas.save();
+    canvas.translate(103, 43);
+    canvas.rotate(.12);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        const Rect.fromLTWH(-9, -17, 18, 32),
+        const Radius.circular(4),
+      ),
+      Paint()..color = ink,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        const Rect.fromLTWH(-6, -12, 12, 20),
+        const Radius.circular(2),
+      ),
+      Paint()..color = const Color(0xFF97C5EF),
+    );
+    canvas.drawLine(
+      const Offset(-2, -14),
+      const Offset(2, -14),
+      Paint()
+        ..color = Colors.white
+        ..strokeWidth = 1.5,
+    );
+    canvas.drawCircle(const Offset(0, 11), 1.5, Paint()..color = Colors.white);
+    // Draw fingers over the phone so the hand visibly grips it.
+    _limb(canvas, const Offset(7, 5), const Offset(2, 5), width: 5);
+    _limb(canvas, const Offset(7, 10), const Offset(3, 10), width: 4);
+    canvas.restore();
   }
 
   void _arm(Canvas canvas, Offset shoulder, Offset elbow, Offset hand) {
@@ -396,5 +442,7 @@ class _MascotPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _MascotPainter oldDelegate) =>
-      oldDelegate.pose != pose || oldDelegate.faceLeft != faceLeft;
+      oldDelegate.pose != pose ||
+      oldDelegate.faceLeft != faceLeft ||
+      oldDelegate.holdingPhone != holdingPhone;
 }

@@ -52,6 +52,8 @@ Avoid the appearance of a mobile game advertisement.
   when needed for narrow screens and large text.
 - Show feedback with a symbol and a short explanation. Never pre-highlight the
   correct answer, add scores, or shame a child for choosing differently.
+- Use `BaseboundFeedbackPanel` for mission choice feedback. Keep Dino and the
+  message together inside its green success or coral retry tile.
 
 ## Adult forms, maps and help
 

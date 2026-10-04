@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../widgets/child_character.dart';
 import '../parent/data/family_plan.dart';
 import 'air_raid_mission.dart';
 import 'scene_object_target.dart';
@@ -190,7 +191,9 @@ class MissionOutdoorActionScene extends StatelessWidget {
             alignment: Alignment(withAdult ? .5 : 0, .7),
             widthFactor: .55,
             heightFactor: .57,
-            child: CustomPaint(painter: OutdoorPosePainter(pose, gender)),
+            child: pose == OutdoorPose.standing
+                ? ChildCharacter(pose: ChildPoseName.stand, gender: gender)
+                : CustomPaint(painter: OutdoorPosePainter(pose, gender)),
           ),
         ],
       ),

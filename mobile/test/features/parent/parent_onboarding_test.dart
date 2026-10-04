@@ -4,6 +4,7 @@ import 'package:do_bazy/features/parent/data/family_plan_repository.dart';
 import 'package:do_bazy/features/parent/parent_screen.dart';
 import 'package:do_bazy/features/parent/practice_meeting_point_editor_screen.dart';
 import 'package:do_bazy/features/parent/safe_point_editor_screen.dart';
+import 'package:do_bazy/features/parent/widgets/offline_point_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -148,18 +149,24 @@ void main() {
         _saveButton(tester, 'Zapisz bezpieczne miejsce').onPressed,
         isNull,
       );
-      await _tap(tester, 'Użyj środka areny', settle: false);
+      await tester.ensureVisible(find.byType(OfflinePointPicker));
+      await tester.tapAt(
+        tester.getTopLeft(find.byType(OfflinePointPicker)) +
+            const Offset(120, 120),
+      );
       await tester.pump();
       expect(
         _saveButton(tester, 'Zapisz bezpieczne miejsce').onPressed,
         isNotNull,
       );
-      final centreLocation = _locationValue(tester);
-      await tester.ensureVisible(find.byTooltip('Przesuń znacznik na północ'));
-      await tester.tap(find.byTooltip('Przesuń znacznik na północ'));
+      final firstLocation = _locationValue(tester);
+      await tester.tapAt(
+        tester.getTopLeft(find.byType(OfflinePointPicker)) +
+            const Offset(120, 100),
+      );
       await tester.pump();
       final retainedLocation = _locationValue(tester);
-      expect(retainedLocation, isNot(centreLocation));
+      expect(retainedLocation, isNot(firstLocation));
       await tester.tap(find.byTooltip('Wstecz'));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), 'Demo meeting place');

@@ -12,7 +12,6 @@ import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 
 import '../../../game/maps/demo_map.dart';
-import '../../../ui/basebound_icons.dart';
 import '../../../ui/basebound_ui.dart';
 import '../data/family_plan.dart';
 import 'offline_map_component.dart';
@@ -60,8 +59,7 @@ class _OfflinePointPickerState extends State<OfflinePointPicker> {
       children: [
         Semantics(
           label:
-              'Mapa Krakowa offline. Dotknij, aby wybrać: ${widget.selectionLabel}. '
-              'Możesz też użyć przycisków kierunku poniżej.',
+              'Mapa Krakowa offline. Dotknij, aby wybrać lub przesunąć: ${widget.selectionLabel}.',
           child: AspectRatio(
             aspectRatio: 1,
             child: Container(
@@ -97,68 +95,9 @@ class _OfflinePointPickerState extends State<OfflinePointPicker> {
           style: TextStyle(fontSize: 12, color: BaseboundColors.muted),
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 12),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: BaseboundColors.border),
-          ),
-          child: Column(
-            children: [
-              TextButton(
-                onPressed: _game.selectCenter,
-                child: const Text('Użyj środka areny'),
-              ),
-              Wrap(
-                alignment: WrapAlignment.center,
-                spacing: 8,
-                children: [
-                  _directionButton(
-                    icon: BaseboundIconName.up,
-                    tooltip: 'Przesuń znacznik na północ',
-                    dx: 0,
-                    dy: -12,
-                  ),
-                  _directionButton(
-                    icon: BaseboundIconName.down,
-                    tooltip: 'Przesuń znacznik na południe',
-                    dx: 0,
-                    dy: 12,
-                  ),
-                  _directionButton(
-                    icon: BaseboundIconName.back,
-                    tooltip: 'Przesuń znacznik na zachód',
-                    dx: -12,
-                    dy: 0,
-                  ),
-                  _directionButton(
-                    icon: BaseboundIconName.next,
-                    tooltip: 'Przesuń znacznik na wschód',
-                    dx: 12,
-                    dy: 0,
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
       ],
     );
   }
-
-  Widget _directionButton({
-    required BaseboundIconName icon,
-    required String tooltip,
-    required double dx,
-    required double dy,
-  }) => IconButton(
-    onPressed: () => _game.nudge(dx, dy),
-    icon: BaseboundIcon(icon, size: 24),
-    tooltip: tooltip,
-  );
 }
 
 class _PointPickerGame extends FlameGame {
@@ -224,7 +163,7 @@ class _PointPickerGame extends FlameGame {
     if (selectionPhotoPath != null) unawaited(_loadSelectionPhoto());
   }
 
-  // Photo decoding must not delay map placement or the accessible controls.
+  // Photo decoding must not delay map placement.
   Future<void> _loadSelectionPhoto() async {
     try {
       final codec = await ui.instantiateImageCodec(
@@ -276,16 +215,6 @@ class _PointPickerGame extends FlameGame {
     selectionIcon = icon;
     final marker = _marker;
     if (marker is TextComponent) marker.text = icon;
-  }
-
-  void selectCenter() {
-    if (_ready) _select(_map.project(_map.center));
-  }
-
-  void nudge(double dx, double dy) {
-    if (!_ready) return;
-    final position = _marker?.position ?? _map.project(_map.center);
-    _select(position + Vector2(dx, dy));
   }
 
   void _select(Vector2 position) {

@@ -10,6 +10,9 @@ import '../child/child_onboarding_screen.dart';
 import '../game/location_permission_setup.dart';
 import '../parent/parent_screen.dart';
 
+// Keep adult setup available in code while the demo focuses on child features.
+const _adultPathEnabled = false;
+
 /// Role selection keeps adult information out of the child's first screen.
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key, this.locationPermission});
@@ -109,10 +112,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
 }
 
 class _WelcomeChoices extends StatelessWidget {
-  const _WelcomeChoices({
-    required this.rolesEnabled,
-    this.locationMessage,
-  });
+  const _WelcomeChoices({required this.rolesEnabled, this.locationMessage});
 
   final bool rolesEnabled;
   final String? locationMessage;
@@ -165,13 +165,21 @@ class _WelcomeChoices extends StatelessWidget {
               : null,
         ),
         const SizedBox(height: 12),
-        BaseboundActionTile(
-          label: "Jestem osobą dorosłą",
-          description: 'Przygotuj ćwiczenia.',
-          icon: BaseboundIconName.adult,
-          onPressed: rolesEnabled
-              ? () => _openScreen(context, const ParentScreen())
-              : null,
+        Tooltip(
+          message: 'W wersji demo wybierz „Jestem dzieckiem”, aby poznać funkcje dla dzieci.',
+          triggerMode: TooltipTriggerMode.tap,
+          showDuration: const Duration(seconds: 5),
+          child: IgnorePointer(
+            ignoring: !_adultPathEnabled,
+            child: BaseboundActionTile(
+              label: "Jestem osobą dorosłą",
+              description: 'Przygotuj ćwiczenia.',
+              icon: BaseboundIconName.adult,
+              onPressed: rolesEnabled && _adultPathEnabled
+                  ? () => _openScreen(context, const ParentScreen())
+                  : null,
+            ),
+          ),
         ),
       ],
     );

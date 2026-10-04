@@ -325,7 +325,7 @@ class _LostMissionScreenState extends State<LostMissionScreen>
 
   Widget _feedback() => Semantics(
     liveRegion: true,
-    child: BaseboundGuide(
+    child: BaseboundFeedbackPanel(
       message: _session.feedback!,
       positive: _session.selectedChoice!.isCorrect,
       pose: _session.selectedChoice!.isCorrect

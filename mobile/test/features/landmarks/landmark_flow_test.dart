@@ -13,6 +13,7 @@ import 'package:do_bazy/features/landmarks/widgets/landmark_map.dart';
 import 'package:do_bazy/features/landmarks/widgets/landmark_photo.dart';
 import 'package:do_bazy/ui/basebound_ui.dart';
 import 'package:do_bazy/widgets/basebound_mascot.dart';
+import 'package:do_bazy/features/parent/widgets/offline_point_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
@@ -61,7 +62,11 @@ void main() {
     await _tap(tester, 'Wybierz pozycję na mapie', settle: false);
     await _pumpMap(tester);
     expect(_saveButton(tester).onPressed, isNull);
-    await _tap(tester, 'Użyj środka areny', settle: false);
+    await tester.ensureVisible(find.byType(OfflinePointPicker));
+    await tester.tapAt(
+      tester.getTopLeft(find.byType(OfflinePointPicker)) +
+          const Offset(120, 120),
+    );
     await _pumpMap(tester);
     expect(_saveButton(tester).onPressed, isNotNull);
     await _tap(tester, 'Zapisz punkt orientacyjny', settle: false);

@@ -115,7 +115,8 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
     return 'To ćwiczenie na niby. Nie wykonujemy połączeń ani nie wysyłamy wiadomości. '
         '$detail'
         'Twój punkt spotkania na niby: ${_practiceContext?.meetingPointLabel}. '
-        'Wybierz scenę. Punkt spotkania jest blisko lub poza zasięgiem wzroku.';
+        'Wybierz scenę: punkt spotkania w pobliżu. '
+        'Scenariusz poza zasięgiem wzroku nie jest jeszcze gotowy.';
   }
 
   Future<void> _speak() async {
@@ -210,6 +211,17 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
       appBar: AppBar(
         leading: Navigator.canPop(context) ? const BaseboundBackButton() : null,
         title: const Text('Zgubienie się · 7+'),
+        actions: [
+          UnavailableAudioTooltip(
+            unavailable: kIsWeb && !_audioAvailable,
+            child: IconButton(
+              onPressed: _loading || _opening ? null : _speak,
+              tooltip: 'Posłuchaj ponownie',
+              icon: const BaseboundIcon(BaseboundIconName.speaker),
+            ),
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: IllustratedBackdrop(
         warm: true,
@@ -257,15 +269,6 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
           ..._missingPointContent()
         else
           ..._variantContent(),
-        const SizedBox(height: 16),
-        UnavailableAudioTooltip(
-          unavailable: kIsWeb && !_audioAvailable,
-          child: OutlinedButton.icon(
-            onPressed: _opening ? null : _speak,
-            icon: const BaseboundIcon(BaseboundIconName.speaker),
-            label: const Text('Posłuchaj ponownie'),
-          ),
-        ),
         if (!kIsWeb && !_audioAvailable) ...[
           const SizedBox(height: 12),
           const Text(
@@ -342,12 +345,22 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
         label: const Text('Punkt spotkania w pobliżu'),
       ),
       const SizedBox(height: 12),
-      OutlinedButton.icon(
-        onPressed: _opening
-            ? null
-            : () => _openVariant(LostPracticeVariant.meetingPointUnavailable),
-        icon: const BaseboundIcon(BaseboundIconName.lost),
-        label: const Text('Punkt spotkania poza zasięgiem wzroku'),
+      Tooltip(
+        message:
+            'Ten scenariusz nie jest jeszcze gotowy. '
+            'Wybierz punkt spotkania w pobliżu.',
+        triggerMode: TooltipTriggerMode.tap,
+        showDuration: const Duration(seconds: 4),
+        child: IgnorePointer(
+          child: OutlinedButton.icon(
+            onPressed: null,
+            icon: const BaseboundIcon(
+              BaseboundIconName.lost,
+              color: BaseboundColors.muted,
+            ),
+            label: const Text('Punkt spotkania poza zasięgiem wzroku'),
+          ),
+        ),
       ),
     ];
   }

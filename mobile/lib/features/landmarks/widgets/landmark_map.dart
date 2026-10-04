@@ -1,5 +1,4 @@
 import 'package:flame/components.dart' hide Matrix4;
-import 'package:flame/game.dart' hide Matrix4;
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
@@ -90,7 +89,7 @@ class _LandmarkMapCanvas extends StatefulWidget {
 }
 
 class _LandmarkMapCanvasState extends State<_LandmarkMapCanvas> {
-  late final _game = _LandmarkMapGame(widget.map);
+  late final _neighborhood = NeighborhoodComponent(map: widget.map);
   final _transform = TransformationController();
   double _side = 0;
   double get _zoom => _transform.value.getMaxScaleOnAxis();
@@ -130,10 +129,10 @@ class _LandmarkMapCanvasState extends State<_LandmarkMapCanvas> {
             Positioned.fill(
               child: IgnorePointer(
                 child: ExcludeSemantics(
-                  child: GameWidget(
-                    game: _game,
-                    errorBuilder: (_, _) =>
-                        const Center(child: Text('Mapa niedostępna')),
+                  child: RepaintBoundary(
+                    child: CustomPaint(
+                      painter: _NeighborhoodPainter(_neighborhood),
+                    ),
                   ),
                 ),
               ),
@@ -199,20 +198,23 @@ class _LandmarkMapCanvasState extends State<_LandmarkMapCanvas> {
   }
 }
 
-class _LandmarkMapGame extends FlameGame {
-  _LandmarkMapGame(this.map)
-    : super(
-        camera: CameraComponent.withFixedResolution(
-          width: DemoMap.mapSize,
-          height: DemoMap.mapSize,
-        ),
-      );
-  final DemoMap map;
+/// The geography is static. Painting on demand avoids running a game loop
+/// while browsing places, showing a photo, or leaving this route underneath help.
+class _NeighborhoodPainter extends CustomPainter {
+  const _NeighborhoodPainter(this.neighborhood);
+
+  final NeighborhoodComponent neighborhood;
+
   @override
-  Future<void> onLoad() async {
-    await super.onLoad();
-    camera.viewfinder.anchor = Anchor.topLeft;
-    camera.viewfinder.position = Vector2(DemoMap.mapLeft, DemoMap.mapTop);
-    await world.add(NeighborhoodComponent(map: map));
+  void paint(Canvas canvas, Size size) {
+    canvas.save();
+    canvas.scale(size.width / DemoMap.mapSize);
+    canvas.translate(-DemoMap.mapLeft, -DemoMap.mapTop);
+    neighborhood.render(canvas);
+    canvas.restore();
   }
+
+  @override
+  bool shouldRepaint(covariant _NeighborhoodPainter oldDelegate) =>
+      neighborhood != oldDelegate.neighborhood;
 }

@@ -29,7 +29,7 @@ void main() {
         .setMockMethodCallHandler(channel, null);
   });
 
-  for (final variant in LostPracticeVariant.values) {
+  for (final variant in [LostPracticeVariant.meetingPointNearby]) {
     testWidgets('lost entry opens ${variant.name} and returns directly', (
       tester,
     ) async {
@@ -100,7 +100,7 @@ void main() {
       );
       await _tap(tester, 'Użyj rodziny na niby');
       expect(find.text('Część kontaktów jest fikcyjna.'), findsOneWidget);
-      await _tap(tester, 'Punkt spotkania poza zasięgiem wzroku');
+      await _tap(tester, 'Punkt spotkania w pobliżu');
       final mission = tester.widget<LostMissionScreen>(
         find.byType(LostMissionScreen),
       );
@@ -117,6 +117,36 @@ void main() {
       await tester.pump();
     },
   );
+
+  testWidgets('unfinished out-of-sight scenario only shows a tooltip', (
+    tester,
+  ) async {
+    await FamilyPlanRepository().save(_configuredPlan);
+    await tester.pumpWidget(const MaterialApp(home: LostMissionLauncher()));
+    await tester.pumpAndSettle();
+    final choice = find.widgetWithText(
+      OutlinedButton,
+      'Punkt spotkania poza zasięgiem wzroku',
+    );
+    expect(tester.widget<OutlinedButton>(choice).onPressed, isNull);
+    final tooltip = find.byTooltip(
+      'Ten scenariusz nie jest jeszcze gotowy. Wybierz punkt spotkania w pobliżu.',
+    );
+    await tester.ensureVisible(tooltip);
+    await tester.tap(tooltip);
+    await tester.pumpAndSettle();
+    expect(
+      find.text(
+        'Ten scenariusz nie jest jeszcze gotowy. Wybierz punkt spotkania w pobliżu.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.byType(LostMissionScreen), findsNothing);
+    await _tap(tester, 'Punkt spotkania w pobliżu');
+    expect(find.byType(LostMissionScreen), findsOneWidget);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+  });
 
   testWidgets('re-entering lost practice reloads the latest parent selection', (
     tester,
