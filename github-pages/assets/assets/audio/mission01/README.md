@@ -21,6 +21,12 @@ A-law audio. Android decodes an excerpt into memory for playback at reduced
 volume: warning seconds 6–10, all-clear seconds 2–5. No shortened, edited or
 re-encoded version of either official recording is distributed.
 
+Flutter web decodes the same brief excerpts to 16-bit PCM WAV in memory for
+browser playback, retaining the original bundled files. Alarm and all-clear
+playback use the same reduced volume as Android and do not require a speech
+voice. Browser autoplay policy may require a replay tap. Noise and busy-call
+cues also play from local assets; Android interaction tones remain native-only.
+
 The source page's default audiovisual license is
 [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/): attribution,
 noncommercial use, and no sharing adapted materials. Preserve this attribution
