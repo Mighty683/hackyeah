@@ -120,18 +120,6 @@ class _PracticePhoneKeypadState extends State<PracticePhoneKeypad> {
               style: theme.textTheme.headlineMedium,
             ),
           ),
-          const SizedBox(height: 12),
-          Text(
-            'Wpisz numer telefonu zaufanej osoby dorosłej.',
-            style: theme.textTheme.bodyLarge,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Tylko ćwiczenie. Bez połączeń i wiadomości.',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: BaseboundColors.muted,
-            ),
-          ),
         ],
         const SizedBox(height: 24),
         if (contacts.isEmpty) ...[
@@ -278,10 +266,7 @@ class _PracticePhoneKeypadState extends State<PracticePhoneKeypad> {
     mainAxisSize: MainAxisSize.min,
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
-      const SizedBox(height: 8),
-      Text(_hintInstruction),
       for (final contact in contacts) ...[
-        const SizedBox(height: 12),
         SoftPanel(
           color: BaseboundColors.sky,
           borderColor: BaseboundColors.blue,
@@ -289,14 +274,6 @@ class _PracticePhoneKeypadState extends State<PracticePhoneKeypad> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                [
-                  contact.name.trim(),
-                  contact.relationship.trim(),
-                ].where((part) => part.isNotEmpty).join(' · '),
-                style: const TextStyle(fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 8),
               Semantics(
                 label: 'Zapisany numer',
                 value: _phoneDigits(contact.phone).split('').join(' '),
