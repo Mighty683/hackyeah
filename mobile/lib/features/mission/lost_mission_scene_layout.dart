@@ -47,7 +47,7 @@ class LostMissionSceneLayout {
 
   final String description;
   final List<LostSceneObject> objects;
-  final String asset;
+  final String? asset;
 
   Map<String, Rect> get targets => {
     for (final object in objects) ?object.choiceId: object.bounds,
@@ -68,6 +68,7 @@ LostMissionSceneLayout lostMissionSceneLayout(
   LostMissionChoice? selectedChoice,
 ) => LostMissionSceneLayout(
   description: _description(step, context),
+  asset: step.id == 'look' ? null : 'assets/illustrations/lost-square-v1.png',
   objects: step.isDecision
       ? _decisionObjects(step)
       : _storyObjects(step, context, selectedChoice),

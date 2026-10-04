@@ -99,18 +99,21 @@ class LostMissionScene extends StatelessWidget {
               image: true,
               label: layout.description,
               child: ExcludeSemantics(
-                child: Image.asset(
-                  layout.asset,
-                  fit: BoxFit.contain,
-                  excludeFromSemantics: true,
-                  errorBuilder: (_, _, _) => Image.asset(
-                    'assets/illustrations/street-practice-v2.png',
-                    fit: BoxFit.contain,
-                    excludeFromSemantics: true,
-                    errorBuilder: (_, _, _) =>
-                        const CustomPaint(painter: _SquareBackdropPainter()),
-                  ),
-                ),
+                child: layout.asset == null
+                    ? const ColoredBox(color: BaseboundColors.cream)
+                    : Image.asset(
+                        layout.asset!,
+                        fit: BoxFit.contain,
+                        excludeFromSemantics: true,
+                        errorBuilder: (_, _, _) => Image.asset(
+                          'assets/illustrations/street-practice-v2.png',
+                          fit: BoxFit.contain,
+                          excludeFromSemantics: true,
+                          errorBuilder: (_, _, _) => const CustomPaint(
+                            painter: _SquareBackdropPainter(),
+                          ),
+                        ),
+                      ),
               ),
             ),
             for (final object in layout.objects) _picturedObject(object, size),
