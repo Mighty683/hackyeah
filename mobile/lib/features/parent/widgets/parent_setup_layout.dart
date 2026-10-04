@@ -78,7 +78,7 @@ class ParentSetupEntry extends StatelessWidget {
         IconButton(
           onPressed: onDelete,
           icon: const BaseboundIcon(BaseboundIconName.delete, size: 24),
-          tooltip: 'Delete $title',
+          tooltip: 'Usuń $title',
         ),
       ],
     ),
@@ -133,7 +133,7 @@ class ParentSetupFooter extends StatelessWidget {
         label: Text(label, textAlign: TextAlign.center),
       ),
       if (onSkip != null)
-        TextButton(onPressed: onSkip, child: const Text('Skip child details')),
+        TextButton(onPressed: onSkip, child: const Text('Pomiń dane dziecka')),
     ],
   );
 }

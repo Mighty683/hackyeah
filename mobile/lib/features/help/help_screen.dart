@@ -25,7 +25,10 @@ class HelpEntryButton extends StatelessWidget {
   Widget build(BuildContext context) => OutlinedButton.icon(
     onPressed: onPressed ?? () => openHelpScreen(context),
     icon: const BaseboundIcon(BaseboundIconName.help, calm: true),
-    label: const Text('I need help · prototype', textAlign: TextAlign.center),
+    label: const Text(
+      'Potrzebuję pomocy · prototyp',
+      textAlign: TextAlign.center,
+    ),
   );
 }
 
@@ -44,7 +47,7 @@ class HelpScreen extends StatefulWidget {
 }
 
 class _HelpScreenState extends State<HelpScreen> with WidgetsBindingObserver {
-  final _history = <HelpPage>[HelpPage.helpers];
+  final _history = <HelpPage>[HelpPage.situations];
   late final HelpPhone _phone = widget.phone ?? HelpPhone();
   late final HelpContext _helpContext = widget.helpContext ?? HelpContext();
   StreamSubscription<HelpPhoneService>? _serviceSubscription;
@@ -58,21 +61,14 @@ class _HelpScreenState extends State<HelpScreen> with WidgetsBindingObserver {
   bool _openingDialler = false;
   String? _phoneStatus;
 
-  HelpStep get _step {
-    if (_history.last == HelpPage.unresponsive && !_service.canOfferEmergency) {
-      return helpSteps[HelpPage.unresponsiveOffline]!;
-    }
-    return helpSteps[_history.last]!;
-  }
-
-  bool get _withoutHelper => _history.contains(HelpPage.situations);
-  bool get _showEmergency =>
-      _withoutHelper && _step.offerEmergency && _service.canOfferEmergency;
+  HelpStep get _step => helpSteps[_history.last]!;
+  bool get _showHelper =>
+      _history.last != HelpPage.situations &&
+      _history.last != HelpPage.airLocation &&
+      _history.last != HelpPage.withHelper;
+  bool get _showEmergency => _step.offerEmergency;
   bool get _showContact =>
-      _withoutHelper &&
-      _step.offerContact &&
-      _service.canOfferContact &&
-      _contacts.isNotEmpty;
+      _step.offerContact && _service.canOfferContact && _contacts.isNotEmpty;
 
   @override
   void initState() {
@@ -151,11 +147,6 @@ class _HelpScreenState extends State<HelpScreen> with WidgetsBindingObserver {
       _history.add(page);
       _contactRequest++;
       _loadingContacts = false;
-      if (page == HelpPage.withHelper) {
-        _history
-          ..clear()
-          ..addAll([HelpPage.helpers, HelpPage.withHelper]);
-      }
       _phoneStatus = null;
     });
   }
@@ -190,14 +181,14 @@ class _HelpScreenState extends State<HelpScreen> with WidgetsBindingObserver {
         await showDialog<void>(
           context: context,
           builder: (context) => AlertDialog(
-            title: Text('$phone · Demo call'),
+            title: Text('$phone · Połączenie demo'),
             content: const Text(
-              'This is a pretend call for practice. No real call is made.',
+              'To połączenie na niby do ćwiczeń. Nie wykonujemy prawdziwego połączenia.',
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Close'),
+                child: const Text('Zamknij'),
               ),
             ],
           ),
@@ -209,21 +200,21 @@ class _HelpScreenState extends State<HelpScreen> with WidgetsBindingObserver {
       if (!mounted) return;
       setState(() {
         _phoneStatus = kIsWeb
-            ? 'Demo popup opened. No real call is made.'
+            ? 'Otwarto okno demo. Bez prawdziwego połączenia.'
             : phone == '112'
             ? opened
-                  ? 'Demo popup opened. No real call is made.'
-                  : 'The demo popup could not open. No call was made.'
+                  ? 'Otwarto okno demo. Bez prawdziwego połączenia.'
+                  : 'Nie udało się otworzyć okna demo. Nie wykonano połączenia.'
             : opened
-            ? 'Phone app opened. This does not mean a call connected.'
-            : 'The phone app could not open. Keep using the offline steps.';
+            ? 'Otwarto aplikację telefonu. Nie oznacza to nawiązania połączenia.'
+            : 'Nie udało się otworzyć aplikacji telefonu. Korzystaj dalej z kroków offline.';
       });
     } catch (_) {
       if (!mounted) return;
       setState(() {
         _phoneStatus = phone == '112'
-            ? 'The demo popup could not open. No call was made.'
-            : 'The phone app could not open. Keep using the offline steps.';
+            ? 'Nie udało się otworzyć okna demo. Nie wykonano połączenia.'
+            : 'Nie udało się otworzyć aplikacji telefonu. Korzystaj dalej z kroków offline.';
       });
     } finally {
       if (mounted) setState(() => _openingDialler = false);
@@ -240,8 +231,8 @@ class _HelpScreenState extends State<HelpScreen> with WidgetsBindingObserver {
       if (contacts.isEmpty) {
         setState(() {
           _phoneStatus =
-              'No usable trusted-adult number is saved. '
-              'Ask a grown-up to set one up.';
+              'Nie zapisano poprawnego numeru zaufanej osoby dorosłej. '
+              'Poproś dorosłego o dodanie numeru.';
         });
         return;
       }
@@ -262,8 +253,8 @@ class _HelpScreenState extends State<HelpScreen> with WidgetsBindingObserver {
       if (!mounted || request != _contactRequest) return;
       setState(() {
         _phoneStatus =
-            'Saved contacts could not be read. '
-            'You can still use the offline steps.';
+            'Nie udało się odczytać zapisanych kontaktów. '
+            'Możesz nadal korzystać z kroków offline.';
       });
     } finally {
       if (mounted && request == _contactRequest) {
@@ -286,9 +277,11 @@ class _HelpScreenState extends State<HelpScreen> with WidgetsBindingObserver {
             leading: IconButton(
               onPressed: _back,
               icon: const BaseboundIcon(BaseboundIconName.back, calm: true),
-              tooltip: _history.length == 1 ? 'Close help' : 'Previous step',
+              tooltip: _history.length == 1
+                  ? 'Zamknij pomoc'
+                  : 'Poprzedni krok',
             ),
-            title: const Text('Help · prototype'),
+            title: const Text('Pomoc · prototyp'),
           ),
           body: SafeArea(
             child: Center(
@@ -298,7 +291,8 @@ class _HelpScreenState extends State<HelpScreen> with WidgetsBindingObserver {
                   step: _step,
                   page: _history.last,
                   nearbyPlaceName: _helpContext.nearbyPlaceName,
-                  withoutHelper: _withoutHelper,
+                  showHelper: _showHelper,
+                  onReturnFromHelper: _back,
                   serviceConfirmed: _service.canOfferEmergency,
                   showContact: _showContact,
                   showEmergency: _showEmergency,

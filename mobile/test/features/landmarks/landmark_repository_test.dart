@@ -85,7 +85,7 @@ void main() {
 
   test('invalid photo references fail without silently resetting metadata', () async {
     const invalid =
-        '{"version":1,"landmarks":[{"id":"1_1","name":"Shop","photoName":"../other.photo","latitude":50.07,"longitude":20.0}]}';
+        '{"version":1,"landmarks":[{"id":"1_1","name":"Sklep","photoName":"../other.photo","latitude":50.07,"longitude":20.0}]}';
     FlutterSecureStorage.setMockInitialValues({
       LandmarkRepository.storageKey: invalid,
     });

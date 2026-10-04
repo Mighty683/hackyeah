@@ -86,7 +86,7 @@ class LostPracticeContext {
       contacts.add(
         const LostPracticeContact(
           id: 'fictional-parent',
-          label: 'Pretend parent',
+          label: 'Rodzic na niby',
           avatar: LostContactAvatar.mother,
           isFictional: true,
         ),
@@ -96,7 +96,7 @@ class LostPracticeContext {
       contacts.add(
         const LostPracticeContact(
           id: 'fictional-grandparent',
-          label: 'Pretend grandparent',
+          label: 'Babcia lub dziadek na niby',
           avatar: LostContactAvatar.grandparent,
           isFictional: true,
         ),
@@ -111,7 +111,7 @@ class LostPracticeContext {
         label:
             linkedPlace?.label ??
             (unknownPreset
-                ? 'Pretend fountain'
+                ? 'Fontanna na niby'
                 : savedLabel.isEmpty
                 ? preset.label
                 : savedLabel),
@@ -150,7 +150,7 @@ class LostPracticeContext {
 }
 
 LostContactAvatar _contactAvatar(String description) {
-  final words = description.toLowerCase().split(RegExp(r'[^a-z]+'));
+  final words = description.toLowerCase().split(RegExp(r'[^a-ząćęłńóśźż]+'));
   if (words.any(
     const {
       'grandparent',
@@ -158,14 +158,31 @@ LostContactAvatar _contactAvatar(String description) {
       'grandfather',
       'grandma',
       'grandpa',
+      'babcia',
+      'babci',
+      'dziadek',
+      'dziadka',
     }.contains,
   )) {
     return LostContactAvatar.grandparent;
   }
-  if (words.any(const {'mother', 'mom', 'mum', 'mummy', 'mommy'}.contains)) {
+  if (words.any(
+    const {
+      'mother',
+      'mom',
+      'mum',
+      'mummy',
+      'mommy',
+      'mama',
+      'mamy',
+      'matka',
+    }.contains,
+  )) {
     return LostContactAvatar.mother;
   }
-  if (words.any(const {'father', 'dad', 'daddy'}.contains)) {
+  if (words.any(
+    const {'father', 'dad', 'daddy', 'tata', 'taty', 'ojciec'}.contains,
+  )) {
     return LostContactAvatar.father;
   }
   return LostContactAvatar.adult;

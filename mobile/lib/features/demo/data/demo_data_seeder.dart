@@ -10,7 +10,7 @@ import '../../parent/data/family_plan_repository.dart';
 
 /// Fictional training destination, not a verified home or safe place.
 const demoHome = SafePoint(
-  name: 'Home',
+  name: 'Dom',
   icon: '🏠',
   latitude: 50.0704,
   longitude: 19.9828,
@@ -20,35 +20,35 @@ const demoHome = SafePoint(
 /// Complete fictional setup for a fresh install, editable like ordinary records.
 const demoFamilyPlan = FamilyPlan(
   child: ChildProfile(
-    fullName: 'Alex Example (demo)',
+    fullName: 'Aleks Przykładowy (demo)',
     age: 9,
-    address: '12 Example Street, Demo Town (fictional)',
-    supportNotes: 'Demo: speak slowly and give one instruction at a time.',
+    address: 'ul. Przykładowa 12, Miasto Demo (fikcyjne)',
+    supportNotes: 'Demo: mów powoli i podawaj jedną instrukcję naraz.',
     gender: ChildGender.boy,
   ),
   // NANPA reserves 555-0100–0199 for fictional, non-working numbers:
   // https://nanpa.com/numbering/555-line-numbers
   contacts: [
     TrustedContact(
-      name: 'Demo Mum',
+      name: 'Mama (demo)',
       phone: '+1 202 555 0101',
-      relationship: 'Mother',
+      relationship: 'Mama',
     ),
     TrustedContact(
-      name: 'Demo Dad',
+      name: 'Tata (demo)',
       phone: '+1 202 555 0102',
-      relationship: 'Father',
+      relationship: 'Tata',
     ),
     TrustedContact(
-      name: 'Demo Grandma',
+      name: 'Babcia (demo)',
       phone: '+1 202 555 0103',
-      relationship: 'Grandmother',
+      relationship: 'Babcia',
     ),
   ],
   safePoints: [
     demoHome,
     SafePoint(
-      name: 'School (demo)',
+      name: 'Szkoła (demo)',
       icon: '🏫',
       latitude: 50.0688,
       longitude: 19.9950,

@@ -48,18 +48,18 @@ class _ContactEditorScreenState extends State<ContactEditorScreen> {
   @override
   Widget build(BuildContext context) {
     return ParentEditorScaffold(
-      title: 'Trusted contact',
+      title: 'Zaufany kontakt',
       onSave: _save,
-      saveLabel: 'Save trusted contact',
+      saveLabel: 'Zapisz zaufany kontakt',
       steps: [
         ParentEditorStep(
-          title: 'Who can your child contact?',
-          nextLabel: 'Add phone number',
+          title: 'Z kim dziecko może się skontaktować?',
+          nextLabel: 'Dodaj numer telefonu',
           children: [
             TextField(
               controller: _name,
               decoration: const InputDecoration(
-                labelText: 'Name (optional)',
+                labelText: 'Imię (opcjonalnie)',
                 prefixIcon: BaseboundIcon(BaseboundIconName.adult, size: 24),
               ),
               textCapitalization: TextCapitalization.words,
@@ -68,19 +68,19 @@ class _ContactEditorScreenState extends State<ContactEditorScreen> {
             ),
             const SizedBox(height: 16),
             const ParentEditorNote(
-              message: 'All details are optional. Use fictional details for the demo.',
+              message: 'Wszystkie dane są opcjonalne. W demo używaj fikcyjnych danych.',
               icon: BaseboundIconName.info,
             ),
           ],
         ),
         ParentEditorStep(
-          title: 'What is their phone number?',
-          nextLabel: 'Add relationship',
+          title: 'Jaki jest numer telefonu tej osoby?',
+          nextLabel: 'Dodaj relację',
           children: [
             TextField(
               controller: _phone,
               decoration: const InputDecoration(
-                labelText: 'Phone number (optional)',
+                labelText: 'Numer telefonu (opcjonalnie)',
                 prefixIcon: BaseboundIcon(BaseboundIconName.phone, size: 24),
               ),
               keyboardType: TextInputType.phone,
@@ -89,19 +89,19 @@ class _ContactEditorScreenState extends State<ContactEditorScreen> {
             ),
             const SizedBox(height: 16),
             const ParentEditorNote(
-              message: 'Saving a contact does not check or call this number.',
+              message: 'Zapisanie kontaktu nie sprawdza numeru ani nie wykonuje połączenia.',
               icon: BaseboundIconName.phone,
             ),
           ],
         ),
         ParentEditorStep(
-          title: 'How do they know your child?',
+          title: 'Kim ta osoba jest dla dziecka?',
           children: [
             TextField(
               controller: _relationship,
               decoration: const InputDecoration(
-                labelText: 'Relationship to child (optional)',
-                hintText: 'Parent, grandparent, family friend…',
+                labelText: 'Relacja z dzieckiem (opcjonalnie)',
+                hintText: 'Rodzic, dziadek, przyjaciel rodziny…',
                 prefixIcon: BaseboundIcon(BaseboundIconName.family, size: 24),
               ),
               textCapitalization: TextCapitalization.words,

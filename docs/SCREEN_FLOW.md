@@ -1,5 +1,6 @@
 # Tuptu screen and action reference
 
+The implemented Android app and browser demo use Polish throughout, including accessibility labels and narration. Key labels: “Jestem dzieckiem”, “Jestem osobą dorosłą”, “Ustawienia rodziny”, “Ćwiczenia”, “Nasza mapa”, “Wspólny spacer” and “Potrzebuję pomocy · prototyp”. Android narration requires an installed Polish offline voice. The English labels below remain descriptive references to the same screens and actions.
 Updated: 2026-10-03. Android is the application; Flutter web is a shared-code demo
 with mocked device features. The Slidev screens are pitch prototypes.
 
@@ -42,12 +43,10 @@ flowchart TD
     R["NEAR PLACE<br/>Accurate GPS is within 20 m; child confirms recognition"]
     E["OUR MAP: MAP ERROR<br/>Go back and try again"]
     I["ABOUT OUR MAP<br/>GPS, offline route limits and map credits"]
-    H["HELP PROTOTYPE<br/>Can someone nearby help?<br/>Unreviewed; not for real emergencies"]
-    HC["HELPER CLARIFICATION<br/>Is a trusted adult or helper already nearby?"]
+    H["HELP PROTOTYPE: WHAT IS HAPPENING?<br/>Not responding, air raid, lost, unsure"]
     HA["ADULT SUPPORT<br/>Tell that adult what happened"]
-    HS["NO HELPER: SITUATIONS<br/>Not responding, air raid, lost, or unsure"]
-    Q["NO-HELPER INSTRUCTION<br/>Not responding, lost, or unsure<br/>Offline fallback if phone service unconfirmed"]
-    HQ["AIR-RAID STEPS<br/>Child answers inside/outside/unsure<br/>No call actions"]
+    Q["SCENARIO INSTRUCTION<br/>Offline 112 practice; optional adult support"]
+    HQ["AIR-RAID STEPS<br/>Distinct outside choices; cannot-reach-shelter fallback"]
     HO["OPERATOR PRACTICE<br/>Follow the operator's instructions<br/>No call connection inferred"]
     MOCK["NATIVE ANDROID DEMO POPUP<br/>Pretend 112 call; no dialler or real call"]
     D["PHONE APP<br/>Explicit child tap; no automatic call or SMS"]
@@ -85,29 +84,20 @@ flowchart TD
     G -->|I need help: pause map GPS and narration| H
     R -->|I need help: pause map GPS and narration| H
     E -->|I need help: pause map GPS and narration| H
-    H -->|Yes| HA
-    H -->|No one can help| HS
-    H -->|I'm not sure| HC
-    HC -->|Someone can help| HA
-    HC -->|No one can help| HS
-    HC -->|Back| H
-    HA -->|They cannot help| HS
-    HA -->|Back| H
-    HS -->|Not responding, lost, or unsure| Q
-    HS -->|Air raid| HQ
-    HS -->|Back| HB{"Previous helper screen"}
-    HB -->|Entry| H
-    HB -->|Clarification| HC
-    HB -->|Adult support| HA
-    Q -->|Back| HS
-    HQ -->|Answer or next instruction| HQ
-    HQ -->|Back: previous air-raid instruction| HQ
-    HQ -->|Back from first air-raid question| HS
-    Q -->|Not responding with reported service: Practise the next step| HO
+    H -->|Not responding, lost, or unsure| Q
+    H -->|Air raid| HQ
+    Q -->|Back| H
+    HQ -->|Answer, next step, or shelter fallback| HQ
+    HQ -->|Back from first location question| H
+    Q -->|Not responding: Practise the next step, even offline| HO
     HO -->|Back| Q
-    Q -->|Someone can help now: clear no-helper answer| HA
-    HQ -->|Instruction: Someone can help now; clear no-helper answer| HA
-    HO -->|Someone can help now: clear no-helper answer| HA
+    Q -->|A trusted adult is here| HA
+    HQ -->|Instruction: A trusted adult is here| HA
+    HO -->|A trusted adult is here| HA
+    HA -->|They cannot help or Back: restore exact instruction| HR{"Previous instruction"}
+    HR --> Q
+    HR --> HQ
+    HR --> HO
     H -->|Close: stop help GPS; restore opener| HP{"Help opened by"}
     HP -->|First-launch loading| BOOT
     HP -->|Startup error| BE
@@ -118,7 +108,7 @@ flowchart TD
     HP -->|Map: obtain fresh GPS| G
     HP -->|Near place: obtain fresh GPS| R
     HP -->|Map error| E
-    Q -->|No helper + normal or emergency-only service; tap 112| MOCK
+    Q -->|Practise calling 112: explicit tap, any service| MOCK
     MOCK -->|Close or dismiss: same instruction| Q
     Q -->|Lost/unsure + normal service + usable saved contact; explicit tap| D
     D -->|Return to instruction; refresh service and GPS; no connection assumed| Q
@@ -371,26 +361,24 @@ flowchart TD
 | Landmark name | Name the photographed place; photo only | Choose map position, back without saving |
 | Landmark pin | Confirm one position inside the demo map | Manual tap/accessible direction controls, optional foreground GPS, previous step; saving preserves edits on failure |
 | Landmark load error | Retry reading saved landmarks | Back; no silent deletion or reset |
-| Help prototype entry | Answer whether someone nearby can help | Yes / No one can help / I'm not sure; optional familiar-place hint, close |
-| Helper clarification | Confirm whether a trusted adult, police officer or shop worker is already nearby | Someone can help / No one can help; previous step |
-| Adult support | Tell that adult what happened | They cannot help; back to helper entry; no call actions |
-| No-helper situation selection | Choose not responding, air raid, lost, or unsure | Someone can help now resets to adult support; previous helper step |
-| Not responding | With reported service: 112 mock action; otherwise offline adult-help instruction | Practise operator step only with reported service; someone can help now; back |
-| Lost / unsure instruction | Stay unless in danger / call out for an adult | Conditional 112 mock action and trusted-contact dialler; someone can help now; back; no repeated helper questions |
-| Air-raid step | Answer inside/outside/unsure, then read one instruction | Previous/next step; someone can help now; no call actions |
-| Operator practice | Read the operator-led instruction | Previous step; someone can help now; no call-connection claim |
+| Help prototype entry | Choose the situation | Not responding / air raid / lost / unsure; close |
+| Adult support | Tell that adult what happened | They cannot help or Back restores the exact scenario instruction |
+| Not responding | Practise calling 112 | Offline pretend-call dialog; practise operator step; optional adult support |
+| Lost / unsure | Stay unless in danger / call out for an adult | Offline 112 practice; real contact handoff with normal service and saved contact |
+| Air raid | Choose location | Inside / outside without explosions / outside hearing explosions / unsure |
+| Shelter steps | Follow scenario guidance | Self-reported arrival; cannot reach shelter / unknown route fallback; optional adult support |
+| Shelter fallback | Follow official instructions | App cannot find a safe route; choose location again; optional adult support |
+| Operator practice | Follow operator instructions | No connected call claimed; Back; optional adult support |
 
 Child onboarding stores name, age and optional serialized gender in the existing encrypted family record, preserving address, support notes, contacts and practice places. Older records without gender still load. The selected girl or boy appears in mission poses; the map uses a blue GPS dot; adult Play together also uses the saved character. Age entry is personalization, not age verification. Returning to the child route allows editing the three steps.
 
 Each parent stage offers **Setup options → Delete all saved details**, with confirmation. Completed child, contact and safe-place editors save their records before returning; completing onboarding launches practice without an additional bulk save. **Review setup** returns to the intro and preserves saved records.
 
-Help content is bundled. **Every help entry asks about a nearby helper first, including before not responding.** Yes leads to adult support; no one can help leads to four situation choices; unsure receives one short clarification. Lost reuses that answer instead of asking again. **Someone can help now** clears the no-helper state and returns to adult support. Back follows help history, while back from its first screen restores the opener. Opening help during map loading defers map creation until help closes.
+Help opens with situation selection. Scenario instructions offer optional **A trusted adult is here** support. Adult support preserves history; **They cannot help** returns to the preceding instruction. Back from the first situation screen restores the opener.
 
-The focused [“I need help” decision diagram](I_NEED_HELP_DECISION_DIAGRAM.md) details the implemented scenario branches and conditional phone actions, including the helper-return button's visibility.
+The [decision diagram](I_NEED_HELP_DECISION_DIAGRAM.md) records all implemented help branches. **Practise calling 112** opens only a pretend-call dialog and works regardless of telephone service. Operator practice is also available offline. Air-raid and adult-support screens have no call actions. Real trusted-contact handoff is labelled **Open phone to call an adult**, requires normal service and a usable saved contact, and never claims a call connected. Web phone actions remain simulated.
 
-The 112 action is conditional, with no permanent footer: it appears only on no-helper not-responding/lost/unsure instructions while Android reports normal or emergency-only telephone service. Unknown/unavailable service keeps offline guidance and hides calling actions. A service change updates the current instruction without another question. The 112 tap opens a native Android pretend-call popup without opening the dialler or placing a call. **Practise the next step** opens operator guidance and does not report a connected call. Air-raid and helper screens have no call actions. Trusted-contact dialler handoff is real and is offered only for lost/unsure, normal service and at least one usable saved number. No call, connection, rescue, SMS delivery or verified route is inferred.
-
-Telephone service comes from a foreground native stream for Android's default subscription; unsupported or restricted reports stay unknown. It does not check internet access, all SIMs or whether a call would connect, and adds no dangerous phone permissions. Backgrounding/exiting cancels the stream; returning refreshes it. See [Android ServiceStateListener](https://developer.android.com/reference/android/telephony/TelephonyCallback.ServiceStateListener) and [ServiceState](https://developer.android.com/reference/android/telephony/ServiceState) for the platform reports. The helper-first sequence and service-based visibility are an MVP demo policy, **not a validated medical protocol**. No-service medical guidance remains incomplete. [EMERGENCY_HELP.md](EMERGENCY_HELP.md) records the safety sources and review required before real use.
+Telephone reports describe the default subscription, not internet access or guaranteed call capability. Backgrounding cancels the stream; returning refreshes it. Unknown service never blocks practice. Shelter fallbacks acknowledge that the app cannot choose a safe route; they do not validate emergency procedures. No-service medical guidance remains incomplete. [EMERGENCY_HELP.md](EMERGENCY_HELP.md) records safety sources and real-use limitations.
 
 Help also reads named non-demo saved family pins and independently uses foreground GPS with the existing permission grant, without another prompt or delaying the first instruction. A familiar-place hint requires a fix at most 30 seconds old, accuracy at most 25 m, and distance plus reported accuracy at most 50 m. The nearest qualifying pin yields “You may be near [name]. This is a saved place.” Fictional Home/demo pins, missing permission, stale/poor fixes and unreadable records yield no hint. It never proves safety, indoor location or helper presence, chooses a situation, or directs the child to a pin. The air-raid inside/outside question remains explicit. Help GPS stops on background/exit and requires a fresh fix on return; no location track is retained.
 
@@ -402,7 +390,7 @@ The home alarm bell appears at the window to show the sound coming from outside.
 
 The MVP targets children aged 7+ with two to four choices and optional fictional outdoor practice: compare nearby shelter against distant destinations and exposed places. Child onboarding collects age, but there is no younger-child branch; saved age does not change this mission. An outdoor mistake first explains why the child remains outside, then a short “Still outside” scene names the chosen destination as a sound interrupts the journey. The next two decisions practice getting down (drag or tap) and covering the head. An explicit story scene keeps the child down while a trusted adult helps them reach shelter when possible; arriving at the shelter then leads to fictional contact selection. Choosing the nearby shelter skips this recovery branch. Home and physical-action mistakes show immediate dinosaur feedback, grey out the rejected target, and let the child choose again without moving. Accepted actions and outdoor destination consequences advance automatically after narration and a minimum three-second reading pause. Both modes finish with three numbered reminders, matching icons and short descriptions: find a protected place away from windows, call a trusted adult then send an SMS if there is no answer, and wait for the all-clear even when it is quiet. Dino celebrates with “You did a great job! You finished the practice.” The same recap appears before Finish practice and on completion, and narration reads the displayed text. There is no score or countdown.
 
-Instructions, feedback, and replay use an installed offline English Android speech voice. If unavailable, the app shows an adult-help message; text remains as a fallback and sound cues can still play. Gentle selection, action, success and retry cues accompany feedback. A separate sound-effects control mutes cues while leaving narration available. Playback stops when the app backgrounds or the mission exits. Short warning and all-clear playback excerpts are teaching samples, not complete alarm signals; the outdoor interruption uses a restrained fictional noise. Family avatars, messages, replies, shelter selection and movement are fictional. Saved trusted contacts are read only for local phone-number practice; typed digits are not persisted. The mission makes no calls, sends no SMS, opens no external app and uses no network or saved map pins. Matching a saved number does not verify the contact, delivery or safety. See [mission-01-air-raid-alarm.md](mission-01-air-raid-alarm.md) for the scenario and source notes.
+Instructions, feedback, and replay use an installed offline Polish Android speech voice. If unavailable, the app shows an adult-help message; text remains as a fallback and sound cues can still play. Gentle selection, action, success and retry cues accompany feedback. A separate sound-effects control mutes cues while leaving narration available. Playback stops when the app backgrounds or the mission exits. Short warning and all-clear playback excerpts are teaching samples, not complete alarm signals; the outdoor interruption uses a restrained fictional noise. Family avatars, messages, replies, shelter selection and movement are fictional. Saved trusted contacts are read only for local phone-number practice; typed digits are not persisted. The mission makes no calls, sends no SMS, opens no external app and uses no network or saved map pins. Matching a saved number does not verify the contact, delivery or safety. See [mission-01-air-raid-alarm.md](mission-01-air-raid-alarm.md) for the scenario and source notes.
 
 On **It is quiet now**, the child stays inside the hallway. After either choice, the door target is greyed out and disabled. Dino's visible and spoken feedback says to stay inside the home (or shelter in outdoor practice) and wait for the all-clear. Before selection, both targets retain their neutral styling.
 
@@ -414,7 +402,7 @@ First installation links the bundled Red corner shop photo as the initial meetin
 
 When no meeting point has been chosen, the launcher uses the first available saved photo for the current practice without overwriting family details. No available photo, a deleted chosen landmark/photo or a pin outside the bundled map offers parent setup or retry. The separate Use demo meeting place button has been removed. Record read failures offer retry or explicit pretend practice. Existing Fountain/Information desk records remain readable as labelled demo pictures with no map exercise. Generated demo photos retain their fictional label. Missing contacts still receive labelled pretend cards. Contacts contribute display labels/avatar motifs only; real phone numbers and addresses remain outside play. Calls, replies and notifications are simulated.
 
-The lost selector and mission reuse offline English Android speech. Missing voice offers adult help and retry, with text retained. Leaving stops narration and returns directly to the scenario list; replay resets transient progress and keeps the selected variant/snapshot. Re-entering lost practice reloads current saved details. Training is labelled unreviewed and not for real emergencies. Contact photos, younger-child support, familiar routes and actual parent notifications remain future work for Mission 02. See [MISSION_02_IMPLEMENTATION_PLAN.md](MISSION_02_IMPLEMENTATION_PLAN.md) for scope, references and verification.
+The lost selector and mission reuse offline Polish Android speech. Missing voice offers adult help and retry, with text retained. Leaving stops narration and returns directly to the scenario list; replay resets transient progress and keeps the selected variant/snapshot. Re-entering lost practice reloads current saved details. Training is labelled unreviewed and not for real emergencies. Contact photos, younger-child support, familiar routes and actual parent notifications remain future work for Mission 02. See [MISSION_02_IMPLEMENTATION_PLAN.md](MISSION_02_IMPLEMENTATION_PLAN.md) for scope, references and verification.
 
 ### Visual design system
 

@@ -29,7 +29,7 @@ const _context = LostPracticeContext(
     ),
     LostPracticeContact(
       id: 'grandparent',
-      label: 'Grandparent',
+      label: 'Babcia lub dziadek',
       avatar: LostContactAvatar.grandparent,
     ),
   ],
@@ -62,10 +62,10 @@ void main() {
       '${variant.name} finishes with pretend confirmation and replays',
       (tester) async {
         await _show(tester, channel, variant);
-        expect(find.text('Practice only · 7+'), findsOneWidget);
-        expect(find.text("I'M SAFE"), findsNothing);
-        expect(_lastNarration(audioCalls), contains('Run and search'));
-        expect(_lastNarration(audioCalls), contains('Stop and look'));
+        expect(find.text('Tylko ćwiczenie · 7+'), findsOneWidget);
+        expect(find.text("JESTEM W BEZPIECZNYM MIEJSCU"), findsNothing);
+        expect(_lastNarration(audioCalls), contains('Biegnij i szukaj'));
+        expect(_lastNarration(audioCalls), contains('Zatrzymaj się i spójrz'));
         expect(
           find.descendant(
             of: find.byType(LostMissionScene),
@@ -75,10 +75,10 @@ void main() {
         );
 
         await _choose(tester, 'search');
-        expect(find.text('Try again'), findsOneWidget);
+        expect(find.text('Spróbuj ponownie'), findsOneWidget);
         expect(find.byType(LostMissionChoiceCard), findsNothing);
         final feedback = _lastNarration(audioCalls);
-        await tester.tap(find.byTooltip('Replay audio'));
+        await tester.tap(find.byTooltip('Posłuchaj ponownie'));
         await tester.pumpAndSettle();
         expect(_lastNarration(audioCalls), feedback);
         await _next(tester);
@@ -121,26 +121,26 @@ void main() {
         await _choose(tester, 'stay');
         await _next(tester);
         expect(_stepId(tester), 'reunion');
-        expect(find.text("I'M SAFE"), findsNothing);
+        expect(find.text("JESTEM W BEZPIECZNYM MIEJSCU"), findsNothing);
         await _next(tester);
         expect(_stepId(tester), 'confirm_safe');
-        expect(find.text("I'M SAFE"), findsOneWidget);
+        expect(find.text("JESTEM W BEZPIECZNYM MIEJSCU"), findsOneWidget);
         await _next(tester);
         expect(_stepId(tester), 'confirmation');
         expect(
-          find.text('Practice complete. No message was sent.'),
+          find.text('Ćwiczenie ukończone. Nie wysłano żadnej wiadomości.'),
           findsOneWidget,
         );
         await _next(tester);
-        expect(find.text('Remember what you practiced'), findsOneWidget);
+        expect(find.text('Zapamiętaj ćwiczone kroki'), findsOneWidget);
         expect(find.byType(LostMissionScene), findsNothing);
         _expectRecap(tester);
         expect(_lastNarration(audioCalls), LostPracticeRecap.narration);
-        await tester.tap(find.byTooltip('Replay audio'));
+        await tester.tap(find.byTooltip('Posłuchaj ponownie'));
         await tester.pumpAndSettle();
         expect(_lastNarration(audioCalls), LostPracticeRecap.narration);
         await _next(tester);
-        expect(find.text('Practice complete'), findsOneWidget);
+        expect(find.text('Ćwiczenie ukończone'), findsOneWidget);
         _expectRecap(tester);
         expect(_lastNarration(audioCalls), LostPracticeRecap.narration);
         expect(
@@ -152,7 +152,7 @@ void main() {
         await tester.tap(find.byKey(const ValueKey('lost-restart')));
         await tester.pumpAndSettle();
         expect(_stepId(tester), 'stop');
-        expect(find.text("I'M SAFE"), findsNothing);
+        expect(find.text("JESTEM W BEZPIECZNYM MIEJSCU"), findsNothing);
         expect(tester.takeException(), isNull);
         await _remove(tester);
       },
@@ -166,13 +166,14 @@ void main() {
     await _show(tester, channel, LostPracticeVariant.meetingPointUnavailable);
     expect(
       find.text(
-        'The voice is unavailable. Ask an adult to read each step with you.',
+        'Głos jest niedostępny. Poproś dorosłego o przeczytanie kolejnych kroków.',
       ),
       findsOneWidget,
     );
     final replay = tester.widget<IconButton>(
       find.byWidgetPredicate(
-        (widget) => widget is IconButton && widget.tooltip == 'Replay audio',
+        (widget) =>
+            widget is IconButton && widget.tooltip == 'Posłuchaj ponownie',
       ),
     );
     expect(replay.onPressed, isNull);
@@ -180,10 +181,10 @@ void main() {
     await _next(tester);
     expect(_stepId(tester), 'look');
     voiceAvailable = true;
-    await _tapVisible(tester, find.text('Try the voice again'));
+    await _tapVisible(tester, find.text('Spróbuj włączyć głos ponownie'));
     expect(
       find.text(
-        'The voice is unavailable. Ask an adult to read each step with you.',
+        'Głos jest niedostępny. Poproś dorosłego o przeczytanie kolejnych kroków.',
       ),
       findsNothing,
     );
@@ -241,7 +242,7 @@ void main() {
     holdSpeech = true;
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Leave practice'));
+    await tester.tap(find.byTooltip('Opuść ćwiczenie'));
     await tester.pumpAndSettle();
     expect(find.byType(LostMissionScreen), findsNothing);
     expect(find.text('Open practice'), findsOneWidget);

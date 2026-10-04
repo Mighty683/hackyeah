@@ -26,9 +26,9 @@ class MainActivity : FlutterActivity() {
                 "showMockEmergencyCall" -> {
                     if (mockCallDialog == null) {
                         mockCallDialog = AlertDialog.Builder(this)
-                            .setTitle("112 · Demo call")
-                            .setMessage("This is a pretend call for practice. No real call is made.")
-                            .setPositiveButton("Close", null)
+                            .setTitle("112 · Połączenie demo")
+                            .setMessage("To połączenie na niby do ćwiczeń. Nie wykonujemy prawdziwego połączenia.")
+                            .setPositiveButton("Zamknij", null)
                             .create()
                         mockCallDialog?.setOnDismissListener { mockCallDialog = null }
                         mockCallDialog?.show()
@@ -43,7 +43,7 @@ class MainActivity : FlutterActivity() {
         audioChannel?.setMethodCallHandler { call, result ->
             val audio = missionAudio
             if (audio == null) {
-                result.error("AUDIO_UNAVAILABLE", "Audio engine is unavailable.", null)
+                result.error("AUDIO_UNAVAILABLE", "Dźwięk jest niedostępny.", null)
                 return@setMethodCallHandler
             }
             when (call.method) {

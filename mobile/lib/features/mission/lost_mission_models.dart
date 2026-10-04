@@ -1,19 +1,21 @@
 /// The displayed and spoken reminders share the same short practice recap.
 abstract final class LostPracticeRecap {
-  static const praise = 'You did a great job! You finished the practice.';
-  static const notice = 'No message was sent.';
+  static const praise = 'Dobra robota! Ćwiczenie ukończone.';
+  static const notice = 'Nie wysłano żadnej wiadomości.';
   static const points = [
     (
-      title: 'Stop and look around',
-      description: 'Use your meeting place only if it is visible nearby.',
+      title: 'Zatrzymaj się i rozejrzyj',
+      description:
+          'Idź do miejsca spotkania tylko wtedy, gdy widzisz je blisko.',
     ),
     (
-      title: 'Ask for help here',
-      description: 'Contact your family. Stay here and wait.',
+      title: 'Poproś o pomoc tutaj',
+      description: 'Skontaktuj się z rodziną. Zostań tutaj i czekaj.',
     ),
     (
-      title: 'After reunion, tap I am safe',
-      description: 'Confirm only after you are together in the story.',
+      title: 'Po spotkaniu dotknij Jestem w bezpiecznym miejscu',
+      description:
+          'Potwierdź dopiero, gdy w tej historii znów jesteście razem.',
     ),
   ];
 
@@ -87,7 +89,7 @@ class LostMissionStep {
     required this.narration,
     required this.visual,
     this.choices = const [],
-    this.actionLabel = 'Look around',
+    this.actionLabel = 'Rozejrzyj się',
   });
 
   final String id;

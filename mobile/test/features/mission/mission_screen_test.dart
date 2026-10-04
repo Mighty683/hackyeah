@@ -46,98 +46,115 @@ void main() {
         ],
       ),
     );
-    expect(find.text('An alarm at home'), findsOneWidget);
+    expect(find.text('Alarm w domu'), findsOneWidget);
     final firstNarration = audioCalls.lastWhere(
       (call) => call.method == 'narrate',
     );
-    await tapMissionAction(tester, 'Replay audio');
+    await tapMissionAction(tester, 'Posłuchaj ponownie');
     final replayNarration = audioCalls.lastWhere(
       (call) => call.method == 'narrate',
     );
     expect(replayNarration.arguments, firstNarration.arguments);
     expect(audioCalls.where((call) => call.method == 'narrate').length, 2);
 
-    await tapMissionAction(tester, 'Find a place');
+    await tapMissionAction(tester, 'Znajdź miejsce');
     expect(
       tester.widget<MissionScene>(find.byType(MissionScene)).choices,
       hasLength(3),
     );
-    await tapMissionAction(tester, 'Go to the window');
+    await tapMissionAction(tester, 'Podejdź do okna');
     expect(
-      find.text('Windows are less safe. Move away from them.'),
+      find.text('Przy oknach jest mniej bezpiecznie. Odsuń się od nich.'),
       findsOneWidget,
     );
     expect(find.byType(BaseboundMascot), findsOneWidget);
-    expect(find.text('Try again'), findsNothing);
-    expect(find.text('Next step'), findsNothing);
-    await tapMissionAction(tester, 'Move deeper inside');
+    expect(find.text('Spróbuj ponownie'), findsNothing);
+    expect(find.text('Następny krok'), findsNothing);
+    await tapMissionAction(tester, 'Przejdź w głąb domu');
     expect(
       tester.widget<MissionScene>(find.byType(MissionScene)).choices,
       hasLength(4),
     );
-    await tapMissionAction(tester, 'Inside hallway', advanceFeedback: false);
+    await tapMissionAction(
+      tester,
+      'Wewnętrzny korytarz',
+      advanceFeedback: false,
+    );
     expect(
       tester.widget<MissionScene>(find.byType(MissionScene)).visual,
       MissionVisual.twoWalls,
     );
     await finishMissionFeedback(tester);
-    await tapMissionAction(tester, 'Mom');
-    expect(find.text('Send an SMS'), findsNothing);
-    await tapMissionAction(tester, 'Try one call', advanceFeedback: false);
+    await tapMissionAction(tester, 'Mama');
+    expect(find.text('Wyślij SMS'), findsNothing);
+    await tapMissionAction(
+      tester,
+      'Spróbuj zadzwonić raz',
+      advanceFeedback: false,
+    );
     expect(
-      find.text('No answer in this practice. Try one short SMS.'),
+      find.text('W tym ćwiczeniu nikt nie odbiera. Spróbuj wysłać krótki SMS.'),
       findsOneWidget,
     );
-    expect(find.text('Send an SMS'), findsNothing);
-    expect(lastMissionNarration(audioCalls)['text'], contains('No answer'));
+    expect(find.text('Wyślij SMS'), findsNothing);
+    expect(
+      lastMissionNarration(audioCalls)['text'],
+      contains('nikt nie odbiera'),
+    );
     await finishMissionFeedback(tester);
-    expect(find.text('No answer? Send an SMS'), findsOneWidget);
-    await tapMissionAction(tester, 'Send an SMS');
+    expect(find.text('Nikt nie odbiera? Wyślij SMS'), findsOneWidget);
+    await tapMissionAction(tester, 'Wyślij SMS');
     expect(find.byType(PracticePhoneKeypad), findsOneWidget);
     expect(find.text('987 654 321'), findsNothing);
     await tapMissionAction(tester, '1');
-    await tapMissionAction(tester, 'Check number');
+    await tapMissionAction(tester, 'Sprawdź numer');
     expect(
-      find.text('That number does not match yet. Try again or use a hint.'),
+      find.text(
+        'Numer jeszcze się nie zgadza. Spróbuj ponownie lub użyj podpowiedzi.',
+      ),
       findsOneWidget,
     );
-    expect(find.text('Send pretend message'), findsNothing);
-    await tapMissionAction(tester, 'Need a hint?');
+    expect(find.text('Wyślij wiadomość na niby'), findsNothing);
+    await tapMissionAction(tester, 'Potrzebujesz podpowiedzi?');
     expect(find.text('+48 (123) 456-789'), findsOneWidget);
-    await tapMissionAction(tester, 'Hide hint');
-    await tapMissionAction(tester, 'Clear number');
+    await tapMissionAction(tester, 'Ukryj podpowiedź');
+    await tapMissionAction(tester, 'Wyczyść numer');
     for (final digit in '48123456780'.split('')) {
       await tapMissionAction(tester, digit);
     }
-    await tester.ensureVisible(find.byTooltip('Delete last digit'));
-    await tester.tap(find.byTooltip('Delete last digit'));
+    await tester.ensureVisible(find.byTooltip('Usuń ostatnią cyfrę'));
+    await tester.tap(find.byTooltip('Usuń ostatnią cyfrę'));
     await tester.pumpAndSettle();
     await tapMissionAction(tester, '9');
-    await tapMissionAction(tester, 'Check number');
-    expect(find.text('That matches a saved number.'), findsOneWidget);
-    await tapMissionAction(tester, 'Send pretend message');
-    expect(find.text('A pretend conversation'), findsOneWidget);
-    expect(find.text('I am away from windows.'), findsOneWidget);
+    await tapMissionAction(tester, 'Sprawdź numer');
     expect(
-      find.text('Good. Stay there and wait for the all-clear.'),
+      find.text('Numer zgadza się z zapisanym kontaktem.'),
       findsOneWidget,
     );
-    expect(find.text('Practice only. Nothing was sent.'), findsOneWidget);
-    expect(find.text('Hear the reply'), findsNothing);
-    await tapMissionAction(tester, 'Stay here');
-    await tapMissionAction(tester, 'Stay here');
+    await tapMissionAction(tester, 'Wyślij wiadomość na niby');
+    expect(find.text('Rozmowa na niby'), findsOneWidget);
+    expect(find.text('Jestem z dala od okien.'), findsOneWidget);
+    expect(
+      find.text('Dobrze. Zostań tam i czekaj na odwołanie alarmu.'),
+      findsOneWidget,
+    );
+    expect(find.text('Tylko ćwiczenie. Nic nie wysłano.'), findsOneWidget);
+    expect(find.text('Posłuchaj odpowiedzi'), findsNothing);
+    await tapMissionAction(tester, 'Zostań tutaj');
+    await tapMissionAction(tester, 'Zostań tutaj');
     final characterBefore = tester.widget<AnimatedPositioned>(
       find.byKey(const ValueKey('mission-character')),
     );
-    await tapMissionAction(tester, 'Leave now');
-    expect(find.textContaining('Stay inside your home.'), findsOneWidget);
+    await tapMissionAction(tester, 'Wyjdź teraz');
+    expect(find.textContaining('Zostań w domu.'), findsOneWidget);
     expect(find.byType(BaseboundMascot), findsOneWidget);
     expect(
       lastMissionNarration(audioCalls)['text'],
-      contains('Stay inside your home.'),
+      contains('Zostań w domu.'),
     );
     final door = find.byWidgetPredicate(
-      (widget) => widget is Semantics && widget.properties.label == 'Leave now',
+      (widget) =>
+          widget is Semantics && widget.properties.label == 'Wyjdź teraz',
     );
     expect(tester.widget<Semantics>(door).properties.enabled, isFalse);
     final doorTapTarget = find.descendant(
@@ -150,16 +167,16 @@ void main() {
     );
     expect(characterAfter.left, characterBefore.left);
     expect(characterAfter.top, characterBefore.top);
-    await tapMissionAction(tester, 'Stay and wait', advanceFeedback: false);
+    await tapMissionAction(tester, 'Zostań i czekaj', advanceFeedback: false);
     expect(
-      find.text('Good. Stay inside your home. Wait for the all-clear.'),
+      find.text('Dobrze. Zostań w domu. Czekaj na odwołanie alarmu.'),
       findsOneWidget,
     );
     expect(tester.widget<InkWell>(doorTapTarget).onTap, isNull);
     await finishMissionFeedback(tester);
-    await tapMissionAction(tester, 'Remember the steps');
+    await tapMissionAction(tester, 'Zapamiętaj kroki');
     expect(find.byType(MissionScene), findsNothing);
-    expect(find.text('Wait for the all-clear'), findsOneWidget);
+    expect(find.text('Czekaj na odwołanie alarmu'), findsOneWidget);
     expect(find.text(AirRaidPracticeRecap.praise), findsOneWidget);
     for (final point in AirRaidPracticeRecap.points) {
       expect(find.text(point.title), findsOneWidget);
@@ -173,9 +190,9 @@ void main() {
       lastMissionNarration(audioCalls)['text'],
       AirRaidPracticeRecap.narration,
     );
-    await tapMissionAction(tester, 'Finish practice');
-    expect(find.text('Practice complete'), findsOneWidget);
-    expect(find.text('Wait for the all-clear'), findsOneWidget);
+    await tapMissionAction(tester, 'Zakończ ćwiczenie');
+    expect(find.text('Ćwiczenie ukończone'), findsOneWidget);
+    expect(find.text('Czekaj na odwołanie alarmu'), findsOneWidget);
     expect(find.text(AirRaidPracticeRecap.praise), findsOneWidget);
     expect(
       lastMissionNarration(audioCalls)['text'],
@@ -187,8 +204,8 @@ void main() {
           .any((call) => (call.arguments as Map)['sound'] == 'all_clear'),
       isTrue,
     );
-    await tapMissionAction(tester, 'Play again');
-    expect(find.text('An alarm at home'), findsOneWidget);
+    await tapMissionAction(tester, 'Ćwicz ponownie');
+    expect(find.text('Alarm w domu'), findsOneWidget);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();
@@ -202,31 +219,31 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     await showMission(tester, audioChannel, MissionMode.outdoor);
-    await tapMissionAction(tester, 'Choose where to go');
-    await tapMissionAction(tester, 'Home: far away', advanceFeedback: false);
+    await tapMissionAction(tester, 'Wybierz, dokąd pójdziesz');
+    await tapMissionAction(tester, 'Dom: daleko', advanceFeedback: false);
     expect(lastMissionNarration(audioCalls)['sound'], 'select');
     await finishMissionFeedback(tester);
-    expect(find.text('Still outside'), findsOneWidget);
-    expect(lastMissionNarration(audioCalls)['text'], contains('towards home'));
+    expect(find.text('Nadal na zewnątrz'), findsOneWidget);
+    expect(lastMissionNarration(audioCalls)['text'], contains('w stronę domu'));
     expect(lastMissionNarration(audioCalls)['sound'], 'noise');
-    await tapMissionAction(tester, 'Choose what to do');
-    expect(find.text('What will you do?'), findsOneWidget);
+    await tapMissionAction(tester, 'Wybierz, co zrobisz');
+    expect(find.text('Co zrobisz?'), findsOneWidget);
     expect(lastMissionNarration(audioCalls)['sound'], isNull);
     final scene = find.byType(MissionScene);
     await tester.ensureVisible(scene);
     await tester.drag(scene, const Offset(0, 90));
     await tester.pumpAndSettle();
-    expect(find.text('You got down. Now protect your head.'), findsOneWidget);
+    expect(find.text('Jesteś nisko. Teraz chroń głowę.'), findsOneWidget);
     expect(lastMissionNarration(audioCalls)['sound'], 'action');
     await finishMissionFeedback(tester);
-    await tapMissionAction(tester, 'Cover your head', advanceFeedback: false);
+    await tapMissionAction(tester, 'Osłoń głowę', advanceFeedback: false);
     expect(lastMissionNarration(audioCalls)['sound'], 'action');
     await finishMissionFeedback(tester);
-    expect(find.text('An adult helps you'), findsOneWidget);
-    await tapMissionAction(tester, 'Follow the adult');
-    expect(find.text('Inside the practice shelter'), findsOneWidget);
-    await tapMissionAction(tester, 'Tell a trusted adult');
-    expect(find.text('Tell a trusted adult'), findsOneWidget);
+    expect(find.text('Dorosły pomaga ci'), findsOneWidget);
+    await tapMissionAction(tester, 'Idź za dorosłym');
+    expect(find.text('W schronieniu na niby'), findsOneWidget);
+    await tapMissionAction(tester, 'Powiedz zaufanej osobie dorosłej');
+    expect(find.text('Powiedz zaufanej osobie dorosłej'), findsOneWidget);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();
@@ -248,31 +265,31 @@ void main() {
         textScale: 2,
       );
       for (final label in [
-        'Find a place',
-        'Move deeper inside',
-        'Inside hallway',
-        'Mom',
-        'Try one call',
-        'Send an SMS',
+        'Znajdź miejsce',
+        'Przejdź w głąb domu',
+        'Wewnętrzny korytarz',
+        'Mama',
+        'Spróbuj zadzwonić raz',
+        'Wyślij SMS',
       ]) {
         await tapMissionAction(tester, label);
       }
-      expect(find.text('Try loading again'), findsOneWidget);
+      expect(find.text('Wczytaj ponownie'), findsOneWidget);
       expect(find.byType(PracticePhoneKeypad), findsNothing);
       repository.failRead = false;
-      await tapMissionAction(tester, 'Try loading again');
+      await tapMissionAction(tester, 'Wczytaj ponownie');
       expect(find.byType(PracticePhoneKeypad), findsOneWidget);
       expect(
         find.text(
-          'No phone number is saved yet. '
-          'Ask an adult to add one in parent setup.',
+          'Nie zapisano jeszcze numeru telefonu. '
+          'Poproś dorosłego o dodanie numeru w ustawieniach rodziny.',
         ),
         findsOneWidget,
       );
-      await tapMissionAction(tester, 'Continue without a number');
-      expect(find.text('A pretend conversation'), findsOneWidget);
-      await tapMissionAction(tester, 'Stay here');
-      expect(find.text('You hear a loud noise'), findsOneWidget);
+      await tapMissionAction(tester, 'Ćwicz dalej bez numeru');
+      expect(find.text('Rozmowa na niby'), findsOneWidget);
+      await tapMissionAction(tester, 'Zostań tutaj');
+      expect(find.text('Słyszysz głośny huk'), findsOneWidget);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump();

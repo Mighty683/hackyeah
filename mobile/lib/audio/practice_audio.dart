@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 
 /// Offline narration and gentle sound cues for scenario practice and walking guidance.
 ///
-/// Android needs an installed English voice that does not require a network.
+/// Android needs an installed Polish voice that does not require a network.
 /// Callers must provide an adult-supported fallback when [initialize] is false.
 /// [playCue] works without an installed voice.
 class PracticeAudio {

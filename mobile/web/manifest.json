@@ -1,11 +1,11 @@
 {
-    "name": "Tuptu — web demo",
+    "name": "Tuptu — demo w przeglądarce",
     "short_name": "Tuptu",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#F7F5F0",
     "theme_color": "#2C5F9B",
-    "description": "Fictional decision training with mocked Android device features.",
+    "description": "Ćwiczenia podejmowania decyzji na niby z symulowanymi funkcjami Androida.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

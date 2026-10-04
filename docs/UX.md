@@ -10,7 +10,7 @@ The primary loop should be:
 Children should learn *what to do* through simulated situations rather than reading long educational content.
 
 ## 2. UX Writing
-- Use **very simple English** appropriate for children.
+- Use **very simple Polish** appropriate for children.
 - Prefer short sentences: **5–12 words** when possible.
 - Give **one instruction or decision at a time**.
 - Use active language: **“Leave the building.”**, not “Evacuation should be performed.”

@@ -12,7 +12,7 @@ void main() {
   late FakeLocationSource source;
   late HelpContext context;
 
-  const home = SafePoint(name: ' Home ', latitude: 50.005, longitude: 20.001);
+  const home = SafePoint(name: ' Dom ', latitude: 50.005, longitude: 20.001);
 
   setUp(() {
     now = DateTime.utc(2026, 10, 3, 12);
@@ -60,7 +60,7 @@ void main() {
     await context.start();
     expect(context.nearbyPlaceName, isNull);
     await emit(fix(now));
-    expect(context.nearbyPlaceName, 'Home');
+    expect(context.nearbyPlaceName, 'Dom');
     expect(source.requests, 0);
   });
 
@@ -71,7 +71,7 @@ void main() {
       await emit(fix(now, latitude: 50.0053, accuracy: 20));
       expect(context.nearbyPlaceName, isNull);
       await emit(fix(now, latitude: 50.0053, accuracy: 5));
-      expect(context.nearbyPlaceName, 'Home');
+      expect(context.nearbyPlaceName, 'Dom');
       await emit(fix(now, accuracy: 26));
       expect(context.nearbyPlaceName, isNull);
       await emit(fix(now, latitude: 50.006));
@@ -82,11 +82,11 @@ void main() {
   test('stale position is rejected before the freshness timer ticks', () async {
     await context.start();
     await emit(fix(now));
-    expect(context.nearbyPlaceName, 'Home');
+    expect(context.nearbyPlaceName, 'Dom');
     now = now.add(const Duration(seconds: 31));
     expect(context.nearbyPlaceName, isNull);
     await emit(fix(now));
-    expect(context.nearbyPlaceName, 'Home');
+    expect(context.nearbyPlaceName, 'Dom');
   });
 
   test(
@@ -111,7 +111,7 @@ void main() {
     () async {
       await context.start();
       await emit(fix(now));
-      expect(context.nearbyPlaceName, 'Home');
+      expect(context.nearbyPlaceName, 'Dom');
       context.pause();
       expect(source.updates.hasListener, isFalse);
       expect(context.nearbyPlaceName, isNull);
@@ -121,7 +121,7 @@ void main() {
       expect(source.updates.hasListener, isTrue);
       expect(context.nearbyPlaceName, isNull);
       await emit(fix(now));
-      expect(context.nearbyPlaceName, 'Home');
+      expect(context.nearbyPlaceName, 'Dom');
       expect(source.requests, 0);
     },
   );

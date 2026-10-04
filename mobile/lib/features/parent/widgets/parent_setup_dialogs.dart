@@ -13,15 +13,15 @@ Future<void> configureParentLocation(
     await showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Demo map location'),
+        title: const Text('Pozycja na mapie demo'),
         content: const Text(
-          'The web demo uses a fictional fixed position in the arena map. '
-          'No browser GPS permission is requested. No real location is read.',
+          'Demo w przeglądarce używa fikcyjnej, stałej pozycji na mapie areny. '
+          'Nie prosi o zgodę na GPS przeglądarki. Nie odczytuje prawdziwej pozycji.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            child: const Text('Zamknij'),
           ),
         ],
       ),
@@ -33,20 +33,20 @@ Future<void> configureParentLocation(
   final proceed = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('Map location'),
+      title: const Text('Lokalizacja mapy'),
       content: Text(_locationMessage(status)),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, false),
-          child: const Text('Close'),
+          child: const Text('Zamknij'),
         ),
         if (status != LocationPermissionStatus.granted)
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             child: Text(
               status == LocationPermissionStatus.settingsRequired
-                  ? 'Open Android settings'
-                  : 'Allow location',
+                  ? 'Otwórz ustawienia Androida'
+                  : 'Zezwól na lokalizację',
             ),
           ),
       ],
@@ -57,8 +57,8 @@ Future<void> configureParentLocation(
   if (status == LocationPermissionStatus.settingsRequired) {
     final opened = await permission.openSettings();
     message = opened
-        ? 'Allow location while using the app. Reopen Our map when ready.'
-        : 'Open Android app settings to allow location while using the app.';
+        ? 'Zezwól na lokalizację podczas używania aplikacji. Następnie otwórz ponownie Naszą mapę.'
+        : 'Otwórz ustawienia aplikacji w Androidzie i zezwól na lokalizację podczas jej używania.';
   } else {
     message = _locationMessage(await permission.requestFromAdult());
   }
@@ -67,10 +67,10 @@ Future<void> configureParentLocation(
 }
 
 String _locationMessage(LocationPermissionStatus status) => switch (status) {
-  LocationPermissionStatus.granted => 'Location is allowed. The map and Help can use GPS while open; no track is saved.',
-  LocationPermissionStatus.denied => 'Location is off. Allow it to show the map’s blue dot. Photos and practice work without it.',
-  LocationPermissionStatus.settingsRequired => 'Android requires app settings to allow location. Choose location access while using the app. Photos and practice work without it.',
-  LocationPermissionStatus.unavailable => 'Could not check location permission. You can retry; photos and practice still work.',
+  LocationPermissionStatus.granted => 'Lokalizacja jest dozwolona. Mapa i Pomoc mogą używać GPS, gdy są otwarte; trasa nie jest zapisywana.',
+  LocationPermissionStatus.denied => 'Lokalizacja jest wyłączona. Włącz ją, aby zobaczyć niebieską kropkę na mapie. Zdjęcia i ćwiczenia działają bez niej.',
+  LocationPermissionStatus.settingsRequired => 'Android wymaga włączenia lokalizacji w ustawieniach aplikacji. Wybierz dostęp podczas używania aplikacji. Zdjęcia i ćwiczenia działają bez niego.',
+  LocationPermissionStatus.unavailable => 'Nie udało się sprawdzić zgody na lokalizację. Spróbuj ponownie; zdjęcia i ćwiczenia nadal działają.',
 };
 
 Future<bool> confirmParentDeletion(
@@ -88,14 +88,14 @@ Future<bool> confirmParentDeletion(
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Keep'),
+              child: const Text('Zachowaj'),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, true),
               style: TextButton.styleFrom(
                 foregroundColor: BaseboundColors.coral,
               ),
-              child: const Text('Delete'),
+              child: const Text('Usuń'),
             ),
           ],
         ),

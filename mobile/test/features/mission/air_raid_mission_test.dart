@@ -8,7 +8,7 @@ void main() {
     session.advance();
     expect(session.step.id, 'room');
     session.choose('window');
-    expect(session.feedback, contains('Move away'));
+    expect(session.feedback, contains('Odsuń się'));
     session.advance();
     expect(session.step.id, 'room');
     expect(session.rejectedChoiceIds, {'window'});
@@ -23,7 +23,7 @@ void main() {
     expect(session.step.id, 'communication');
     expect(session.hasFeedback, isFalse);
     session.choose('call');
-    expect(session.feedback, contains('No answer'));
+    expect(session.feedback, contains('nikt nie odbiera'));
     session.advance();
     expect(session.step.id, 'sms');
     _chooseAndAdvance(session, 'message');
@@ -32,7 +32,7 @@ void main() {
     _chooseAndAdvance(session, 'stay');
     expect(session.step.id, 'quiet');
     session.choose('leave');
-    expect(session.feedback, contains('Quiet does not mean'));
+    expect(session.feedback, contains('Cisza nie oznacza'));
     session.advance();
     expect(session.step.id, 'quiet');
     _chooseAndAdvance(session, 'stay');
@@ -85,10 +85,10 @@ void main() {
 
   test('outdoor choices stay connected to the noise and guided recovery', () {
     const destinationNames = {
-      'home': 'home',
-      'school': 'school',
-      'park': 'open park',
-      'bus_stop': 'bus stop',
+      'home': 'domu',
+      'school': 'szkoły',
+      'park': 'otwartym parku',
+      'bus_stop': 'przystanku',
     };
     for (final destination in destinationNames.keys) {
       final session = MissionSession(mode: MissionMode.outdoor);
@@ -102,7 +102,7 @@ void main() {
       session.advance();
       expect(session.step.id, 'outdoor_noise');
       expect(session.step.narration, contains(destinationNames[destination]));
-      expect(session.step.narration, contains('loud noise'));
+      expect(session.step.narration, contains('głośny huk'));
       expect(session.step.sound, 'noise');
       expect(session.step.isDecision, isFalse);
       session.advance();
@@ -116,8 +116,8 @@ void main() {
       expect(session.step.id, 'protect_head');
       _chooseAndAdvance(session, 'protect_head');
       expect(session.step.id, 'outdoor_recover');
-      expect(session.step.narration, contains('trusted adult'));
-      expect(session.step.narration, contains('when it is possible'));
+      expect(session.step.narration, contains('zaufana osoba dorosła'));
+      expect(session.step.narration, contains('gdy jest to możliwe'));
       session.advance();
       expect(session.step.id, 'outdoor_sheltered');
       session.advance();
@@ -129,7 +129,7 @@ void main() {
     final session = MissionSession(mode: MissionMode.outdoor);
     session.advance();
     _chooseAndAdvance(session, 'home');
-    expect(session.step.narration, contains('home'));
+    expect(session.step.narration, contains('domu'));
 
     session.restart();
     expect(session.step.id, 'outdoor_alarm');
@@ -139,8 +139,8 @@ void main() {
     _chooseAndAdvance(session, 'more_places');
     _chooseAndAdvance(session, 'park');
     expect(session.step.id, 'outdoor_noise');
-    expect(session.step.narration, contains('open park'));
-    expect(session.step.narration, isNot(contains('home')));
+    expect(session.step.narration, contains('otwartym parku'));
+    expect(session.step.narration, isNot(contains('domu')));
   });
 
   test(

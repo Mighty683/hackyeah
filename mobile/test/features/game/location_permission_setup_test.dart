@@ -165,10 +165,7 @@ void main() {
           .every((choice) => choice.onPressed != null),
       isTrue,
     );
-    expect(
-      find.textContaining('Photos and practice still work'),
-      findsOneWidget,
-    );
+    expect(find.textContaining('Zdjęcia i ćwiczenia działają'), findsOneWidget);
     expect(source.requests, 1);
     expect(source.streams, 0);
   });
@@ -235,15 +232,15 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(source.requests, 0);
-    await tester.tap(find.byTooltip('Setup options'));
+    await tester.tap(find.byTooltip('Opcje ustawień'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Map location permission'));
+    await tester.tap(find.text('Dostęp mapy do lokalizacji'));
     await tester.pumpAndSettle();
     expect(source.requests, 0);
-    await tester.tap(find.text('Allow location'));
+    await tester.tap(find.text('Zezwól na lokalizację'));
     await tester.pumpAndSettle();
     expect(source.requests, 1);
-    expect(find.textContaining('Location is allowed.'), findsOneWidget);
+    expect(find.textContaining('Lokalizacja jest dozwolona.'), findsOneWidget);
     expect(source.streams, 0);
     expect(tester.takeException(), isNull);
   });

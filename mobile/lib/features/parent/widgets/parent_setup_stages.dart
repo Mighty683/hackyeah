@@ -17,26 +17,26 @@ class ParentIntroductionStage extends StatelessWidget {
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
-      ParentSetupHeading('Set up your family plan', BaseboundIconName.family),
+      ParentSetupHeading('Przygotuj plan rodziny', BaseboundIconName.family),
       const Text(
-        'Add your child’s details, then contacts and safe places. One step at a time.',
+        'Dodaj dane dziecka, kontakty i bezpieczne miejsca. Krok po kroku.',
         style: parentSetupSubtitleStyle,
       ),
       const SizedBox(height: 24),
       const ParentEditorNote(
-        message: 'Use fictional personal details for this demo. All details are optional.',
+        message: 'W demo używaj fikcyjnych danych osobowych. Wszystkie dane są opcjonalne.',
         icon: BaseboundIconName.info,
       ),
       const SizedBox(height: 16),
       const Text(
         kIsWeb
-            ? 'Details stay in this browser tab for this demo. Refresh or reset discards edits. Use fictional details. No encryption, parent lock or cloud sync.'
-            : 'Saved details are encrypted on this device. Anyone using this app can open them. No parent lock or cloud sync.',
+            ? 'Dane demo pozostają w tej karcie przeglądarki. Odświeżenie lub reset usuwa zmiany. Używaj fikcyjnych danych. Bez szyfrowania, blokady rodzicielskiej i synchronizacji z chmurą.'
+            : 'Zapisane dane są szyfrowane na urządzeniu. Każdy użytkownik aplikacji może je otworzyć. Bez blokady rodzicielskiej i synchronizacji z chmurą.',
         style: parentSetupSubtitleStyle,
       ),
       const SizedBox(height: 24),
       BaseboundActionTile(
-        label: 'Walk together',
+        label: 'Wspólny spacer',
         icon: BaseboundIconName.map,
         onPressed: onOpenLandmarks,
       ),
@@ -63,18 +63,18 @@ class ParentContactsStage extends StatelessWidget {
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       ParentSetupHeading(
-        'Who can your child contact?',
+        'Z kim dziecko może się skontaktować?',
         BaseboundIconName.family,
       ),
       Text(
-        'Add up to three trusted adults. ${contacts.length}/3 saved.',
+        'Dodaj maksymalnie trzy zaufane osoby dorosłe. Zapisano: ${contacts.length}/3.',
         style: parentSetupSubtitleStyle,
       ),
       const SizedBox(height: 24),
       for (var index = 0; index < contacts.length; index++)
         ParentSetupEntry(
           title: contacts[index].name.isEmpty
-              ? 'Contact ${index + 1}'
+              ? 'Kontakt ${index + 1}'
               : contacts[index].name,
           subtitle: [
             contacts[index].relationship,
@@ -86,13 +86,13 @@ class ParentContactsStage extends StatelessWidget {
         ),
       if (contacts.length < FamilyPlan.maxContacts)
         BaseboundActionTile(
-          label: 'Add a trusted contact',
+          label: 'Dodaj zaufany kontakt',
           icon: BaseboundIconName.addAdult,
           onPressed: onAdd,
         ),
       const SizedBox(height: 24),
       const Text(
-        'Saving a contact does not call or verify the number.',
+        'Zapisanie kontaktu nie wykonuje połączenia ani nie sprawdza numeru.',
         style: parentSetupSubtitleStyle,
       ),
     ],
@@ -120,29 +120,29 @@ class ParentPlacesStage extends StatelessWidget {
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       ParentSetupHeading(
-        'Choose your child’s safe places',
+        'Wybierz bezpieczne miejsca dziecka',
         BaseboundIconName.pin,
       ),
       const Text(
-        'Choose destinations for your family’s emergency plan.',
+        'Wybierz miejsca docelowe do planu awaryjnego rodziny.',
         style: parentSetupSubtitleStyle,
       ),
       const SizedBox(height: 16),
       const ParentEditorNote(
-        message: 'This demo stores map pins only. It does not check safety or provide real emergency routes.',
+        message: 'Demo zapisuje tylko znaczniki mapy. Nie sprawdza bezpieczeństwa i nie wyznacza tras w prawdziwych zagrożeniach.',
         icon: BaseboundIconName.info,
       ),
       const SizedBox(height: 24),
       for (var index = 0; index < points.length; index++)
         ParentSetupEntry(
           title: points[index].displayName,
-          subtitle: 'Tap to edit this safe place.',
+          subtitle: 'Dotknij, aby edytować to bezpieczne miejsce.',
           onEdit: () => onEdit(index),
           onDelete: () => onDelete(index),
           icon: BaseboundIconName.pin,
         ),
       BaseboundActionTile(
-        label: 'Add a safe place',
+        label: 'Dodaj bezpieczne miejsce',
         icon: BaseboundIconName.addPlace,
         onPressed: onAdd,
       ),
@@ -168,38 +168,41 @@ class ParentReadyStage extends StatelessWidget {
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
-      ParentSetupHeading('Ready to practice together', BaseboundIconName.check),
+      ParentSetupHeading(
+        'Gotowi do wspólnych ćwiczeń',
+        BaseboundIconName.check,
+      ),
       Text(
-        '${plan.contacts.length} trusted contacts · ${plan.safePoints.length} safe places saved',
+        'Zapisane kontakty: ${plan.contacts.length} · bezpieczne miejsca: ${plan.safePoints.length}',
         style: parentSetupSubtitleStyle,
       ),
       const SizedBox(height: 24),
       ParentEditorNote(
         message: plan.safePoints.isEmpty
-            ? 'No safe place chosen. Add a place or explore Our map.'
-            : 'Your saved places are available on Our map.',
+            ? 'Nie wybrano bezpiecznego miejsca. Dodaj miejsce lub poznaj Naszą mapę.'
+            : 'Zapisane miejsca są dostępne na Naszej mapie.',
         icon: BaseboundIconName.play,
       ),
       const SizedBox(height: 16),
       const Text(
-        'Training only. Saved safe places are not verified. No real emergency navigation or assistance.',
+        'Tylko ćwiczenie. Bezpieczeństwo zapisanych miejsc nie jest sprawdzane. Bez nawigacji i pomocy w prawdziwych zagrożeniach.',
         style: parentSetupSubtitleStyle,
       ),
       const SizedBox(height: 16),
       const Text(
-        'Lost practice teaches your selected photo place and its pin on Our map. '
-        'Calls, replies and safety confirmation are simulated. No message is sent.',
+        'Ćwiczenie zgubienia się uczy rozpoznawania wybranego zdjęcia i znacznika na Naszej mapie. '
+        'Połączenia, odpowiedzi i potwierdzenie bezpieczeństwa są symulowane. Żadna wiadomość nie jest wysyłana.',
         style: parentSetupSubtitleStyle,
       ),
       const SizedBox(height: 24),
       BaseboundActionTile(
-        label: 'Walk together',
+        label: 'Wspólny spacer',
         icon: BaseboundIconName.map,
         onPressed: onOpenLandmarks,
       ),
       const SizedBox(height: 12),
       BaseboundActionTile(
-        label: 'Review setup',
+        label: 'Sprawdź ustawienia',
         icon: BaseboundIconName.edit,
         onPressed: onReview,
       ),

@@ -8,17 +8,17 @@ import '../../game/maps/offline_router.dart';
 
 String metres(double distance) => distance < 1000
     ? '${(distance / 5).round() * 5} m'
-    : '${(distance / 1000).toStringAsFixed(1)} km';
+    : '${(distance / 1000).toStringAsFixed(1).replaceAll('.', ',')} km';
 
 String compass(double bearing) => const [
-  'north',
-  'north-east',
-  'east',
-  'south-east',
-  'south',
-  'south-west',
-  'west',
-  'north-west',
+  'na północ',
+  'na północny wschód',
+  'na wschód',
+  'na południowy wschód',
+  'na południe',
+  'na południowy zachód',
+  'na zachód',
+  'na północny zachód',
 ][((bearing + 22.5) / 45).floor() % 8];
 
 class WalkingTurn {
@@ -68,16 +68,16 @@ class WalkingRoute {
       final changed = description != _description(path.segments[index - 1]);
       if (angle.abs() < 35 && !changed) continue;
       final action = angle.abs() >= 150
-          ? 'turn back'
+          ? 'zawróć'
           : angle >= 35
-          ? 'turn right'
+          ? 'skręć w prawo'
           : angle <= -35
-          ? 'turn left'
-          : 'continue';
+          ? 'skręć w lewo'
+          : 'idź dalej';
       turns.add(
         WalkingTurn(
           distance: _distances[index],
-          action: '$action${description.isEmpty ? '' : ' onto $description'}',
+          action: '$action${description.isEmpty ? '' : ' — $description'}',
         ),
       );
     }
@@ -115,8 +115,8 @@ class WalkingRoute {
   }
 
   static String _description(Map<String, dynamic> tags) {
-    if (tags['footway'] == 'crossing') return 'the mapped crossing';
-    if (tags['highway'] == 'steps') return 'the steps';
+    if (tags['footway'] == 'crossing') return 'przejście zaznaczone na mapie';
+    if (tags['highway'] == 'steps') return 'schody';
     return (tags['name'] as String?)?.trim() ?? '';
   }
 
@@ -165,7 +165,7 @@ class WalkingRoute {
   }
 
   String instructionAt(double progress) {
-    if (points.length < 2) return 'The mapped path ends here.';
+    if (points.length < 2) return 'Zaznaczona ścieżka kończy się tutaj.';
     final next = turns
         .where((turn) => turn.distance >= progress - 8)
         .firstOrNull;
@@ -179,11 +179,11 @@ class WalkingRoute {
     final description = _description(path.segments[segment]);
     final direction = compass(_bearing(points[segment], points[segment + 1]));
     final heading =
-        'Continue $direction${description.isEmpty ? '' : ' on $description'}';
+        'Idź dalej $direction${description.isEmpty ? '' : ' — $description'}';
     if (next != null) {
-      return '$heading. In ${metres(next.distance - progress)}, ${next.action}.';
+      return '$heading. Za ${metres(next.distance - progress)}, ${next.action}.';
     }
-    return '$heading for ${metres(math.max(0, length - progress))}.';
+    return '$heading przez ${metres(math.max(0, length - progress))}.';
   }
 
   static String _capitalise(String text) =>

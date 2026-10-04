@@ -67,7 +67,7 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
     } catch (_) {
       if (mounted) {
         setState(
-          () => _error = 'Could not load landmarks. Your saved details have not been reset.',
+          () => _error = 'Nie udało się wczytać punktów orientacyjnych. Zapisane dane zostały zachowane.',
         );
       }
     } finally {
@@ -92,13 +92,17 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
       if (!mounted || recovered.isEmpty) return;
       final photo = recovered.files?.firstOrNull;
       if (photo == null) {
-        _message('Could not recover the previous photo. Try taking it again.');
+        _message(
+          'Nie udało się odzyskać poprzedniego zdjęcia. Zrób je ponownie.',
+        );
         return;
       }
-      _message('Recovered your photo. Give it a name and a pin.');
+      _message('Zdjęcie odzyskane. Dodaj nazwę i znacznik.');
       await _edit(photoPath: photo.path);
     } catch (_) {
-      _message('Photo recovery is unavailable. You can still add a new photo.');
+      _message(
+        'Odzyskiwanie zdjęć jest niedostępne. Możesz dodać nowe zdjęcie.',
+      );
     }
   }
 
@@ -108,12 +112,12 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
       final added = await loadDemoLandmarks(_repository);
       _message(
         added == 0
-            ? 'Example landmarks are already saved.'
-            : '$added landmarks added.',
+            ? 'Przykładowe punkty orientacyjne są już zapisane.'
+            : 'Dodano punktów orientacyjnych: $added.',
       );
     } catch (_) {
       _message(
-        'Could not finish loading landmarks. Try again; saved points are kept.',
+        'Nie udało się wczytać wszystkich punktów. Spróbuj ponownie; zapisane punkty zostały zachowane.',
       );
     } finally {
       if (mounted) {
@@ -142,7 +146,9 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
       if (!mounted || photo == null) return;
       await _edit(photoPath: photo.path);
     } catch (_) {
-      _message('Could not open the photo. Try the camera or gallery again.');
+      _message(
+        'Nie udało się otworzyć zdjęcia. Spróbuj ponownie użyć aparatu lub galerii.',
+      );
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -155,7 +161,9 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
     try {
       await _edit(photoPath: asset);
     } catch (_) {
-      _message('Could not open the demo photo. Try again.');
+      _message(
+        'Nie udało się otworzyć przykładowego zdjęcia. Spróbuj ponownie.',
+      );
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -186,19 +194,21 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(
-          landmark == null ? 'Delete all landmarks?' : 'Delete this landmark?',
+          landmark == null
+              ? 'Usunąć wszystkie punkty orientacyjne?'
+              : 'Usunąć ten punkt orientacyjny?',
         ),
         content: const Text(
-          'This removes saved photo copies and pins from this app. Original gallery photos stay on your device.',
+          'Kopie zdjęć i znaczniki zostaną usunięte z aplikacji. Oryginalne zdjęcia pozostaną w galerii urządzenia.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Keep'),
+            child: const Text('Zachowaj'),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete'),
+            child: const Text('Usuń'),
           ),
         ],
       ),
@@ -213,7 +223,7 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
       }
     } catch (_) {
       _message(
-        'Could not fully delete. Try again, or use Delete all landmarks.',
+        'Nie udało się usunąć wszystkiego. Spróbuj ponownie lub wybierz Usuń wszystkie punkty orientacyjne.',
       );
     } finally {
       if (mounted) {
@@ -230,16 +240,16 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
       canPop: !_busy,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Walk together'),
+          title: const Text('Wspólny spacer'),
           actions: [
             PopupMenuButton<String>(
               enabled: !_loading && !_busy,
-              tooltip: 'Landmark options',
+              tooltip: 'Opcje punktów orientacyjnych',
               onSelected: (_) => _delete(),
               itemBuilder: (_) => const [
                 PopupMenuItem(
                   value: 'delete',
-                  child: Text('Delete all landmarks'),
+                  child: Text('Usuń wszystkie punkty orientacyjne'),
                 ),
               ],
             ),
@@ -256,10 +266,10 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
                     icon: const PhotoActionIcon(color: Colors.white),
                     label: Text(
                       _busy
-                          ? 'Opening photo…'
+                          ? 'Otwieranie zdjęcia…'
                           : kIsWeb
-                          ? 'Choose a demo photo'
-                          : 'Take a photo',
+                          ? 'Wybierz przykładowe zdjęcie'
+                          : 'Zrób zdjęcie',
                     ),
                   ),
                 ),
@@ -282,7 +292,7 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
               const SizedBox(height: 16),
               OutlinedButton(
                 onPressed: _load,
-                child: const Text('Retry loading'),
+                child: const Text('Wczytaj ponownie'),
               ),
             ],
           ),
@@ -298,12 +308,12 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Text(
-                'Save places you recognise',
+                'Zapisz miejsca, które znasz',
                 style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 8),
               const Text(
-                'Stop together. Add a photo and a map pin. Your child can recognise it and choose it on Our map.',
+                'Zatrzymajcie się razem. Dodaj zdjęcie i znacznik. Dziecko rozpozna miejsce i wybierze je na Naszej mapie.',
               ),
               const SizedBox(height: 24),
               LandmarkMap(
@@ -324,19 +334,19 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
                 child: TextButton.icon(
                   onPressed: _busy ? null : _loadDemo,
                   icon: const BaseboundIcon(BaseboundIconName.play),
-                  label: const Text('Load example landmarks'),
+                  label: const Text('Wczytaj przykładowe punkty orientacyjne'),
                 ),
               ),
               const SizedBox(height: 16),
               if (_landmarks.isEmpty)
                 const SoftPanel(
                   child: Text(
-                    'No landmarks yet. Photograph a familiar place, then choose its pin.',
+                    'Nie ma jeszcze punktów orientacyjnych. Zrób zdjęcie znanego miejsca i dodaj znacznik.',
                   ),
                 ),
               if (_landmarks.isNotEmpty) ...[
                 Text(
-                  '${_landmarks.length} landmarks saved',
+                  'Zapisane punkty orientacyjne: ${_landmarks.length}',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -355,9 +365,9 @@ class _LandmarkLibraryScreenState extends State<LandmarkLibraryScreen> {
               const SizedBox(height: 24),
               ParentEditorNote(
                 message:
-                    'Map: TAURON Arena, Kraków. Landmarks are independent points, with no fixed visiting order. '
-                    'Walking routes use ${kIsWeb ? 'simulated location' : 'GPS'} and offline paths; access, entrances and hazards are not verified. Walk with your child. '
-                    '${kIsWeb ? 'Browser demo: location and photos are simulated. Changes last until reload.' : 'Photos stay in app-private storage; names and pins are encrypted. No cloud sync or parent lock.'}',
+                    'Mapa: TAURON Arena, Kraków. Punkty orientacyjne nie mają ustalonej kolejności odwiedzania. '
+                    'Trasy spaceru wykorzystują ${kIsWeb ? 'symulowana pozycja' : 'GPS'} i ścieżki offline; dostęp, wejścia i zagrożenia nie są sprawdzane. Spaceruj z dzieckiem. '
+                    '${kIsWeb ? 'Demo w przeglądarce: pozycja i zdjęcia są symulowane. Zmiany znikają po odświeżeniu.' : 'Zdjęcia pozostają w pamięci aplikacji; nazwy i znaczniki są szyfrowane. Bez synchronizacji z chmurą i blokady rodzicielskiej.'}',
                 icon: BaseboundIconName.info,
               ),
             ],

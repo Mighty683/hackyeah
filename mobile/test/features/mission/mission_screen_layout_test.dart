@@ -40,10 +40,10 @@ void main() {
         tester.view.physicalSize = size;
         await showMission(tester, audioChannel, MissionMode.home);
         for (final label in [
-          'Find a place',
-          'Move deeper inside',
-          'Inside hallway',
-          'Mom',
+          'Znajdź miejsce',
+          'Przejdź w głąb domu',
+          'Wewnętrzny korytarz',
+          'Mama',
         ]) {
           final action = find.byWidgetPredicate(
             (widget) => widget is Semantics && widget.properties.label == label,
@@ -100,14 +100,14 @@ void main() {
         textScale: configuration.$2,
       );
       for (final label in [
-        'Choose where to go',
-        'Home: far away',
-        'Choose what to do',
-        'Keep standing',
-        'Get down',
-        'Keep hands down',
-        'Cover your head',
-        'Follow the adult',
+        'Wybierz, dokąd pójdziesz',
+        'Dom: daleko',
+        'Wybierz, co zrobisz',
+        'Stój dalej',
+        'Połóż się',
+        'Zostaw ręce opuszczone',
+        'Osłoń głowę',
+        'Idź za dorosłym',
       ]) {
         await tapMissionAction(tester, label);
         expect(tester.takeException(), isNull, reason: label);
@@ -134,67 +134,69 @@ void main() {
       ),
     );
     expect(tester.takeException(), isNull);
-    await tapMissionAction(tester, 'Find a place');
+    await tapMissionAction(tester, 'Znajdź miejsce');
     expect(tester.takeException(), isNull);
-    await tapMissionAction(tester, 'Move deeper inside');
+    await tapMissionAction(tester, 'Przejdź w głąb domu');
     expect(
       find.byWidgetPredicate(
-        (widget) =>
-            widget is Semantics && widget.properties.label == 'Living room',
-      ),
-      findsOneWidget,
-    );
-    expect(
-      find.byWidgetPredicate(
-        (widget) => widget is Semantics && widget.properties.label == 'Bedroom',
-      ),
-      findsOneWidget,
-    );
-    expect(
-      find.byWidgetPredicate(
-        (widget) => widget is Semantics && widget.properties.label == 'Kitchen',
+        (widget) => widget is Semantics && widget.properties.label == 'Salon',
       ),
       findsOneWidget,
     );
     expect(
       find.byWidgetPredicate(
         (widget) =>
-            widget is Semantics && widget.properties.label == 'Inside hallway',
+            widget is Semantics && widget.properties.label == 'Sypialnia',
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.byWidgetPredicate(
+        (widget) => widget is Semantics && widget.properties.label == 'Kuchnia',
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is Semantics &&
+            widget.properties.label == 'Wewnętrzny korytarz',
       ),
       findsOneWidget,
     );
     expect(tester.takeException(), isNull);
-    await tapMissionAction(tester, 'Inside hallway');
-    await tapMissionAction(tester, 'Grandparent');
+    await tapMissionAction(tester, 'Wewnętrzny korytarz');
+    await tapMissionAction(tester, 'Babcia lub dziadek');
     expect(
       find.byWidgetPredicate(
         (widget) =>
-            widget is Semantics && widget.properties.label == 'Try one call',
+            widget is Semantics &&
+            widget.properties.label == 'Spróbuj zadzwonić raz',
       ),
       findsOneWidget,
     );
-    await tapMissionAction(tester, 'Try one call');
-    await tapMissionAction(tester, 'Send an SMS');
+    await tapMissionAction(tester, 'Spróbuj zadzwonić raz');
+    await tapMissionAction(tester, 'Wyślij SMS');
     for (final digit in '123456789'.split('')) {
       await tapMissionAction(tester, digit);
     }
-    await tapMissionAction(tester, 'Check number');
-    await tapMissionAction(tester, 'Send pretend message');
-    expect(find.text('A pretend conversation'), findsOneWidget);
-    await tapMissionAction(tester, 'Stay here');
-    expect(find.text('You hear a loud noise'), findsOneWidget);
-    await tapMissionAction(tester, 'Stay here');
-    await tapMissionAction(tester, 'Stay and wait');
-    await tapMissionAction(tester, 'Remember the steps');
-    expect(find.text('Wait for the all-clear'), findsOneWidget);
-    await tester.ensureVisible(find.text('Stay there, even when it is quiet.'));
+    await tapMissionAction(tester, 'Sprawdź numer');
+    await tapMissionAction(tester, 'Wyślij wiadomość na niby');
+    expect(find.text('Rozmowa na niby'), findsOneWidget);
+    await tapMissionAction(tester, 'Zostań tutaj');
+    expect(find.text('Słyszysz głośny huk'), findsOneWidget);
+    await tapMissionAction(tester, 'Zostań tutaj');
+    await tapMissionAction(tester, 'Zostań i czekaj');
+    await tapMissionAction(tester, 'Zapamiętaj kroki');
+    expect(find.text('Czekaj na odwołanie alarmu'), findsOneWidget);
+    await tester.ensureVisible(find.text('Zostań tam, nawet gdy jest cicho.'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
-    await tapMissionAction(tester, 'Finish practice');
-    expect(find.text('Practice complete'), findsOneWidget);
-    expect(find.text('Wait for the all-clear'), findsOneWidget);
-    await tapMissionAction(tester, 'Play again');
-    expect(find.text('An alarm at home'), findsOneWidget);
+    await tapMissionAction(tester, 'Zakończ ćwiczenie');
+    expect(find.text('Ćwiczenie ukończone'), findsOneWidget);
+    expect(find.text('Czekaj na odwołanie alarmu'), findsOneWidget);
+    await tapMissionAction(tester, 'Ćwicz ponownie');
+    expect(find.text('Alarm w domu'), findsOneWidget);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();

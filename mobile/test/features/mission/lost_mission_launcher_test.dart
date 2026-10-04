@@ -36,22 +36,22 @@ void main() {
       await FamilyPlanRepository().save(_configuredPlan);
       await tester.pumpWidget(const MaterialApp(home: PracticeLauncher()));
       await tester.pumpAndSettle();
-      expect(find.text('Practices'), findsOneWidget);
-      expect(find.text('Our map'), findsOneWidget);
+      expect(find.text('Ćwiczenia'), findsOneWidget);
+      expect(find.text('Nasza mapa'), findsOneWidget);
       expect(find.text('Landmark practice'), findsNothing);
-      await _tap(tester, 'Practices');
-      expect(find.text('Alarm practice'), findsOneWidget);
-      expect(find.text('Our map'), findsNothing);
-      await _tap(tester, "I'm lost practice");
+      await _tap(tester, 'Ćwiczenia');
+      expect(find.text('Ćwiczenie alarmu'), findsOneWidget);
+      expect(find.text('Nasza mapa'), findsNothing);
+      await _tap(tester, "Ćwiczenie zgubienia się");
       expect(
-        find.text('Practice meeting point: Blue help desk'),
+        find.text('Punkt spotkania do ćwiczeń: Blue help desk'),
         findsOneWidget,
       );
       await _tap(
         tester,
         variant == LostPracticeVariant.meetingPointNearby
-            ? 'Meeting point nearby'
-            : 'Meeting point out of sight',
+            ? 'Punkt spotkania w pobliżu'
+            : 'Punkt spotkania poza zasięgiem wzroku',
       );
       final mission = tester.widget<LostMissionScreen>(
         find.byType(LostMissionScreen),
@@ -60,18 +60,18 @@ void main() {
       expect(mission.practiceContext.meetingPoint.presetId, 'information_desk');
       expect(mission.practiceContext.contacts.first.label, 'Demo adult');
       // The scenario list must not resume its speech under the mission.
-      expect((audioCalls.last.arguments as Map)['text'], contains('parent'));
+      expect((audioCalls.last.arguments as Map)['text'], contains('rodzica'));
       expect(
         (audioCalls.last.arguments as Map)['text'],
-        isNot(contains('Choose a scenario')),
+        isNot(contains('Wybierz scenariusz')),
       );
-      await tester.tap(find.byTooltip('Leave practice'));
+      await tester.tap(find.byTooltip('Opuść ćwiczenie'));
       await tester.pumpAndSettle();
       expect(find.byType(LostMissionLauncher), findsNothing);
-      expect(find.text('Choose a scenario'), findsOneWidget);
+      expect(find.text('Wybierz scenariusz'), findsOneWidget);
       expect(
         (audioCalls.last.arguments as Map)['text'],
-        contains('Choose a scenario'),
+        contains('Wybierz scenariusz'),
       );
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
@@ -87,14 +87,20 @@ void main() {
         MaterialApp(home: LostMissionLauncher(repository: repository)),
       );
       await tester.pumpAndSettle();
-      expect(find.text('Could not read saved family details.'), findsOneWidget);
-      expect(find.text('Meeting point nearby'), findsNothing);
-      await _tap(tester, 'Try again');
+      expect(
+        find.text('Nie udało się odczytać zapisanych danych rodziny.'),
+        findsOneWidget,
+      );
+      expect(find.text('Punkt spotkania w pobliżu'), findsNothing);
+      await _tap(tester, 'Spróbuj ponownie');
       expect(repository.reads, 2);
-      expect(find.text('Could not read saved family details.'), findsOneWidget);
-      await _tap(tester, 'Use pretend family');
-      expect(find.text('Some contacts are pretend.'), findsOneWidget);
-      await _tap(tester, 'Meeting point out of sight');
+      expect(
+        find.text('Nie udało się odczytać zapisanych danych rodziny.'),
+        findsOneWidget,
+      );
+      await _tap(tester, 'Użyj rodziny na niby');
+      expect(find.text('Część kontaktów jest fikcyjna.'), findsOneWidget);
+      await _tap(tester, 'Punkt spotkania poza zasięgiem wzroku');
       final mission = tester.widget<LostMissionScreen>(
         find.byType(LostMissionScreen),
       );
@@ -126,14 +132,20 @@ void main() {
     );
     await tester.pumpWidget(const MaterialApp(home: PracticeLauncher()));
     await tester.pumpAndSettle();
-    await _tap(tester, 'Practices');
-    await _tap(tester, "I'm lost practice");
-    expect(find.text('Practice meeting point: First point'), findsOneWidget);
+    await _tap(tester, 'Ćwiczenia');
+    await _tap(tester, "Ćwiczenie zgubienia się");
+    expect(
+      find.text('Punkt spotkania do ćwiczeń: First point'),
+      findsOneWidget,
+    );
     await tester.pageBack();
     await tester.pumpAndSettle();
     await repository.save(_configuredPlan);
-    await _tap(tester, "I'm lost practice");
-    expect(find.text('Practice meeting point: Blue help desk'), findsOneWidget);
+    await _tap(tester, "Ćwiczenie zgubienia się");
+    expect(
+      find.text('Punkt spotkania do ćwiczeń: Blue help desk'),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();
@@ -145,7 +157,7 @@ const _configuredPlan = FamilyPlan(
     presetId: 'information_desk',
     label: 'Blue help desk',
   ),
-  contacts: [TrustedContact(name: 'Demo adult', relationship: 'Father')],
+  contacts: [TrustedContact(name: 'Demo adult', relationship: 'Tata')],
 );
 
 class _FailingReadRepository extends FamilyPlanRepository {

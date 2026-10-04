@@ -33,18 +33,18 @@ void main() {
       expect(plan.contacts, hasLength(3));
       expect(await LandmarkRepository().load(), hasLength(3));
       await _child(tester);
-      await _tap(tester, 'Practices');
-      await _tap(tester, 'Alarm practice');
-      await _tap(tester, 'At home');
-      await _wait(tester, find.text('An alarm at home'));
-      await _tap(tester, 'Find a place');
-      await _tap(tester, 'Go to the window');
+      await _tap(tester, 'Ćwiczenia');
+      await _tap(tester, 'Ćwiczenie alarmu');
+      await _tap(tester, 'W domu');
+      await _wait(tester, find.text('Alarm w domu'));
+      await _tap(tester, 'Znajdź miejsce');
+      await _tap(tester, 'Podejdź do okna');
       expect(
-        find.text('Windows are less safe. Move away from them.'),
+        find.text('Przy oknach jest mniej bezpiecznie. Odsuń się od nich.'),
         findsOneWidget,
       );
-      await tester.tap(find.byTooltip('Leave practice'));
-      await _wait(tester, find.text('Choose a scenario'));
+      await tester.tap(find.byTooltip('Opuść ćwiczenie'));
+      await _wait(tester, find.text('Wybierz scenariusz'));
       final error = tester.takeException();
       expect(error, isNull);
       await _dispose(tester);
@@ -58,30 +58,33 @@ void main() {
     (tester) async {
       await _start(tester);
       await _child(tester);
-      await _tap(tester, 'Practices');
-      await _tap(tester, "I'm lost practice");
-      await _wait(tester, find.text('Practice meeting point: Red corner shop'));
+      await _tap(tester, 'Ćwiczenia');
+      await _tap(tester, "Ćwiczenie zgubienia się");
+      await _wait(
+        tester,
+        find.text('Punkt spotkania do ćwiczeń: Czerwony sklep na rogu'),
+      );
       expect(find.byType(LandmarkPhoto), findsWidgets);
-      await _tap(tester, 'Meeting point nearby');
+      await _tap(tester, 'Punkt spotkania w pobliżu');
       await _wait(tester, find.byType(LostMissionScreen));
       final mission = tester.widget<LostMissionScreen>(
         find.byType(LostMissionScreen),
       );
       expect(mission.practiceContext.photoMeetingPoint, isNotNull);
-      await tester.tap(find.byTooltip('Leave practice'));
-      await _wait(tester, find.text('Choose a scenario'));
-      await _tap(tester, 'Reset web demo');
-      await _wait(tester, find.text('Welcome to Tuptu'));
+      await tester.tap(find.byTooltip('Opuść ćwiczenie'));
+      await _wait(tester, find.text('Wybierz scenariusz'));
+      await _tap(tester, 'Zresetuj demo');
+      await _wait(tester, find.text('Witaj w Tuptu'));
       await _child(tester);
-      await _tap(tester, 'Our map');
+      await _tap(tester, 'Nasza mapa');
       await _wait(tester, find.byType(GameScreen));
       // Flame deliberately continues producing frames; settling is not completion.
       await tester.pump(const Duration(seconds: 1));
-      expect(find.text('Our map'), findsWidgets);
+      expect(find.text('Nasza mapa'), findsWidgets);
       final demoPosition = find.byWidgetPredicate(
         (widget) =>
             widget is Semantics &&
-            widget.properties.label == 'Fictional demo position · no GPS',
+            widget.properties.label == 'Fikcyjna pozycja demo · bez GPS',
       );
       await _wait(tester, demoPosition);
       expect(demoPosition, findsOneWidget);
@@ -104,7 +107,7 @@ void main() {
           child: const ChildProfile(fullName: 'Edited demo', age: 11),
         ),
       );
-      await _tap(tester, "I'm a child");
+      await _tap(tester, "Jestem dzieckiem");
       await _wait(tester, find.byKey(const ValueKey('child-age')));
       expect(
         tester
@@ -113,9 +116,12 @@ void main() {
             .text,
         '11',
       );
-      await _tap(tester, 'Reset web demo');
-      await _wait(tester, find.text('Welcome to Tuptu'));
-      expect((await repository.load()).child.fullName, 'Alex Example (demo)');
+      await _tap(tester, 'Zresetuj demo');
+      await _wait(tester, find.text('Witaj w Tuptu'));
+      expect(
+        (await repository.load()).child.fullName,
+        'Aleks Przykładowy (demo)',
+      );
       expect(await LandmarkRepository().load(), hasLength(3));
       expect(find.byKey(const ValueKey('child-age')), findsNothing);
       final error = tester.takeException();
@@ -130,23 +136,22 @@ void main() {
     'help emergency and trusted contact calls remain pretend',
     (tester) async {
       await _start(tester);
-      await _tap(tester, 'I need help · prototype');
-      await _tap(tester, 'No one can help');
-      await _tap(tester, 'Someone is not responding');
-      await _wait(tester, find.text('Call 112 now'));
-      await _tap(tester, 'Call 112 now');
+      await _tap(tester, 'Potrzebuję pomocy · prototyp');
+      await _tap(tester, 'Ktoś nie reaguje');
+      await _wait(tester, find.text('Przećwicz telefon pod 112'));
+      await _tap(tester, 'Przećwicz telefon pod 112');
       await _wait(tester, find.byType(AlertDialog));
-      expect(find.textContaining('No real call'), findsWidgets);
+      expect(find.textContaining('prawdziwego połączenia'), findsWidgets);
       await _closeDialog(tester);
-      await tester.tap(find.byTooltip('Previous step'));
-      await _wait(tester, find.text('What is happening?'));
-      await _tap(tester, 'I am lost');
-      for (final contact in ['Demo Mum', 'Demo Dad', 'Demo Grandma']) {
-        await _tap(tester, 'Call trusted adult');
-        await _wait(tester, find.text('Choose a trusted adult'));
+      await tester.tap(find.byTooltip('Poprzedni krok'));
+      await _wait(tester, find.text('Co się dzieje?'));
+      await _tap(tester, 'Nie wiem, gdzie jestem');
+      for (final contact in ['Mama (demo)', 'Tata (demo)', 'Babcia (demo)']) {
+        await _tap(tester, 'Otwórz telefon, aby zadzwonić do dorosłego');
+        await _wait(tester, find.text('Otwórz telefon, aby zadzwonić do…'));
         await _tap(tester, contact);
         await _wait(tester, find.byType(AlertDialog));
-        expect(find.textContaining('No real call'), findsWidgets);
+        expect(find.textContaining('prawdziwego połączenia'), findsWidgets);
         await _closeDialog(tester);
       }
       final error = tester.takeException();
@@ -165,13 +170,13 @@ Future<void> _start(WidgetTester tester) async {
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
   await tester.pumpWidget(const BaseboundApp());
-  await _wait(tester, find.text("I'm a child"));
+  await _wait(tester, find.text("Jestem dzieckiem"));
   // Welcome requests the mock permission in a post-frame callback.
   await tester.pump(const Duration(milliseconds: 300));
 }
 
 Future<void> _child(WidgetTester tester) async {
-  await _tap(tester, "I'm a child");
+  await _tap(tester, "Jestem dzieckiem");
   await _wait(tester, find.byKey(const ValueKey('child-age')));
   expect(
     tester
@@ -180,17 +185,17 @@ Future<void> _child(WidgetTester tester) async {
         .text,
     '9',
   );
-  await _tap(tester, 'Add my name');
+  await _tap(tester, 'Podaj imię');
   expect(
     tester
         .widget<TextField>(find.byKey(const ValueKey('child-name')))
         .controller!
         .text,
-    'Alex Example (demo)',
+    'Aleks Przykładowy (demo)',
   );
-  await _tap(tester, 'Choose my character');
-  await _tap(tester, 'Start practice');
-  await _wait(tester, find.text('Choose an activity'));
+  await _tap(tester, 'Wybierz postać');
+  await _tap(tester, 'Rozpocznij ćwiczenie');
+  await _wait(tester, find.text('Wybierz zajęcie'));
 }
 
 Future<void> _tap(WidgetTester tester, String label) async {

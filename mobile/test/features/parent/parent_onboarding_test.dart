@@ -17,21 +17,21 @@ void main() {
     tester,
   ) async {
     await _start(tester, const ParentScreen());
-    expect(find.text('Set up your family plan'), findsOneWidget);
-    await _tap(tester, 'Skip child details');
-    expect(find.text('Who can your child contact?'), findsOneWidget);
-    await _tap(tester, 'Skip contacts');
-    expect(find.text('Choose your child’s safe places'), findsOneWidget);
-    await _tap(tester, 'Skip safe places');
-    expect(find.text('Ready to practice together'), findsOneWidget);
-    expect(find.text('Play together'), findsOneWidget);
+    expect(find.text('Przygotuj plan rodziny'), findsOneWidget);
+    await _tap(tester, 'Pomiń dane dziecka');
+    expect(find.text('Z kim dziecko może się skontaktować?'), findsOneWidget);
+    await _tap(tester, 'Pomiń kontakty');
+    expect(find.text('Wybierz bezpieczne miejsca dziecka'), findsOneWidget);
+    await _tap(tester, 'Pomiń bezpieczne miejsca');
+    expect(find.text('Gotowi do wspólnych ćwiczeń'), findsOneWidget);
+    expect(find.text('Ćwiczcie razem'), findsOneWidget);
 
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
-    expect(find.text('Choose your child’s safe places'), findsOneWidget);
-    await _tap(tester, 'Skip safe places');
-    await _tap(tester, 'Review setup');
-    expect(find.text('Set up your family plan'), findsOneWidget);
+    expect(find.text('Wybierz bezpieczne miejsca dziecka'), findsOneWidget);
+    await _tap(tester, 'Pomiń bezpieczne miejsca');
+    await _tap(tester, 'Sprawdź ustawienia');
+    expect(find.text('Przygotuj plan rodziny'), findsOneWidget);
     expect((await FamilyPlanRepository().load()).contacts, isEmpty);
     expect(tester.takeException(), isNull);
   });
@@ -48,29 +48,29 @@ void main() {
       ),
     );
     await _start(tester, const ParentScreen());
-    await _tap(tester, 'Add child details');
+    await _tap(tester, 'Dodaj dane dziecka');
     expect(find.byType(TextField), findsOneWidget);
-    expect(find.text('Step 1 of 4'), findsOneWidget);
+    expect(find.text('Krok 1 z 4'), findsOneWidget);
     await tester.enterText(find.byType(TextField), 'Demo child');
-    await _tap(tester, "Add child's age");
+    await _tap(tester, "Dodaj wiek dziecka");
     expect(find.byType(TextField), findsOneWidget);
-    expect(find.text('Step 2 of 4'), findsOneWidget);
+    expect(find.text('Krok 2 z 4'), findsOneWidget);
     await tester.enterText(find.byType(TextField), '9');
-    await tester.tap(find.byTooltip('Back'));
+    await tester.tap(find.byTooltip('Wstecz'));
     await tester.pumpAndSettle();
     expect(_fieldText(tester), 'Demo child');
-    await _tap(tester, "Add child's age");
+    await _tap(tester, "Dodaj wiek dziecka");
     expect(_fieldText(tester), '9');
-    await _tap(tester, 'Add home address');
+    await _tap(tester, 'Dodaj adres domu');
     expect(find.byType(TextField), findsOneWidget);
     await tester.enterText(find.byType(TextField), 'Fictional home');
-    await _tap(tester, 'Add support needs');
+    await _tap(tester, 'Dodaj potrzeby wsparcia');
     expect(find.byType(TextField), findsOneWidget);
     await tester.enterText(find.byType(TextField), 'Demo support note');
-    await _tap(tester, 'Save child details');
+    await _tap(tester, 'Zapisz dane dziecka');
 
     expect(find.byType(ChildEditorScreen), findsNothing);
-    expect(find.text('Who can your child contact?'), findsOneWidget);
+    expect(find.text('Z kim dziecko może się skontaktować?'), findsOneWidget);
     final child = (await FamilyPlanRepository().load()).child;
     expect(child.fullName, 'Demo child');
     expect(child.age, 9);
@@ -99,21 +99,21 @@ void main() {
       ),
     );
     await _start(tester, const ParentScreen());
-    await _tap(tester, 'Skip child details');
-    await _tap(tester, 'Add a trusted contact');
+    await _tap(tester, 'Pomiń dane dziecka');
+    await _tap(tester, 'Dodaj zaufany kontakt');
     expect(find.byType(TextField), findsOneWidget);
     await tester.enterText(find.byType(TextField), 'Demo adult three');
-    await _tap(tester, 'Add phone number');
+    await _tap(tester, 'Dodaj numer telefonu');
     expect(find.byType(TextField), findsOneWidget);
     await tester.enterText(find.byType(TextField), '000000000');
-    await _tap(tester, 'Add relationship');
+    await _tap(tester, 'Dodaj relację');
     expect(find.byType(TextField), findsOneWidget);
     await tester.enterText(find.byType(TextField), 'Demo parent');
-    await _tap(tester, 'Save trusted contact');
+    await _tap(tester, 'Zapisz zaufany kontakt');
 
     expect(find.text('Demo adult three'), findsOneWidget);
-    expect(find.text('Add a trusted contact'), findsNothing);
-    expect(find.text('Choose safe places'), findsOneWidget);
+    expect(find.text('Dodaj zaufany kontakt'), findsNothing);
+    expect(find.text('Wybierz bezpieczne miejsca'), findsOneWidget);
     final contacts = (await FamilyPlanRepository().load()).contacts;
     expect(contacts.length, FamilyPlan.maxContacts);
     expect(contacts.last.phone, '000000000');
@@ -140,32 +140,41 @@ void main() {
       );
       await _tap(tester, 'Open editor');
       expect(find.byType(TextField), findsOneWidget);
-      await _tap(tester, '🏠 Home');
-      await _tap(tester, 'Choose map location', settle: false);
+      await _tap(tester, '🏠 Dom');
+      await _tap(tester, 'Wybierz pozycję na mapie', settle: false);
       await _pumpMap(tester);
       expect(find.byType(TextField), findsNothing);
-      expect(_saveButton(tester, 'Save safe place').onPressed, isNull);
-      await _tap(tester, 'Use arena centre', settle: false);
+      expect(
+        _saveButton(tester, 'Zapisz bezpieczne miejsce').onPressed,
+        isNull,
+      );
+      await _tap(tester, 'Użyj środka areny', settle: false);
       await tester.pump();
-      expect(_saveButton(tester, 'Save safe place').onPressed, isNotNull);
+      expect(
+        _saveButton(tester, 'Zapisz bezpieczne miejsce').onPressed,
+        isNotNull,
+      );
       final centreLocation = _locationValue(tester);
-      await tester.ensureVisible(find.byTooltip('Move pin north'));
-      await tester.tap(find.byTooltip('Move pin north'));
+      await tester.ensureVisible(find.byTooltip('Przesuń znacznik na północ'));
+      await tester.tap(find.byTooltip('Przesuń znacznik na północ'));
       await tester.pump();
       final retainedLocation = _locationValue(tester);
       expect(retainedLocation, isNot(centreLocation));
-      await tester.tap(find.byTooltip('Back'));
+      await tester.tap(find.byTooltip('Wstecz'));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), 'Demo meeting place');
-      await _tap(tester, 'Choose map location', settle: false);
+      await _tap(tester, 'Wybierz pozycję na mapie', settle: false);
       await _pumpMap(tester);
-      expect(_saveButton(tester, 'Save safe place').onPressed, isNotNull);
       expect(
-        find.text('Location selected. You can move the pin.'),
+        _saveButton(tester, 'Zapisz bezpieczne miejsce').onPressed,
+        isNotNull,
+      );
+      expect(
+        find.text('Pozycja wybrana. Możesz przesunąć znacznik.'),
         findsOneWidget,
       );
       expect(_locationValue(tester), retainedLocation);
-      await _tap(tester, 'Save safe place', settle: false);
+      await _tap(tester, 'Zapisz bezpieczne miejsce', settle: false);
       await tester.pump(const Duration(milliseconds: 500));
       await tester.pumpAndSettle();
 
@@ -201,21 +210,23 @@ void main() {
     );
     await _tap(tester, 'Open editor');
     await tester.enterText(find.byType(TextField), 'Retained demo name');
-    await _tap(tester, "Add child's age");
-    await _tap(tester, 'Add home address');
-    await _tap(tester, 'Add support needs');
+    await _tap(tester, "Dodaj wiek dziecka");
+    await _tap(tester, 'Dodaj adres domu');
+    await _tap(tester, 'Dodaj potrzeby wsparcia');
     await tester.enterText(find.byType(TextField), 'Retained demo note');
-    await _tap(tester, 'Save child details');
+    await _tap(tester, 'Zapisz dane dziecka');
     expect(find.byType(ChildEditorScreen), findsOneWidget);
     expect(_fieldText(tester), 'Retained demo note');
     expect(
-      find.text('Could not save. Your edits are still here. Try again.'),
+      find.text(
+        'Nie udało się zapisać. Twoje zmiany zostały zachowane. Spróbuj ponownie.',
+      ),
       findsOneWidget,
     );
     expect(saved, isNull);
 
     failSave = false;
-    await _tap(tester, 'Save child details');
+    await _tap(tester, 'Zapisz dane dziecka');
     expect(find.byType(ChildEditorScreen), findsNothing);
     expect(saved!.fullName, 'Retained demo name');
     expect(saved!.supportNotes, 'Retained demo note');
@@ -232,24 +243,24 @@ void main() {
       ),
     );
     await _start(tester, const ParentScreen());
-    await _tap(tester, 'Skip child details');
-    await _tap(tester, 'Choose safe places');
-    await _tap(tester, 'Add a practice meeting point');
-    await _tap(tester, 'Use a pretend picture');
-    await _tap(tester, 'Information desk');
+    await _tap(tester, 'Pomiń dane dziecka');
+    await _tap(tester, 'Wybierz bezpieczne miejsca');
+    await _tap(tester, 'Dodaj punkt spotkania do ćwiczeń');
+    await _tap(tester, 'Użyj przykładowego obrazka');
+    await _tap(tester, 'Punkt informacji');
     await tester.enterText(find.byType(TextField), 'Demo help desk');
-    await _tap(tester, 'Save practice meeting point');
+    await _tap(tester, 'Zapisz punkt spotkania do ćwiczeń');
 
     var plan = await FamilyPlanRepository().load();
     expect(plan.practiceMeetingPoint!.presetId, 'information_desk');
     expect(plan.practiceMeetingPoint!.label, 'Demo help desk');
     expect(plan.safePoints.single.name, 'Demo pin');
     expect(plan.contacts.single.name, 'Demo adult');
-    final delete = find.byTooltip('Delete Demo help desk');
+    final delete = find.byTooltip('Usuń Demo help desk');
     await tester.ensureVisible(delete);
     await tester.tap(delete);
     await tester.pumpAndSettle();
-    await _tap(tester, 'Delete');
+    await _tap(tester, 'Usuń');
     plan = await FamilyPlanRepository().load();
     expect(plan.practiceMeetingPoint, isNull);
     expect(plan.safePoints.single.name, 'Demo pin');
@@ -279,21 +290,23 @@ void main() {
     );
     await _tap(tester, 'Open editor');
     expect(
-      find.textContaining('The saved picture is unavailable.'),
+      find.textContaining('Zapisany obrazek jest niedostępny.'),
       findsOneWidget,
     );
-    await _tap(tester, 'Information desk');
+    await _tap(tester, 'Punkt informacji');
     expect(_fieldText(tester), 'Old custom label');
     await tester.enterText(find.byType(TextField), 'Retained meeting label');
-    await _tap(tester, 'Save practice meeting point');
+    await _tap(tester, 'Zapisz punkt spotkania do ćwiczeń');
     expect(saved, isNull);
     expect(_fieldText(tester), 'Retained meeting label');
     expect(
-      find.text('Could not save. Your edits are still here. Try again.'),
+      find.text(
+        'Nie udało się zapisać. Twoje zmiany zostały zachowane. Spróbuj ponownie.',
+      ),
       findsOneWidget,
     );
     failSave = false;
-    await _tap(tester, 'Save practice meeting point');
+    await _tap(tester, 'Zapisz punkt spotkania do ćwiczeń');
     expect(saved!.presetId, 'information_desk');
     expect(saved!.label, 'Retained meeting label');
     expect(tester.takeException(), isNull);
@@ -332,7 +345,7 @@ String _locationValue(WidgetTester tester) => tester
       find.byWidgetPredicate(
         (widget) =>
             widget is Semantics &&
-            widget.properties.label == 'Safe place location',
+            widget.properties.label == 'Pozycja bezpiecznego miejsca',
       ),
     )
     .properties

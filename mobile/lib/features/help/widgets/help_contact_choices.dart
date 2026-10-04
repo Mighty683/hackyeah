@@ -11,7 +11,7 @@ class HelpContactChoices extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SimpleDialog(
-    title: const Text('Choose a trusted adult'),
+    title: const Text('Otwórz telefon, aby zadzwonić do…'),
     children: [
       for (final (index, contact) in contacts.indexed)
         Padding(
@@ -23,12 +23,12 @@ class HelpContactChoices extends StatelessWidget {
                 ? contact.name.trim()
                 : contact.relationship.trim().isNotEmpty
                 ? contact.relationship.trim()
-                : 'Trusted adult ${index + 1}',
+                : 'Zaufana osoba dorosła ${index + 1}',
           ),
         ),
       TextButton(
         onPressed: () => Navigator.of(context).pop(),
-        child: const Text('Back to help'),
+        child: const Text('Wróć do pomocy'),
       ),
     ],
   );

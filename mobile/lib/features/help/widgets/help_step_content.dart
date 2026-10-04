@@ -10,7 +10,8 @@ class HelpStepContent extends StatelessWidget {
     required this.step,
     required this.page,
     required this.nearbyPlaceName,
-    required this.withoutHelper,
+    required this.showHelper,
+    required this.onReturnFromHelper,
     required this.serviceConfirmed,
     required this.showContact,
     required this.showEmergency,
@@ -27,7 +28,8 @@ class HelpStepContent extends StatelessWidget {
   final HelpStep step;
   final HelpPage page;
   final String? nearbyPlaceName;
-  final bool withoutHelper;
+  final bool showHelper;
+  final VoidCallback onReturnFromHelper;
   final bool serviceConfirmed;
   final bool showContact;
   final bool showEmergency;
@@ -48,7 +50,7 @@ class HelpStepContent extends StatelessWidget {
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 24),
           child: Text(
-            'Web demo · phone service is simulated. All calls are pretend.',
+            'Demo w przeglądarce · telefon jest symulowany. Wszystkie połączenia są na niby.',
           ),
         ),
       Expanded(
@@ -91,7 +93,7 @@ class HelpStepContent extends StatelessWidget {
       if (nearbyPlaceName case final String place) ...[
         const SizedBox(height: 12),
         Text(
-          'You may be near $place. This is a saved place.',
+          'Możesz być blisko miejsca: $place. To zapisane miejsce.',
           style: const TextStyle(color: BaseboundColors.muted, fontSize: 16),
         ),
       ],
@@ -109,13 +111,17 @@ class HelpStepContent extends StatelessWidget {
             calm: true,
           ),
           label: Text(
-            loadingContacts ? 'Reading saved contacts…' : 'Call trusted adult',
+            loadingContacts
+                ? 'Odczytywanie zapisanych kontaktów…'
+                : 'Otwórz telefon, aby zadzwonić do dorosłego',
           ),
         ),
       ],
       if (step.offerContact && contactsUnavailable) ...[
         const SizedBox(height: 12),
-        const Text('Saved contacts could not be read. These steps still work.'),
+        const Text(
+          'Nie udało się odczytać kontaktów. Te kroki nadal działają.',
+        ),
       ],
       if (phoneStatus != null) ...[
         const SizedBox(height: 12),
@@ -124,22 +130,27 @@ class HelpStepContent extends StatelessWidget {
           child: _HelpInformation(message: phoneStatus!),
         ),
       ],
-      if (withoutHelper &&
+      if (showHelper &&
           !serviceConfirmed &&
           (step.offerContact || step.urgent)) ...[
         const SizedBox(height: 12),
         const _HelpInformation(
-          message: 'Phone service is not confirmed. These steps work offline.',
+          message: 'Dostępność połączeń nie jest potwierdzona. Te kroki działają offline.',
         ),
       ],
-      if (withoutHelper && step.choices.length < 3)
+      if (page == HelpPage.withHelper)
+        OutlinedButton(
+          onPressed: onReturnFromHelper,
+          child: const Text('Ta osoba nie może pomóc'),
+        ),
+      if (showHelper)
         Align(
           alignment: Alignment.centerLeft,
           child: TextButton.icon(
             style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
             onPressed: () => onChoose(HelpPage.withHelper),
             icon: const BaseboundIcon(BaseboundIconName.adult, calm: true),
-            label: const Text('Someone can help now'),
+            label: const Text('Zaufana osoba dorosła jest tutaj'),
           ),
         ),
     ],
@@ -193,7 +204,7 @@ class HelpStepContent extends StatelessWidget {
           OutlinedButton.icon(
             onPressed: openingDialler ? null : onEmergency,
             icon: const BaseboundIcon(BaseboundIconName.phone, calm: true),
-            label: const Text('Call 112'),
+            label: const Text('Przećwicz telefon pod 112'),
           )
         else
           FilledButton.icon(
@@ -203,11 +214,11 @@ class HelpStepContent extends StatelessWidget {
               color: Colors.white,
               calm: true,
             ),
-            label: Text(step.urgent ? 'Call 112 now' : 'Call 112'),
+            label: const Text('Przećwicz telefon pod 112'),
           ),
         const SizedBox(height: 8),
         const Text(
-          'Demo only. Opens a popup. No real call.',
+          'Tylko demo. Otwiera okno. Bez prawdziwego połączenia.',
           style: TextStyle(color: BaseboundColors.muted, fontSize: 14),
         ),
       ],
@@ -239,8 +250,8 @@ class _PrototypeNotice extends StatelessWidget {
         SizedBox(width: 12),
         Expanded(
           child: Text(
-            'Unreviewed prototype. Not for real emergencies. '
-            'Do not make test calls to 112.',
+            'Prototyp bez oceny specjalisty. Nie do prawdziwych zagrożeń. '
+            'Nie wykonuj próbnych połączeń pod 112.',
             style: TextStyle(
               color: BaseboundColors.ink,
               fontSize: 14,

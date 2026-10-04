@@ -22,7 +22,7 @@ class OfflinePointPicker extends StatefulWidget {
     required this.otherPoints,
     required this.onSelected,
     this.initialPoint,
-    this.selectionLabel = 'safe place',
+    this.selectionLabel = 'bezpieczne miejsce',
     this.selectionIcon = '📍',
     this.selectionPhotoPath,
     super.key,
@@ -60,8 +60,8 @@ class _OfflinePointPickerState extends State<OfflinePointPicker> {
       children: [
         Semantics(
           label:
-              'Offline Kraków map. Tap to choose a ${widget.selectionLabel}. '
-              'Alternatively, use the direction buttons below.',
+              'Mapa Krakowa offline. Dotknij, aby wybrać: ${widget.selectionLabel}. '
+              'Możesz też użyć przycisków kierunku poniżej.',
           child: AspectRatio(
             aspectRatio: 1,
             child: Container(
@@ -81,7 +81,7 @@ class _OfflinePointPickerState extends State<OfflinePointPicker> {
                     child: Padding(
                       padding: EdgeInsets.all(16),
                       child: Text(
-                        'Map could not load. Go back and try again.',
+                        'Nie udało się wczytać mapy. Wróć i spróbuj ponownie.',
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -93,7 +93,7 @@ class _OfflinePointPickerState extends State<OfflinePointPicker> {
         ),
         const SizedBox(height: 8),
         const Text(
-          'Map data © OpenStreetMap contributors · ODbL 1.0',
+          'Dane mapy © autorzy OpenStreetMap · ODbL 1.0',
           style: TextStyle(fontSize: 12, color: BaseboundColors.muted),
           textAlign: TextAlign.center,
         ),
@@ -110,7 +110,7 @@ class _OfflinePointPickerState extends State<OfflinePointPicker> {
             children: [
               TextButton(
                 onPressed: _game.selectCenter,
-                child: const Text('Use arena centre'),
+                child: const Text('Użyj środka areny'),
               ),
               Wrap(
                 alignment: WrapAlignment.center,
@@ -118,25 +118,25 @@ class _OfflinePointPickerState extends State<OfflinePointPicker> {
                 children: [
                   _directionButton(
                     icon: BaseboundIconName.up,
-                    tooltip: 'Move pin north',
+                    tooltip: 'Przesuń znacznik na północ',
                     dx: 0,
                     dy: -12,
                   ),
                   _directionButton(
                     icon: BaseboundIconName.down,
-                    tooltip: 'Move pin south',
+                    tooltip: 'Przesuń znacznik na południe',
                     dx: 0,
                     dy: 12,
                   ),
                   _directionButton(
                     icon: BaseboundIconName.back,
-                    tooltip: 'Move pin west',
+                    tooltip: 'Przesuń znacznik na zachód',
                     dx: -12,
                     dy: 0,
                   ),
                   _directionButton(
                     icon: BaseboundIconName.next,
-                    tooltip: 'Move pin east',
+                    tooltip: 'Przesuń znacznik na wschód',
                     dx: 12,
                     dy: 0,
                   ),

@@ -71,7 +71,10 @@ class LostPracticeLoader {
       final home = plan.safePoints
           .where(
             (point) =>
-                (point.name.trim().toLowerCase() == 'home' ||
+                (const {
+                      'home',
+                      'dom',
+                    }.contains(point.name.trim().toLowerCase()) ||
                     const {'🏠', '🏡'}.contains(point.icon)) &&
                 loadedMap.contains(point.latitude, point.longitude),
           )

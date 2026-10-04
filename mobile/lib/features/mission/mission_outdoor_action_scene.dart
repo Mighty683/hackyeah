@@ -162,13 +162,13 @@ class MissionOutdoorActionScene extends StatelessWidget {
     return Semantics(
       image: true,
       label: withAdult
-          ? 'A trusted adult is nearby. The child stays down with their head covered.'
+          ? 'Zaufana osoba dorosła jest blisko. Dziecko zostaje nisko z osłoniętą głową.'
           : switch (pose) {
               OutdoorPose.standing =>
-                'The child is still outside on the same street.',
-              OutdoorPose.lowered => 'The child is down low on the street.',
+                'Dziecko nadal jest na zewnątrz, na tej samej ulicy.',
+              OutdoorPose.lowered => 'Dziecko leży nisko na ulicy.',
               OutdoorPose.protected =>
-                'The child stays down and covers their head with both arms.',
+                'Dziecko zostaje nisko i osłania głowę obiema rękami.',
             },
       child: Stack(
         fit: StackFit.expand,

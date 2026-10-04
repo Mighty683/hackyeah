@@ -1,12 +1,9 @@
 /// Offline orientation content, not medical triage or reviewed safety advice.
 /// Source passages and release limitations are recorded in docs/EMERGENCY_HELP.md.
 enum HelpPage {
-  helpers,
-  checkHelper,
   withHelper,
   situations,
   unresponsive,
-  unresponsiveOffline,
   operator,
   airLocation,
   airInside,
@@ -15,6 +12,7 @@ enum HelpPage {
   airUnknown,
   airStairs,
   airStay,
+  airBlocked,
   lostNoAdult,
   unsure,
 }
@@ -42,108 +40,103 @@ class HelpStep {
   final bool urgent;
   final bool offerContact;
 
-  /// Offered only after no helper is confirmed and phone service is reported.
+  /// Offline pretend-call action; never depends on telephone service.
   final bool offerEmergency;
 }
 
 const helpSteps = <HelpPage, HelpStep>{
-  HelpPage.helpers: HelpStep(
-    title: 'Can someone nearby help you?',
-    note: 'A trusted adult, police officer or shop worker.',
-    choices: [
-      HelpChoice('Yes', HelpPage.withHelper),
-      HelpChoice('No one can help', HelpPage.situations),
-      HelpChoice('I’m not sure', HelpPage.checkHelper),
-    ],
-  ),
-  HelpPage.checkHelper: HelpStep(
-    title: 'Is a trusted adult or helper already nearby?',
-    note: 'You do not need to walk around to answer.',
-    choices: [
-      HelpChoice('Someone can help', HelpPage.withHelper),
-      HelpChoice('No one can help', HelpPage.situations),
-    ],
-  ),
   HelpPage.withHelper: HelpStep(
-    title: 'Tell that adult what happened.',
-    note: 'Do not leave with someone you do not know.',
-    choices: [HelpChoice('They cannot help', HelpPage.situations)],
+    title: 'Powiedz tej osobie dorosłej, co się stało.',
+    note: 'Nie odchodź z osobą, której nie znasz.',
   ),
   HelpPage.situations: HelpStep(
-    title: 'What is happening?',
+    title: 'Co się dzieje?',
     choices: [
-      HelpChoice('Someone is not responding', HelpPage.unresponsive),
-      HelpChoice('Air raid', HelpPage.airLocation),
-      HelpChoice('I am lost', HelpPage.lostNoAdult),
-      HelpChoice('I don’t know', HelpPage.unsure),
+      HelpChoice('Ktoś nie reaguje', HelpPage.unresponsive),
+      HelpChoice('Alarm lotniczy', HelpPage.airLocation),
+      HelpChoice('Nie wiem, gdzie jestem', HelpPage.lostNoAdult),
+      HelpChoice('Nie wiem', HelpPage.unsure),
     ],
   ),
   HelpPage.unresponsive: HelpStep(
-    title: 'Call 112 now.',
-    note: 'Do not wait for a parent to answer.',
+    title: 'Przećwicz telefon pod 112.',
+    note: 'Nie czekaj, aż rodzic odbierze.',
     urgent: true,
     offerEmergency: true,
-    choices: [HelpChoice('Practise the next step', HelpPage.operator)],
-  ),
-  HelpPage.unresponsiveOffline: HelpStep(
-    title: 'Shout for an adult’s help.',
-    note:
-        'Do not approach if the place is dangerous. '
-        'This app cannot provide complete first-aid instructions.',
-    urgent: true,
+    choices: [HelpChoice('Przećwicz następny krok', HelpPage.operator)],
   ),
   HelpPage.operator: HelpStep(
-    title: 'Follow the emergency operator’s instructions.',
-    note: 'Stay on the call until they tell you to stop.',
+    title: 'Wykonuj polecenia operatora numeru alarmowego.',
+    note: 'Nie rozłączaj się, dopóki operator na to nie pozwoli.',
     urgent: true,
   ),
   HelpPage.airLocation: HelpStep(
-    title: 'Where are you now?',
+    title: 'Gdzie teraz jesteś?',
     choices: [
-      HelpChoice('Inside a building', HelpPage.airInside),
-      HelpChoice('Outside', HelpPage.airOutside),
-      HelpChoice('Outside, hearing explosions', HelpPage.airExplosion),
-      HelpChoice('I don’t know', HelpPage.airUnknown),
+      HelpChoice('W budynku', HelpPage.airInside),
+      HelpChoice('Na zewnątrz, nie słychać wybuchów', HelpPage.airOutside),
+      HelpChoice('Na zewnątrz, słychać wybuchy', HelpPage.airExplosion),
+      HelpChoice('Nie wiem', HelpPage.airUnknown),
     ],
   ),
   HelpPage.airInside: HelpStep(
-    title: 'Stay away from windows.',
-    choices: [HelpChoice('Read the shelter step', HelpPage.airStairs)],
+    title: 'Zostań z dala od okien.',
+    choices: [HelpChoice('Przeczytaj krok o schronieniu', HelpPage.airStairs)],
   ),
   HelpPage.airOutside: HelpStep(
-    title: 'Use nearby shelter if you can reach it.',
+    title: 'Skorzystaj z pobliskiego schronienia, jeśli możesz tam dotrzeć.',
     note:
-        'Official guidance lists basements and underground passages. '
-        'This app has no verified shelter map.',
-    choices: [HelpChoice('I reached shelter', HelpPage.airStay)],
+        'Oficjalne zalecenia wymieniają piwnice i przejścia podziemne. '
+        'Aplikacja nie ma zweryfikowanej mapy schronień.',
+    choices: [
+      HelpChoice('Jestem w schronieniu', HelpPage.airStay),
+      HelpChoice('Nie mogę dotrzeć do schronienia', HelpPage.airBlocked),
+    ],
   ),
   HelpPage.airExplosion: HelpStep(
-    title: 'Lie down and cover your head.',
+    title: 'Połóż się i osłoń głowę.',
     note:
-        'For explosions while outside, use a dip in the ground '
-        'if one is within reach.',
+        'Przy wybuchach na zewnątrz skorzystaj z zagłębienia terenu, '
+        'jeśli jest w zasięgu.',
   ),
   HelpPage.airUnknown: HelpStep(
-    title: 'Ask a trusted adult to help you find shelter.',
-    choices: [HelpChoice('I reached shelter', HelpPage.airStay)],
+    title: 'Poproś zaufaną osobę dorosłą o pomoc w znalezieniu schronienia.',
+    choices: [
+      HelpChoice('Jestem w schronieniu', HelpPage.airStay),
+      HelpChoice('Żaden dorosły nie może pomóc', HelpPage.airBlocked),
+    ],
   ),
   HelpPage.airStairs: HelpStep(
-    title: 'Use your agreed shelter route, if you know it.',
-    note: 'Use stairs, not lifts. The game’s base is not a shelter.',
-    choices: [HelpChoice('I reached shelter', HelpPage.airStay)],
+    title: 'Skorzystaj z ustalonej drogi do schronienia, jeśli ją znasz.',
+    note:
+        'Korzystaj ze schodów, nie z windy. Baza z gry nie jest schronieniem.',
+    choices: [
+      HelpChoice('Jestem w schronieniu', HelpPage.airStay),
+      HelpChoice('Nie znam drogi', HelpPage.airBlocked),
+      HelpChoice('Nie mogę dotrzeć do schronienia', HelpPage.airBlocked),
+    ],
+  ),
+  HelpPage.airBlocked: HelpStep(
+    title: 'Stosuj się do oficjalnych poleceń.',
+    note:
+        'To ćwiczenie nie znajdzie bezpiecznej drogi do schronienia. '
+        'Jeśli zaufana osoba dorosła jest blisko, poproś ją o pomoc.',
+    choices: [
+      HelpChoice('Wybierz moją pozycję ponownie', HelpPage.airLocation),
+    ],
   ),
   HelpPage.airStay: HelpStep(
-    title: 'Stay in shelter and follow official instructions.',
+    title: 'Zostań w schronieniu i stosuj się do oficjalnych poleceń.',
   ),
   HelpPage.lostNoAdult: HelpStep(
-    title: 'Stay here unless there is danger.',
-    note: 'Do not leave with someone you do not know.',
+    title: 'Zostań tutaj, chyba że jest niebezpiecznie.',
+    note: 'Nie odchodź z osobą, której nie znasz.',
     offerContact: true,
     offerEmergency: true,
   ),
   HelpPage.unsure: HelpStep(
-    title: 'Call out for an adult’s help.',
-    note: 'You do not need to investigate what happened.',
+    title: 'Zawołaj dorosłego na pomoc.',
+    note: 'Nie musisz sprawdzać, co się stało.',
     offerContact: true,
     offerEmergency: true,
   ),

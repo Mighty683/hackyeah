@@ -2,7 +2,7 @@
 
 This folder bundles audio for a fictional, unreviewed training mission. The cues
 are brief playback excerpts, not complete emergency signals. Narration uses an
-installed offline Android English text-to-speech voice; no speech is downloaded
+installed offline Android Polish text-to-speech voice; no speech is downloaded
 or generated through a remote service. If no suitable voice is installed, the
 app asks for adult help and permits another initialization attempt.
 
@@ -46,7 +46,7 @@ demo audio and has no third-party attribution requirement.
 Each new instruction cancels the previous cue and speech. Exiting or pausing the
 activity stops audio; disposing the screen releases text-to-speech resources.
 Network-required voices and voices marked not installed are rejected. Android
-voice availability remains device-dependent; prepare an offline English voice
+voice availability remains device-dependent; prepare an offline Polish voice
 before a child-facing demo.
 
 ## Original interaction sounds

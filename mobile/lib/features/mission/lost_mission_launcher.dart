@@ -100,19 +100,19 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
 
   String get _instruction {
     if (_loadFailed) {
-      return 'Your saved details could not be read. '
-          'Try again, or use a pretend family for practice.';
+      return 'Nie udało się odczytać zapisanych danych. '
+          'Spróbuj ponownie lub ćwicz z rodziną na niby.';
     }
     if (_needsMeetingPoint) {
-      return 'Ask an adult to choose your meeting place and photo.';
+      return 'Poproś dorosłego o wybranie miejsca spotkania i zdjęcia.';
     }
     final detail = _practiceContext?.usesFictionalDetails == true
-        ? 'Some family details are pretend. '
+        ? 'Część danych rodziny jest fikcyjna. '
         : '';
-    return 'This is pretend practice. No calls or messages are sent. '
+    return 'To ćwiczenie na niby. Nie wykonujemy połączeń ani nie wysyłamy wiadomości. '
         '$detail'
-        'Your practice meeting point is ${_practiceContext?.meetingPointLabel}. '
-        'Choose a scene. The meeting point is nearby, or out of sight.';
+        'Twój punkt spotkania do ćwiczeń: ${_practiceContext?.meetingPointLabel}. '
+        'Wybierz scenę. Punkt spotkania jest blisko lub poza zasięgiem wzroku.';
   }
 
   Future<void> _speak() async {
@@ -206,7 +206,7 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
     return Scaffold(
       appBar: AppBar(
         leading: Navigator.canPop(context) ? const BaseboundBackButton() : null,
-        title: const Text('Lost practice · 7+'),
+        title: const Text('Ćwiczenie: zgubienie się · 7+'),
       ),
       body: IllustratedBackdrop(
         warm: true,
@@ -234,7 +234,7 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
           SizedBox(height: 20),
           CircularProgressIndicator(),
           SizedBox(height: 20),
-          Text('Loading your practice family'),
+          Text('Wczytywanie rodziny do ćwiczeń'),
         ],
       );
     }
@@ -242,7 +242,7 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const Text(
-          'Pretend practice. No calls or messages.',
+          'Ćwiczenie na niby. Bez połączeń i wiadomości.',
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 20),
@@ -257,20 +257,20 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
           OutlinedButton.icon(
             onPressed: _opening ? null : _speak,
             icon: const BaseboundIcon(BaseboundIconName.speaker),
-            label: const Text('Replay audio'),
+            label: const Text('Posłuchaj ponownie'),
           ),
         if (!_audioAvailable) ...[
           const SizedBox(height: 12),
           const Text(
             kIsWeb
-                ? 'Web demo: voice and sounds are off. Read the instructions with an adult.'
-                : 'Voice is unavailable. Ask an adult to help. '
-                      'An offline English voice is needed.',
+                ? 'Demo w przeglądarce: głos i dźwięki są wyłączone. Czytaj instrukcje z dorosłym.'
+                : 'Głos jest niedostępny. Poproś dorosłego o pomoc. '
+                      'Potrzebny jest polski głos offline.',
           ),
           if (!kIsWeb)
             TextButton(
               onPressed: _opening ? null : _speak,
-              child: const Text('Try voice again'),
+              child: const Text('Spróbuj włączyć głos ponownie'),
             ),
         ],
       ],
@@ -281,15 +281,15 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
     const BaseboundMascot(size: 100, pose: DinoPose.calm),
     const SizedBox(height: 12),
     const Text(
-      'Could not read saved family details.',
+      'Nie udało się odczytać zapisanych danych rodziny.',
       style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800),
     ),
     const SizedBox(height: 20),
-    FilledButton(onPressed: _load, child: const Text('Try again')),
+    FilledButton(onPressed: _load, child: const Text('Spróbuj ponownie')),
     const SizedBox(height: 12),
     OutlinedButton(
       onPressed: _useFictionalFamily,
-      child: const Text('Use pretend family'),
+      child: const Text('Użyj rodziny na niby'),
     ),
   ];
 
@@ -306,17 +306,20 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
         LostLandmarkIllustration(presetId: practice.meetingPoint.presetId),
       const SizedBox(height: 12),
       Text(
-        'Practice meeting point: ${practice.meetingPointLabel}',
+        'Punkt spotkania do ćwiczeń: ${practice.meetingPointLabel}',
         textAlign: TextAlign.center,
         style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
       ),
       if (practice.contacts.any((contact) => contact.isFictional)) ...[
         const SizedBox(height: 8),
-        const Text('Some contacts are pretend.', textAlign: TextAlign.center),
+        const Text(
+          'Część kontaktów jest fikcyjna.',
+          textAlign: TextAlign.center,
+        ),
       ],
       const SizedBox(height: 24),
       const Text(
-        'Choose your practice scene',
+        'Wybierz scenę do ćwiczenia',
         style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800),
       ),
       const SizedBox(height: 16),
@@ -325,7 +328,7 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
             ? null
             : () => _openVariant(LostPracticeVariant.meetingPointNearby),
         icon: const BaseboundIcon(BaseboundIconName.pin),
-        label: const Text('Meeting point nearby'),
+        label: const Text('Punkt spotkania w pobliżu'),
       ),
       const SizedBox(height: 12),
       OutlinedButton.icon(
@@ -333,7 +336,7 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
             ? null
             : () => _openVariant(LostPracticeVariant.meetingPointUnavailable),
         icon: const BaseboundIcon(BaseboundIconName.lost),
-        label: const Text('Meeting point out of sight'),
+        label: const Text('Punkt spotkania poza zasięgiem wzroku'),
       ),
     ];
   }
@@ -342,16 +345,16 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
     const SizedBox(height: 12),
     Text(
       _practiceContext?.meetingPointUnavailable == true
-          ? 'Your meeting place or photo is unavailable.'
-          : 'Ask an adult to choose your meeting place.',
+          ? 'Miejsce spotkania lub zdjęcie jest niedostępne.'
+          : 'Poproś dorosłego o wybranie miejsca spotkania.',
       textAlign: TextAlign.center,
     ),
     const SizedBox(height: 16),
     FilledButton(
       onPressed: _openParentSetup,
-      child: const Text('Parent setup'),
+      child: const Text('Ustawienia rodziny'),
     ),
     const SizedBox(height: 12),
-    OutlinedButton(onPressed: _load, child: const Text('Try again')),
+    OutlinedButton(onPressed: _load, child: const Text('Spróbuj ponownie')),
   ];
 }

@@ -77,7 +77,7 @@ class _LostMissionScreenState extends State<LostMissionScreen>
     final step = _session.step;
     if (!step.isDecision) return step.narration;
     final choices = step.choices.map((choice) => choice.label).join('. ');
-    return '${step.narration} Your choices are: $choices.';
+    return '${step.narration} Możesz wybrać: $choices.';
   }
 
   Future<void> _narrate() =>
@@ -156,11 +156,11 @@ class _LostMissionScreenState extends State<LostMissionScreen>
       appBar: AppBar(
         leading: BaseboundBackButton(
           enabled: !_exiting,
-          tooltip: 'Leave practice',
+          tooltip: 'Opuść ćwiczenie',
           onPressed: _exiting ? null : () => unawaited(_exit()),
         ),
         title: const Text(
-          'Practice only · 7+',
+          'Tylko ćwiczenie · 7+',
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(fontSize: 18),
@@ -185,7 +185,7 @@ class _LostMissionScreenState extends State<LostMissionScreen>
   );
 
   Widget _replayButton() => Semantics(
-    label: 'Replay audio',
+    label: 'Posłuchaj ponownie',
     button: true,
     enabled: _narration.ready && !_exiting,
     onTap: _narration.ready && !_exiting ? () => unawaited(_narrate()) : null,
@@ -194,7 +194,7 @@ class _LostMissionScreenState extends State<LostMissionScreen>
         onPressed: _narration.ready && !_exiting
             ? () => unawaited(_narrate())
             : null,
-        tooltip: 'Replay audio',
+        tooltip: 'Posłuchaj ponownie',
         icon: BaseboundIcon(
           BaseboundIconName.speaker,
           color: _narration.speaking ? BaseboundColors.blue : null,
@@ -281,7 +281,7 @@ class _LostMissionScreenState extends State<LostMissionScreen>
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       const Text(
-        'Unreviewed training · not for real emergencies',
+        'Ćwiczenie bez oceny specjalisty · nie do prawdziwych zagrożeń',
         textAlign: TextAlign.center,
         style: TextStyle(fontSize: 13, color: BaseboundColors.muted),
       ),
@@ -289,7 +289,7 @@ class _LostMissionScreenState extends State<LostMissionScreen>
         const Padding(
           padding: EdgeInsets.only(top: 5),
           child: Text(
-            'Some contacts are pretend.',
+            'Część kontaktów jest fikcyjna.',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 13, color: BaseboundColors.muted),
           ),
@@ -339,9 +339,9 @@ class _LostMissionScreenState extends State<LostMissionScreen>
       ),
       label: Text(
         retry
-            ? 'Try again'
+            ? 'Spróbuj ponownie'
             : _session.hasFeedback
-            ? 'Next step'
+            ? 'Następny krok'
             : _session.step.actionLabel,
         textAlign: TextAlign.center,
       ),
@@ -353,7 +353,7 @@ class _LostMissionScreenState extends State<LostMissionScreen>
     if (_narration.initializing) {
       return const Padding(
         padding: EdgeInsets.only(top: 10),
-        child: Text('Getting the voice ready…', textAlign: TextAlign.center),
+        child: Text('Przygotowywanie głosu…', textAlign: TextAlign.center),
       );
     }
     if (_narration.ready) return const SizedBox.shrink();
@@ -367,8 +367,8 @@ class _LostMissionScreenState extends State<LostMissionScreen>
           children: [
             const Text(
               kIsWeb
-                  ? 'Web demo has no narration. Ask an adult to read each step with you.'
-                  : 'The voice is unavailable. Ask an adult to read each step with you.',
+                  ? 'Demo w przeglądarce nie ma narracji. Poproś dorosłego o przeczytanie kolejnych kroków.'
+                  : 'Głos jest niedostępny. Poproś dorosłego o przeczytanie kolejnych kroków.',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 17),
             ),
@@ -378,7 +378,7 @@ class _LostMissionScreenState extends State<LostMissionScreen>
                     ? null
                     : () => unawaited(_initializeAudio(retry: true)),
                 icon: const BaseboundIcon(BaseboundIconName.replay),
-                label: const Text('Try the voice again'),
+                label: const Text('Spróbuj włączyć głos ponownie'),
                 style: TextButton.styleFrom(minimumSize: const Size(64, 52)),
               ),
           ],
@@ -431,7 +431,7 @@ class _LostMissionScreenState extends State<LostMissionScreen>
       Expanded(
         child: SingleChildScrollView(
           controller: _scroll,
-          child: _summaryContent('Practice complete'),
+          child: _summaryContent('Ćwiczenie ukończone'),
         ),
       ),
       const SizedBox(height: 16),
@@ -439,13 +439,13 @@ class _LostMissionScreenState extends State<LostMissionScreen>
         key: const ValueKey('lost-restart'),
         onPressed: _exiting ? null : _restart,
         icon: const BaseboundIcon(BaseboundIconName.replay),
-        label: const Text('Play again'),
+        label: const Text('Ćwicz ponownie'),
         style: FilledButton.styleFrom(minimumSize: const Size(64, 64)),
       ),
       TextButton.icon(
         onPressed: _exiting ? null : () => unawaited(_exit()),
         icon: const BaseboundIcon(BaseboundIconName.home),
-        label: const Text('Back to practice choices'),
+        label: const Text('Wróć do wyboru ćwiczeń'),
         style: TextButton.styleFrom(minimumSize: const Size(64, 56)),
       ),
     ],

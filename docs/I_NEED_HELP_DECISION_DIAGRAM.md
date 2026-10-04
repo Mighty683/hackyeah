@@ -1,124 +1,84 @@
 # “I need help” — decision diagram
 
-Updated: 2026-10-03. Documents the implemented Android help prototype.
+Updated: 2026-10-04. Documents the implemented Android help prototype.
 
-**Unreviewed prototype. Not for real emergencies.** These diagrams describe the app's current decisions and actions, not a validated emergency or medical protocol. The helper-first sequence and phone-service conditions are MVP showcase policy. See [EMERGENCY_HELP.md](EMERGENCY_HELP.md) for limitations and review requirements.
+**Unreviewed prototype. Not for real emergencies.** This is not a validated emergency or medical protocol. See [EMERGENCY_HELP.md](EMERGENCY_HELP.md).
 
-## Helper and situation decisions
+## Situation and helper decisions
 
-Rectangles are screens or actions. Diamonds are questions; the phone-service diamond is an automatic app condition, not a question shown to the child. Arrow labels identify the selected answer or action.
+Help opens directly on four situation choices. Adult support is optional on instruction screens, including shelter steps. It preserves the current scenario; **They cannot help** or Back returns to that instruction. It is absent from situation and air-location selection to keep those questions focused.
 
 ```mermaid
 flowchart TD
-    ENTRY["Tap I need help · prototype<br/>Welcome, startup/loading error, or map"]
-    HELPERS{"Can someone nearby help you?"}
-    CHECK{"Is a trusted adult or helper already nearby?"}
-    ADULT["Tell that adult what happened.<br/>Do not leave with someone you do not know."]
-    SITUATION{"What is happening?"}
-    SERVICE{"App condition:<br/>normal or emergency-only phone service reported?"}
-    CALL["Call 112 now.<br/>112 button opens a pretend-call dialog only."]
-    OFFLINE["Shout for an adult's help.<br/>Do not approach a dangerous place.<br/>No complete first-aid instructions."]
-    OPERATOR["Follow the emergency operator's instructions.<br/>Practice screen; no connected call is claimed."]
-    AIR["Air-raid location question<br/>See the air-raid diagram below."]
-    LOST["Stay here unless there is danger.<br/>Do not leave with someone you do not know."]
-    UNSURE["Call out for an adult's help.<br/>You do not need to investigate what happened."]
-    ACTIONS["Conditional phone buttons<br/>See the phone-action diagram below."]
-
-    ENTRY --> HELPERS
-    HELPERS -->|Yes| ADULT
-    HELPERS -->|No one can help| SITUATION
-    HELPERS -->|I'm not sure| CHECK
-    CHECK -->|Someone can help| ADULT
-    CHECK -->|No one can help| SITUATION
-    ADULT -->|They cannot help| SITUATION
-    SITUATION -->|Someone is not responding| SERVICE
-    SERVICE -->|Yes| CALL
-    SERVICE -->|Unknown or unavailable| OFFLINE
-    CALL -->|Practise the next step| OPERATOR
-    SITUATION -->|Air raid| AIR
-    SITUATION -->|I am lost| LOST
-    SITUATION -->|I don't know| UNSURE
-    LOST --> ACTIONS
-    UNSURE --> ACTIONS
+    ENTRY["Tap I need help · prototype"] --> SITUATION{"What is happening?"}
+    SITUATION -->|Someone is not responding| CALL["Practise calling 112"]
+    CALL -->|Practise the next step| OPERATOR["Follow the emergency operator's instructions"]
+    SITUATION -->|Air raid| AIR["Where are you now?"]
+    SITUATION -->|I am lost| LOST["Stay here unless there is danger"]
+    SITUATION -->|I don't know| UNSURE["Call out for an adult's help"]
+    INSTRUCTION["Any scenario instruction"] -->|A trusted adult is here| ADULT["Tell that adult what happened"]
+    ADULT -->|They cannot help or Back| INSTRUCTION
 ```
 
-The not-responding branch also follows the initial helper question. With unknown or unavailable service, its offline screen has neither a 112 button nor **Practise the next step**. Service changes update the current instruction and available actions without repeating the helper questions.
+Practice calling and operator practice work with unknown or unavailable service. No call connection is claimed. The unresponsive-person content remains incomplete first aid.
 
 ## Air-raid decisions
 
-This branch has no phone buttons, shelter map or route calculation. The app asks the child where they are; GPS does not answer this question.
+No phone actions, shelter map or route calculation. GPS never answers the location question.
 
 ```mermaid
 flowchart TD
     LOCATION{"Where are you now?"}
-    INSIDE["Stay away from windows."]
-    STAIRS["Use your agreed shelter route, if you know it.<br/>Use stairs, not lifts.<br/>The game's base is not a shelter."]
-    OUTSIDE["Use nearby shelter if you can reach it.<br/>No verified shelter map."]
-    EXPLOSIONS["Lie down and cover your head.<br/>Use a dip in the ground if within reach."]
-    UNKNOWN["Ask a trusted adult to help you find shelter."]
-    STAY["Stay in shelter and follow official instructions."]
-
-    LOCATION -->|Inside a building| INSIDE
-    LOCATION -->|Outside| OUTSIDE
-    LOCATION -->|Outside, hearing explosions| EXPLOSIONS
-    LOCATION -->|I don't know| UNKNOWN
-    INSIDE -->|Read the shelter step| STAIRS
-    STAIRS -->|I reached shelter| STAY
+    LOCATION -->|Inside a building| INSIDE["Stay away from windows"]
+    LOCATION -->|Outside, no explosions heard| OUTSIDE["Use nearby shelter if you can reach it"]
+    LOCATION -->|Outside, hearing explosions| EXPLOSIONS["Lie down and cover your head"]
+    LOCATION -->|I don't know| UNKNOWN["Ask a trusted adult to help you find shelter"]
+    INSIDE -->|Read the shelter step| STAIRS["Use your agreed shelter route, if you know it; use stairs"]
+    STAIRS -->|I reached shelter| STAY["Stay in shelter and follow official instructions"]
     OUTSIDE -->|I reached shelter| STAY
     UNKNOWN -->|I reached shelter| STAY
+    STAIRS -->|I don't know the way / I can't reach shelter| BLOCKED["Follow official instructions; this practice cannot find a safe shelter route"]
+    OUTSIDE -->|I can't reach shelter| BLOCKED
+    UNKNOWN -->|No adult can help| BLOCKED
+    BLOCKED -->|Choose my location again| LOCATION
 ```
 
-**I reached shelter** is the child's answer, not verified arrival. The explosion instruction has no subsequent scenario step; Back and the helper-return action remain available.
+The fallback exposes the app's limit, not a new evacuation protocol or verified route. Adult support remains optional there. **I reached shelter** is self-reported. The explosion instruction retains Back and adult support; it does not imply that danger has ended.
 
-## Phone-action decisions
-
-These conditions run automatically after no helper is confirmed. Offline instructions stay visible regardless of service. The buttons below are optional actions, not automatic calls or required next steps.
+## Phone actions
 
 ```mermaid
 flowchart TD
-    INSTRUCTION["Lost or I don't know instruction<br/>No helper confirmed"]
-    SERVICE{"Reported phone service?"}
-    CONTACTS{"At least one usable saved contact?"}
-    BOTH["Show Call trusted adult<br/>and Call 112"]
-    EMERGENCY["Show Call 112 only"]
-    NONE["Hide phone buttons<br/>Keep offline instruction"]
-    MOCK["Native pretend-call dialog<br/>No real 112 call or dialler launch"]
-    COUNT{"One usable contact?"}
-    PICK["Choose a trusted adult"]
-    PHONE["Open real phone app with selected number<br/>Does not automatically place or confirm a call"]
-
-    INSTRUCTION --> SERVICE
-    SERVICE -->|Normal| CONTACTS
-    SERVICE -->|Emergency-only| EMERGENCY
-    SERVICE -->|Unknown or unavailable| NONE
-    CONTACTS -->|Yes| BOTH
-    CONTACTS -->|No| EMERGENCY
-    BOTH -->|Tap Call 112| MOCK
-    EMERGENCY -->|Tap Call 112| MOCK
-    BOTH -->|Tap Call trusted adult| COUNT
-    COUNT -->|Yes| PHONE
-    COUNT -->|No: multiple contacts| PICK
-    PICK -->|Select contact| PHONE
-    PICK -->|Back to help| INSTRUCTION
+    INSTRUCTION["Not responding, lost or unsure"] --> PRACTICE["Practise calling 112 · always available offline"]
+    PRACTICE -->|Explicit tap| MOCK["Pretend-call dialog; no real call or dialler"]
+    LOST["Lost or unsure"] --> SERVICE{"Normal telephone service and usable saved contacts?"}
+    SERVICE -->|Yes| CONTACT["Open phone to call an adult"]
+    SERVICE -->|No| OFFLINE["Keep offline instruction and 112 practice"]
+    CONTACT --> COUNT{"One contact?"}
+    COUNT -->|Yes| PHONE["Open real phone app; no automatic call"]
+    COUNT -->|No| PICK["Open phone to call… choose an adult"]
+    PICK -->|Select| PHONE
+    PICK -->|Cancel| LOST
 ```
 
-- Not responding offers only the 112 mock action when service is normal or emergency-only. It never offers trusted-contact buttons.
-- Helper questions, adult support, situation selection, air-raid screens and operator practice have no phone buttons.
-- A failed mock dialog reports that no call was made. A failed phone-app launch reports the failure and keeps offline steps available. Neither triggers another action automatically.
-- A contact-read error is shown separately from having no usable contacts. Neither enables the trusted-contact button.
-- Service is an Android telephone-service report, not an internet check or guarantee that calls can connect. Unknown service does not prove emergency calling is impossible.
+- Emergency-only, unknown and unavailable service hide real trusted-contact actions, never practice.
+- Real contact actions are Android-only; web demo phone actions remain pretend.
+- Helper, air-raid, situation and operator screens have no phone actions.
+- Dialog/phone-launch failures are reported without triggering another action.
+- Contact-read errors are distinct from no saved contacts.
+- Telephone reports do not prove whether a call will connect.
 
-## Back, helper return and location context
+## Back and location context
 
-- **Back** returns to the preceding help screen. Back from the first helper question closes help and restores its opener.
-- **Someone can help now** appears after no helper is confirmed on screens with fewer than three scenario choices. It returns to **Tell that adult what happened**, clears the earlier no-helper history and removes phone actions. It is absent from the four-choice situation and air-raid location questions. Back from adult support returns to the initial helper question.
-- Opening help from the map pauses map GPS and narration. Closing help restores the opener and requests a fresh map position when foreground; opening during map loading defers map creation until help closes.
-- Help may show **You may be near [name]. This is a saved place.** This optional GPS hint never chooses a branch, proves safety or directs the child to a pin. Instructions do not wait for GPS.
-- No SMS, automatic calls, call-answer detection, verified shelter routes or rescue dispatch are implemented.
+- Back follows history; Back from situation selection closes help and restores its opener.
+- Adult support preserves the exact preceding instruction and removes phone actions while open.
+- Help pauses map GPS and narration; closing requests a fresh map position when foreground. Map creation is deferred if help opens during loading.
+- Optional **You may be near [name]. This is a saved place.** never chooses a branch or proves safety.
+- No automatic calls, SMS, call-answer detection, verified shelter routes or dispatch.
 
 ## Implementation references
 
-- [help_flow.dart](../mobile/lib/features/help/help_flow.dart): screen wording and scenario transitions.
-- [help_screen.dart](../mobile/lib/features/help/help_screen.dart): history, helper reset, service-dependent instructions and button visibility.
-- [help_phone.dart](../mobile/lib/features/help/help_phone.dart): service states, usable contacts, 112 mock and trusted-contact handoff.
-- [SCREEN_FLOW.md](SCREEN_FLOW.md): application-wide navigation, including implemented and future flows.
+- [help_flow.dart](../mobile/lib/features/help/help_flow.dart): wording and transitions.
+- [help_screen.dart](../mobile/lib/features/help/help_screen.dart): history and action visibility.
+- [help_phone.dart](../mobile/lib/features/help/help_phone.dart): service, contacts and phone handoff.
+- [SCREEN_FLOW.md](SCREEN_FLOW.md): implemented and future application flows.

@@ -103,24 +103,23 @@ class NavigationLocation extends ChangeNotifier {
       state == LocationState.stale;
 
   String get message => kIsWeb
-      ? 'Demo location · fictional fixed position. No GPS is used.'
+      ? 'Pozycja demo · fikcyjna, stała lokalizacja. Bez użycia GPS.'
       : switch (state) {
-          LocationState.off =>
-            'Explore the photo pins. Location shows your blue dot.',
+          LocationState.off => 'Odkrywaj znaczniki ze zdjęciami. Niebieska kropka pokazuje twoją pozycję.',
           LocationState.waiting =>
-            'Finding your location… Stay with your adult.',
+            'Szukanie twojej pozycji… Zostań z dorosłym.',
           LocationState.live =>
             isPrecise
-                ? 'Live GPS · accuracy about ${position!.accuracy.round()} m'
-                : 'GPS is approximate. Wait for a clearer position before following directions.',
-          LocationState.denied =>
-            'Location permission was denied. You can still explore photo pins.',
-          LocationState.settingsRequired => 'Ask your adult to allow location in Family setup or Android app settings.',
-          LocationState.disabled => 'Ask your adult to turn on phone location.',
+                ? 'Bieżący GPS · dokładność około ${position!.accuracy.round()} m'
+                : 'GPS jest niedokładny. Poczekaj na dokładniejszą pozycję przed korzystaniem ze wskazówek.',
+          LocationState.denied => 'Brak zgody na lokalizację. Możesz dalej odkrywać znaczniki ze zdjęciami.',
+          LocationState.settingsRequired => 'Poproś dorosłego o włączenie lokalizacji w ustawieniach rodziny lub aplikacji w Androidzie.',
+          LocationState.disabled =>
+            'Poproś dorosłego o włączenie lokalizacji telefonu.',
           LocationState.unavailable =>
-            'GPS is unavailable. Try again outdoors with your adult.',
-          LocationState.stale => 'GPS stopped updating. Directions are paused until a fresh position arrives.',
-          LocationState.paused => 'GPS is paused.',
+            'GPS jest niedostępny. Spróbuj ponownie na zewnątrz z dorosłym.',
+          LocationState.stale => 'GPS przestał się aktualizować. Wskazówki są wstrzymane do uzyskania nowej pozycji.',
+          LocationState.paused => 'GPS jest wstrzymany.',
         };
 
   Future<void> start({bool requestPermission = true}) async {

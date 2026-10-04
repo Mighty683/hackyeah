@@ -68,7 +68,7 @@ class WalkingNavigation extends ChangeNotifier {
     if (!map.contains(target.latitude, target.longitude)) {
       _cancelCalculation();
       route = null;
-      problem = 'This place is outside the downloaded map.';
+      problem = 'To miejsce jest poza pobraną mapą.';
       notifyListeners();
       return;
     }
@@ -114,7 +114,7 @@ class WalkingNavigation extends ChangeNotifier {
       isCalculating = false;
       progress = 0;
       if (path == null) {
-        problem = 'No connected walking route here. Ask your adult to help choose another place.';
+        problem = 'Brak połączonej trasy pieszej. Poproś dorosłego o pomoc w wyborze innego miejsca.';
         notifyListeners();
         return;
       }
@@ -124,30 +124,30 @@ class WalkingNavigation extends ChangeNotifier {
     } catch (_) {
       if (revision != _calculationRevision) return;
       isCalculating = false;
-      problem = 'Could not find a path. Ask your adult to try again.';
+      problem = 'Nie udało się znaleźć ścieżki. Poproś dorosłego, aby spróbował ponownie.';
       notifyListeners();
     }
   }
 
   String get instruction {
     if (outsideMap) {
-      return 'You are outside this offline map. Stay with your adult.';
+      return 'Jesteś poza tą mapą offline. Zostań z dorosłym.';
     }
     if (!location.isPrecise) return location.message;
     if (problem != null) return problem!;
     if (destination == null) {
-      return 'Choose a familiar place to walk to with your adult.';
+      return 'Wybierz znane miejsce na spacer z dorosłym.';
     }
     if (nearPlace) {
-      return 'You are near ${destination!.name}. Do you recognise the place?';
+      return 'Jesteś blisko miejsca: ${destination!.name}. Rozpoznajesz je?';
     }
     final current = route;
-    if (current == null) return 'Finding a walking route…';
+    if (current == null) return 'Szukanie trasy spaceru…';
     if (joinDistance > 15) {
-      return 'The mapped path is about ${metres(joinDistance)} away. Find it with your adult.';
+      return 'Zaznaczona ścieżka jest około ${metres(joinDistance)} stąd. Znajdź ją z dorosłym.';
     }
     if (current.length - progress <= 15) {
-      return 'The mapped path ends here. Look for ${destination!.name} with your adult.';
+      return 'Zaznaczona ścieżka kończy się tutaj. Poszukaj miejsca: ${destination!.name} z dorosłym.';
     }
     return current.instructionAt(progress);
   }

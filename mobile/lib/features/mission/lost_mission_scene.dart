@@ -185,13 +185,13 @@ class _RecallPictures extends StatelessWidget {
   const _RecallPictures();
 
   static const _steps = [
-    (BaseboundIconName.stay, 'Stop'),
-    (BaseboundIconName.lost, 'Look'),
-    (BaseboundIconName.pin, 'If nearby'),
-    (BaseboundIconName.help, 'Ask for help'),
-    (BaseboundIconName.family, 'Family'),
-    (BaseboundIconName.wait, 'Wait'),
-    (BaseboundIconName.check, "I'm safe"),
+    (BaseboundIconName.stay, 'Zatrzymaj się'),
+    (BaseboundIconName.lost, 'Spójrz'),
+    (BaseboundIconName.pin, 'Jeśli blisko'),
+    (BaseboundIconName.help, 'Poproś o pomoc'),
+    (BaseboundIconName.family, 'Rodzina'),
+    (BaseboundIconName.wait, 'Czekaj'),
+    (BaseboundIconName.check, "Jestem w bezpiecznym miejscu"),
   ];
 
   @override

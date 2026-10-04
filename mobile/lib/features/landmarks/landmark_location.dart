@@ -20,7 +20,7 @@ Future<SafePoint> currentLandmarkLocation() async {
   }
   if (!await Geolocator.isLocationServiceEnabled()) {
     throw const LandmarkLocationException(
-      'Turn on location, or choose a pin manually.',
+      'Włącz lokalizację lub wybierz znacznik ręcznie.',
     );
   }
   var permission = await Geolocator.checkPermission();
@@ -30,7 +30,7 @@ Future<SafePoint> currentLandmarkLocation() async {
   if (permission == LocationPermission.denied ||
       permission == LocationPermission.deniedForever) {
     throw const LandmarkLocationException(
-      'Location is unavailable. You can still choose a pin manually.',
+      'Lokalizacja jest niedostępna. Możesz wybrać znacznik ręcznie.',
     );
   }
   final position = await Geolocator.getCurrentPosition(
@@ -47,7 +47,7 @@ Future<SafePoint> currentLandmarkLocation() async {
   );
   if (!mapContainsPoint(map, point)) {
     throw const LandmarkLocationException(
-      'Your location is outside the TAURON Arena demo map. Choose a demo pin manually.',
+      'Jesteś poza mapą demo TAURON Areny. Wybierz przykładowy znacznik ręcznie.',
     );
   }
   return point;

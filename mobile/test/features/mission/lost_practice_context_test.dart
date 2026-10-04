@@ -45,7 +45,7 @@ void main() {
             label: ' Our help desk ',
           ),
           contacts: [
-            TrustedContact(name: 'Emma', relationship: 'Mother'),
+            TrustedContact(name: 'Emma', relationship: 'Mama'),
             TrustedContact(name: 'Sam', relationship: 'Grandfather'),
             TrustedContact(name: 'Ali', relationship: 'Family friend'),
           ],
@@ -79,7 +79,7 @@ void main() {
       const FamilyPlan(
         contacts: [
           TrustedContact(phone: '123456789'),
-          TrustedContact(relationship: ' Dad '),
+          TrustedContact(relationship: ' Tata '),
           TrustedContact(name: '   '),
         ],
       ),
@@ -91,11 +91,11 @@ void main() {
     expect(context.childName, 'Fallback');
     expect(context.gender, ChildGender.boy);
     expect(context.contacts, hasLength(2));
-    expect(context.contacts.first.label, 'Dad');
+    expect(context.contacts.first.label, 'Tata');
     expect(context.contacts.first.avatar, LostContactAvatar.father);
     expect(context.contacts.first.isFictional, isFalse);
     expect(context.contacts.last.isFictional, isTrue);
-    expect(context.contacts.last.label, startsWith('Pretend'));
+    expect(context.contacts.last.label, contains('na niby'));
     expect(context.contacts.first.id, isNot(context.contacts.last.id));
     expect(context.fictionalMeetingPoint, isTrue);
     expect(context.usesFictionalDetails, isTrue);
@@ -124,7 +124,7 @@ void main() {
         ),
       );
       expect(unknown.meetingPoint.presetId, 'fountain');
-      expect(unknown.meetingPointLabel, 'Pretend fountain');
+      expect(unknown.meetingPointLabel, 'Fontanna na niby');
       expect(unknown.fictionalMeetingPoint, isTrue);
     },
   );

@@ -26,38 +26,38 @@ void main() {
 
       await tester.pumpWidget(const MaterialApp(home: PracticeLauncher()));
       await tester.pumpAndSettle();
-      expect(find.text('Choose an activity'), findsOneWidget);
+      expect(find.text('Wybierz zajęcie'), findsOneWidget);
       expect(find.byType(BaseboundActionTile), findsNWidgets(2));
-      expect(find.text('Practices'), findsOneWidget);
-      expect(find.text('Our map'), findsOneWidget);
-      expect(find.text('Alarm practice'), findsNothing);
-      expect(find.text("I'm lost practice"), findsNothing);
-      await _tap(tester, 'Practices');
+      expect(find.text('Ćwiczenia'), findsOneWidget);
+      expect(find.text('Nasza mapa'), findsOneWidget);
+      expect(find.text('Ćwiczenie alarmu'), findsNothing);
+      expect(find.text("Ćwiczenie zgubienia się"), findsNothing);
+      await _tap(tester, 'Ćwiczenia');
       expect(find.byType(PracticeScenarioScreen), findsOneWidget);
-      expect(find.text('Choose a scenario'), findsOneWidget);
+      expect(find.text('Wybierz scenariusz'), findsOneWidget);
       expect(find.byType(BaseboundActionTile), findsNWidgets(2));
-      expect(find.text('Our map'), findsNothing);
-      await _tap(tester, 'Alarm practice');
-      expect(find.text('Where shall we practice?'), findsOneWidget);
-      expect(find.text('At home'), findsOneWidget);
-      expect(find.text('Outside'), findsOneWidget);
+      expect(find.text('Nasza mapa'), findsNothing);
+      await _tap(tester, 'Ćwiczenie alarmu');
+      expect(find.text('Gdzie ćwiczymy?'), findsOneWidget);
+      expect(find.text('W domu'), findsOneWidget);
+      expect(find.text('Na zewnątrz'), findsOneWidget);
       await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
-      expect(find.text('Choose a scenario'), findsOneWidget);
-      expect(find.text('Alarm practice'), findsOneWidget);
-      await _tap(tester, 'Alarm practice');
-      await _tap(tester, 'At home');
+      expect(find.text('Wybierz scenariusz'), findsOneWidget);
+      expect(find.text('Ćwiczenie alarmu'), findsOneWidget);
+      await _tap(tester, 'Ćwiczenie alarmu');
+      await _tap(tester, 'W domu');
       expect(find.byType(MissionScreen), findsOneWidget);
-      expect(find.text('An alarm at home'), findsOneWidget);
-      await _tap(tester, 'Find a place');
+      expect(find.text('Alarm w domu'), findsOneWidget);
+      await _tap(tester, 'Znajdź miejsce');
       expect(
         tester.widget<MissionScene>(find.byType(MissionScene)).choices,
         hasLength(3),
       );
       for (final label in [
-        'Go to the window',
-        'Go outside',
-        'Move deeper inside',
+        'Podejdź do okna',
+        'Wyjdź na zewnątrz',
+        'Przejdź w głąb domu',
       ]) {
         expect(
           find.byWidgetPredicate(
@@ -67,29 +67,29 @@ void main() {
         );
       }
 
-      await tester.tap(find.byTooltip('Leave practice'));
+      await tester.tap(find.byTooltip('Opuść ćwiczenie'));
       await tester.pumpAndSettle();
       expect(find.byType(MissionScreen), findsNothing);
-      expect(find.text('Choose a scenario'), findsOneWidget);
-      expect(find.text('Alarm practice'), findsOneWidget);
-      expect(find.text('Our map'), findsNothing);
+      expect(find.text('Wybierz scenariusz'), findsOneWidget);
+      expect(find.text('Ćwiczenie alarmu'), findsOneWidget);
+      expect(find.text('Nasza mapa'), findsNothing);
       expect(find.text('Landmark practice'), findsNothing);
       expect(find.text('Map practice'), findsNothing);
       expect(audioCalls.where((call) => call.method == 'dispose').length, 3);
       expect(audioCalls.last.method, 'narrate');
       expect(
         (audioCalls.last.arguments as Map)['text'],
-        contains('Choose a scenario'),
+        contains('Wybierz scenariusz'),
       );
       await tester.pageBack();
       await tester.pumpAndSettle();
       expect(find.byType(PracticeScenarioScreen), findsNothing);
-      expect(find.text('Choose an activity'), findsOneWidget);
-      expect(find.text('Practices'), findsOneWidget);
-      expect(find.text('Our map'), findsOneWidget);
+      expect(find.text('Wybierz zajęcie'), findsOneWidget);
+      expect(find.text('Ćwiczenia'), findsOneWidget);
+      expect(find.text('Nasza mapa'), findsOneWidget);
       expect(
         (audioCalls.last.arguments as Map)['text'],
-        contains('Choose an activity'),
+        contains('Wybierz zajęcie'),
       );
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());

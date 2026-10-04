@@ -93,7 +93,7 @@ class _GameLauncherState extends State<GameLauncher> {
           leading: Navigator.canPop(context)
               ? const BaseboundBackButton()
               : null,
-          title: const Text('Our map'),
+          title: const Text('Nasza mapa'),
         ),
         bottomNavigationBar: SafeArea(
           top: false,
@@ -122,19 +122,19 @@ class _GameLauncherState extends State<GameLauncher> {
                           ),
                           const SizedBox(height: 16),
                           const Text(
-                            'Could not load our map. Saved places have not been reset.',
+                            'Nie udało się wczytać Naszej mapy. Zapisane miejsca zostały zachowane.',
                           ),
                           const SizedBox(height: 16),
                           FilledButton(
                             onPressed: () => setState(() => _content = _load()),
-                            child: const Text('Try again'),
+                            child: const Text('Spróbuj ponownie'),
                           ),
                         ],
                       ),
                     ),
                   )
                 : const CircularProgressIndicator(
-                    semanticsLabel: 'Loading our map',
+                    semanticsLabel: 'Wczytywanie Naszej mapy',
                   ),
           ),
         ),

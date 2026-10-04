@@ -50,7 +50,10 @@ class _ChildOnboardingScreenState extends State<ChildOnboardingScreen> {
       });
     } catch (_) {
       if (mounted) {
-        setState(() => _error = 'Could not load your details. Try again.');
+        setState(
+          () =>
+              _error = 'Nie udało się wczytać twoich danych. Spróbuj ponownie.',
+        );
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -74,9 +77,9 @@ class _ChildOnboardingScreenState extends State<ChildOnboardingScreen> {
     final age = int.tryParse(_age.text);
     final error = switch (_step) {
       0 when age == null || age < 1 || age > 99 =>
-        'Please tell us your age to continue.',
-      1 when _name.text.trim().isEmpty => 'Add your name or a nickname.',
-      2 when _gender == null => 'Choose girl or boy.',
+        'Podaj swój wiek, aby przejść dalej.',
+      1 when _name.text.trim().isEmpty => 'Podaj imię lub pseudonim.',
+      2 when _gender == null => 'Wybierz dziewczynkę lub chłopca.',
       _ => null,
     };
     if (error != null) {
@@ -113,7 +116,10 @@ class _ChildOnboardingScreenState extends State<ChildOnboardingScreen> {
       );
     } catch (_) {
       if (mounted) {
-        setState(() => _error = 'Could not save your details. Try again.');
+        setState(
+          () =>
+              _error = 'Nie udało się zapisać twoich danych. Spróbuj ponownie.',
+        );
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -137,7 +143,7 @@ class _ChildOnboardingScreenState extends State<ChildOnboardingScreen> {
       appBar: AppBar(
         automaticallyImplyLeading: false,
         leading: BaseboundBackButton(enabled: !_busy, onPressed: _back),
-        title: const Text('Meet your character'),
+        title: const Text('Poznaj swoją postać'),
       ),
       body: SafeArea(
         child: IllustratedBackdrop(
@@ -165,7 +171,10 @@ class _ChildOnboardingScreenState extends State<ChildOnboardingScreen> {
           if (_error != null) ...[
             Semantics(liveRegion: true, child: Text(_error!)),
             const SizedBox(height: 16),
-            FilledButton(onPressed: _load, child: const Text('Try again')),
+            FilledButton(
+              onPressed: _load,
+              child: const Text('Spróbuj ponownie'),
+            ),
           ],
         ],
       );
@@ -174,7 +183,7 @@ class _ChildOnboardingScreenState extends State<ChildOnboardingScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'Step ${_step + 1} of 3',
+          'Krok ${_step + 1} z 3',
           style: const TextStyle(
             color: BaseboundColors.muted,
             fontWeight: FontWeight.w600,
@@ -183,9 +192,9 @@ class _ChildOnboardingScreenState extends State<ChildOnboardingScreen> {
         const SizedBox(height: 8),
         Text(
           [
-            'How old are you?',
-            'What is your name?',
-            'What is your gender?',
+            'Ile masz lat?',
+            'Jak masz na imię?',
+            'Jaka jest twoja płeć?',
           ][_step],
           style: Theme.of(context).textTheme.headlineMedium
               ?.copyWith(fontSize: 28, fontWeight: FontWeight.w700),
@@ -199,13 +208,13 @@ class _ChildOnboardingScreenState extends State<ChildOnboardingScreen> {
             maxLength: 2,
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            decoration: const InputDecoration(labelText: 'Your age'),
+            decoration: const InputDecoration(labelText: 'Twój wiek'),
             textInputAction: TextInputAction.done,
             onSubmitted: (_) => _next(),
           ),
         ],
         if (_step == 1) ...[
-          const Text('A nickname is fine.'),
+          const Text('Możesz podać pseudonim.'),
           const SizedBox(height: 12),
           TextField(
             key: const ValueKey('child-name'),
@@ -213,13 +222,13 @@ class _ChildOnboardingScreenState extends State<ChildOnboardingScreen> {
             enabled: !_busy,
             maxLength: 40,
             textCapitalization: TextCapitalization.words,
-            decoration: const InputDecoration(labelText: 'Your name'),
+            decoration: const InputDecoration(labelText: 'Twoje imię'),
             textInputAction: TextInputAction.next,
             onSubmitted: (_) => _next(),
           ),
         ],
         if (_step == 2) ...[
-          const Text('Choose a character for practice.'),
+          const Text('Wybierz postać do ćwiczeń.'),
           const SizedBox(height: 24),
           const SizedBox(
             height: 140,
@@ -241,9 +250,9 @@ class _ChildOnboardingScreenState extends State<ChildOnboardingScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          _genderChoice(ChildGender.girl, 'Girl'),
+          _genderChoice(ChildGender.girl, 'Dziewczynka'),
           const SizedBox(height: 12),
-          _genderChoice(ChildGender.boy, 'Boy'),
+          _genderChoice(ChildGender.boy, 'Chłopiec'),
         ],
         if (_error != null)
           Padding(
@@ -275,11 +284,11 @@ class _ChildOnboardingScreenState extends State<ChildOnboardingScreen> {
           onPressed: _busy ? null : _next,
           child: Text(
             _busy
-                ? 'Saving…'
+                ? 'Zapisywanie…'
                 : [
-                    'Add my name',
-                    'Choose my character',
-                    'Start practice',
+                    'Podaj imię',
+                    'Wybierz postać',
+                    'Rozpocznij ćwiczenie',
                   ][_step],
           ),
         ),

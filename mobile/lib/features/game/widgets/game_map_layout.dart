@@ -56,7 +56,7 @@ class GameMapLayout extends StatelessWidget {
                 ),
                 IconButton(
                   onPressed: onReplay,
-                  tooltip: 'Replay audio',
+                  tooltip: 'Posłuchaj ponownie',
                   icon: const BaseboundIcon(
                     BaseboundIconName.speaker,
                     size: 24,
@@ -66,7 +66,7 @@ class GameMapLayout extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             const Text(
-              'Walk together with an adult · North is up',
+              'Spaceruj z dorosłym · Północ jest u góry',
               style: TextStyle(fontSize: 12, color: BaseboundColors.muted),
             ),
             const SizedBox(height: 8),
@@ -94,7 +94,7 @@ class GameMapLayout extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             const Text(
-              '© OpenStreetMap contributors · ODbL',
+              '© autorzy OpenStreetMap · ODbL',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 12, color: BaseboundColors.muted),
             ),

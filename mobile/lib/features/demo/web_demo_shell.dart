@@ -23,10 +23,10 @@ class WebDemoShell extends StatelessWidget {
               spacing: 16,
               runSpacing: 4,
               children: [
-                const Text('Web demo · practice only'),
+                const Text('Demo w przeglądarce · tylko ćwiczenie'),
                 TextButton(
                   onPressed: onReset,
-                  child: const Text('Reset web demo'),
+                  child: const Text('Zresetuj demo'),
                 ),
               ],
             ),
@@ -73,8 +73,8 @@ class WebDemoShell extends StatelessWidget {
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Text(
-              'Mock device features. Fictional data stays in this tab. '
-              'Refresh or reset discards edits.',
+              'Funkcje urządzenia są symulowane. Fikcyjne dane pozostają w tej karcie. '
+              'Odświeżenie lub reset usuwa zmiany.',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 12, color: BaseboundColors.muted),
             ),

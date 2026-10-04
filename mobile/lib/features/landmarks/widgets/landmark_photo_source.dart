@@ -17,20 +17,20 @@ Future<ImageSource?> chooseLandmarkPhotoSource(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const Text(
-            'Save a recognisable place',
+            'Zapisz rozpoznawalne miejsce',
             style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 16),
           OutlinedButton.icon(
             icon: const PhotoActionIcon(),
-            label: const Text('Take a photo'),
+            label: const Text('Zrób zdjęcie'),
             style: OutlinedButton.styleFrom(alignment: Alignment.centerLeft),
             onPressed: () => Navigator.pop(context, ImageSource.camera),
           ),
           const SizedBox(height: 12),
           OutlinedButton.icon(
             icon: const PhotoActionIcon(gallery: true),
-            label: const Text('Choose from gallery'),
+            label: const Text('Wybierz z galerii'),
             style: OutlinedButton.styleFrom(alignment: Alignment.centerLeft),
             onPressed: () => Navigator.pop(context, ImageSource.gallery),
           ),
@@ -53,11 +53,11 @@ Future<String?> chooseDemoLandmarkPhoto(BuildContext context) =>
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Text(
-                'Choose a demo photo',
+                'Wybierz przykładowe zdjęcie',
                 style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 8),
-              const Text('Fictional samples replace the Android camera here.'),
+              const Text('Fikcyjne przykłady zastępują tutaj aparat Androida.'),
               const SizedBox(height: 16),
               for (final demo in demoLandmarks)
                 Padding(

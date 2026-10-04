@@ -9,7 +9,7 @@ Future<Uint8List> readPhotoBytes(String path) async {
     return data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
   }
   final bytes = DemoSession.instance.photos[path];
-  if (bytes == null) throw StateError('Photo unavailable');
+  if (bytes == null) throw StateError('Zdjęcie niedostępne');
   return bytes;
 }
 

@@ -68,20 +68,20 @@ void main() {
       );
       await tester.pumpAndSettle();
       if (gender == ChildGender.boy) {
-        await _tap(tester, 'Add my name');
+        await _tap(tester, 'Podaj imię');
         expect(
-          find.text('Please tell us your age to continue.'),
+          find.text('Podaj swój wiek, aby przejść dalej.'),
           findsOneWidget,
         );
         await tester.enterText(find.byType(TextField), '0');
-        await _tap(tester, 'Add my name');
+        await _tap(tester, 'Podaj imię');
         expect(
-          find.text('Please tell us your age to continue.'),
+          find.text('Podaj swój wiek, aby przejść dalej.'),
           findsOneWidget,
         );
       }
       await tester.enterText(find.byType(TextField), '9');
-      await _tap(tester, 'Add my name');
+      await _tap(tester, 'Podaj imię');
       if (gender == ChildGender.boy) {
         await tester.binding.handlePopRoute();
         await tester.pumpAndSettle();
@@ -89,23 +89,26 @@ void main() {
           tester.widget<TextField>(find.byType(TextField)).controller!.text,
           '9',
         );
-        await _tap(tester, 'Add my name');
-        await _tap(tester, 'Choose my character');
-        expect(find.text('Add your name or a nickname.'), findsOneWidget);
+        await _tap(tester, 'Podaj imię');
+        await _tap(tester, 'Wybierz postać');
+        expect(find.text('Podaj imię lub pseudonim.'), findsOneWidget);
       }
       await tester.enterText(find.byType(TextField), 'Demo child');
-      await _tap(tester, 'Choose my character');
-      await _tap(tester, gender == ChildGender.boy ? 'Boy' : 'Girl');
+      await _tap(tester, 'Wybierz postać');
+      await _tap(
+        tester,
+        gender == ChildGender.boy ? 'Chłopiec' : 'Dziewczynka',
+      );
       if (gender == ChildGender.boy) {
         repository.failSave = true;
-        await _tap(tester, 'Start practice');
+        await _tap(tester, 'Rozpocznij ćwiczenie');
         expect(
-          find.text('Could not save your details. Try again.'),
+          find.text('Nie udało się zapisać twoich danych. Spróbuj ponownie.'),
           findsOneWidget,
         );
         repository.failSave = false;
       }
-      await _tap(tester, 'Start practice');
+      await _tap(tester, 'Rozpocznij ćwiczenie');
       expect(find.byType(PracticeLauncher), findsOneWidget);
       expect(repository.plan.child.fullName, 'Demo child');
       expect(repository.plan.child.age, 9);
@@ -119,9 +122,9 @@ void main() {
         'information_desk',
       );
       expect(repository.plan.practiceMeetingPoint!.label, 'Demo help desk');
-      await _tap(tester, 'Practices');
-      await _tap(tester, 'Alarm practice');
-      await _tap(tester, 'At home');
+      await _tap(tester, 'Ćwiczenia');
+      await _tap(tester, 'Ćwiczenie alarmu');
+      await _tap(tester, 'W domu');
       final mission = tester.widget<MissionScreen>(find.byType(MissionScreen));
       expect(mission.mode, MissionMode.home);
       expect(mission.gender, gender);

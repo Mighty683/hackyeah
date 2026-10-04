@@ -1,7 +1,7 @@
 {
   "metadata": {
     "title": "Tuptu - ćwiczymy podejmowanie decyzji",
-    "info": "Tuptu to gra treningowa na Androida dla dzieci, przygotowana na wyzwanie Defence podczas HackYeah 2026.\nPrezentacja składa się z dziesięciu slajdów. Nagranie aplikacji nie jest jeszcze dostępne; planowane funkcje są oznaczone.\n",
+    "info": "Tuptu to gra treningowa na Androida dla dzieci, przygotowana na wyzwanie Defence podczas HackYeah 2026.\nPrezentacja składa się z dziesięciu slajdów. Planowane funkcje są oznaczone.\n",
     "author": "Tuptu",
     "keywords": "Tuptu, HackYeah 2026, Defence, dzieci, trening bezpieczeństwa"
   },
@@ -18,115 +18,136 @@
   },
   "slides": {
     "cover": {
-      "label": "Tuptu",
+      "label": "Bezpieczeństwo w Polsce",
       "kicker": "Interaktywna gra o bezpieczeństwie",
       "title": "Tuptu",
-      "statement": "Nauka ważnych zasad bezpieczeństwa poprzez zabawę.",
-      "detail": "Dzieci w wieku 5+ · prototyp na Androida",
+      "statement": "Trening podejmowania decyzji dla dzieci, oparty na „Poradniku bezpieczeństwa” MON, MSWiA i RCB.",
+      "detail": "Dla dzieci 5+ · prototyp na Androida",
       "imageAlt": "Przyjazny dinozaur Tuptu trzymający kompas",
       "footer": "Przygotowanie zaczyna się od decyzji, którą dziecko rozumie",
       "notes": [
-        "[0:00–0:15 · 15 sekund]\nTuptu pomaga dzieciom ćwiczyć podejmowanie kolejnej decyzji, zanim dojdzie do sytuacji kryzysowej. Tworzymy grę edukacyjną dla dzieci w wieku od siedmiu do czternastu lat, z osobną ścieżką dla dorosłego, który pomaga im się przygotować.",
-        "Źródło treści: docs/HackYeah 2026.pdf, wstępna koncepcja. Podany wiek określa grupę docelową; nie oznacza, że produkt zweryfikowano dla wszystkich grup wiekowych.\nGrafika: istniejąca maskotka Tuptu, wygenerowana narzędziami graficznymi OpenAI; pochodzenie opisano w mobile/assets/branding/README.md. Font Nunito jest dołączony na licencji SIL Open Font License."
+        "[0:00–0:15 · 15 sekund]\nTuptu pomaga dzieciom ćwiczyć podejmowanie kolejnej decyzji, zanim dojdzie do sytuacji kryzysowej. Tworzymy grę edukacyjną docelowo dla dzieci od piątego roku życia, z osobną ścieżką dla dorosłego, który pomaga im się przygotować.",
+        "Źródło treści: docs/HackYeah 2026.pdf, wstępna koncepcja. Podany wiek określa grupę docelową; nie oznacza, że produkt zweryfikowano dla wszystkich grup wiekowych.\nGrafika: istniejąca maskotka Tuptu, wygenerowana narzędziami graficznymi OpenAI; pochodzenie opisano w mobile/assets/branding/README.md. Font Nunito jest dołączony na licencji SIL Open Font License.",
+        "Docelowo scenariusze będą oparte wyłącznie na oficjalnym Poradniku bezpieczeństwa MON, MSWiA i RCB. To założenie dalszego rozwoju: obecne fikcyjne ćwiczenia wymagają porównania z poradnikiem i oceny specjalistów. Nie deklarujemy zatwierdzenia prototypu przez instytucje. Docelowa grupa odbiorców to dzieci 5+; aplikacja pozostaje po angielsku i nie dostosowuje automatycznie scenariuszy do wieku.",
+        "Slajd tytułowy wskazuje docelowy wiek 5+ zgodnie z decyzją zespołu. Obecne ćwiczenia prototypu opracowano dla dzieci 7+; rozszerzenie na młodsze dzieci wymaga dostosowania i testów."
+      ]
+    },
+    "audience": {
+      "label": "Bezpieczeństwo w Polsce",
+      "title": "Polska przygotowuje obywateli",
+      "contextTitle": "Nowe wyzwania wokół Polski",
+      "context": "Wojna w Ukrainie, zagrożenia militarne i kryzysy infrastruktury zwiększają potrzebę przygotowania mieszkańców Polski.",
+      "response": "W odpowiedzi MON, MSWiA i Rządowe Centrum Bezpieczeństwa opracowały „Poradnik bezpieczeństwa”.",
+      "contentsTitle": "A co z dziećmi?",
+      "childrenDescription": "Dzieci potrzebują prostego języka, zrozumiałych ilustracji i możliwości przećwiczenia decyzji. Samo przeczytanie instrukcji dla dorosłych nie wystarczy.",
+      "gap": "Materiały dla dorosłych nie wystarczą. Dzieci potrzebują formy nauki dostosowanej do ich potrzeb.",
+      "sources": [
+        {
+          "label": "Źródło: Poradnik bezpieczeństwa",
+          "url": "https://www.gov.pl/web/poradnikbezpieczenstwa"
+        }
+      ],
+      "footer": "Kontekst: bezpieczeństwo Polski i przygotowanie obywateli",
+      "notes": [
+        "[0:15–0:35 · 20 sekund]\nWojna w Ukrainie i nowe zagrożenia zwiększają potrzebę przygotowania mieszkańców Polski. W odpowiedzi MON, MSWiA i RCB opracowały Poradnik bezpieczeństwa: od awarii prądu i pierwszej pomocy po zagrożenia militarne. Materiały dla dorosłych są ważnym początkiem, ale dzieci potrzebują nauki dostosowanej do ich rozwoju.",
+        "Źródło kontekstu: https://rzeszow.uw.gov.pl/aktualnosci/bezpieczenstwo-zaczyna-sie-w-domu-poradnik-bezpieczenstwa-dla-wszystkich-polakow (28 sierpnia 2025). Publikacja opisuje rosnące wyzwania dla bezpieczeństwa Polski i związek poradnika z wojną w Ukrainie oraz nowymi zagrożeniami. Nie przedstawiamy niezweryfikowanej statystyki częstotliwości zdarzeń. Zakres poradnika: https://www.gov.pl/web/poradnikbezpieczenstwa/pytania-i-odpowiedzi . Poradnik ogólny zawiera też wskazówki dla dorosłych o rozmowie z dziećmi; nie jest pozbawiony odniesień do ich potrzeb."
+      ]
+    },
+    "children": {
+      "label": "Materiały dla dzieci",
+      "title": "MEN dostrzega potrzeby dzieci",
+      "developmentTitle": "Poradnik dla uczniów",
+      "developmentIntro": "MEN zapowiedziało osobny poradnik bezpieczeństwa dla szkół podstawowych.",
+      "development": "Przygotowanie obejmuje konsultacje z dydaktykami, ekspertami ds. bezpieczeństwa i psychologami.",
+      "adaptationTitle": "Więcej niż prostszy język",
+      "adaptation": "MEN samo podkreśla: uproszczenie tekstu dla dorosłych nie wystarczy. Treść, ćwiczenia i grafika muszą być dostosowane do rozwoju i psychiki dzieci.",
+      "sources": [
+        {
+          "label": "Źródło: MEN — interpelacja nr 16793",
+          "url": "https://sejm.gov.pl/sejm10.nsf/interpelacja.xsp?nr=16793&typ=int"
+        }
+      ],
+      "footer": "Zapowiedź MEN i dostosowanie edukacji do dzieci",
+      "notes": [
+        "[0:35–0:55 · 20 sekund]\nMEN zapowiedziało osobny poradnik dla uczniów szkół podstawowych. Wskazuje przy tym, że samo uproszczenie języka poradnika dla dorosłych nie wystarczy. Potrzebne są tekst, ćwiczenia i grafika dopasowane do wiedzy, rozwoju i psychiki dzieci, konsultowane z dydaktykami, ekspertami bezpieczeństwa oraz psychologami. To potrzeba dostrzeżona także na poziomie instytucjonalnym.",
+        "Źródła: https://www.gov.pl/web/poradnikbezpieczenstwa ; https://api.sejm.gov.pl/sejm/term10/interpellations/16793/body ; https://sejm.gov.pl/sejm10.nsf/interpelacja.xsp?nr=16793&typ=int\nInterpelacja z 22 kwietnia 2026 potwierdza zapowiedź MEN z 23 września 2025. Odpowiedź MEN z 18 maja 2026 (wpływ 19 maja) opisuje końcowe prace, konsultacje z ekspertami i dostosowanie tekstu, ćwiczeń oraz grafiki. Omówienie odpowiedzi: https://strefaedukacji.pl/nowy-poradnik-wkrotce-w-szkolach-te-materialy-trafia-do-tysiecy-uczniow/ar/c5p2-29029303\nNa potrzeby tego slajdu nie potwierdzono daty publikacji ani obecnego etapu prac. Dlatego tekst mówi o zapowiedzi, nie o aktualnie trwających pracach. Poradnik ogólny zawiera wskazówki dla opiekunów dotyczące dzieci; nie twierdzimy, że całkowicie pomija ich potrzeby. Slajd nie przedstawia ilościowych dowodów wzrostu zagrożeń ani nie sugeruje poparcia instytucji dla Tuptu."
       ]
     },
     "problem": {
       "label": "Problem",
-      "title": "Wiedzieć to nie to samo,co być gotowym",
+      "title": "Dzieci są odważne i potrafią pomóc 💪",
       "kicker": "Realne przypadki",
       "storyLead": {
-        "text": "5 letnia Lenka "
+        "text": "Historia Lenki (5 lat)"
       },
-      "story": "Gdy jej mama straciła przytomność, zadzwoniła pod 112 i podała adres.",
-      "caption": "Udokumentowane zdarzenie, nie historia użytkowniczki Tuptu.",
-      "sourceLabel": "Źródło: Policja — opis zdarzenia",
+      "story": "Gdy mama straciła przytomność, Lenka znalazła jej telefon, zadzwoniła pod 112 i podała adres. W domu był też roczny Tymonek. Bez pomocy dorosłego dzielnie wezwała ratunek.",
+      "sourceLabel": "Źródło: Policja",
       "sourceUrl": "https://policja.pl/pol/aktualnosci/233330%2C5-latka-wezwala-pomoc-do-mamy-ktora-stracila-przytomnosc.html",
       "insight": {
-        "text": "Dziecko może potrzebować pomocy",
-        "emphasis": "bez wskazówek dorosłego."
+        "text": "Sytuacje wymagają nawet od najmłodszych",
+        "emphasis": "działania bez wskazówek dorosłego."
       },
-      "focus": "Nasz cel: miejsce do ćwiczenia kolejnych decyzji.",
+      "focus": "Przygotowanie daje odwagę. Ważnych decyzji można się nauczyć.",
       "footer": "Źródło: Policja, 7 lipca 2023",
       "notes": [
-        "[0:15–0:40 · 25 sekund]\nW lipcu 2023 roku pięcioletnia Lenka zadzwoniła pod 112, gdy jej mama straciła przytomność. Podała adres i wyjaśniła, że w domu jest też jej roczny brat. Wiedziała, jak poprosić o pomoc. Ta historia pokazuje, dlaczego znajomość zasady i umiejętność jej zastosowania to dwa różne wyzwania. Nasz produkt pozwala ćwiczyć decyzje, zanim nadejdzie taki moment.",
+        "[0:55–1:20 · 25 sekund]\nW lipcu 2023 roku pięcioletnia Lenka zadzwoniła pod 112, gdy jej mama straciła przytomność. Podała adres i wyjaśniła, że w domu jest też jej roczny brat. Wiedziała, jak poprosić o pomoc. Ta historia pokazuje, dlaczego znajomość zasady i umiejętność jej zastosowania to dwa różne wyzwania. Nasz produkt pozwala ćwiczyć decyzje, zanim nadejdzie taki moment.",
         "Źródło pierwotne: https://policja.pl/pol/aktualnosci/233330,5-latka-wezwala-pomoc-do-mamy-ktora-stracila-przytomnosc.html\nZdarzenie: 4 lipca 2023. Publikacja: 7 lipca 2023. Lenka jest młodsza niż nasza grupa docelowa; ta historia stanowi kontekst, a nie dowód skuteczności produktu.\nŹródło robocze: docs/HackYeah 2026.pdf, sekcje „Knowing is not the same as being ready” i „The Problem”, połączone, aby uniknąć powtórzeń."
       ]
     },
-    "audience": {
-      "label": "Dla kogo",
-      "title": "Dzieci potrzebują ćwiczeń,\nktóre rozumieją",
-      "age": "7–14",
-      "ageUnit": "lat",
-      "points": [
-        {
-          "title": "Dla dziecka",
-          "body": "Jedna sytuacja, kilka wyborów, spokojna informacja zwrotna."
-        },
-        {
-          "title": "Z rodzicem",
-          "body": "Znane osoby i miejsca nadają ćwiczeniom osobisty kontekst."
-        },
-        {
-          "title": "Przygotowanie ludności cywilnej",
-          "body": "Zaczynamy od scenariuszy alarmu i rozdzielenia z opiekunem."
-        }
-      ],
-      "footer": "Wyzwanie Defence: przygotowanie do podejmowania decyzji pod presją",
+    "overview": {
+      "label": "Nasze rozwiązanie",
+      "title": "Nasze rozwiązanie",
+      "lead": "Bezpieczne decyzje można przećwiczyć",
+      "description": "Tuptu to gra treningowa: dziecko wybiera działanie w symulowanej sytuacji, poznaje jego konsekwencje i dostaje krótkie wyjaśnienie.",
+      "practice": "Rodzic może dodać znajome miejsca, zdjęcia i kontakty.",
+      "bridge": "Państwo dostarcza instrukcje. Szkoła przekazuje wiedzę. Służby reagują, gdy coś już się wydarzy.",
+      "promise": "Ćwiczymy wcześniej, krok po kroku.",
+      "prototypeLabel": "Wypróbuj demo przeglądarkowe",
+      "prototypePlaceholder": "Miejsce na link do prototypu",
+      "prototypeUrl": "http://10.166.146.210:3030/prototype/index.html",
+      "screenshotSrc": "/images/tuptu-prototype.jpg",
+      "screenshotAlt": "Prawdziwy ekran ćwiczenia alarmowego w demo Tuptu",
+      "screenshotPlaceholder": "Miejsce na zrzut ekranu prototypu",
+      "footer": "Interaktywny trening bezpieczeństwa · Prototyp i symulowane sytuacje",
       "notes": [
-        "[0:40–1:00 · 20 sekund]\nNaszymi odbiorcami są dzieci w wieku od siedmiu do czternastu lat oraz dorośli, którzy pomagają im się przygotować. Używamy prostego języka, ilustrowanych sytuacji i spokojnej informacji zwrotnej. Wyzwanie Defence pyta o to, jak przygotować ludzi do lepszych decyzji pod presją. Zajmujemy się cywilną stroną tego wyzwania, zaczynając od ćwiczeń alarmu i rozdzielenia z opiekunem.",
-        "Źródła: docs/Details - Defence.pdf, opis; docs/UX.md; docs/HackYeah 2026.pdf, „Who is it for?”.\nOficjalny kontekst: https://www.gov.pl/web/poradnikbezpieczenstwa/pytania-i-odpowiedzi\nPoradnik obejmuje awarie, klęski żywiołowe i zagrożenia militarne. Nie stanowi rekomendacji tej aplikacji.\nPominięto twierdzenie z wersji roboczej, że ministerstwo „właśnie przygotowuje” poradnik dla klas 1–7, ponieważ nie zweryfikowano jego statusu na październik 2026. Nie należy przedstawiać wszystkich oficjalnych wytycznych jako skierowanych wyłącznie do dorosłych."
-      ]
-    },
-    "solution": {
-      "label": "Rozwiązanie",
-      "title": "Nauka przez podejmowanie decyzji",
-      "intro": "Krótkie scenariusze zamieniają instrukcje w coś, co dziecko może przećwiczyć.",
-      "steps": [
-        { "title": "Sytuacja", "body": "Zobacz znajomą scenę" },
-        { "title": "Decyzja", "body": "Wybierz, co zrobić" },
-        { "title": "Działanie", "body": "Wypróbuj to w grze" },
-        { "title": "Konsekwencja", "body": "Zobacz, co się stanie" },
-        { "title": "Wyjaśnienie", "body": "Zrozum dlaczego" }
+        "[1:20–1:40 · 20 sekund]\nNasze rozwiązanie zamienia instrukcje bezpieczeństwa w działania, które dziecko może przećwiczyć. Tuptu to gra edukacyjna oparta na realistycznych, symulowanych sytuacjach kryzysowych. Zamiast jedynie czytać, co robić, dzieci ćwiczą podejmowanie decyzji przed prawdziwym kryzysem. Państwo dostarcza instrukcje, szkoły przekazują wiedzę, a służby reagują po zdarzeniu. My pomagamy dziecku ćwiczyć wcześniej.",
+        "Kierunek rozwoju obejmuje codzienne zagrożenia, scenariusze obrony cywilnej i kryzysy rodzinne oraz tworzenie i ćwiczenie własnego rodzinnego planu kryzysowego. Obecny prototyp zawiera ćwiczenia alarmu i zagubienia oraz lokalne kontakty, miejsca i zdjęcia. Pełne ćwiczenie rodzinnego planu pozostaje planowane. Nie zmierzono transferu do zachowania w rzeczywistej sytuacji kryzysowej. Nie sugerować, że wszystkie scenariusze opierają się już na treściach sprawdzonych przez specjalistów.",
+        "Demo przeglądarkowe korzysta z tych samych ekranów co Android, ale symuluje GPS, połączenia i dane urządzenia. Link działa w sieci komputera prezentującego; nie jest publicznym hostingiem. Zrzut pokazuje rzeczywisty ekran aplikacji. Pełny rodzinny plan kryzysowy pozostaje kierunkiem rozwoju.",
+        "Narracja poleceń działa w ćwiczeniach alarmu i zagubienia na Androidzie. Wymaga zainstalowanego angielskiego głosu offline. Aplikacja pozostaje po angielsku. Demo przeglądarkowe nie odtwarza narracji ani dźwięków; ikona na slajdzie przypomina o dźwięku w aplikacji Android, nie jest przełącznikiem audio."
       ],
-      "takeaway": "Po błędnym wyborze dziecko dostaje wyjaśnienie i może spróbować ponownie.",
-      "footer": "Działa: ilustrowane ćwiczenia alarmu i zagubienia · Fikcyjne scenariusze",
-      "notes": [
-        "[1:00–1:20 · 20 sekund]\nTak wygląda cykl nauki. Dziecko widzi sytuację, wybiera działanie, obserwuje jego konsekwencję i otrzymuje krótkie wyjaśnienie. Jeśli wybór nie pomaga, tłumaczymy dlaczego i pozwalamy spróbować ponownie. Ćwiczenia alarmu i zagubienia już działają w ten sposób. Bezpośrednią korzyścią jest przećwiczenie decyzji; wpływ na zachowanie w rzeczywistym świecie wymaga jeszcze badań.",
-        "Źródła: docs/UX.md; mobile/lib/features/mission/practice_launcher.dart; mobile/lib/features/mission/lost_mission_content.dart; mobile/README.md.\nŹródło robocze: docs/HackYeah 2026.pdf, „Our Solution”.\nPierwotne określenie „prepared behaviour” opisuje zamierzony efekt, a nie zmierzony wynik. Ten slajd nie uczy procedur postępowania w rzeczywistych sytuacjach kryzysowych."
-      ]
+      "prototypeCaption": "Zapraszamy do kontaktu, aby posłuchać, jak Tuptu prowadzi głosem.",
+      "narration": "Tuptu prowadzi także głosem. W ćwiczeniach lektor czyta polecenia, a dziecko słucha i wybiera kolejny krok.",
+      "audioHint": "Demo w przeglądarce jest bez dźwięku"
     },
     "family": {
-      "label": "Kontekst rodzinny",
-      "title": "Ćwiczenia blisko świata dziecka",
-      "currentLabel": "Działa w prototypie",
-      "features": [
-        "Rodzic dodaje kontakty i miejsca do ćwiczeń",
-        "Zdjęcia pomagają rozpoznać miejsce spotkania",
-        "Ćwiczenie zagubienia obejmuje udawane rozmowy i spotkanie z opiekunem"
+      "label": "Scenariusze treningowe",
+      "title": "Co zrobić w trudnej sytuacji?",
+      "scenarios": [
+        {
+          "status": "Działa w prototypie · fikcyjny trening",
+          "question": "Słyszę syrenę.\nCo zrobić?",
+          "description": "Dziecko wybiera działanie w symulowanej sytuacji alarmowej, otrzymuje wyjaśnienie i nauczy się, jak reagować."
+        },
+        {
+          "status": "Scenariusz planowany",
+          "question": "Sieć komórkowa nie działa.\nCo zrobić?",
+          "description": "Jak dać rodzinie znać, gdzie jestem? Gdzie jest bezpiecznie? Dziecko uczy się działania w niestandardowej sytuacji."
+        }
       ],
-      "plannedLabel": "Kolejny scenariusz · planowany",
-      "scenario": "„Sieć komórkowa nie działa.\nGdzie twoja rodzina\numówiła się na spotkanie?”",
-      "purpose": "Przećwicz rodzinny plan na wypadek braku łączności.",
-      "footer": "Oficjalne polskie zalecenia: ustalcie rodzinny plan i regularnie go ćwiczcie",
+      "footer": "Ćwiczenia w grze · Scenariusz braku sieci jest planowany",
       "notes": [
-        "[1:20–1:40 · 20 sekund]\nOficjalne polskie zalecenia mówią o rodzinnym planie z kontaktami i miejscami spotkań, który należy regularnie ćwiczyć. Nasz prototyp pozwala już rodzicowi dodawać kontakty, miejsca i zdjęcia. Ćwiczenie zagubienia wykorzystuje znajome zdjęcia i udawaną komunikację. Próba na wypadek awarii sieci to kolejny scenariusz, który chcemy stworzyć, łącząc kontekst rodzinny z brakiem łączności.",
-        "Źródło pierwotne: https://www.gov.pl/web/poradnikbezpieczenstwa/plan-na-kryzys\nImplementacja: mobile/lib/features/parent/data/family_plan.dart; mobile/lib/features/mission/lost_mission_content.dart; mobile/README.md.\nŹródło robocze: docs/HackYeah 2026.pdf, „Why?”.\nZapisane miejsca są wybranymi przez rodzica celami ćwiczeń, a nie zweryfikowanymi bezpiecznymi miejscami. Rozmowy i wiadomości w treningu są symulowane. Scenariusz awarii sieci i pełne ćwiczenie rodzinnego planu kryzysowego są planowane. Dane demonstracyjne powinny być fikcyjne; konfiguracja rodzica nie ma blokady dostępu."
-      ]
-    },
-    "demo": {
-      "label": "Demonstracja",
-      "title": "Jedna decyzja w Tuptu",
-      "sequence": [ "Scenariusz alarmu", "Wybór dziecka", "Spokojne wyjaśnienie", "Ponowna próba" ],
-      "footer": "Miejsce na nagranie · Fikcyjny trening w aplikacji na Androida",
-      "notes": [
-        "[1:40–2:25 · 45 sekund na nagranie]\nPokaż jeden pełny moment nauki w aplikacji na Androida: otwórz ćwiczenie alarmu, dokonaj wyboru, pokaż wyjaśnienie, spróbuj ponownie i przejdź do podsumowania. Skup nagranie na cyklu nauki. Użyj fikcyjnych danych i nie pokazuj prawdziwego połączenia telefonicznego.",
-        "Nagranie nie zostało jeszcze przygotowane. Slajd celowo pokazuje miejsce na nagranie; nie jest interaktywną demonstracją aplikacji.\nGdy nagranie będzie gotowe: zapisz je jako public/demo/safe-path-demo.mp4 i zmień komponent powyżej na <DemoRecording src=\"/demo/safe-path-demo.mp4\" />. Zachowaj lokalną kopię jako plan awaryjny zgodnie z poradnikiem pitchu. Po dodaniu nagrania zaktualizuj widoczną stopkę.\nJeśli prezentacja odbywa się przed przygotowaniem nagrania, wyraźnie opisz sekwencję jako planowaną demonstrację, zamiast sugerować, że odbiorcy już ją zobaczyli."
+        "[1:40–2:00 · 20 sekund]\nPokazujemy dwa przykłady pytań, które mogą stać się punktem wyjścia do treningu. Pierwsze: sieć komórkowa nie działa — gdzie rodzina umówiła się na spotkanie? Ten scenariusz jest planowany. Drugie: słyszę syrenę — co zrobić? Fikcyjny trening alarmu działa już w prototypie. Dziecko wybiera działanie, widzi wyjaśnienie i może spróbować ponownie.",
+        "Nie przedstawiać tego slajdu jako instrukcji reagowania na rzeczywistą syrenę. Misja alarmowa jest fikcyjnym, niezweryfikowanym treningiem. Rodzinny plan oraz scenariusz awarii sieci wymagają dalszego rozwoju i oceny specjalistów. Zapisane miejsca nie są zweryfikowanymi bezpiecznymi celami."
       ]
     },
     "implementation": {
       "label": "Implementacja",
       "title": "Trening dostępny bez sieci",
-      "columns": [ "Potrzeba", "Nasz wybór", "Co działa dziś" ],
+      "columns": [
+        "Potrzeba",
+        "Nasz wybór",
+        "Co działa dziś"
+      ],
       "decisions": [
         {
           "need": "Stały dostęp do ćwiczeń",
@@ -147,13 +168,13 @@
       "scope": "Tylko mapa demonstracyjna. Trasy niezweryfikowane. Pomoc w realnych zagrożeniach nie została zweryfikowana.",
       "footer": "Dane mapy © autorzy OpenStreetMap · ODbL 1.0",
       "notes": [
-        "[2:25–2:50 · 25 sekund]\nWybraliśmy lokalne treści dołączone do aplikacji, aby ćwiczenia nie zależały od backendu. Dane rodziny pozostają zaszyfrowane na urządzeniu; zdjęcia są przechowywane osobno w prywatnych plikach aplikacji. Mapa korzysta z dołączonego wycinka OpenStreetMap i GPS działającego na pierwszym planie. Mamy dzięki temu działający prototyp offline z wyraźnym ograniczeniem: ćwiczenia spacerowe obejmują teren demonstracyjny przy arenie, wymagają obecności dorosłego, a trasy nie są zweryfikowane.",
+        "[2:00–2:25 · 25 sekund]\nWybraliśmy lokalne treści dołączone do aplikacji, aby ćwiczenia nie zależały od backendu. Dane rodziny pozostają zaszyfrowane na urządzeniu; zdjęcia są przechowywane osobno w prywatnych plikach aplikacji. Mapa korzysta z dołączonego wycinka OpenStreetMap i GPS działającego na pierwszym planie. Mamy dzięki temu działający prototyp offline z wyraźnym ograniczeniem: ćwiczenia spacerowe obejmują teren demonstracyjny przy arenie, wymagają obecności dorosłego, a trasy nie są zweryfikowane.",
         "Źródła: mobile/lib/features/parent/data/family_plan_repository.dart; mobile/lib/features/game/walking_navigation.dart; mobile/lib/audio/practice_audio.dart; mobile/assets/maps/README.md.\nUznanie autorstwa mapy: https://www.openstreetmap.org/copyright\nNarracja offline wymaga zainstalowanego angielskiego głosu offline na Androidzie. GPS wymaga uprawnień i ustalenia pozycji urządzenia; ruch nie jest symulowany. Nie ma nawigacji globalnej ani bieżących danych o zagrożeniach.\nOsobny prototyp pomocy: niezweryfikowany, nie do użycia w rzeczywistych sytuacjach kryzysowych. Obecny kod symuluje 112 za pomocą systemowego okna dialogowego; kontakty do zaufanych osób mogą otworzyć aplikację telefonu po wyraźnym dotknięciu przycisku. Nie należy deklarować automatycznych połączeń, SMS-ów, zweryfikowanych schronów ani usługi ratunkowej."
       ]
     },
     "adoption": {
       "label": "Wdrożenie i wartość",
-      "title": "Ćwiczenia z rodziną, pilotaż w szkole",
+      "title": "Propozycja wartości",
       "pupils": "3,2 mln",
       "pupilsLabel": "uczniów szkół podstawowych w Polsce",
       "schools": {
@@ -163,59 +184,92 @@
       },
       "points": [
         {
-          "title": "Rodziny zaczynają razem",
-          "body": "Dziecko ćwiczy; rodzic dodaje znajomy kontekst."
+          "title": "Dla dziecka",
+          "body": "Ćwiczę, co zrobić, zanim naprawdę będę tego potrzebować."
         },
         {
-          "title": "Szkoły mogą prowadzić ćwiczenia",
-          "body": "Proponowany pilotaż z nauczycielami i specjalistami ds. bezpieczeństwa."
+          "title": "Dla rodzica",
+          "body": "Dziecko ćwiczy wezwanie pomocy i określanie, gdzie jest. Kolejny krok: rodzinny plan."
         },
         {
-          "title": "Hipoteza finansowania",
-          "body": "Programy szkolne lub samorządowe finansują sprawdzone pakiety scenariuszy i wdrożenie."
+          "title": "Dla szkoły",
+          "body": "Interaktywne scenariusze do edukacji o bezpieczeństwie i EDB — docelowo zgodne z jej treściami."
+        },
+        {
+          "title": "Dla samorządu i administracji",
+          "body": "Oficjalne wytyczne zamieniamy w trening. Docelowo dodamy lokalne informacje i scenariusze."
         }
       ],
-      "footer": "Skala edukacji, nie liczba użytkowników · Wdrożenie i finansowanie wymagają weryfikacji",
+      "footer": "Propozycja wartości · Rodzinny plan, zgodność z EDB i lokalne treści wymagają rozwoju",
       "notes": [
-        "[2:50–3:15 · 25 sekund]\nW Polsce jest około 3,2 miliona uczniów szkół podstawowych w 14 tysiącach szkół. To kontekst edukacyjny, a nie liczba naszych użytkowników. Zaczęlibyśmy od rodzin, a następnie przetestowali ćwiczenia prowadzone w szkołach. Jedną z hipotez finansowania są programy szkolne lub samorządowe, które opłacają sprawdzone pakiety scenariuszy i wdrożenie. Nie zweryfikowaliśmy jeszcze popytu, partnerstw ani gotowości do zapłaty.",
+        "[2:25–2:50 · 25 sekund]\nDziecko ćwiczy decyzje przed trudną sytuacją, a rodzic może dodać znajomy kontekst. Dla szkół proponujemy interaktywne scenariusze, docelowo powiązane z treściami bezpieczeństwa i EDB. Samorządom chcemy umożliwić dodanie lokalnych informacji i scenariuszy. W Polsce jest około 3,2 miliona uczniów szkół podstawowych w 14 tysiącach szkół. Programy szkolne i samorządowe to hipoteza finansowania; nie mamy potwierdzonych partnerstw. Pełny rodzinny plan, zgodność z EDB i lokalne rozszerzenia pozostają planowane.",
         "Źródło pierwotne, dane krajowe za 2024/25 obejmujące specjalne szkoły podstawowe: https://stat.gov.pl/dla-mediow/informacje-prasowe/polska-szkola-w-liczbach-jak-wyglada-edukacja-w-roku-szkolnym-20242025%2C36%2C1.html\nŹródło robocze: docs/HackYeah 2026.pdf, dane o skali i notatki „who benefits”. Populacja uczniów nie jest dokładną liczbą dzieci w wieku 7–14 lat ani wielkością rynku płacących odbiorców.\nPominięto na slajdzie szacunek 2,6 mln dzieci online z wersji roboczej, aby nie mieszać populacji i dat. Źródło pierwotne: https://gemius.com/documents/91/Internet_dzieci_2026.pdf (raport z czerwca 2026, dane Mediapanel z listopada 2025)."
-      ]
+      ],
+      "scaleSummary": "3,2 mln uczniów · około 14 tys. szkół podstawowych w Polsce",
+      "scaleSource": "GUS · rok szkolny 2024/25",
+      "funding": "Możliwe finansowanie: programy szkolne i samorządowe."
     },
     "roadmap": {
-      "label": "Kolejne kroki",
-      "title": "Weryfikacja bezpieczeństwa i nauki",
+      "label": "Dalszy rozwój",
+      "title": "Dalszy rozwój",
       "steps": [
         {
-          "title": "Weryfikacja",
-          "body": "Specjaliści ds. bezpieczeństwa oceniają procedury i scenariusze."
+          "title": "Weryfikacja treści",
+          "body": "Specjaliści ds. bezpieczeństwa sprawdzą zgodność ćwiczeń z poradnikiem, a psychologowie — ich dopasowanie do dzieci."
         },
         {
-          "title": "Testy",
-          "body": "Dzieci i rodzice sprawdzają zrozumienie, ton i zapamiętywanie."
+          "title": "Testy z odbiorcami",
+          "body": "Dzieci, rodzice i instytucje sprawdzą zrozumiałość i użyteczność. Zmierzymy, czy dziecko samodzielnie wybiera właściwe działanie."
         },
         {
-          "title": "Rozwój",
-          "body": "Dodajemy sprawdzone scenariusze, zamówione ilustracje i starannie przetestowane nagrody."
+          "title": "Dopracowanie aplikacji",
+          "body": "Na podstawie opinii poprawimy ilustracje, język komunikacji i instrukcje głosowe, aby łatwiej było zrozumieć kolejny krok."
         }
       ],
-      "takeaway": "Wartość długoterminowa: sprawdzona biblioteka scenariuszy i dowody na to, czego uczą się dzieci.",
+      "takeaway": "Następny krok: pilotaż po ocenie treści przez specjalistów.",
       "footer": "Brak badań z udziałem dzieci i zmierzonych efektów nauki",
       "notes": [
-        "[3:15–3:40 · 25 sekund]\nKolejny krok to ocena procedur przez specjalistów ds. bezpieczeństwa i testy zrozumienia z dziećmi oraz rodzicami. Chcemy mierzyć decyzje podczas ćwiczeń i późniejsze zapamiętywanie, zamiast zakładać, że ukończenie gry oznacza przygotowanie. Następnie możemy rozbudować bibliotekę scenariuszy, dopracować ton i ilustracje oraz sprawdzić motywację bez nagradzania ryzykownych wyborów. Na dowody skuteczności i zaufanie instytucji trzeba zapracować.",
+        "[2:50–3:15 · 25 sekund]\nMamy działający prototyp; kolejne kroki mają przygotować go do pilotażu. Najpierw specjaliści ds. bezpieczeństwa sprawdzą zgodność ćwiczeń z poradnikiem, a psychologowie ich dopasowanie do dzieci. Następnie dzieci, rodzice i instytucje ocenią zrozumienie oraz użyteczność. Porównamy samodzielny wybór właściwego działania przed ćwiczeniem i po nim, w nowym wariancie symulacji. Na podstawie tych opinii dopracujemy ilustracje, ton komunikacji i instrukcje głosowe. To plan prac; partnerstwa i efekty nauki nie są jeszcze potwierdzone.",
         "Źródło robocze: docs/HackYeah 2026.pdf, notatki o długoterminowej przewadze i ulepszeniach. Zamówione ilustracje są planem na przyszłość; obecna grafika aplikacji zawiera zasoby wygenerowane przez AI.\nKontekst badawczy, nie dowód dla Tuptu: badanie Flood Alert! z 2026 roku wykazało wzrost wiedzy i poczucia własnej skuteczności u 45 indonezyjskich STUDENTÓW kierunku nauczycielskiego z geografii. Zastosowano pomiar przed i po w jednej grupie, bez grupy kontrolnej. Nie potwierdza ono efektów u dzieci ani zachowania w rzeczywistych sytuacjach kryzysowych. https://jamba.org.za/index.php/jamba/rt/printerFriendly/2005/3933\nProponowane pomiary w pilotażu i model finansowania to zalecenia dotyczące kolejnych kroków, a nie ukończone prace czy podpisane umowy."
-      ]
+      ],
+      "intro": "Prototyp już działa. Teraz chcemy sprawdzić jakość treningu i przygotować aplikację do pilotażu."
     },
-    "closing": {
+    "thanks": {
       "label": "Tuptu",
-      "kicker": "Nasz kolejny krok",
-      "title": "Pilotaż po ocenie specjalistów\nz dziećmi i rodzicami",
-      "ask": "Szukamy edukatorów i specjalistów ds. bezpieczeństwa,\nktórzy pomogą przetestować kolejną wersję.",
-      "statement": "Tuptu pomaga dzieciom ćwiczyć podejmowanie kolejnych decyzji.",
-      "footer": "Prototyp · Kod i grafika ze wsparciem AI · Flutter, Flame i OpenStreetMap",
+      "title": "Dziękujemy",
+      "tagline": "Tuptu — małe kroki do odważnych decyzji",
+      "prototypeLabel": "Prototyp",
+      "prototypeUrl": "http://10.166.146.210:3030/prototype/index.html",
+      "prototypeLinkLabel": "Wypróbuj Tuptu",
+      "prototypeCaption": "Demo dostępne w lokalnej sieci",
+      "analysisLabel": "Analiza",
+      "analysisUrl": "https://drive.proton.me/urls/41AA97RYSM#GeQamlYw5s3J",
+      "analysisLinkLabel": "Poznaj założenia projektu",
+      "pendingLink": "Link do uzupełnienia",
+      "contactLabel": "Kontakt",
+      "linkedinLabel": "LinkedIn",
+      "emailLabel": "E-mail",
+      "pendingContact": "LinkedIn i e-mail do uzupełnienia",
+      "creators": [
+        {
+          "name": "Tomasz Szarek",
+          "linkedinUrl": "https://www.linkedin.com/in/tomasz-szarek-798373132/",
+          "email": "tomasz93szarek@gmail.com"
+        },
+        {
+          "name": "Patrycja Beńko",
+          "linkedinUrl": "https://www.linkedin.com/in/patrycja-be%C5%84ko-49a6b117a/",
+          "email": "patibenko@gmail.com"
+        }
+      ],
+      "footer": "Projekt realizowany w ramach HackYeah 2026",
       "notes": [
-        "[3:40–4:00 · 20 sekund]\nMamy działający prototyp treningowy na Androida. Teraz chcemy przeprowadzić pilotaż z dziećmi i rodzicami, po ocenie specjalistów, przy wsparciu edukatorów i ekspertów ds. bezpieczeństwa. Cel Tuptu jest prosty: dać dzieciom możliwość ćwiczenia kolejnych decyzji, zanim będą musiały je podjąć.",
-        "Informacje do ujawnienia w zgłoszeniu: AI istotnie wspierała tworzenie kodu, treści i grafiki, w tym tej prezentacji. Istniejąca grafika aplikacji korzysta z generowania obrazów OpenAI; oprogramowanie używa Flutter i Flame; dołączone dane mapy są © autorzy OpenStreetMap na licencji ODbL 1.0; Nunito jest na licencji SIL OFL. Szczegóły znajdują się w plikach opisujących pochodzenie zasobów i manifestach zależności. To prototyp bez zweryfikowanych wytycznych na wypadek realnych zagrożeń i bez zmierzonych efektów u dzieci.\nWymagania obejmują także tytuł projektu, nazwę zespołu, członków zespołu i opis projektu oraz PDF liczący maksymalnie dziesięć slajdów. Nie podano tożsamości zespołu ani pełnej listy członków; podpis autora w wersji roboczej nie potwierdza pełnego składu. Przed zgłoszeniem potwierdź te pola oraz rozróżnienie między pracą sprzed wydarzenia a wkładem podczas hackathonu. Nie wymyślaj tych danych.\nŹródła: docs/Details - Defence.pdf, sekcje dotyczące ujawnienia zasobów/AI i zgłoszenia; docs/Od chaosu do mistrzowskiego pitchu — HackYeah.pdf, wskazówki dotyczące ograniczeń implementacji i kolejnego kroku."
-      ]
+        "Projekt realizowany w ramach HackYeah 2026. Twórcy: Tomasz Szarek i Patrycja Beńko. Slajd zawiera linki do prototypu, analizy, profili LinkedIn i adresów e-mail obu twórców. Link do prototypu jest dostępny tylko w lokalnej sieci.",
+        "Analiza projektu: https://drive.proton.me/urls/41AA97RYSM#GeQamlYw5s3J — hasło Tuptu, podane przez zespół."
+      ],
+      "analysisPasswordLabel": "Hasło: Tuptu",
+      "pendingEmail": "E-mail do uzupełnienia",
+      "pendingLinkedin": "LinkedIn do uzupełnienia"
     }
   }
 }

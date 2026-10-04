@@ -16,7 +16,7 @@ class PracticeMessageConversation extends StatelessWidget {
         Semantics(
           header: true,
           child: Text(
-            'A pretend conversation',
+            'Rozmowa na niby',
             style: textTheme.headlineMedium?.copyWith(
               fontSize: 28,
               fontWeight: FontWeight.w700,
@@ -25,15 +25,15 @@ class PracticeMessageConversation extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Text(
-          'Practice only. Nothing was sent.',
+          'Tylko ćwiczenie. Nic nie wysłano.',
           style: textTheme.bodyMedium?.copyWith(color: BaseboundColors.muted),
         ),
         const SizedBox(height: 24),
         const Padding(
           padding: EdgeInsets.only(left: 16),
           child: _MessageBubble(
-            sender: 'You',
-            message: 'I am away from windows.',
+            sender: 'Ty',
+            message: 'Jestem z dala od okien.',
             color: BaseboundColors.sky,
           ),
         ),
@@ -41,8 +41,8 @@ class PracticeMessageConversation extends StatelessWidget {
         const Padding(
           padding: EdgeInsets.only(right: 16),
           child: _MessageBubble(
-            sender: 'Trusted adult',
-            message: 'Good. Stay there and wait for the all-clear.',
+            sender: 'Zaufana osoba dorosła',
+            message: 'Dobrze. Zostań tam i czekaj na odwołanie alarmu.',
             color: BaseboundColors.peach,
           ),
         ),

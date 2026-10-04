@@ -19,13 +19,13 @@ class LostLandmarkPreset {
 const lostLandmarkPresets = [
   LostLandmarkPreset(
     id: 'fountain',
-    label: 'Fountain',
-    description: 'A round blue fountain with water spraying upward.',
+    label: 'Fontanna',
+    description: 'Okrągła niebieska fontanna z wodą tryskającą w górę.',
   ),
   LostLandmarkPreset(
     id: 'information_desk',
-    label: 'Information desk',
-    description: 'A public information desk with a worker and help sign.',
+    label: 'Punkt informacji',
+    description: 'Publiczny punkt informacji z pracownikiem i znakiem pomocy.',
   ),
 ];
 

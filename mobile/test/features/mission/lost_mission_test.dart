@@ -16,7 +16,7 @@ void main() {
         }
         if (confirming) {
           expect(visited, contains('reunion'));
-          expect(session.step.actionLabel, "I'M SAFE");
+          expect(session.step.actionLabel, "JESTEM W BEZPIECZNYM MIEJSCU");
           expect(session.step.isDecision, isFalse);
         }
         if (session.step.isDecision) {
@@ -29,7 +29,10 @@ void main() {
         if (confirming) {
           expect(session.safetyConfirmed, isTrue);
           expect(session.step.id, 'confirmation');
-          expect(session.step.narration, contains('No message was sent'));
+          expect(
+            session.step.narration,
+            contains('Nie wysłano żadnej wiadomości'),
+          );
         }
       }
       expect(session.isComplete, isTrue);
@@ -52,7 +55,7 @@ void main() {
         'confirmation',
         'recall',
       ]);
-      expect(session.step.narration, contains('visible nearby'));
+      expect(session.step.narration, contains('widzisz je blisko'));
       expect(session.safetyConfirmed, isTrue);
     }
   });
@@ -109,7 +112,7 @@ void main() {
           _progressTo(session, 'contact');
           session.choose(first.id);
           expect(session.selectedChoice?.contactId, first.id);
-          expect(session.feedback, contains('pretend'));
+          expect(session.feedback, contains('na niby'));
           session.advance();
           expect(session.firstContactId, first.id);
           expect(session.step.id, 'no_answer');
@@ -132,7 +135,7 @@ void main() {
           session.retry();
           expect(session.firstContactId, first.id);
           session.choose(alternates.first.id);
-          expect(session.feedback, contains('pretend'));
+          expect(session.feedback, contains('na niby'));
           session.advance();
           expect(session.step.id, 'reply');
         }
@@ -143,7 +146,7 @@ void main() {
   test('only the explicit post-reunion action confirms safety', () {
     final session = _session();
     session.choose('confirm_safe');
-    session.choose("I'M SAFE");
+    session.choose("JESTEM W BEZPIECZNYM MIEJSCU");
     session.advance();
     expect(session.step.id, 'stop');
     expect(session.safetyConfirmed, isFalse);
@@ -292,26 +295,26 @@ LostPracticeContext _context({int contactCount = 3}) => LostPracticeContext(
   gender: ChildGender.girl,
   meetingPoint: const PracticeMeetingPoint(
     presetId: 'fountain',
-    label: 'Fountain',
+    label: 'Fontanna',
   ),
   fictionalMeetingPoint: true,
   contacts: List.unmodifiable([
     const LostPracticeContact(
       id: 'mom',
-      label: 'Mom',
+      label: 'Mama',
       avatar: LostContactAvatar.mother,
       isFictional: true,
     ),
     const LostPracticeContact(
       id: 'dad',
-      label: 'Dad',
+      label: 'Tata',
       avatar: LostContactAvatar.father,
       isFictional: true,
     ),
     if (contactCount == 3)
       const LostPracticeContact(
         id: 'grandparent',
-        label: 'Grandparent',
+        label: 'Babcia lub dziadek',
         avatar: LostContactAvatar.grandparent,
         isFictional: true,
       ),

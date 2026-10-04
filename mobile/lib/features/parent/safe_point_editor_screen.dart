@@ -54,21 +54,23 @@ class _SafePointEditorScreenState extends State<SafePointEditorScreen> {
   Widget build(BuildContext context) {
     final selected = _selected;
     return ParentEditorScaffold(
-      title: widget.point == null ? 'Add a safe place' : 'Edit a safe place',
+      title: widget.point == null
+          ? 'Dodaj bezpieczne miejsce'
+          : 'Edytuj bezpieczne miejsce',
       onSave: _save,
-      saveLabel: 'Save safe place',
+      saveLabel: 'Zapisz bezpieczne miejsce',
       saveEnabled: selected != null,
       steps: [
         ParentEditorStep(
-          title: 'What is your safe place called?',
-          nextLabel: 'Choose map location',
+          title: 'Jak nazywa się wybrane bezpieczne miejsce?',
+          nextLabel: 'Wybierz pozycję na mapie',
           children: [
             TextField(
               controller: _name,
               decoration: const InputDecoration(
-                labelText: 'Safe place name (optional)',
+                labelText: 'Nazwa bezpiecznego miejsca (opcjonalnie)',
                 floatingLabelBehavior: FloatingLabelBehavior.always,
-                hintText: 'Family meeting place…',
+                hintText: 'Miejsce spotkania rodziny…',
                 prefixIcon: BaseboundIcon(BaseboundIconName.pin, size: 24),
               ),
               textCapitalization: TextCapitalization.words,
@@ -83,17 +85,17 @@ class _SafePointEditorScreenState extends State<SafePointEditorScreen> {
             const SizedBox(height: 24),
             const ParentEditorNote(
               message:
-                  'A safe place is a destination your family chooses for its '
-                  'emergency plan. This demo cannot verify its safety.',
+                  'Bezpieczne miejsce to cel wybrany przez rodzinę w ramach '
+                  'planu awaryjnego. Demo nie sprawdza jego bezpieczeństwa.',
               icon: BaseboundIconName.info,
             ),
           ],
         ),
         ParentEditorStep(
-          title: 'Where is your safe place?',
+          title: 'Gdzie jest wybrane bezpieczne miejsce?',
           children: [
             const Text(
-              'Tap the map to place or move the pin.',
+              'Dotknij mapy, aby dodać lub przesunąć znacznik.',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
@@ -108,11 +110,11 @@ class _SafePointEditorScreenState extends State<SafePointEditorScreen> {
             const SizedBox(height: 16),
             Semantics(
               liveRegion: true,
-              label: 'Safe place location',
+              label: 'Pozycja bezpiecznego miejsca',
               value: selected == null
-                  ? 'No location selected'
-                  : 'Latitude ${selected.latitude.toStringAsFixed(5)}, '
-                        'longitude ${selected.longitude.toStringAsFixed(5)}',
+                  ? 'Nie wybrano pozycji'
+                  : 'Szerokość ${selected.latitude.toStringAsFixed(5)}, '
+                        'długość ${selected.longitude.toStringAsFixed(5)}',
               child: ExcludeSemantics(
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -127,8 +129,8 @@ class _SafePointEditorScreenState extends State<SafePointEditorScreen> {
                     Expanded(
                       child: Text(
                         selected == null
-                            ? 'Choose a location before saving.'
-                            : 'Location selected. You can move the pin.',
+                            ? 'Wybierz pozycję przed zapisaniem.'
+                            : 'Pozycja wybrana. Możesz przesunąć znacznik.',
                         style: const TextStyle(
                           color: BaseboundColors.muted,
                           fontSize: 16,
@@ -143,13 +145,13 @@ class _SafePointEditorScreenState extends State<SafePointEditorScreen> {
             const SizedBox(height: 24),
             const ParentEditorNote(
               message:
-                  'Choose a demo pin near TAURON Arena in Kraków. '
-                  'The demo cannot verify safety or real routes.',
+                  'Wybierz przykładowy znacznik przy TAURON Arenie w Krakowie. '
+                  'Demo nie sprawdza bezpieczeństwa ani rzeczywistych tras.',
               icon: BaseboundIconName.info,
             ),
             const SizedBox(height: 12),
             const Text(
-              'Each demo game chooses one saved safe place for training.',
+              'Każde ćwiczenie demo wybiera jedno z zapisanych bezpiecznych miejsc.',
               style: TextStyle(
                 color: BaseboundColors.muted,
                 fontSize: 16,

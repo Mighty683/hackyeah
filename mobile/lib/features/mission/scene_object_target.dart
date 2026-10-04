@@ -28,7 +28,7 @@ class SceneObjectTarget extends StatelessWidget {
     enabled: onTap != null,
     selected: selected,
     onTap: onTap,
-    hint: rejected ? 'Try another choice.' : null,
+    hint: rejected ? 'Spróbuj wybrać inaczej.' : null,
     child: ExcludeSemantics(
       child: Material(
         type: MaterialType.transparency,

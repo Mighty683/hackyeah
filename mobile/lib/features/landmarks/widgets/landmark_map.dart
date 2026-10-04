@@ -58,7 +58,7 @@ class _LandmarkMapState extends State<LandmarkMap> {
                   child: TextButton(
                     onPressed: () =>
                         setState(() => _map = DemoMapRepository().load()),
-                    child: const Text('Retry loading map'),
+                    child: const Text('Wczytaj mapę ponownie'),
                   ),
                 );
               }
@@ -73,7 +73,7 @@ class _LandmarkMapState extends State<LandmarkMap> {
       if (widget.showAttribution) ...[
         const SizedBox(height: 8),
         const Text(
-          'Map data © OpenStreetMap contributors · ODbL 1.0',
+          'Dane mapy © autorzy OpenStreetMap · ODbL 1.0',
           style: TextStyle(fontSize: 12, color: BaseboundColors.muted),
         ),
       ],
@@ -133,7 +133,7 @@ class _LandmarkMapCanvasState extends State<_LandmarkMapCanvas> {
                   child: GameWidget(
                     game: _game,
                     errorBuilder: (_, _) =>
-                        const Center(child: Text('Map unavailable')),
+                        const Center(child: Text('Mapa niedostępna')),
                   ),
                 ),
               ),
@@ -156,8 +156,8 @@ class _LandmarkMapCanvasState extends State<_LandmarkMapCanvas> {
                 child: IgnorePointer(
                   child: Semantics(
                     label: kIsWeb
-                        ? 'Fictional demo position · no GPS'
-                        : 'Your live GPS position',
+                        ? 'Fikcyjna pozycja demo · bez GPS'
+                        : 'Twoja bieżąca pozycja GPS',
                     child: CustomPaint(
                       key: const ValueKey('live-gps-marker'),
                       painter: NavigationPainter(

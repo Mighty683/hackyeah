@@ -17,48 +17,48 @@ Map<String, LostMissionStep> buildLostMissionSteps(
   final steps = <LostMissionStep>[
     LostMissionStep(
       id: 'stop',
-      title: 'You cannot see your parent',
-      narration: 'You cannot see your parent. What will you do?',
+      title: 'Nie widzisz rodzica',
+      narration: 'Nie widzisz rodzica. Co zrobisz?',
       visual: LostMissionVisual.square,
       choices: [
         _choice(
           'search',
-          'Run and search',
+          'Biegnij i szukaj',
           LostActionIcon.search,
           false,
-          'Running away makes it harder to find you. Stop first.',
+          'Gdy odbiegniesz, trudniej cię znaleźć. Najpierw się zatrzymaj.',
         ),
         _choice(
           'leave',
-          'Leave this place',
+          'Opuść to miejsce',
           LostActionIcon.leave,
           false,
-          'Your parent may look here. Stop and look around.',
+          'Rodzic może szukać cię tutaj. Zatrzymaj się i rozejrzyj.',
         ),
         _choice(
           'stop',
-          'Stop and look',
+          'Zatrzymaj się i spójrz',
           LostActionIcon.stop,
           true,
-          'Good. You stopped. Now look around.',
+          'Dobrze. Teraz stoisz. Rozejrzyj się.',
         ),
       ],
     ),
     LostMissionStep(
       id: 'look',
-      title: 'Remember your meeting place',
+      title: 'Przypomnij sobie miejsce spotkania',
       narration:
-          'Look around. Your practice meeting place is '
+          'Rozejrzyj się. Twoje miejsce spotkania do ćwiczeń to '
           '${context.meetingPointLabel}.',
       visual: LostMissionVisual.look,
       actionLabel: variant == LostPracticeVariant.meetingPointNearby
-          ? 'Find the meeting place'
-          : 'Look for nearby help',
+          ? 'Znajdź miejsce spotkania'
+          : 'Poszukaj pomocy w pobliżu',
     ),
     LostMissionStep(
       id: 'meeting_point',
-      title: 'Which is your meeting place?',
-      narration: 'Your meeting place is visible nearby. Choose it.',
+      title: 'Które to twoje miejsce spotkania?',
+      narration: 'Widzisz miejsce spotkania w pobliżu. Wybierz je.',
       visual: LostMissionVisual.meetingPoint,
       choices: [
         if (photoTarget != null)
@@ -69,7 +69,8 @@ Map<String, LostMissionStep> buildLostMissionSteps(
             label: context.meetingPointLabel,
             icon: LostActionIcon.meetingPoint,
             isCorrect: true,
-            feedback: 'Yes. You recognize your nearby practice meeting place.',
+            feedback:
+                'Tak. Rozpoznajesz pobliskie miejsce spotkania do ćwiczeń.',
             landmarkPresetId: landmark.id,
           ),
           LostMissionChoice(
@@ -77,27 +78,26 @@ Map<String, LostMissionStep> buildLostMissionSteps(
             label: otherLandmark.label,
             icon: LostActionIcon.meetingPoint,
             isCorrect: false,
-            feedback:
-                'That is a different landmark. Remember your meeting place.',
+            feedback: 'To inny punkt orientacyjny. Przypomnij sobie miejsce spotkania.',
             landmarkPresetId: otherLandmark.id,
           ),
         ],
         _choice(
           'leave',
-          'Go to the exit',
+          'Idź do wyjścia',
           LostActionIcon.leave,
           false,
-          'Leaving makes it harder to find you. Choose your nearby meeting place.',
+          'Gdy odejdziesz, trudniej cię znaleźć. Wybierz pobliskie miejsce spotkania.',
         ),
       ],
     ),
     if (photoTarget != null)
       LostMissionStep(
         id: 'map_meeting_point',
-        title: 'Find your meeting place on Our map',
+        title: 'Znajdź miejsce spotkania na Naszej mapie',
         narration:
-            'Find ${context.meetingPointLabel}. Tap its photo pin. '
-            'Drag to explore. Pinch to zoom. This is map practice only.',
+            'Znajdź ${context.meetingPointLabel}. Dotknij znacznika ze zdjęciem. '
+            'Przesuwaj mapę. Zbliżaj palcami. To tylko ćwiczenie z mapą.',
         visual: LostMissionVisual.meetingPoint,
         choices: [
           if (context.homePoint case final home?)
@@ -106,7 +106,8 @@ Map<String, LostMissionStep> buildLostMissionSteps(
               label: home.label,
               icon: LostActionIcon.meetingPoint,
               isCorrect: false,
-              feedback: 'Home is a different place. Look for your meeting place photo.',
+              feedback:
+                  'Dom to inne miejsce. Poszukaj zdjęcia miejsca spotkania.',
             ),
           for (final choice in photoChoices.where(
             (choice) => choice.photoPath != null,
@@ -119,166 +120,166 @@ Map<String, LostMissionStep> buildLostMissionSteps(
               photoPath: choice.photoPath,
               isDemoPhoto: choice.isDemoPhoto,
               feedback: choice.isCorrect
-                  ? 'Yes. This pin marks ${context.meetingPointLabel}. '
-                        'You found it on the map. You have not walked there.'
-                  : 'That pin marks a different place. Look for your meeting place photo.',
+                  ? 'Tak. Ten znacznik wskazuje ${context.meetingPointLabel}. '
+                        'To miejsce znalezione na mapie. Jeszcze tam nie jesteś.'
+                  : 'Ten znacznik wskazuje inne miejsce. Poszukaj zdjęcia miejsca spotkania.',
             ),
         ],
       ),
     LostMissionStep(
       id: 'arrive',
-      title: 'At your practice meeting place',
+      title: 'W miejscu spotkania na niby',
       narration:
-          'In this story, you reach ${context.meetingPointLabel}. '
-          'Staff can help nearby.',
+          'W tej historii docierasz do miejsca: ${context.meetingPointLabel}. '
+          'Pracownicy w pobliżu mogą pomóc.',
       visual: LostMissionVisual.meetingPoint,
-      actionLabel: 'Ask for nearby help',
+      actionLabel: 'Poproś o pomoc w pobliżu',
     ),
     LostMissionStep(
       id: 'point_unavailable',
-      title: 'Your meeting place is out of sight',
-      narration: 'You cannot see your meeting place. What will you do?',
+      title: 'Nie widzisz miejsca spotkania',
+      narration: 'Nie widzisz miejsca spotkania. Co zrobisz?',
       visual: LostMissionVisual.square,
       choices: [
         _choice(
           'leave',
-          'Walk through new streets',
+          'Idź nieznanymi ulicami',
           LostActionIcon.leave,
           false,
-          'New streets may make you more lost. Stay nearby.',
+          'Na nieznanych ulicach trudniej się odnaleźć. Zostań w pobliżu.',
         ),
         _choice(
           'search',
-          'Keep searching alone',
+          'Szukaj dalej samodzielnie',
           LostActionIcon.search,
           false,
-          'Searching alone makes it harder to find you. Ask nearby staff.',
+          'Gdy szukasz samodzielnie, trudniej cię znaleźć. Zapytaj pracownika w pobliżu.',
         ),
         _choice(
           'stay',
-          'Stay nearby and ask for help',
+          'Zostań blisko i poproś o pomoc',
           LostActionIcon.stay,
           true,
-          'Good. Stay nearby. Look for help at the information desk.',
+          'Dobrze. Zostań blisko. Poszukaj pomocy w punkcie informacji.',
         ),
       ],
     ),
     LostMissionStep(
       id: 'helper',
-      title: 'Who can help here?',
-      narration: 'Find help here, where people can see you.',
+      title: 'Kto może tutaj pomóc?',
+      narration: 'Szukaj pomocy tutaj, gdzie inni cię widzą.',
       visual: LostMissionVisual.helper,
       choices: [
         _choice(
           'staff',
-          'Ask staff at the desk',
+          'Zapytaj pracownika w punkcie informacji',
           LostActionIcon.staff,
           true,
-          'Ask staff to contact your family. Stay here at the desk.',
+          'Poproś pracownika o kontakt z rodziną. Zostań przy punkcie informacji.',
         ),
         _choice(
           'unknown_adult',
-          'Follow someone away',
+          'Odejdź za kimś',
           LostActionIcon.unknownAdult,
           false,
-          'Going somewhere unknown makes you harder to find. Ask for help here.',
+          'W nieznanym miejscu trudniej cię znaleźć. Poproś o pomoc tutaj.',
         ),
         _choice(
           'search',
-          'Keep searching alone',
+          'Szukaj dalej samodzielnie',
           LostActionIcon.search,
           false,
-          'Searching alone makes it harder to find you. Ask for help here.',
+          'Gdy szukasz samodzielnie, trudniej cię znaleźć. Poproś o pomoc tutaj.',
         ),
       ],
     ),
     LostMissionStep(
       id: 'stranger',
-      title: 'Someone asks you to follow',
-      narration: 'Someone says: Come with me to find your parent.',
+      title: 'Ktoś prosi, by za nim pójść',
+      narration: 'Ktoś mówi: Chodź ze mną, znajdziemy twojego rodzica.',
       visual: LostMissionVisual.stranger,
       choices: [
         _choice(
           'leave',
-          'Go with them',
+          'Idź z tą osobą',
           LostActionIcon.leave,
           false,
-          'Stay where people can find you. Ask staff to contact your family.',
+          'Zostań tam, gdzie można cię znaleźć. Poproś pracownika o kontakt z rodziną.',
         ),
         _choice(
           'stay',
-          'Stay here and ask staff',
+          'Zostań tutaj i zapytaj pracownika',
           LostActionIcon.stay,
           true,
-          'Good. You stayed here and asked staff to contact your family.',
+          'Dobrze. Zostajesz tutaj i prosisz pracownika o kontakt z rodziną.',
         ),
       ],
     ),
     LostMissionStep(
       id: 'contact',
-      title: 'Pretend to call your family',
-      narration: 'Choose a trusted person. This call is pretend.',
+      title: 'Zadzwoń do rodziny na niby',
+      narration: 'Wybierz zaufaną osobę. To połączenie na niby.',
       visual: LostMissionVisual.contacts,
       choices: context.contacts.map(_contactChoice).toList(growable: false),
     ),
     const LostMissionStep(
       id: 'reply',
-      title: 'A pretend reply',
+      title: 'Odpowiedź na niby',
       narration:
-          'In this story, your family knows where you are. '
-          'Staff stay with you.',
+          'W tej historii rodzina wie, gdzie jesteś. '
+          'Pracownicy zostają z tobą.',
       visual: LostMissionVisual.calling,
-      actionLabel: 'Stay with staff',
+      actionLabel: 'Zostań z pracownikami',
     ),
     LostMissionStep(
       id: 'wait',
-      title: 'Your parent is coming',
-      narration: 'Your parent is coming in the story. What will you do?',
+      title: 'Rodzic jest w drodze',
+      narration: 'W tej historii rodzic jest w drodze. Co zrobisz?',
       visual: LostMissionVisual.waiting,
       choices: [
         _choice(
           'leave',
-          'Leave and search',
+          'Odejdź i szukaj',
           LostActionIcon.leave,
           false,
-          'Your family knows this place. Stay here so they can find you.',
+          'Rodzina zna to miejsce. Zostań tutaj, aby mogli cię znaleźć.',
         ),
         _choice(
           'stay',
-          'Stay here and wait',
+          'Zostań tutaj i czekaj',
           LostActionIcon.wait,
           true,
-          'Good. Stay here with staff. Your parent is coming.',
+          'Dobrze. Zostań z pracownikami. Rodzic jest w drodze.',
         ),
       ],
     ),
     const LostMissionStep(
       id: 'reunion',
-      title: 'Your parent arrives',
-      narration: 'Your parent arrives in this story. You are together again.',
+      title: 'Rodzic przychodzi',
+      narration: 'W tej historii rodzic przychodzi. Znów jesteście razem.',
       visual: LostMissionVisual.reunion,
-      actionLabel: 'Say I am safe',
+      actionLabel: 'Powiedz Jestem w bezpiecznym miejscu',
     ),
     const LostMissionStep(
       id: 'confirm_safe',
-      title: 'You are together again',
-      narration: 'Tap I am safe. This is only practice.',
+      title: 'Znów jesteście razem',
+      narration: 'Dotknij Jestem w bezpiecznym miejscu. To tylko ćwiczenie.',
       visual: LostMissionVisual.reunion,
-      actionLabel: "I'M SAFE",
+      actionLabel: "JESTEM W BEZPIECZNYM MIEJSCU",
     ),
     const LostMissionStep(
       id: 'confirmation',
-      title: 'Your pretend confirmation',
-      narration: 'Practice complete. No message was sent.',
+      title: 'Potwierdzenie na niby',
+      narration: 'Ćwiczenie ukończone. Nie wysłano żadnej wiadomości.',
       visual: LostMissionVisual.confirmation,
-      actionLabel: 'Remember the steps',
+      actionLabel: 'Zapamiętaj kroki',
     ),
     LostMissionStep(
       id: 'recall',
-      title: 'Remember what you practiced',
+      title: 'Zapamiętaj ćwiczone kroki',
       narration: LostPracticeRecap.narration,
       visual: LostMissionVisual.recall,
-      actionLabel: 'Finish practice',
+      actionLabel: 'Zakończ ćwiczenie',
     ),
   ];
   return {for (final step in steps) step.id: step};
@@ -301,17 +302,17 @@ List<LostMissionChoice> _photoChoices(
         photoPath: place.photoPath,
         isDemoPhoto: place.isDemo,
         feedback: place.id == target.id
-            ? 'Yes. This is your meeting place: ${target.label}.'
-            : 'That is a different place. Look at your meeting place photo again.',
+            ? 'Tak. To twoje miejsce spotkania: ${target.label}.'
+            : 'To inne miejsce. Spójrz ponownie na zdjęcie miejsca spotkania.',
       ),
     if (others.isEmpty)
       LostMissionChoice(
         id: 'different-landmark',
-        label: 'A different information desk',
+        label: 'Inny punkt informacji',
         icon: LostActionIcon.meetingPoint,
         isCorrect: false,
         landmarkPresetId: 'information_desk',
-        feedback: 'That is a pretend picture. Look for your saved meeting place photo.',
+        feedback: 'To obrazek na niby. Poszukaj zapisanego zdjęcia miejsca spotkania.',
       ),
   ]..shuffle();
   return choices;
@@ -322,18 +323,19 @@ LostMissionStep lostNoAnswerStep(
   String? firstContactId,
 ) => LostMissionStep(
   id: 'no_answer',
-  title: 'The pretend call has no answer',
-  narration: 'Stay with staff. Try a different trusted person.',
+  title: 'Nikt nie odbiera połączenia na niby',
+  narration:
+      'Zostań z pracownikami. Spróbuj skontaktować się z inną zaufaną osobą.',
   visual: LostMissionVisual.contacts,
   choices: [
     for (final contact in context.contacts)
       if (contact.id != firstContactId) _contactChoice(contact),
     _choice(
       'leave',
-      'Leave and search',
+      'Odejdź i szukaj',
       LostActionIcon.leave,
       false,
-      'Stay with staff. Try another trusted person here.',
+      'Zostań z pracownikami. Spróbuj tutaj skontaktować się z inną zaufaną osobą.',
     ),
   ],
 );
@@ -342,7 +344,7 @@ LostMissionChoice _contactChoice(
   LostPracticeContact contact,
 ) => LostMissionChoice(
   id: contact.id,
-  label: 'Pretend call: ${contact.label}',
+  label: 'Połączenie na niby: ${contact.label}',
   icon: switch (contact.avatar) {
     LostContactAvatar.mother => LostActionIcon.mother,
     LostContactAvatar.father => LostActionIcon.father,
@@ -351,8 +353,8 @@ LostMissionChoice _contactChoice(
   },
   isCorrect: true,
   feedback: contact.isFictional
-      ? 'You chose ${contact.label}, a pretend person. This call is pretend.'
-      : 'You chose ${contact.label}. This call is pretend.',
+      ? 'Wybrana osoba: ${contact.label}. To fikcyjna osoba i połączenie na niby.'
+      : 'Wybrana osoba: ${contact.label}. To połączenie na niby.',
   contactId: contact.id,
 );
 

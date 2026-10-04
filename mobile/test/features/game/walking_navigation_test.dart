@@ -30,7 +30,7 @@ DemoMap roadMap() => DemoMap(
 
 const target = Landmark(
   id: '1_1',
-  name: 'Library',
+  name: 'Biblioteka',
   photoName: '1_1.photo',
   latitude: 50.015,
   longitude: 20.018,
@@ -208,16 +208,16 @@ void main() {
     )!;
     final route = WalkingRoute(map, path);
     expect(route.turns.map((turn) => turn.action), [
-      'turn left onto Park path',
-      'turn right onto Park path',
+      'skręć w lewo — Park path',
+      'skręć w prawo — Park path',
     ]);
     expect(
       route.instructionAt(route.turns.first.distance - 8),
-      'Turn left onto Park path.',
+      'Skręć w lewo — Park path.',
     );
     expect(
       route.instructionAt(route.turns.last.distance + 20),
-      contains('east'),
+      contains('na wschód'),
     );
     final reverse = WalkingRoute(
       map,
@@ -227,8 +227,8 @@ void main() {
       )!,
     );
     expect(reverse.turns.map((turn) => turn.action), [
-      'turn left onto Park path',
-      'turn right onto Park path',
+      'skręć w lewo — Park path',
+      'skręć w prawo — Park path',
     ]);
   });
 
@@ -249,7 +249,7 @@ void main() {
       await emit(fix(now, latitude: 50.015, longitude: 20.018));
       expect(navigation.remaining, lessThan(1));
       expect(navigation.nearPlace, isFalse);
-      expect(navigation.instruction, contains('mapped path ends'));
+      expect(navigation.instruction, contains('ścieżka kończy się'));
     },
   );
 
@@ -268,7 +268,7 @@ void main() {
       await location.start();
       await emit(fix(now));
       expect(navigation.route, isNull);
-      expect(navigation.instruction, contains('No connected walking route'));
+      expect(navigation.instruction, contains('Brak połączonej trasy pieszej'));
     },
   );
 }

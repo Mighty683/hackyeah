@@ -4,19 +4,19 @@ enum MissionMode { home, outdoor }
 
 /// The same three reminders are shown and narrated at the end of practice.
 abstract final class AirRaidPracticeRecap {
-  static const praise = 'You did a great job! You finished the practice.';
+  static const praise = 'Dobra robota! Ćwiczenie ukończone.';
   static const points = [
     (
-      title: 'Find a protected place',
-      description: 'Move away from windows when you hear the alarm.',
+      title: 'Znajdź osłonięte miejsce',
+      description: 'Odsuń się od okien, gdy usłyszysz alarm.',
     ),
     (
-      title: 'Tell a trusted adult',
-      description: 'Try one call. If there is no answer, send an SMS.',
+      title: 'Powiedz zaufanej osobie dorosłej',
+      description: 'Spróbuj zadzwonić raz. Jeśli nikt nie odbiera, wyślij SMS.',
     ),
     (
-      title: 'Wait for the all-clear',
-      description: 'Stay there, even when it is quiet.',
+      title: 'Czekaj na odwołanie alarmu',
+      description: 'Zostań tam, nawet gdy jest cicho.',
     ),
   ];
 

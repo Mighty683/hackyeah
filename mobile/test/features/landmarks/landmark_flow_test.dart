@@ -56,18 +56,18 @@ void main() {
       ),
     );
     await _tap(tester, 'Open landmark');
-    await tester.enterText(find.byType(TextField), 'Red corner shop');
+    await tester.enterText(find.byType(TextField), 'Czerwony sklep na rogu');
     expect(find.text('🏪 Shop'), findsNothing);
-    await _tap(tester, 'Choose map position', settle: false);
+    await _tap(tester, 'Wybierz pozycję na mapie', settle: false);
     await _pumpMap(tester);
     expect(_saveButton(tester).onPressed, isNull);
-    await _tap(tester, 'Use arena centre', settle: false);
+    await _tap(tester, 'Użyj środka areny', settle: false);
     await _pumpMap(tester);
     expect(_saveButton(tester).onPressed, isNotNull);
-    await _tap(tester, 'Save landmark', settle: false);
+    await _tap(tester, 'Zapisz punkt orientacyjny', settle: false);
     await tester.pump(const Duration(milliseconds: 500));
     await tester.pumpAndSettle();
-    expect(saved?.name, 'Red corner shop');
+    expect(saved?.name, 'Czerwony sklep na rogu');
     expect(saved?.icon, isEmpty);
     expect(saved!.toJson().containsKey('icon'), isFalse);
     final legacyLandmark = saved!.toJson()..['icon'] = '🏪';
@@ -104,7 +104,7 @@ void main() {
           landmark,
           Landmark(
             id: 'family_place_0',
-            name: 'Home',
+            name: 'Dom',
             icon: '🏠',
             isDestination: true,
             photoAsset: 'assets/landmarks/demo-home.png',
@@ -124,22 +124,22 @@ void main() {
     expect(find.text('🏪'), findsNothing);
     expect(find.text('🏠'), findsOneWidget);
     expect(
-      find.descendant(of: find.byTooltip('Home'), matching: find.byType(Image)),
+      find.descendant(of: find.byTooltip('Dom'), matching: find.byType(Image)),
       findsOneWidget,
     );
-    await tester.tap(find.byTooltip('Home'));
+    await tester.tap(find.byTooltip('Dom'));
     await tester.pump();
-    expect(find.text('🏠 Home'), findsOneWidget);
-    expect(find.text('Walk here together'), findsNothing);
+    expect(find.text('🏠 Dom'), findsOneWidget);
+    expect(find.text('Idźcie tutaj razem'), findsNothing);
     expect(
       tester.widget<LandmarkPhoto>(find.byType(LandmarkPhoto)).assetPath,
       'assets/landmarks/demo-home.png',
     );
-    await tester.tap(find.byTooltip('Close place'));
+    await tester.tap(find.byTooltip('Zamknij miejsce'));
     await tester.pump();
     await tester.tap(find.byTooltip('Photo shop'));
     await tester.pump();
-    expect(find.text('Walk here together'), findsOneWidget);
+    expect(find.text('Idźcie tutaj razem'), findsOneWidget);
     expect(location.position, isNull);
     expect(location.isTracking, isTrue);
     expect(source.requests, 0);
@@ -239,7 +239,7 @@ void main() {
     expect(source.requests, 0);
     expect(location.state, LocationState.denied);
     expect(
-      find.text('Location is not allowed. You can still explore.'),
+      find.text('Brak zgody na lokalizację. Możesz dalej poznawać mapę.'),
       findsOneWidget,
     );
     expect(find.text('Use live GPS'), findsNothing);
@@ -252,13 +252,13 @@ void main() {
     ]) {
       expect(find.byTooltip(tooltip), findsNothing);
     }
-    await _tap(tester, 'Places', settle: false);
+    await _tap(tester, 'Miejsca', settle: false);
     await _pumpTransition(tester);
     expect(tester.getRect(find.text('Photo shop')).bottom, lessThan(844));
     await _tap(tester, 'Photo shop', settle: false);
     await _pumpTransition(tester);
-    expect(find.text('Walk here together'), findsOneWidget);
-    expect(find.text('Our places'), findsNothing);
+    expect(find.text('Idźcie tutaj razem'), findsOneWidget);
+    expect(find.text('Nasze miejsca'), findsNothing);
     await tester.pumpWidget(const SizedBox.shrink());
     location.dispose();
     await source.updates.close();
@@ -299,9 +299,9 @@ void main() {
     expect(location.isTracking, isTrue);
     expect(source.requests, 0);
 
-    await tester.tap(find.byTooltip('I need help · prototype'));
+    await tester.tap(find.byTooltip('Potrzebuję pomocy · prototyp'));
     await _pumpTransition(tester);
-    expect(find.byTooltip('Close help'), findsOneWidget);
+    expect(find.byTooltip('Zamknij pomoc'), findsOneWidget);
     expect(location.state, LocationState.paused);
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
     await tester.pump();
@@ -313,16 +313,16 @@ void main() {
       reason: 'Help keeps GPS paused',
     );
 
-    await tester.tap(find.byTooltip('Close help'));
+    await tester.tap(find.byTooltip('Zamknij pomoc'));
     await _pumpTransition(tester);
     expect(location.isTracking, isTrue);
     expect(source.requests, 0);
 
-    await tester.tap(find.byTooltip('I need help · prototype'));
+    await tester.tap(find.byTooltip('Potrzebuję pomocy · prototyp'));
     await _pumpTransition(tester);
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
     await tester.pump();
-    await tester.tap(find.byTooltip('Close help'));
+    await tester.tap(find.byTooltip('Zamknij pomoc'));
     await _pumpTransition(tester);
     expect(
       location.state,
@@ -359,14 +359,14 @@ void main() {
         ),
         Landmark(
           id: '2_2',
-          name: 'Playground',
+          name: 'Plac zabaw',
           photoName: '2_2.photo',
           latitude: latitude + .0003,
           longitude: longitude,
         ),
         Landmark(
           id: 'family_place_0',
-          name: 'Home',
+          name: 'Dom',
           icon: '🏠',
           isDestination: true,
           photoAsset: 'assets/landmarks/demo-home.png',
@@ -415,7 +415,7 @@ void main() {
         'Red shop',
       );
       await move(.0003);
-      expect(find.text('Playground'), findsOneWidget);
+      expect(find.text('Plac zabaw'), findsOneWidget);
       expect(find.text('Red shop'), findsNothing);
       // Just inside/outside 50 m north of the northern landmark.
       await move(.0003 + .00044);
@@ -432,18 +432,18 @@ void main() {
       expect(find.byType(LandmarkPhoto), findsNothing);
       await move(0);
       await _tap(tester, 'Red shop', settle: false);
-      expect(find.text('Walk here together'), findsOneWidget);
-      await tester.ensureVisible(find.text('Walk here together'));
-      await tester.tap(find.text('Walk here together'));
+      expect(find.text('Idźcie tutaj razem'), findsOneWidget);
+      await tester.ensureVisible(find.text('Idźcie tutaj razem'));
+      await tester.tap(find.text('Idźcie tutaj razem'));
       await tester.pump();
-      expect(find.text('Finding a path…'), findsOneWidget);
+      expect(find.text('Szukanie ścieżki…'), findsOneWidget);
       expect(
         tester.widget<BaseboundMascot>(find.byType(BaseboundMascot)).pose,
         DinoPose.search,
       );
-      await tester.tap(find.text('Cancel'));
+      await tester.tap(find.text('Anuluj'));
       await tester.pump();
-      expect(find.text('Finding a path…'), findsNothing);
+      expect(find.text('Szukanie ścieżki…'), findsNothing);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
       location.dispose();
@@ -496,7 +496,7 @@ Future<void> _pumpMap(WidgetTester tester) async {
 
 FilledButton _saveButton(WidgetTester tester) => tester.widget<FilledButton>(
   find.ancestor(
-    of: find.text('Save landmark'),
+    of: find.text('Zapisz punkt orientacyjny'),
     matching: find.byWidgetPredicate((widget) => widget is FilledButton),
   ),
 );

@@ -187,7 +187,7 @@ class SafePoint {
   final bool isDemo;
   final String icon;
 
-  String get displayName => name.trim().isEmpty ? 'Safe place' : name;
+  String get displayName => name.trim().isEmpty ? 'Bezpieczne miejsce' : name;
 
   Map<String, dynamic> toJson() => {
     'name': name,

@@ -62,9 +62,9 @@ class _PracticeSelectionScreenState extends State<_PracticeSelectionScreen>
   int _audioRevision = 0;
 
   String get _instruction => switch (_selection) {
-    _Selection.activity => 'Choose an activity. Practices, or our map.',
-    _Selection.scenario => 'Choose a scenario. An alarm, or being lost.',
-    _Selection.mode => 'Choose where to practice. At home, or outside.',
+    _Selection.activity => 'Wybierz zajęcie. Ćwiczenia lub Nasza mapa.',
+    _Selection.scenario => 'Wybierz scenariusz. Alarm lub zgubienie się.',
+    _Selection.mode => 'Wybierz miejsce ćwiczenia. W domu lub na zewnątrz.',
   };
 
   @override
@@ -146,9 +146,9 @@ class _PracticeSelectionScreenState extends State<_PracticeSelectionScreen>
   @override
   Widget build(BuildContext context) {
     final title = switch (_selection) {
-      _Selection.activity => 'Choose an activity',
-      _Selection.scenario => 'Choose a scenario',
-      _Selection.mode => 'Where shall we practice?',
+      _Selection.activity => 'Wybierz zajęcie',
+      _Selection.scenario => 'Wybierz scenariusz',
+      _Selection.mode => 'Gdzie ćwiczymy?',
     };
     return PopScope(
       canPop: !_opening && _selection != _Selection.mode,
@@ -162,7 +162,7 @@ class _PracticeSelectionScreenState extends State<_PracticeSelectionScreen>
               ? BaseboundBackButton(enabled: !_opening, onPressed: _back)
               : null,
           title: Text(
-            _selection == _Selection.activity ? 'Tuptu' : 'Practice only',
+            _selection == _Selection.activity ? 'Tuptu' : 'Tylko ćwiczenie',
           ),
         ),
         body: SafeArea(
@@ -178,7 +178,7 @@ class _PracticeSelectionScreenState extends State<_PracticeSelectionScreen>
                     children: [
                       if (widget.child.fullName.trim().isNotEmpty) ...[
                         Text(
-                          'Hi, ${widget.child.fullName}!',
+                          'Cześć, ${widget.child.fullName}!',
                           style: const TextStyle(
                             color: BaseboundColors.muted,
                             fontSize: 16,
@@ -190,10 +190,12 @@ class _PracticeSelectionScreenState extends State<_PracticeSelectionScreen>
                       _PracticeHeading(
                         title: title,
                         instruction: switch (_selection) {
-                          _Selection.activity => 'Pick one activity to start.',
-                          _Selection.scenario => 'Pick a story to practice.',
+                          _Selection.activity =>
+                            'Wybierz jedno zajęcie na początek.',
+                          _Selection.scenario =>
+                            'Wybierz historię do ćwiczenia.',
                           _Selection.mode =>
-                            'Choose a scene for alarm practice.',
+                            'Wybierz scenę do ćwiczenia alarmu.',
                         },
                       ),
                       const SizedBox(height: 24),
@@ -208,7 +210,7 @@ class _PracticeSelectionScreenState extends State<_PracticeSelectionScreen>
                               BaseboundIconName.speaker,
                               size: 24,
                             ),
-                            label: const Text('Replay audio'),
+                            label: const Text('Posłuchaj ponownie'),
                           ),
                         ),
                       if (!_audioAvailable)
@@ -217,9 +219,9 @@ class _PracticeSelectionScreenState extends State<_PracticeSelectionScreen>
                           child: SoftPanel(
                             child: Text(
                               kIsWeb
-                                  ? 'Web demo: voice and sounds are off. Read the instructions with an adult.'
-                                  : 'Voice is unavailable. Ask an adult to help. '
-                                        'An offline English voice is needed for spoken practice.',
+                                  ? 'Demo w przeglądarce: głos i dźwięki są wyłączone. Czytaj instrukcje z dorosłym.'
+                                  : 'Głos jest niedostępny. Poproś dorosłego o pomoc. '
+                                        'Do ćwiczeń z narracją potrzebny jest polski głos offline.',
                               style: TextStyle(color: BaseboundColors.muted),
                             ),
                           ),
@@ -232,7 +234,7 @@ class _PracticeSelectionScreenState extends State<_PracticeSelectionScreen>
                                 ? null
                                 : () => _select(_Selection.scenario),
                             icon: const BaseboundIcon(BaseboundIconName.back),
-                            label: const Text('Choose a scenario'),
+                            label: const Text('Wybierz scenariusz'),
                           ),
                         ),
                     ],
@@ -249,36 +251,36 @@ class _PracticeSelectionScreenState extends State<_PracticeSelectionScreen>
   List<Widget> _choices() => switch (_selection) {
     _Selection.activity => [
       _choice(
-        'Practices',
+        'Ćwiczenia',
         BaseboundIconName.child,
         () => _open(PracticeScenarioScreen(child: widget.child)),
       ),
       _choice(
-        'Our map',
+        'Nasza mapa',
         BaseboundIconName.map,
         () => _open(const GameLauncher()),
       ),
     ],
     _Selection.scenario => [
       _choice(
-        'Alarm practice',
+        'Ćwiczenie alarmu',
         BaseboundIconName.alarm,
         () => _select(_Selection.mode),
       ),
       _choice(
-        "I'm lost practice",
+        "Ćwiczenie zgubienia się",
         BaseboundIconName.lost,
         () => _open(LostMissionLauncher(child: widget.child)),
       ),
     ],
     _Selection.mode => [
       _choice(
-        'At home',
+        'W domu',
         BaseboundIconName.home,
         () => _openMission(MissionMode.home),
       ),
       _choice(
-        'Outside',
+        'Na zewnątrz',
         BaseboundIconName.park,
         () => _openMission(MissionMode.outdoor),
       ),

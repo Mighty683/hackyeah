@@ -61,7 +61,10 @@ class _ParentScreenState extends State<ParentScreen> {
       if (mounted) setState(() => _plan = plan);
     } catch (_) {
       if (mounted) {
-        setState(() => _error = 'Could not read saved details. Try again.');
+        setState(
+          () => _error =
+              'Nie udało się odczytać zapisanych danych. Spróbuj ponownie.',
+        );
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -163,14 +166,14 @@ class _ParentScreenState extends State<ParentScreen> {
   }) async {
     final confirmed = await confirmParentDeletion(
       context,
-      all ? 'Delete all saved details?' : 'Delete this entry?',
+      all ? 'Usunąć wszystkie zapisane dane?' : 'Usunąć ten wpis?',
       all
           ? kIsWeb
-                ? 'This removes the details and photos from this demo session. Reset web demo restores the fictional examples.'
-                : 'This removes the child details, trusted contacts, safe places, practice meeting point, landmarks, and saved photo copies from this device. It cannot be undone.'
+                ? 'Dane i zdjęcia zostaną usunięte z tej sesji demo. Reset demo przywróci fikcyjne przykłady.'
+                : 'Dane dziecka, zaufane kontakty, wybrane miejsca, punkt spotkania, punkty orientacyjne i kopie zdjęć zostaną usunięte z urządzenia. Nie można tego cofnąć.'
           : kIsWeb
-          ? 'This removes the entry from this demo session.'
-          : 'This removes the entry from this device.',
+          ? 'Wpis zostanie usunięty z tej sesji demo.'
+          : 'Wpis zostanie usunięty z tego urządzenia.',
     );
     if (!confirmed || !mounted) return;
     setState(() => _busy = true);
@@ -201,7 +204,9 @@ class _ParentScreenState extends State<ParentScreen> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not delete. Try again.')),
+          const SnackBar(
+            content: Text('Nie udało się usunąć. Spróbuj ponownie.'),
+          ),
         );
       }
     } finally {
@@ -228,16 +233,16 @@ class _ParentScreenState extends State<ParentScreen> {
   );
 
   AppBar _appBar() => AppBar(
-    title: const Text('Family setup'),
+    title: const Text('Ustawienia rodziny'),
     leading: IconButton(
       onPressed: _busy ? null : _back,
       icon: const BaseboundIcon(BaseboundIconName.back),
-      tooltip: 'Back',
+      tooltip: 'Wstecz',
     ),
     actions: [
       PopupMenuButton<String>(
         enabled: !_busy,
-        tooltip: 'Setup options',
+        tooltip: 'Opcje ustawień',
         onSelected: (value) {
           if (value == 'location') {
             configureParentLocation(context, _locationPermission);
@@ -249,12 +254,12 @@ class _ParentScreenState extends State<ParentScreen> {
           PopupMenuItem(
             value: 'location',
             child: Text(
-              kIsWeb ? 'Demo map location' : 'Map location permission',
+              kIsWeb ? 'Pozycja na mapie demo' : 'Dostęp mapy do lokalizacji',
             ),
           ),
           PopupMenuItem(
             value: 'delete',
-            child: Text('Delete all saved details'),
+            child: Text('Usuń wszystkie zapisane dane'),
           ),
         ],
       ),
@@ -275,7 +280,7 @@ class _ParentScreenState extends State<ParentScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'Family setup · ${_stage.index + 1} of 4',
+                'Ustawienia rodziny · ${_stage.index + 1} z 4',
                 style: parentSetupSubtitleStyle,
               ),
               const SizedBox(height: 8),
@@ -284,7 +289,8 @@ class _ParentScreenState extends State<ParentScreen> {
                 minHeight: 4,
                 borderRadius: BorderRadius.circular(8),
                 backgroundColor: BaseboundColors.border,
-                semanticsLabel: 'Family setup, step ${_stage.index + 1} of 4',
+                semanticsLabel:
+                    'Ustawienia rodziny, krok ${_stage.index + 1} z 4',
               ),
               const SizedBox(height: 24),
               _stageContent(),
@@ -312,11 +318,11 @@ class _ParentScreenState extends State<ParentScreen> {
           OutlinedButton.icon(
             onPressed: _load,
             icon: const BaseboundIcon(BaseboundIconName.replay, size: 24),
-            label: const Text('Retry loading'),
+            label: const Text('Wczytaj ponownie'),
           ),
           const SizedBox(height: 8),
           const Text(
-            'You can delete saved details from Setup options.',
+            'Zapisane dane możesz usunąć w opcjach ustawień.',
             textAlign: TextAlign.center,
             style: parentSetupSubtitleStyle,
           ),
@@ -356,17 +362,21 @@ class _ParentScreenState extends State<ParentScreen> {
 
   Widget _footer() {
     final (label, action) = switch (_stage) {
-      _SetupStage.introduction => ('Add child details', _editChild),
+      _SetupStage.introduction => ('Dodaj dane dziecka', _editChild),
       _SetupStage.contacts => (
-        _plan!.contacts.isEmpty ? 'Skip contacts' : 'Choose safe places',
+        _plan!.contacts.isEmpty
+            ? 'Pomiń kontakty'
+            : 'Wybierz bezpieczne miejsca',
         () => _goTo(_SetupStage.safePlaces),
       ),
       _SetupStage.safePlaces => (
-        _plan!.safePoints.isEmpty ? 'Skip safe places' : 'Finish setup',
+        _plan!.safePoints.isEmpty
+            ? 'Pomiń bezpieczne miejsca'
+            : 'Zakończ konfigurację',
         () => _goTo(_SetupStage.ready),
       ),
       _SetupStage.ready => (
-        'Play together',
+        'Ćwiczcie razem',
         () => Navigator.of(context).push<void>(
           MaterialPageRoute<void>(
             builder: (_) => PracticeLauncher(child: _plan!.child),

@@ -38,7 +38,7 @@ class LostMeetingPointMap extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Text(
-                'Places on Our map',
+                'Miejsca na Naszej mapie',
                 style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700),
               ),
               for (final place in landmarks) ...[
@@ -94,16 +94,16 @@ class LostMeetingPointMap extends StatelessWidget {
       ),
       const SizedBox(height: 12),
       const Text(
-        'Finding a pin does not mean you are there. Walk with an adult.',
+        'Znalezienie znacznika nie oznacza dotarcia na miejsce. Idź z dorosłym.',
         textAlign: TextAlign.center,
       ),
       const SizedBox(height: 12),
       OutlinedButton.icon(
         onPressed: () => _places(context),
         icon: const BaseboundIcon(BaseboundIconName.map),
-        label: const Text('Places'),
+        label: const Text('Miejsca'),
       ),
-      TextButton(onPressed: onHelp, child: const Text('I cannot find it')),
+      TextButton(onPressed: onHelp, child: const Text('Nie mogę znaleźć')),
     ],
   );
 }

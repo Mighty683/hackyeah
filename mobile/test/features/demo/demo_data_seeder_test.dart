@@ -45,21 +45,21 @@ void main() {
     () async {
       await seeder().seed();
       final plan = await family.load();
-      expect(plan.child.fullName, 'Alex Example (demo)');
+      expect(plan.child.fullName, 'Aleks Przykładowy (demo)');
       expect(plan.child.age, 9);
       expect(plan.child.address, isNotEmpty);
       expect(plan.child.supportNotes, isNotEmpty);
       expect(plan.child.gender, ChildGender.boy);
       expect(plan.contacts.length, FamilyPlan.maxContacts);
       for (final contact in plan.contacts) {
-        expect(contact.name, contains('Demo'));
+        expect(contact.name, contains('demo'));
         expect(contact.relationship, isNotEmpty);
         expect(normalizeTrustedPhone(contact.phone), isNotNull);
       }
       expect(plan.contacts.map((contact) => contact.phone).toSet().length, 3);
       expect(plan.safePoints.map((point) => point.name), [
-        'Home',
-        'School (demo)',
+        'Dom',
+        'Szkoła (demo)',
         'Park (demo)',
       ]);
       final saved = await landmarks.load();
@@ -101,9 +101,9 @@ void main() {
       original.child.age.toString(),
     );
     for (final action in [
-      'Add my name',
-      'Choose my character',
-      'Start practice',
+      'Podaj imię',
+      'Wybierz postać',
+      'Rozpocznij ćwiczenie',
     ]) {
       final button = find.text(action);
       await tester.ensureVisible(button);

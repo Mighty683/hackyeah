@@ -15,7 +15,7 @@ class ParentEditorStep {
   const ParentEditorStep({
     required this.title,
     required this.children,
-    this.nextLabel = 'Next step',
+    this.nextLabel = 'Następny krok',
   });
 
   final String title;
@@ -30,7 +30,7 @@ class ParentEditorScaffold extends StatefulWidget {
     required this.onSave,
     this.children = const [],
     this.steps = const [],
-    this.saveLabel = 'Save changes',
+    this.saveLabel = 'Zapisz zmiany',
     this.saveEnabled = true,
     super.key,
   }) : assert(children.length > 0 || steps.length > 0);
@@ -97,8 +97,7 @@ class _ParentEditorScaffoldState extends State<ParentEditorScaffold> {
     } catch (_) {
       if (mounted) {
         setState(
-          () =>
-              _error = 'Could not save. Your edits are still here. Try again.',
+          () => _error = 'Nie udało się zapisać. Twoje zmiany zostały zachowane. Spróbuj ponownie.',
         );
       }
     } finally {
@@ -128,7 +127,7 @@ class _ParentEditorScaffoldState extends State<ParentEditorScaffold> {
         leading: IconButton(
           onPressed: _saving || _saved ? null : _goBack,
           icon: const BaseboundIcon(BaseboundIconName.back),
-          tooltip: 'Back',
+          tooltip: 'Wstecz',
         ),
       ),
       body: SafeArea(
@@ -142,7 +141,7 @@ class _ParentEditorScaffoldState extends State<ParentEditorScaffold> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
-                    'Step ${_stepIndex + 1} of $_stepCount',
+                    'Krok ${_stepIndex + 1} z $_stepCount',
                     style: const TextStyle(
                       color: BaseboundColors.muted,
                       fontSize: 14,
@@ -157,7 +156,7 @@ class _ParentEditorScaffoldState extends State<ParentEditorScaffold> {
                     color: BaseboundColors.blue,
                     backgroundColor: BaseboundColors.sky,
                     semanticsLabel:
-                        'Setup progress: step ${_stepIndex + 1} of $_stepCount',
+                        'Postęp konfiguracji: krok ${_stepIndex + 1} z $_stepCount',
                   ),
                   const SizedBox(height: 24),
                   Semantics(
@@ -218,7 +217,7 @@ class _ParentEditorScaffoldState extends State<ParentEditorScaffold> {
                       ),
                 label: Text(
                   _saving
-                      ? 'Saving…'
+                      ? 'Zapisywanie…'
                       : _isLastStep
                       ? widget.saveLabel
                       : step.nextLabel,

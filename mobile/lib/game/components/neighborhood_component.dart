@@ -81,11 +81,11 @@ class NeighborhoodComponent extends PositionComponent {
       scale,
       obstacles,
     );
-    _labelPlace(canvas, 'Pond', _scene.pondLabel, 0, scale, obstacles);
+    _labelPlace(canvas, 'Staw', _scene.pondLabel, 0, scale, obstacles);
     if (scale >= 2) {
       _labelPlace(
         canvas,
-        'Playground',
+        'Plac zabaw',
         _scene.playgroundLabelIn(visible, scale),
         17,
         scale,
@@ -94,7 +94,7 @@ class NeighborhoodComponent extends PositionComponent {
     }
     _labelPlace(
       canvas,
-      'Shop',
+      'Sklep',
       _scene.shop,
       landmarkRadius * scale + 17,
       scale,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'features/demo/data/demo_data_seeder.dart';
 import 'features/demo/web_demo_shell.dart';
@@ -18,6 +19,9 @@ class BaseboundApp extends StatelessWidget {
     if (kIsWeb) return _WebAppSession(initialize: initialize);
     return MaterialApp(
       title: 'Tuptu',
+      locale: const Locale('pl', 'PL'),
+      supportedLocales: const [Locale('pl', 'PL')],
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
       debugShowCheckedModeBanner: false,
       theme: BaseboundTheme.training(),
       home: _AppStartup(initialize: initialize),
@@ -47,7 +51,10 @@ class _WebAppSessionState extends State<_WebAppSession> {
   @override
   Widget build(BuildContext context) => MaterialApp(
     key: ValueKey(_revision),
-    title: 'Tuptu — web demo',
+    title: 'Tuptu — demo w przeglądarce',
+    locale: const Locale('pl', 'PL'),
+    supportedLocales: const [Locale('pl', 'PL')],
+    localizationsDelegates: GlobalMaterialLocalizations.delegates,
     debugShowCheckedModeBanner: false,
     theme: BaseboundTheme.training(),
     builder: (context, child) =>
@@ -106,23 +113,25 @@ class _AppStartupState extends State<_AppStartup> {
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              const Text('Could not prepare practice.'),
+                              const Text(
+                                'Nie udało się przygotować ćwiczenia.',
+                              ),
                               const SizedBox(height: 12),
                               const Text(
-                                'Saved details have not been reset. Try again.',
+                                'Zapisane dane zostały zachowane. Spróbuj ponownie.',
                               ),
                               const SizedBox(height: 16),
                               FilledButton(
                                 onPressed: () => setState(() {
                                   _ready = _initialize();
                                 }),
-                                child: const Text('Try again'),
+                                child: const Text('Spróbuj ponownie'),
                               ),
                             ],
                           ),
                         )
                       : const CircularProgressIndicator(
-                          semanticsLabel: 'Preparing practice',
+                          semanticsLabel: 'Przygotowywanie ćwiczenia',
                         ),
                 ),
               ),

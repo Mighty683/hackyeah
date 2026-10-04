@@ -37,24 +37,27 @@ void main() {
     expect(lastMissionNarration(audioCalls)['sound'], 'alarm');
     final initialText = lastMissionNarration(audioCalls)['text'];
 
-    await tester.tap(find.byTooltip('Mute sound effects'));
+    await tester.tap(find.byTooltip('Wycisz efekty dźwiękowe'));
     await tester.pumpAndSettle();
-    expect(find.byTooltip('Unmute sound effects'), findsOneWidget);
+    expect(find.byTooltip('Włącz efekty dźwiękowe'), findsOneWidget);
     expect(lastMissionNarration(audioCalls)['text'], initialText);
     expect(lastMissionNarration(audioCalls)['sound'], isNull);
-    await tapMissionAction(tester, 'Replay audio');
+    await tapMissionAction(tester, 'Posłuchaj ponownie');
     expect(lastMissionNarration(audioCalls)['text'], initialText);
     expect(lastMissionNarration(audioCalls)['sound'], isNull);
 
-    await tapMissionAction(tester, 'Find a place');
+    await tapMissionAction(tester, 'Znajdź miejsce');
     await tapMissionAction(
       tester,
-      'Move deeper inside',
+      'Przejdź w głąb domu',
       advanceFeedback: false,
     );
-    expect(lastMissionNarration(audioCalls)['text'], contains('moved away'));
+    expect(
+      lastMissionNarration(audioCalls)['text'],
+      contains('dalej od okien'),
+    );
     expect(lastMissionNarration(audioCalls)['sound'], isNull);
-    await tester.tap(find.byTooltip('Unmute sound effects'));
+    await tester.tap(find.byTooltip('Włącz efekty dźwiękowe'));
     await tester.pumpAndSettle();
     expect(lastMissionNarration(audioCalls)['sound'], 'success');
 
@@ -82,18 +85,19 @@ void main() {
           return call.method == 'initialize' ? false : null;
         });
     await showMission(tester, audioChannel, MissionMode.outdoor);
-    expect(find.textContaining('The voice is unavailable'), findsOneWidget);
+    expect(find.textContaining('Głos jest niedostępny'), findsOneWidget);
     expect(lastMissionNarration(audioCalls)['text'], isEmpty);
     expect(lastMissionNarration(audioCalls)['sound'], 'alarm');
-    await tapMissionAction(tester, 'Replay audio');
+    await tapMissionAction(tester, 'Posłuchaj ponownie');
     expect(lastMissionNarration(audioCalls)['sound'], 'alarm');
-    await tester.tap(find.byTooltip('Mute sound effects'));
+    await tester.tap(find.byTooltip('Wycisz efekty dźwiękowe'));
     await tester.pumpAndSettle();
     expect(audioCalls.last.method, 'stop');
     final replay = tester.widget<Semantics>(
       find.byWidgetPredicate(
         (widget) =>
-            widget is Semantics && widget.properties.label == 'Replay audio',
+            widget is Semantics &&
+            widget.properties.label == 'Posłuchaj ponownie',
       ),
     );
     expect(replay.properties.enabled, isFalse);
@@ -116,24 +120,24 @@ void main() {
           if (call.method == 'initialize') return true;
           if (call.method == 'narrate' &&
               (call.arguments as Map)['text'] ==
-                  'You reached the nearby practice shelter, away from windows.') {
+                  'Jesteś w pobliskim schronieniu na niby, z dala od okien.') {
             await feedbackVoice.future;
           }
           return null;
         });
     await showMission(tester, audioChannel, MissionMode.outdoor);
-    await tapMissionAction(tester, 'Choose where to go');
+    await tapMissionAction(tester, 'Wybierz, dokąd pójdziesz');
     await tapMissionAction(
       tester,
-      'Nearby solid shelter',
+      'Bliskie, solidne schronienie',
       advanceFeedback: false,
     );
     await tester.pump(const Duration(seconds: 5));
-    expect(find.text('Where will you go?'), findsOneWidget);
-    expect(find.text('Next step'), findsNothing);
+    expect(find.text('Dokąd pójdziesz?'), findsOneWidget);
+    expect(find.text('Następny krok'), findsNothing);
     feedbackVoice.complete();
     await tester.pumpAndSettle();
-    expect(find.text('Inside the practice shelter'), findsOneWidget);
+    expect(find.text('W schronieniu na niby'), findsOneWidget);
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();
   });
@@ -148,20 +152,20 @@ void main() {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(audioChannel, (call) async => false);
       await showMission(tester, audioChannel, MissionMode.outdoor);
-      await tapMissionAction(tester, 'Choose where to go');
+      await tapMissionAction(tester, 'Wybierz, dokąd pójdziesz');
       await tapMissionAction(
         tester,
-        'Nearby solid shelter',
+        'Bliskie, solidne schronienie',
         advanceFeedback: false,
       );
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
       await tester.pump(const Duration(seconds: 5));
-      expect(find.text('Where will you go?'), findsOneWidget);
+      expect(find.text('Dokąd pójdziesz?'), findsOneWidget);
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
       await tester.pumpAndSettle();
-      expect(find.text('Where will you go?'), findsOneWidget);
+      expect(find.text('Dokąd pójdziesz?'), findsOneWidget);
       await finishMissionFeedback(tester);
-      expect(find.text('Inside the practice shelter'), findsOneWidget);
+      expect(find.text('W schronieniu na niby'), findsOneWidget);
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump();
     },

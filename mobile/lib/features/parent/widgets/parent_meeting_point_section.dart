@@ -33,18 +33,18 @@ class ParentMeetingPointSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         ParentSetupHeading(
-          'A meeting point for lost practice',
+          'Punkt spotkania do ćwiczenia zgubienia się',
           BaseboundIconName.pin,
         ),
         const Text(
-          'Choose a saved photo place. Your child will recognize the same '
-          'photo and find its pin on Our map.',
+          'Wybierz miejsce z zapisanym zdjęciem. Dziecko rozpozna to samo '
+          'zdjęcie i znajdzie znacznik na Naszej mapie.',
           style: parentSetupSubtitleStyle,
         ),
         const SizedBox(height: 16),
         if (point == null)
           const ParentEditorNote(
-            message: 'No meeting point chosen. Choose a saved photo place, or explicitly use a demo picture.',
+            message: 'Nie wybrano punktu spotkania. Wybierz miejsce z zapisanym zdjęciem lub obrazek demo.',
             icon: BaseboundIconName.info,
           )
         else if (point.landmarkId != null)
@@ -61,18 +61,18 @@ class ParentMeetingPointSection extends StatelessWidget {
           const SizedBox(height: 8),
           ParentSetupEntry(
             title: unknownPreset
-                ? 'Pretend fountain'
+                ? 'Fontanna na niby'
                 : point.label.trim().isEmpty
                 ? preset.label
                 : point.label,
-            subtitle: 'Pretend practice picture. Tap to choose a photo place.',
+            subtitle: 'Obrazek do ćwiczeń na niby. Dotknij, aby wybrać miejsce ze zdjęciem.',
             onEdit: onEdit,
             onDelete: onDelete,
             icon: BaseboundIconName.pin,
           ),
           if (unknownPreset)
             const ParentEditorNote(
-              message: 'The saved picture is unavailable. A pretend Fountain is shown. Edit to choose a new picture.',
+              message: 'Zapisany obrazek jest niedostępny. Pokazano fontannę na niby. Edytuj, aby wybrać nowy obrazek.',
               icon: BaseboundIconName.info,
             ),
         ],
@@ -82,8 +82,8 @@ class ParentMeetingPointSection extends StatelessWidget {
           icon: const BaseboundIcon(BaseboundIconName.edit),
           label: Text(
             point == null
-                ? 'Add a practice meeting point'
-                : 'Edit practice meeting point',
+                ? 'Dodaj punkt spotkania do ćwiczeń'
+                : 'Edytuj punkt spotkania do ćwiczeń',
           ),
         ),
       ],
@@ -153,10 +153,10 @@ class _SavedPhotoMeetingPointState extends State<_SavedPhotoMeetingPoint> {
                   height: 140,
                 ),
               ParentSetupEntry(
-                title: place?.name ?? 'Meeting photo unavailable',
+                title: place?.name ?? 'Zdjęcie miejsca spotkania niedostępne',
                 subtitle: place == null
-                    ? 'Choose a saved photo place again.'
-                    : 'Saved photo and pin for lost practice.',
+                    ? 'Wybierz ponownie miejsce z zapisanym zdjęciem.'
+                    : 'Zapisane zdjęcie i znacznik do ćwiczenia zgubienia się.',
                 onEdit: widget.onEdit,
                 onDelete: widget.onDelete,
                 icon: BaseboundIconName.pin,

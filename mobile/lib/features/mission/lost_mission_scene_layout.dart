@@ -53,18 +53,20 @@ LostMissionSceneLayout lostMissionSceneLayout(
   return LostMissionSceneLayout(
     motif: motif,
     description: switch (motif) {
-      LostSceneMotif.square => 'A child stops in a fictional public square.',
+      LostSceneMotif.square =>
+        'Dziecko zatrzymuje się na fikcyjnym placu publicznym.',
       LostSceneMotif.landmark =>
-        'Practice landmark: ${context.meetingPointLabel}. '
-            '${context.photoMeetingPoint == null ? resolveLostLandmark(context.meetingPoint.presetId).description : 'The saved photo of your meeting place.'} '
-            '${arriving ? 'The child moves nearby in the story.' : 'Remember its picture.'}',
+        'Punkt orientacyjny do ćwiczeń: ${context.meetingPointLabel}. '
+            '${context.photoMeetingPoint == null ? resolveLostLandmark(context.meetingPoint.presetId).description : 'Zapisane zdjęcie miejsca spotkania.'} '
+            '${arriving ? 'W tej historii dziecko podchodzi bliżej.' : 'Zapamiętaj ten obrazek.'}',
       LostSceneMotif.helper =>
-        'A child stays near a visible public help desk in the story.',
-      LostSceneMotif.stranger => 'An unknown person offers to leave. The child stays in the public place.',
-      LostSceneMotif.phone => 'A pretend family call. No real call is made.',
-      LostSceneMotif.family => 'The child and parent reunite in the story.',
-      LostSceneMotif.safe => 'Pretend safety confirmation. No message is sent.',
-      LostSceneMotif.recall => 'Stop. Look. Meeting point if nearby. Ask for help. Family. Wait. I am safe.',
+        'W tej historii dziecko zostaje przy widocznym punkcie pomocy.',
+      LostSceneMotif.stranger => 'Nieznajoma osoba proponuje odejście. Dziecko zostaje w miejscu publicznym.',
+      LostSceneMotif.phone =>
+        'Połączenie do rodziny na niby. Bez prawdziwego połączenia.',
+      LostSceneMotif.family => 'W tej historii dziecko i rodzic znów są razem.',
+      LostSceneMotif.safe => 'Potwierdzenie bezpieczeństwa na niby. Żadna wiadomość nie jest wysyłana.',
+      LostSceneMotif.recall => 'Zatrzymaj się. Spójrz. Punkt spotkania, jeśli blisko. Poproś o pomoc. Rodzina. Czekaj. Jestem w bezpiecznym miejscu.',
     },
     childPose: arriving ? ChildPoseName.walk : ChildPoseName.stand,
     childAtMeetingPoint: arriving,

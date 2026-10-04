@@ -77,7 +77,7 @@ class _MissionScreenState extends State<MissionScreen>
   String get _spokenText {
     if (_enteringPhoneNumber) return _phoneNarration;
     if (_session.step.id == 'message') {
-      return 'Practice only. Nothing was sent. ${_session.step.narration}';
+      return 'Tylko ćwiczenie. Nic nie wysłano. ${_session.step.narration}';
     }
     if (_session.isComplete) {
       return AirRaidPracticeRecap.narration;
@@ -170,7 +170,7 @@ class _MissionScreenState extends State<MissionScreen>
     setState(() {
       _phoneContacts = null;
       _phoneLoadFailed = false;
-      _phoneNarration = 'Loading saved numbers.';
+      _phoneNarration = 'Wczytywanie zapisanych numerów.';
     });
     unawaited(_narrate());
     try {
@@ -181,18 +181,18 @@ class _MissionScreenState extends State<MissionScreen>
             .where((contact) => RegExp(r'[0-9]').hasMatch(contact.phone))
             .toList();
         _phoneNarration = _phoneContacts!.isEmpty
-            ? 'No phone number is saved yet. Ask an adult to add one in parent '
-                  'setup. You can continue without a number.'
-            : 'Type your trusted adult’s phone number. This is practice only. '
-                  'No calls or messages are sent.';
+            ? 'Nie zapisano jeszcze numeru telefonu. Poproś dorosłego o dodanie go w ustawieniach '
+                  'rodziny. Możesz ćwiczyć dalej bez numeru.'
+            : 'Wpisz numer zaufanej osoby dorosłej. To tylko ćwiczenie. '
+                  'Nie wykonujemy połączeń ani nie wysyłamy wiadomości.';
       });
     } catch (_) {
       if (!mounted || _exiting || !_enteringPhoneNumber) return;
       setState(() {
         _phoneLoadFailed = true;
         _phoneNarration =
-            'Your saved numbers could not be read. '
-            'Try loading again, or continue without a number.';
+            'Nie udało się odczytać zapisanych numerów. '
+            'Spróbuj wczytać ponownie lub ćwicz dalej bez numeru.';
       });
     }
     unawaited(_narrate());
@@ -274,11 +274,11 @@ class _MissionScreenState extends State<MissionScreen>
         foregroundColor: BaseboundColors.ink,
         leading: BaseboundBackButton(
           enabled: !_exiting,
-          tooltip: 'Leave practice',
+          tooltip: 'Opuść ćwiczenie',
           onPressed: _exiting ? null : () => unawaited(_exit()),
         ),
         title: const Text(
-          'Practice · air raid',
+          'Ćwiczenie · alarm lotniczy',
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
@@ -288,8 +288,8 @@ class _MissionScreenState extends State<MissionScreen>
                 ? null
                 : _toggleEffects,
             tooltip: _effectsEnabled
-                ? 'Mute sound effects'
-                : 'Unmute sound effects',
+                ? 'Wycisz efekty dźwiękowe'
+                : 'Włącz efekty dźwiękowe',
             icon: Icon(
               _effectsEnabled ? Icons.music_note_outlined : Icons.music_off,
               size: 24,
@@ -297,14 +297,14 @@ class _MissionScreenState extends State<MissionScreen>
             ),
           ),
           Semantics(
-            label: 'Replay audio',
+            label: 'Posłuchaj ponownie',
             button: true,
             enabled: _canReplay,
             onTap: _canReplay ? () => unawaited(_playCurrent()) : null,
             child: ExcludeSemantics(
               child: IconButton(
                 onPressed: _canReplay ? () => unawaited(_playCurrent()) : null,
-                tooltip: 'Replay audio',
+                tooltip: 'Posłuchaj ponownie',
                 icon: BaseboundIcon(
                   BaseboundIconName.speaker,
                   size: 24,
@@ -342,7 +342,7 @@ class _MissionScreenState extends State<MissionScreen>
         const Padding(
           padding: EdgeInsets.only(top: 12),
           child: Text(
-            'Getting the voice ready…',
+            'Przygotowywanie głosu…',
             style: TextStyle(color: BaseboundColors.muted),
           ),
         ),
@@ -362,8 +362,8 @@ class _MissionScreenState extends State<MissionScreen>
                     Expanded(
                       child: Text(
                         kIsWeb
-                            ? 'Web demo has no narration. Ask an adult to read each step with you.'
-                            : 'The voice is unavailable. Ask an adult to read each step with you.',
+                            ? 'Demo w przeglądarce nie ma narracji. Poproś dorosłego o przeczytanie kolejnych kroków.'
+                            : 'Głos jest niedostępny. Poproś dorosłego o przeczytanie kolejnych kroków.',
                         style: TextStyle(fontSize: 16, height: 1.4),
                       ),
                     ),
@@ -373,7 +373,7 @@ class _MissionScreenState extends State<MissionScreen>
                   TextButton.icon(
                     onPressed: () => unawaited(_initializeAudio(retry: true)),
                     icon: const BaseboundIcon(BaseboundIconName.replay),
-                    label: const Text('Try the voice again'),
+                    label: const Text('Spróbuj włączyć głos ponownie'),
                   ),
               ],
             ),
@@ -513,8 +513,8 @@ class _MissionScreenState extends State<MissionScreen>
       const SizedBox(height: 8),
       Text(
         _session.step.id == 'get_down' || _session.step.id == 'protect_head'
-            ? 'Tap a pose to choose.'
-            : 'Tap a highlighted object to choose.',
+            ? 'Dotknij pozy, aby ją wybrać.'
+            : 'Dotknij podświetlonego obiektu, aby go wybrać.',
         style: const TextStyle(color: BaseboundColors.muted),
       ),
       _audioControls(),
@@ -551,28 +551,28 @@ class _MissionScreenState extends State<MissionScreen>
   }
 
   String _nextLabel() => switch (_session.step.id) {
-    'alarm' => 'Find a place',
-    'outdoor_alarm' => 'Choose where to go',
+    'alarm' => 'Znajdź miejsce',
+    'outdoor_alarm' => 'Wybierz, dokąd pójdziesz',
     'destination' || 'outdoor_places' =>
       _session.selectedChoice?.continuesAfterFeedback == true
-          ? 'See what happens'
+          ? 'Zobacz, co się stanie'
           : _session.selectedChoice?.id == 'more_places'
-          ? 'See nearby places'
-          : 'Enter the shelter',
-    'outdoor_noise' => 'Choose what to do',
-    'get_down' => 'Protect my head',
-    'protect_head' => 'Stay down',
-    'outdoor_recover' => 'Follow the adult',
-    'outdoor_sheltered' => 'Tell a trusted adult',
-    'contacts' => 'Tell them',
-    'communication' => 'Send an SMS',
-    'sms' => 'Hear the reply',
-    'message' => 'Stay here',
-    'noise' => 'Keep waiting',
-    'quiet' => 'Wait for the all-clear',
-    'all_clear' => 'Remember the steps',
-    'recall' => 'Finish practice',
-    _ => 'Next step',
+          ? 'Zobacz pobliskie miejsca'
+          : 'Wejdź do schronienia',
+    'outdoor_noise' => 'Wybierz, co zrobisz',
+    'get_down' => 'Osłoń głowę',
+    'protect_head' => 'Zostań nisko',
+    'outdoor_recover' => 'Idź za dorosłym',
+    'outdoor_sheltered' => 'Powiedz zaufanej osobie dorosłej',
+    'contacts' => 'Powiedz im',
+    'communication' => 'Wyślij SMS',
+    'sms' => 'Posłuchaj odpowiedzi',
+    'message' => 'Zostań tutaj',
+    'noise' => 'Czekaj dalej',
+    'quiet' => 'Czekaj na odwołanie alarmu',
+    'all_clear' => 'Zapamiętaj kroki',
+    'recall' => 'Zakończ ćwiczenie',
+    _ => 'Następny krok',
   };
 
   Widget _recallLayout() => MissionRecapLayout(
@@ -582,18 +582,18 @@ class _MissionScreenState extends State<MissionScreen>
   );
 
   Widget _completionLayout() => MissionRecapLayout(
-    title: 'Practice complete',
+    title: 'Ćwiczenie ukończone',
     audioControls: _audioControls(),
     actions: [
       FilledButton.icon(
         onPressed: _restart,
         icon: const BaseboundIcon(BaseboundIconName.replay),
-        label: const Text('Play again'),
+        label: const Text('Ćwicz ponownie'),
       ),
       TextButton.icon(
         onPressed: () => unawaited(_exit()),
         icon: const BaseboundIcon(BaseboundIconName.home),
-        label: const Text('Back to practice choices'),
+        label: const Text('Wróć do wyboru ćwiczeń'),
       ),
     ],
   );

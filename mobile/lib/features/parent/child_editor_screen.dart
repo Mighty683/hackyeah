@@ -53,18 +53,18 @@ class _ChildEditorScreenState extends State<ChildEditorScreen> {
   @override
   Widget build(BuildContext context) {
     return ParentEditorScaffold(
-      title: 'Child details',
+      title: 'Dane dziecka',
       onSave: _save,
-      saveLabel: 'Save child details',
+      saveLabel: 'Zapisz dane dziecka',
       steps: [
         ParentEditorStep(
-          title: "What is your child's name?",
-          nextLabel: "Add child's age",
+          title: "Jak nazywa się dziecko?",
+          nextLabel: "Dodaj wiek dziecka",
           children: [
             TextField(
               controller: _name,
               decoration: const InputDecoration(
-                labelText: 'Full name (optional)',
+                labelText: 'Imię i nazwisko (opcjonalnie)',
                 floatingLabelBehavior: FloatingLabelBehavior.always,
                 prefixIcon: BaseboundIcon(BaseboundIconName.child, size: 24),
               ),
@@ -74,7 +74,7 @@ class _ChildEditorScreenState extends State<ChildEditorScreen> {
             ),
             const SizedBox(height: 16),
             const Text(
-              'All details are optional. Use fictional details for the demo.',
+              'Wszystkie dane są opcjonalne. W demo używaj fikcyjnych danych.',
               style: TextStyle(
                 color: BaseboundColors.muted,
                 fontSize: 16,
@@ -84,13 +84,13 @@ class _ChildEditorScreenState extends State<ChildEditorScreen> {
           ],
         ),
         ParentEditorStep(
-          title: 'How old is your child?',
-          nextLabel: 'Add home address',
+          title: 'Ile lat ma dziecko?',
+          nextLabel: 'Dodaj adres domu',
           children: [
             TextField(
               controller: _age,
               decoration: const InputDecoration(
-                labelText: 'Age (optional)',
+                labelText: 'Wiek (opcjonalnie)',
                 floatingLabelBehavior: FloatingLabelBehavior.always,
                 prefixIcon: BaseboundIcon(BaseboundIconName.birthday, size: 24),
               ),
@@ -102,13 +102,13 @@ class _ChildEditorScreenState extends State<ChildEditorScreen> {
           ],
         ),
         ParentEditorStep(
-          title: "What is your child's home address?",
-          nextLabel: 'Add support needs',
+          title: "Jaki jest adres domu dziecka?",
+          nextLabel: 'Dodaj potrzeby wsparcia',
           children: [
             TextField(
               controller: _address,
               decoration: const InputDecoration(
-                labelText: 'Address (optional)',
+                labelText: 'Adres (opcjonalnie)',
                 floatingLabelBehavior: FloatingLabelBehavior.always,
                 alignLabelWithHint: true,
                 prefixIcon: BaseboundIcon(BaseboundIconName.home, size: 24),
@@ -121,12 +121,12 @@ class _ChildEditorScreenState extends State<ChildEditorScreen> {
           ],
         ),
         ParentEditorStep(
-          title: 'What support does your child need?',
+          title: 'Jakiego wsparcia potrzebuje dziecko?',
           children: [
             TextField(
               controller: _notes,
               decoration: const InputDecoration(
-                labelText: 'Support needs (optional)',
+                labelText: 'Potrzeby wsparcia (opcjonalnie)',
                 floatingLabelBehavior: FloatingLabelBehavior.always,
                 alignLabelWithHint: true,
                 prefixIcon: BaseboundIcon(BaseboundIconName.heart, size: 24),

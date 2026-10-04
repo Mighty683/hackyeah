@@ -18,15 +18,15 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('Could not prepare practice.'), findsOneWidget);
-    await tester.tap(find.text('I need help · prototype'));
+    expect(find.text('Nie udało się przygotować ćwiczenia.'), findsOneWidget);
+    await tester.tap(find.text('Potrzebuję pomocy · prototyp'));
     await tester.pumpAndSettle();
-    expect(find.text('Could not prepare practice.'), findsNothing);
+    expect(find.text('Nie udało się przygotować ćwiczenia.'), findsNothing);
     tester.state<NavigatorState>(find.byType(Navigator)).pop();
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Try again'));
+    await tester.tap(find.text('Spróbuj ponownie'));
     await tester.pumpAndSettle();
-    expect(find.text('Welcome to Tuptu'), findsOneWidget);
+    expect(find.text('Witaj w Tuptu'), findsOneWidget);
     expect(attempts, 2);
   });
 
@@ -34,18 +34,15 @@ void main() {
     final ready = Completer<void>();
     await tester.pumpWidget(BaseboundApp(initialize: () => ready.future));
     await tester.pump();
-    await tester.tap(find.text('I need help · prototype'));
+    await tester.tap(find.text('Potrzebuję pomocy · prototyp'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
     expect(find.byType(HelpScreen), findsOneWidget);
     ready.complete();
     await tester.pumpAndSettle();
-    expect(
-      find.text('Welcome to Tuptu', skipOffstage: false),
-      findsNothing,
-    );
+    expect(find.text('Witaj w Tuptu', skipOffstage: false), findsNothing);
     tester.state<NavigatorState>(find.byType(Navigator)).pop();
     await tester.pumpAndSettle();
-    expect(find.text('Welcome to Tuptu'), findsOneWidget);
+    expect(find.text('Witaj w Tuptu'), findsOneWidget);
   });
 }

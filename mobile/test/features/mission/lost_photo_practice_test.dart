@@ -76,7 +76,7 @@ void main() {
           contacts: [TrustedContact(name: 'Parent')],
           safePoints: [
             SafePoint(
-              name: 'Home',
+              name: 'Dom',
               latitude: 50.0704,
               longitude: 19.9828,
               isDemo: true,
@@ -110,11 +110,11 @@ void main() {
       await _tap(tester, find.text('Choose meeting place'));
       await _pump(tester);
       await _tap(tester, find.byKey(const ValueKey('meeting-place-1_1')));
-      await _tap(tester, find.text('Save practice meeting point'));
+      await _tap(tester, find.text('Zapisz punkt spotkania do ćwiczeń'));
       final saved = await family.load();
       expect(saved.practiceMeetingPoint!.landmarkId, _target.id);
       expect(saved.contacts.single.name, 'Parent');
-      expect(saved.safePoints.single.name, 'Home');
+      expect(saved.safePoints.single.name, 'Dom');
 
       await tester.pumpWidget(
         MaterialApp(
@@ -130,7 +130,7 @@ void main() {
         '${directory.path}/1_1.photo',
       );
       expect(find.text('Demo meeting place.'), findsNothing);
-      await _tap(tester, find.text('Meeting point nearby'));
+      await _tap(tester, find.text('Punkt spotkania w pobliżu'));
       await _tap(tester, find.byKey(const ValueKey('lost-choice-stop')));
       await _next(tester);
       expect(
@@ -140,7 +140,7 @@ void main() {
       await _next(tester);
       expect(find.text('Fictional demo photo'), findsNothing);
       await _tap(tester, find.byKey(const ValueKey('lost-choice-2_2')));
-      expect(find.textContaining('That is a different place.'), findsOneWidget);
+      expect(find.textContaining('To inne miejsce.'), findsOneWidget);
       await _next(tester);
       await _tap(tester, find.byKey(const ValueKey('lost-choice-1_1')));
       await _next(tester);
@@ -153,41 +153,41 @@ void main() {
       final home = map.landmarks.singleWhere(
         (place) => place.id == LostPracticeHomePoint.id,
       );
-      expect(home.name, 'Home');
+      expect(home.name, 'Dom');
       expect(home.isDestination, isTrue);
       expect(home.photoAsset, 'assets/landmarks/demo-home.png');
       expect(home.photoName, isEmpty);
       expect(home.latitude, saved.safePoints.single.latitude);
       expect(home.longitude, saved.safePoints.single.longitude);
       expect(find.byKey(const ValueKey('live-gps-marker')), findsNothing);
-      expect(find.text('Walk here together'), findsNothing);
+      expect(find.text('Idźcie tutaj razem'), findsNothing);
       // Home is enabled as a map choice; the agreed photo remains the target.
-      await _tap(tester, find.text('Places'));
+      await _tap(tester, find.text('Miejsca'));
       expect(find.text('Fictional demo place'), findsNothing);
-      await _tap(tester, find.text('Home'));
-      expect(find.textContaining('Home is a different place.'), findsOneWidget);
+      await _tap(tester, find.text('Dom'));
+      expect(find.textContaining('Dom to inne miejsce.'), findsOneWidget);
       await _next(tester);
       expect((await family.load()).toJson(), saved.toJson());
       // Exercise a map pin through the shared map's callback, then retry.
       map.onSelected(_other);
       await _pump(tester);
       expect(
-        find.textContaining('That pin marks a different place.'),
+        find.textContaining('Ten znacznik wskazuje inne miejsce.'),
         findsOneWidget,
       );
       await _next(tester);
-      await _tap(tester, find.text('Places'));
+      await _tap(tester, find.text('Miejsca'));
       await _tap(tester, find.text('Library entrance').first);
       await _pump(tester);
       // The list retains stored order: the first record is the target.
-      expect(find.textContaining('You have not walked there.'), findsOneWidget);
+      expect(find.textContaining('Jeszcze tam nie jesteś.'), findsOneWidget);
       await _next(tester);
       expect(_step(tester), 'arrive');
       expect(
         tester.widget<LandmarkPhoto>(find.byType(LandmarkPhoto)).path,
         '${directory.path}/1_1.photo',
       );
-      expect(find.textContaining('In this story, you reach'), findsOneWidget);
+      expect(find.textContaining('W tej historii docierasz'), findsOneWidget);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
       await _pump(tester);
@@ -214,7 +214,7 @@ void main() {
     );
     await _pump(tester);
     expect(
-      find.text('Practice meeting point: Library entrance'),
+      find.text('Punkt spotkania do ćwiczeń: Library entrance'),
       findsOneWidget,
     );
     await tester.pumpWidget(const SizedBox.shrink());
@@ -238,7 +238,7 @@ void main() {
     );
     await _pump(tester);
     expect(
-      find.text('Practice meeting point: Main library door'),
+      find.text('Punkt spotkania do ćwiczeń: Main library door'),
       findsOneWidget,
     );
     expect((await family.load()).practiceMeetingPoint!.label, 'Old name');
@@ -277,14 +277,14 @@ void main() {
         );
         await _pump(tester);
         expect(
-          find.text('Your meeting place or photo is unavailable.'),
+          find.text('Miejsce spotkania lub zdjęcie jest niedostępne.'),
           findsOneWidget,
           reason: _texts(tester),
         );
-        expect(find.text('Meeting point nearby'), findsNothing);
+        expect(find.text('Punkt spotkania w pobliżu'), findsNothing);
         expect(find.byType(LandmarkPhoto), findsNothing);
         expect(find.text('Use demo meeting place'), findsNothing);
-        expect(find.text('Parent setup'), findsOneWidget);
+        expect(find.text('Ustawienia rodziny'), findsOneWidget);
         expect((await family.load()).toJson(), before);
         await tester.pumpWidget(const SizedBox.shrink());
         await _pump(tester);
@@ -307,10 +307,10 @@ void main() {
       );
       await _pump(tester);
       expect(
-        find.text('Practice meeting point: Library entrance'),
+        find.text('Punkt spotkania do ćwiczeń: Library entrance'),
         findsOneWidget,
       );
-      expect(find.text('Meeting point nearby'), findsOneWidget);
+      expect(find.text('Punkt spotkania w pobliżu'), findsOneWidget);
       expect(find.text('Use demo meeting place'), findsNothing);
       expect((await family.load()).toJson(), before);
       await tester.pumpWidget(const SizedBox.shrink());

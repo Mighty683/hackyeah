@@ -11,7 +11,7 @@ import android.util.Log
 import io.flutter.plugin.common.MethodChannel
 import java.util.Locale
 
-/** Device-local English narration. Network voices are never selected. */
+/** Device-local Polish narration. Network voices are never selected. */
 class MissionAudio(private val context: Context) {
     private val handler = Handler(Looper.getMainLooper())
     private val cues = MissionCueAudio(context)
@@ -49,13 +49,13 @@ class MissionAudio(private val context: Context) {
         }
         try {
             val voice = engine.voices.orEmpty().filter {
-                it.locale.language == Locale.ENGLISH.language && !it.isNetworkConnectionRequired &&
+                it.locale.language == "pl" && !it.isNetworkConnectionRequired &&
                     !it.features.orEmpty().contains(TextToSpeech.Engine.KEY_FEATURE_NOT_INSTALLED)
             }.sortedWith(compareByDescending<android.speech.tts.Voice> {
-                it.locale == Locale.US
+                it.locale == Locale.forLanguageTag("pl-PL")
             }.thenByDescending { it.quality }).firstOrNull()
             if (voice == null || engine.setVoice(voice) != TextToSpeech.SUCCESS) {
-                Log.i("BaseboundMissionAudio", "No installed offline English voice is available")
+                Log.i("BaseboundMissionAudio", "No installed offline Polish voice is available")
                 failInitialization(); return
             }
             engine.setSpeechRate(0.88f)
@@ -79,7 +79,7 @@ class MissionAudio(private val context: Context) {
                 }
             })
             ready = true
-            Log.i("BaseboundMissionAudio", "Offline English narration initialized: ${voice.name}")
+            Log.i("BaseboundMissionAudio", "Offline Polish narration initialized: ${voice.name}")
             val results = initializing.toList()
             initializing.clear()
             results.forEach { it.success(true) }
@@ -102,7 +102,7 @@ class MissionAudio(private val context: Context) {
         stop()
         // Short interaction cues remain available when no offline voice exists.
         if (text.isNotBlank() && (!ready || speech == null)) {
-            result.error("AUDIO_UNAVAILABLE", "Install an offline English voice with an adult's help.", null)
+            result.error("AUDIO_UNAVAILABLE", "Zainstaluj polski głos offline z pomocą dorosłego.", null)
             return
         }
         pending = result
@@ -113,7 +113,7 @@ class MissionAudio(private val context: Context) {
                 if (token == generation) speak(text, token)
             }
         } catch (_: Exception) {
-            failNarration("AUDIO_CUE", "The training sound could not be played.")
+            failNarration("AUDIO_CUE", "Nie udało się odtworzyć dźwięku ćwiczenia.")
         }
     }
 
@@ -125,20 +125,20 @@ class MissionAudio(private val context: Context) {
             speech?.speak(text, TextToSpeech.QUEUE_FLUSH, params, token.toString())
         }.getOrNull()
         if (status != TextToSpeech.SUCCESS) {
-            failNarration("AUDIO_SPEECH", "The offline voice could not speak.")
+            failNarration("AUDIO_SPEECH", "Nie udało się odtworzyć głosu offline.")
             return
         }
         // Some vendor engines omit progress callbacks after an error.
         handler.postDelayed({
             if (token == generation && pending != null) {
-                failNarration("AUDIO_TIMEOUT", "The offline voice did not finish.")
+                failNarration("AUDIO_TIMEOUT", "Głos offline nie zakończył odtwarzania.")
             }
         }, maxOf(15000L, text.length * 150L))
     }
 
     private fun completeNarration(utteranceId: String?, failed: Boolean = false) {
         if (utteranceId != generation.toString()) return
-        if (failed) { failNarration("AUDIO_SPEECH", "The offline voice stopped unexpectedly."); return }
+        if (failed) { failNarration("AUDIO_SPEECH", "Głos offline zatrzymał się niespodziewanie."); return }
         val result = pending
         pending = null
         result?.success(null)

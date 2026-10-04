@@ -36,7 +36,7 @@ class LandmarkPhoto extends StatelessWidget {
         height: height,
         color: BaseboundColors.sky,
         alignment: Alignment.center,
-        child: const Text('Photo unavailable'),
+        child: const Text('Zdjęcie niedostępne'),
       ),
     ),
   );

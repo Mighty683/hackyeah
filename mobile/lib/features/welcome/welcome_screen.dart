@@ -87,7 +87,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _permissionReady?.completeError(StateError('Welcome closed'));
+    _permissionReady?.completeError(StateError('Ekran powitalny zamknięty'));
     _permissionReady = null;
     super.dispose();
   }
@@ -107,12 +107,12 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                   onHelp: _openHelp,
                   rolesEnabled: !_checkingLocation,
                   locationMessage: kIsWeb
-                      ? 'Try the Android screens with fictional demo details. Device features are mocked.'
+                      ? 'Wypróbuj ekrany Androida z fikcyjnymi danymi. Funkcje urządzenia są symulowane.'
                       : _checkingLocation
-                      ? 'An adult can allow location for the map and nearby-place hints in Help. GPS runs only while these screens are open.'
+                      ? 'Dorosły może włączyć lokalizację dla mapy i wskazówek o pobliskich miejscach w Pomocy. GPS działa tylko na otwartych ekranach.'
                       : _locationStatus == LocationPermissionStatus.granted
                       ? null
-                      : 'Photos and practice still work without location. An adult can enable it in Family setup.',
+                      : 'Zdjęcia i ćwiczenia działają bez lokalizacji. Dorosły może ją włączyć w ustawieniach rodziny.',
                 ),
               ),
             ),
@@ -142,7 +142,7 @@ class _WelcomeChoices extends StatelessWidget {
         const Center(child: _WelcomeIllustration()),
         const SizedBox(height: 24),
         const Text(
-          'Welcome to Tuptu',
+          'Witaj w Tuptu',
           textAlign: TextAlign.center,
           style: TextStyle(
             color: BaseboundColors.ink,
@@ -153,7 +153,7 @@ class _WelcomeChoices extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         const Text(
-          'Are you an adult or a child?',
+          'Jesteś osobą dorosłą czy dzieckiem?',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 18,
@@ -174,8 +174,8 @@ class _WelcomeChoices extends StatelessWidget {
           const SizedBox(height: 16),
         ],
         BaseboundActionTile(
-          label: "I'm a child",
-          description: 'Practice and explore.',
+          label: "Jestem dzieckiem",
+          description: 'Ćwicz i odkrywaj.',
           icon: BaseboundIconName.child,
           onPressed: rolesEnabled
               ? () => _openScreen(context, const ChildOnboardingScreen())
@@ -183,8 +183,8 @@ class _WelcomeChoices extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         BaseboundActionTile(
-          label: "I'm an adult",
-          description: 'Set up practice.',
+          label: "Jestem osobą dorosłą",
+          description: 'Przygotuj ćwiczenia.',
           icon: BaseboundIconName.adult,
           onPressed: rolesEnabled
               ? () => _openScreen(context, const ParentScreen())

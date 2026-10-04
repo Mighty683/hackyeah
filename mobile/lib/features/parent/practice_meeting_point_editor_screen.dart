@@ -131,13 +131,13 @@ class _PracticeMeetingPointEditorScreenState
 
   @override
   Widget build(BuildContext context) => ParentEditorScaffold(
-    title: 'Practice meeting point',
+    title: 'Punkt spotkania do ćwiczeń',
     onSave: _save,
     saveEnabled: _demoMode || (!_loading && !_loadFailed && _selected != null),
-    saveLabel: 'Save practice meeting point',
+    saveLabel: 'Zapisz punkt spotkania do ćwiczeń',
     children: [
       const ParentEditorNote(
-        message: 'Choose the exact place you have agreed on together. Your child will recognize its photo, then find its pin on Our map. Training only; saved places are not checked for safety.',
+        message: 'Wybierzcie dokładnie to miejsce, które wspólnie ustaliliście. Dziecko rozpozna jego zdjęcie i znajdzie znacznik na Naszej mapie. To tylko ćwiczenie; bezpieczeństwo zapisanych miejsc nie jest sprawdzane.',
         icon: BaseboundIconName.info,
       ),
       const SizedBox(height: 16),
@@ -146,7 +146,9 @@ class _PracticeMeetingPointEditorScreenState
       TextButton(
         onPressed: () => setState(() => _demoMode = !_demoMode),
         child: Text(
-          _demoMode ? 'Choose a saved photo place' : 'Use a pretend picture',
+          _demoMode
+              ? 'Wybierz miejsce z zapisanym zdjęciem'
+              : 'Użyj przykładowego obrazka',
         ),
       ),
     ],
@@ -157,16 +159,18 @@ class _PracticeMeetingPointEditorScreenState
       const Center(child: CircularProgressIndicator())
     else if (_loadFailed) ...[
       const Text(
-        'Could not read saved photo places. Saved details are unchanged.',
+        'Nie udało się odczytać miejsc ze zdjęciami. Zapisane dane zostały zachowane.',
       ),
-      TextButton(onPressed: _load, child: const Text('Try again')),
+      TextButton(onPressed: _load, child: const Text('Spróbuj ponownie')),
     ] else ...[
       if (_landmarkId != null && _selected == null)
         const Text(
-          'The selected place or its photo is unavailable. Choose another place.',
+          'Wybrane miejsce lub jego zdjęcie jest niedostępne. Wybierz inne miejsce.',
         ),
       if (_landmarks.isEmpty)
-        const Text('Add a photo and pin in Walk together first.'),
+        const Text(
+          'Najpierw dodaj zdjęcie i znacznik w sekcji Wspólny spacer.',
+        ),
       for (final place in _landmarks) ...[
         const SizedBox(height: 12),
         Semantics(
@@ -186,7 +190,7 @@ class _PracticeMeetingPointEditorScreenState
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '${place.name}${place.id == _landmarkId ? ' · Selected' : ''}',
+                    '${place.name}${place.id == _landmarkId ? ' · Wybrane' : ''}',
                   ),
                 ],
               ),
@@ -199,19 +203,19 @@ class _PracticeMeetingPointEditorScreenState
     OutlinedButton.icon(
       onPressed: _openLibrary,
       icon: const BaseboundIcon(BaseboundIconName.addPlace),
-      label: const Text('Add or edit photos in Walk together'),
+      label: const Text('Dodaj lub edytuj zdjęcia w sekcji Wspólny spacer'),
     ),
   ];
 
   List<Widget> _demoChoices() => [
     const Text(
-      'Pretend picture. This does not teach your actual place or map pin.',
+      'Przykładowy obrazek. Nie przedstawia waszego miejsca ani znacznika na mapie.',
     ),
     if (widget.point != null &&
         resolveLostLandmark(widget.point!.presetId).id !=
             widget.point!.presetId)
       const Text(
-        'The saved picture is unavailable. Choose a new pretend picture.',
+        'Zapisany obrazek jest niedostępny. Wybierz nowy przykładowy obrazek.',
       ),
     for (final preset in lostLandmarkPresets) ...[
       const SizedBox(height: 12),
@@ -235,7 +239,7 @@ class _PracticeMeetingPointEditorScreenState
     TextField(
       controller: _label,
       decoration: const InputDecoration(
-        labelText: 'Demo meeting point name (optional)',
+        labelText: 'Nazwa przykładowego punktu spotkania (opcjonalnie)',
       ),
       textCapitalization: TextCapitalization.words,
       maxLength: 60,

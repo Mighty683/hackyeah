@@ -1,6 +1,6 @@
 # Tuptu pitch
 
-The main deck is [`slides.md`](slides.md): ten slides in Polish, with Polish speaker notes for an approximately four-minute pitch including a 45-second recording. The recording is a placeholder until the team captures the Android app. [`prototype.md`](prototype.md) preserves the earlier interactive concept demo separately.
+The main deck is [`slides.md`](slides.md): ten slides in Polish, with Polish speaker notes for an approximately three-minute-fifteen-second pitch. The solution slide shows a real browser-demo screenshot and a local prototype link. [`prototype.md`](prototype.md) preserves the earlier interactive concept demo separately.
 
 ## Editing text
 
@@ -16,18 +16,18 @@ The pitch follows the mentoring guide's order: problem → user → value → on
 
 | Defence criterion | Weight | Evidence in the pitch |
 | --- | --- | --- |
-| Idea & Innovation | 30% | Slides 4–5: a decision-learning loop connected to familiar photos and family context. Describe this combination without claiming to be the first or only solution. |
-| Relation to Category | 20% | Slides 2–3 and 7: civilian preparedness, child-specific decisions, and practice that does not depend on connectivity. |
+| Idea & Innovation | 30% | Slides 5–6: a decision-learning loop connected to familiar photos and family context. Describe this combination without claiming to be the first or only solution. |
+| Relation to Category | 20% | Slides 2–4 and 7: civilian preparedness, child-specific decisions, and practice that does not depend on connectivity. |
 | Practical Applicability / Usability | 20% | Slides 5–6 and 8: parent setup, one understandable training interaction, and a proposed school/family pilot. |
-| Design | 20% | Slides 4 and 6: short visual choices, calm feedback and retry. The team reviews the actual appearance and child comprehension. |
-| Completeness & Implementation Value | 10% | Slides 6–7 and 9: a working Android prototype, explicit limits, and a concrete validation roadmap. |
+| Design | 20% | Slides 5–6: short visual choices, calm feedback and retry. The team reviews the actual appearance and child comprehension. |
+| Completeness & Implementation Value | 10% | Slides 5, 7 and 9: a working Android prototype, explicit limits, and a concrete validation roadmap. |
 
 ## Content decisions
 
 The supplied `HackYeah 2026.pdf` is a content draft, not evidence that every described feature exists. The deck adapts it as follows:
 
 - The verified Lenka story introduces the need for preparedness. Her age does not change the product's intended audience of 7–14; implemented training currently starts at 7+.
-- The five-stage loop stays central: **Situation → Decision → Action → Consequence → Explanation**. One alarm choice, feedback and retry make this visible in the planned recording.
+- The five-stage loop stays central: **Situation → Decision → Action → Consequence → Explanation**. The solution description and prototype demonstrate the decision, feedback and retry.
 - Local family details and photo landmarks are implemented. Rehearsing a mobile-network outage and a complete family contingency plan remains planned. Broader handbook topics are opportunities for future scenarios, not current training coverage.
 - The GUS figures of approximately **3.2 million primary-school pupils and 14 thousand schools in 2024/25** describe the education system's scale. They are not paying users, a precise count of the target age group, or validated demand. Institution-funded pilots are a proposed adoption model; there are no claimed customers or partnerships.
 - Specialist review, child/parent testing, further scenarios, original artwork and carefully designed gamification are next steps. A reviewed scenario library and learning-outcome evidence are long-term ambitions.
@@ -35,7 +35,7 @@ The supplied `HackYeah 2026.pdf` is a content draft, not evidence that every des
 
 The source documents are `Details - Defence.pdf`, `Od chaosu do mistrzowskiego pitchu — HackYeah.pdf`, and `HackYeah 2026.pdf` under the main checkout's `docs/` directory. They were read from that checkout because the PDFs are not present in this worktree. Verified external sources are linked in the relevant speaker notes. The draft PDF's author label is not a confirmed team roster.
 
-The draft's *Flood Alert!* study involved 45 university students, not children, and had no control group. The speaker notes preserve that qualification; the slide does not use it as evidence of child learning. The pitch guide's final pages also inform the sequence, local recording backup and rehearsal checklist. Four minutes is a proposed rehearsal target, not a verified competition time limit.
+The draft's *Flood Alert!* study involved 45 university students, not children, and had no control group. The speaker notes preserve that qualification; the slide does not use it as evidence of child learning. The pitch guide informs the sequence and rehearsal checklist. The current rehearsal target is three minutes fifteen seconds, not a verified competition time limit.
 
 ## Demonstration boundaries
 
@@ -45,13 +45,13 @@ Training calls and messages are pretend. The separate help prototype is unreview
 
 The family record and landmark metadata use local encrypted storage; photo copies are ordinary app-private files. There is no parent access gate. Use fictional names, addresses and contacts in the recording. See [`mobile/README.md`](../../mobile/README.md) for the wider scope, and [`help_phone.dart`](../../mobile/lib/features/help/help_phone.dart) for the current phone behaviour.
 
-## Recording replacement
+## Prototype link and screenshot
 
-1. Record roughly 45 seconds: enter alarm practice → make one choice → show calm feedback → retry successfully. Keep the focus on the child's decision, rather than touring every feature.
-2. Use fictional personal details. Do not trigger real phone actions or include identifying information.
-3. Save the clip as `public/demo/safe-path-demo.mp4` inside this package.
-4. Set the demo component in `slides.md` to `<DemoRecording src="/demo/safe-path-demo.mp4" />` and update `slides.demo.footer` in `content.json`. Omitting `src` retains the placeholder; a failed video load shows a fallback message.
-5. Rehearse playback locally and keep the MP4 available separately. A PDF cannot play the recording; retain the slide's explanatory text and provide a demo link with the submission if available.
+Set `slides.overview.prototypeUrl` and `slides.overview.screenshotSrc` in `content.json` to update the solution slide. Put the screenshot in `public/images/` and use its `/images/…` path. Build the browser demo with `flutter build web --release --no-web-resources-cdn --base-href /prototype/` from `mobile/`, then copy `mobile/build/web/` to `packages/presentation/public/prototype/`. Generated demo files are ignored by Git. The current link is LAN-only; replace it with the final public URL before external submission.
+
+## Project credits
+
+The blue thank-you slide names Tomasz Szarek and Patrycja Beńko and identifies HackYeah 2026. Set `slides.thanks.analysisUrl` and each creator's `slides.thanks.creators[].linkedinUrl` in `content.json` when the links are supplied. Set each creator’s `email` as well. Missing addresses are shown as explicit placeholders until supplied.
 
 ## Run and submit
 

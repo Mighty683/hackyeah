@@ -62,8 +62,8 @@ class _LandmarkEditorScreenState extends State<LandmarkEditorScreen> {
         _selected = point;
         _pinRevision++;
         _locationMessage = kIsWeb
-            ? 'Demo position selected. Check and adjust the pin.'
-            : 'Location found. Check and adjust the pin.';
+            ? 'Wybrano przykładową pozycję. Sprawdź i popraw znacznik.'
+            : 'Znaleziono pozycję. Sprawdź i popraw znacznik.';
       });
     } on LandmarkLocationException catch (error) {
       if (mounted) setState(() => _locationMessage = error.message);
@@ -71,7 +71,7 @@ class _LandmarkEditorScreenState extends State<LandmarkEditorScreen> {
       if (mounted) {
         setState(
           () => _locationMessage =
-              'Could not find your location. Choose a pin manually.',
+              'Nie udało się znaleźć pozycji. Wybierz znacznik ręcznie.',
         );
       }
     } finally {
@@ -92,19 +92,21 @@ class _LandmarkEditorScreenState extends State<LandmarkEditorScreen> {
 
   @override
   Widget build(BuildContext context) => ParentEditorScaffold(
-    title: widget.landmark == null ? 'Add landmark' : 'Edit landmark',
-    saveLabel: 'Save landmark',
+    title: widget.landmark == null
+        ? 'Dodaj punkt orientacyjny'
+        : 'Edytuj punkt orientacyjny',
+    saveLabel: 'Zapisz punkt orientacyjny',
     saveEnabled:
         _selected != null && _name.text.trim().isNotEmpty && !_locating,
     onSave: _save,
     steps: [
       ParentEditorStep(
-        title: 'Name this place',
-        nextLabel: 'Choose map position',
+        title: 'Nazwij to miejsce',
+        nextLabel: 'Wybierz pozycję na mapie',
         children: [
           LandmarkPhoto(
             path: widget.photoPath,
-            label: 'Landmark photo',
+            label: 'Zdjęcie punktu orientacyjnego',
             height: 216,
           ),
           const SizedBox(height: 24),
@@ -114,25 +116,25 @@ class _LandmarkEditorScreenState extends State<LandmarkEditorScreen> {
             maxLength: 60,
             textInputAction: TextInputAction.done,
             decoration: const InputDecoration(
-              labelText: 'Landmark name',
-              hintText: 'Red corner shop',
+              labelText: 'Nazwa punktu orientacyjnego',
+              hintText: 'Czerwony sklep na rogu',
               floatingLabelBehavior: FloatingLabelBehavior.always,
               prefixIcon: BaseboundIcon(BaseboundIconName.pin, size: 24),
             ),
           ),
           const SizedBox(height: 16),
           const ParentEditorNote(
-            message: 'Use a name your child knows.',
+            message: 'Użyj nazwy znanej dziecku.',
             icon: BaseboundIconName.idea,
           ),
         ],
       ),
       ParentEditorStep(
-        title: 'Place it on the map',
+        title: 'Zaznacz miejsce na mapie',
         children: [
           Text(
             _name.text.trim().isEmpty
-                ? 'Add a landmark name before saving.'
+                ? 'Dodaj nazwę punktu przed zapisaniem.'
                 : _name.text.trim(),
             style: const TextStyle(
               color: BaseboundColors.ink,
@@ -142,7 +144,7 @@ class _LandmarkEditorScreenState extends State<LandmarkEditorScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          const Text('Tap the map to place or move the pin.'),
+          const Text('Dotknij mapy, aby dodać lub przesunąć znacznik.'),
           const SizedBox(height: 16),
           OfflinePointPicker(
             key: ValueKey(_pinRevision),
@@ -165,8 +167,12 @@ class _LandmarkEditorScreenState extends State<LandmarkEditorScreen> {
                 : const BaseboundIcon(BaseboundIconName.pin, size: 24),
             label: Text(
               _locating
-                  ? (kIsWeb ? 'Selecting demo position…' : 'Finding location…')
-                  : (kIsWeb ? 'Use demo position' : 'Use my location'),
+                  ? (kIsWeb
+                        ? 'Wybieranie przykładowej pozycji…'
+                        : 'Szukanie pozycji…')
+                  : (kIsWeb
+                        ? 'Użyj przykładowej pozycji'
+                        : 'Użyj mojej pozycji'),
             ),
           ),
           const SizedBox(height: 12),
@@ -183,8 +189,8 @@ class _LandmarkEditorScreenState extends State<LandmarkEditorScreen> {
                   child: Text(
                     _locationMessage ??
                         (_selected == null
-                            ? 'Choose a pin before saving.'
-                            : 'Pin selected. Check it before saving.'),
+                            ? 'Wybierz znacznik przed zapisaniem.'
+                            : 'Znacznik wybrany. Sprawdź go przed zapisaniem.'),
                     style: const TextStyle(
                       color: BaseboundColors.muted,
                       fontSize: 16,
@@ -197,7 +203,7 @@ class _LandmarkEditorScreenState extends State<LandmarkEditorScreen> {
           ),
           const SizedBox(height: 24),
           const ParentEditorNote(
-            message: 'Choose a point on the TAURON Arena map. Use a photo your child recognises.',
+            message: 'Wybierz punkt na mapie TAURON Areny. Użyj zdjęcia, które dziecko rozpoznaje.',
             icon: BaseboundIconName.map,
           ),
         ],

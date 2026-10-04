@@ -38,7 +38,7 @@ class SelectedLandmarkCard extends StatelessWidget {
             child: TextButton.icon(
               onPressed: onEdit,
               icon: const BaseboundIcon(BaseboundIconName.edit),
-              label: const Text('Edit landmark'),
+              label: const Text('Edytuj punkt orientacyjny'),
             ),
           ),
         ],
@@ -87,11 +87,11 @@ class LandmarkLibraryEntry extends StatelessWidget {
           fontSize: 16,
           height: 1.4,
         ),
-        subtitle: !onMap ? const Text('Outside this map') : null,
+        subtitle: !onMap ? const Text('Poza tą mapą') : null,
         onTap: onEdit,
         trailing: IconButton(
           onPressed: onDelete,
-          tooltip: 'Delete ${entry.name}',
+          tooltip: 'Usuń ${entry.name}',
           icon: const BaseboundIcon(BaseboundIconName.delete),
         ),
       ),

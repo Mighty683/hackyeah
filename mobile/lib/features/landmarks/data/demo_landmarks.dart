@@ -9,7 +9,7 @@ const demoLandmarks = [
   (
     landmark: Landmark(
       id: '100_1',
-      name: 'Red corner shop',
+      name: 'Czerwony sklep na rogu',
       photoName: '100_1.photo',
       latitude: 50.0685,
       longitude: 19.9865,
@@ -20,7 +20,7 @@ const demoLandmarks = [
   (
     landmark: Landmark(
       id: '100_2',
-      name: 'Yellow slide',
+      name: 'Żółta zjeżdżalnia',
       photoName: '100_2.photo',
       latitude: 50.0722,
       longitude: 19.9955,
@@ -31,7 +31,7 @@ const demoLandmarks = [
   (
     landmark: Landmark(
       id: '100_3',
-      name: 'Blue bus stop',
+      name: 'Niebieski przystanek',
       photoName: '100_3.photo',
       latitude: 50.0643,
       longitude: 19.9938,

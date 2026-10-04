@@ -23,11 +23,11 @@ class PracticePhoneKeypad extends StatefulWidget {
 
 class _PracticePhoneKeypadState extends State<PracticePhoneKeypad> {
   static const _instruction =
-      'Type your trusted adult’s phone number. '
-      'This is practice only. No calls or messages are sent.';
+      'Wpisz numer telefonu zaufanej osoby dorosłej. '
+      'To tylko ćwiczenie. Nie wykonujemy połączeń ani nie wysyłamy wiadomości.';
   static const _mismatch =
-      'That number does not match yet. Try again or use a hint.';
-  static const _matched = 'That matches a saved number.';
+      'Numer jeszcze się nie zgadza. Spróbuj ponownie lub użyj podpowiedzi.';
+  static const _matched = 'Numer zgadza się z zapisanym kontaktem.';
 
   String _digits = '';
   String? _feedback;
@@ -50,8 +50,8 @@ class _PracticePhoneKeypadState extends State<PracticePhoneKeypad> {
   );
 
   String get _hintInstruction =>
-      'Type all the digits shown, including the country code. '
-      'You do not need the plus sign, spaces or dashes.';
+      'Wpisz wszystkie pokazane cyfry, także numer kierunkowy kraju. '
+      'Nie musisz wpisywać plusa, spacji ani myślników.';
 
   void _editNumber(String digits) {
     final hadFeedback = _feedback != null;
@@ -67,7 +67,7 @@ class _PracticePhoneKeypadState extends State<PracticePhoneKeypad> {
 
   void _appendDigit(String digit) {
     if (_digits.length >= _digitLimit) {
-      const message = 'Check the digits, or clear the number to try again.';
+      const message = 'Sprawdź cyfry lub wyczyść numer i spróbuj ponownie.';
       setState(() => _feedback = message);
       widget.onInstructionChanged(message);
       return;
@@ -84,7 +84,7 @@ class _PracticePhoneKeypadState extends State<PracticePhoneKeypad> {
       _feedback = matches ? _matched : _mismatch;
     });
     widget.onInstructionChanged(
-      matches ? '$_matched Tap Send pretend message.' : _mismatch,
+      matches ? '$_matched Dotknij Wyślij wiadomość na niby.' : _mismatch,
     );
   }
 
@@ -106,18 +106,18 @@ class _PracticePhoneKeypadState extends State<PracticePhoneKeypad> {
         Semantics(
           header: true,
           child: Text(
-            'Type their phone number',
+            'Wpisz numer telefonu',
             style: theme.textTheme.headlineMedium,
           ),
         ),
         const SizedBox(height: 12),
         Text(
-          'Type your trusted adult’s phone number.',
+          'Wpisz numer telefonu zaufanej osoby dorosłej.',
           style: theme.textTheme.bodyLarge,
         ),
         const SizedBox(height: 8),
         Text(
-          'Practice only. No calls or messages.',
+          'Tylko ćwiczenie. Bez połączeń i wiadomości.',
           style: theme.textTheme.bodyMedium?.copyWith(
             color: BaseboundColors.muted,
           ),
@@ -127,14 +127,14 @@ class _PracticePhoneKeypadState extends State<PracticePhoneKeypad> {
           Semantics(
             liveRegion: true,
             child: const Text(
-              'No phone number is saved yet. '
-              'Ask an adult to add one in parent setup.',
+              'Nie zapisano jeszcze numeru telefonu. '
+              'Poproś dorosłego o dodanie numeru w ustawieniach rodziny.',
             ),
           ),
           const SizedBox(height: 24),
           FilledButton(
             onPressed: widget.onComplete,
-            child: const Text('Continue without a number'),
+            child: const Text('Ćwicz dalej bez numeru'),
           ),
         ] else ...[
           SoftPanel(
@@ -148,15 +148,15 @@ class _PracticePhoneKeypadState extends State<PracticePhoneKeypad> {
                 ),
                 const SizedBox(height: 16),
                 Semantics(
-                  label: 'Phone number',
+                  label: 'Numer telefonu',
                   value: _digits.isEmpty
-                      ? 'No digits entered'
+                      ? 'Nie wpisano cyfr'
                       : _digits.split('').join(' '),
                   liveRegion: true,
                   child: ExcludeSemantics(
                     child: Text(
                       _digits.isEmpty
-                          ? 'Enter number'
+                          ? 'Wpisz numer'
                           : _digits.split('').join(' '),
                       textAlign: TextAlign.center,
                       style: theme.textTheme.headlineSmall?.copyWith(
@@ -170,7 +170,7 @@ class _PracticePhoneKeypadState extends State<PracticePhoneKeypad> {
                   _buildKeypad(),
                   TextButton(
                     onPressed: _digits.isEmpty ? null : () => _editNumber(''),
-                    child: const Text('Clear number'),
+                    child: const Text('Wyczyść numer'),
                   ),
                 ],
               ],
@@ -185,13 +185,17 @@ class _PracticePhoneKeypadState extends State<PracticePhoneKeypad> {
             onPressed: _matches
                 ? widget.onComplete
                 : (_digits.isEmpty ? null : _checkNumber),
-            child: Text(_matches ? 'Send pretend message' : 'Check number'),
+            child: Text(
+              _matches ? 'Wyślij wiadomość na niby' : 'Sprawdź numer',
+            ),
           ),
           if (!_matches) ...[
             const SizedBox(height: 8),
             TextButton(
               onPressed: _toggleHint,
-              child: Text(_showHint ? 'Hide hint' : 'Need a hint?'),
+              child: Text(
+                _showHint ? 'Ukryj podpowiedź' : 'Potrzebujesz podpowiedzi?',
+              ),
             ),
             if (_showHint) _buildHint(contacts),
           ],
@@ -222,7 +226,7 @@ class _PracticePhoneKeypadState extends State<PracticePhoneKeypad> {
           const SizedBox(width: 8),
           Expanded(
             child: Tooltip(
-              message: 'Delete last digit',
+              message: 'Usuń ostatnią cyfrę',
               child: OutlinedButton(
                 onPressed: _digits.isEmpty
                     ? null
@@ -273,7 +277,7 @@ class _PracticePhoneKeypadState extends State<PracticePhoneKeypad> {
           style: const TextStyle(fontWeight: FontWeight.w700),
         ),
         Semantics(
-          label: 'Saved number',
+          label: 'Zapisany numer',
           value: _phoneDigits(contact.phone).split('').join(' '),
           child: ExcludeSemantics(child: Text(contact.phone)),
         ),

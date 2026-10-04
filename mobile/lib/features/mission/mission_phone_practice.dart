@@ -36,7 +36,7 @@ class MissionPhonePractice extends StatelessWidget {
           )
         else ...[
           const Text(
-            'Type their phone number',
+            'Wpisz numer telefonu',
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.w700,
@@ -55,11 +55,11 @@ class MissionPhonePractice extends StatelessWidget {
           if (loadFailed) ...[
             FilledButton(
               onPressed: onRetry,
-              child: const Text('Try loading again'),
+              child: const Text('Wczytaj ponownie'),
             ),
             TextButton(
               onPressed: onComplete,
-              child: const Text('Continue without a number'),
+              child: const Text('Ćwicz dalej bez numeru'),
             ),
           ] else
             const Center(child: CircularProgressIndicator()),

@@ -76,10 +76,10 @@ void main() {
     () async {
       final repository = LandmarkRepository(storage: SessionDemoStorage());
       final bytes = Uint8List.fromList([1, 2, 3]);
-      await repository.save(_point('1_1', 'Shop'), photoBytes: bytes);
+      await repository.save(_point('1_1', 'Sklep'), photoBytes: bytes);
       bytes[0] = 9;
       final other = LandmarkRepository(storage: SessionDemoStorage());
-      expect((await other.load()).single.name, 'Shop');
+      expect((await other.load()).single.name, 'Sklep');
       final path = '${(await other.photoDirectory()).path}/1_1.photo';
       expect(DemoSession.instance.photos[path], [1, 2, 3]);
       await other.save(_point('1_1', 'Edited shop'));
@@ -119,7 +119,7 @@ void main() {
     'delete all removes orphan photos and keeps other feature records',
     () async {
       final repository = LandmarkRepository(storage: SessionDemoStorage());
-      await repository.save(_point('1_1', 'Shop'), photoBytes: [1]);
+      await repository.save(_point('1_1', 'Sklep'), photoBytes: [1]);
       DemoSession.instance.photos['/demo/photos/orphan.photo'] = Uint8List(1);
       DemoSession.instance.records['family'] = 'kept';
       await repository.deleteAll();

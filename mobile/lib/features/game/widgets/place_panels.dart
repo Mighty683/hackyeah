@@ -45,7 +45,7 @@ class SelectedPlacePanel extends StatelessWidget {
               ),
               IconButton(
                 onPressed: onClose,
-                tooltip: 'Close place',
+                tooltip: 'Zamknij miejsce',
                 icon: const Icon(Icons.close, size: 24),
               ),
             ],
@@ -59,19 +59,17 @@ class SelectedPlacePanel extends StatelessWidget {
             ),
           const SizedBox(height: 8),
           if (!place.isDemo && !map.contains(place.latitude, place.longitude))
-            const Text(
-              'Outside this downloaded map. Walking guidance is unavailable.',
-            )
+            const Text('Poza pobraną mapą. Wskazówki spaceru są niedostępne.')
           else if (!place.isDemo)
             FilledButton.icon(
               onPressed: onNavigate,
               icon: const Icon(Icons.directions_walk, size: 24),
-              label: const Text('Walk here together'),
+              label: const Text('Idźcie tutaj razem'),
             ),
           if (hasDirections)
             TextButton(
               onPressed: onClose,
-              child: const Text('Back to directions'),
+              child: const Text('Wróć do wskazówek'),
             ),
         ],
       ),
@@ -108,7 +106,7 @@ class WalkingRoutePanel extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            'To ${target.name}',
+            'Do miejsca: ${target.name}',
             style: const TextStyle(fontWeight: FontWeight.w700),
           ),
           if (target.hasPhoto) ...[
@@ -121,18 +119,21 @@ class WalkingRoutePanel extends StatelessWidget {
             ),
           ],
           if (hasRoute) ...[
-            Text('${metres(remaining)} of mapped path remaining'),
+            Text('Do końca zaznaczonej ścieżki: ${metres(remaining)}'),
             const Text(
-              'Path ends near the pin. Check with your adult.',
+              'Ścieżka kończy się blisko znacznika. Sprawdź z dorosłym.',
               style: TextStyle(fontSize: 12),
             ),
           ],
           if (nearPlace && !recognised)
             FilledButton(
               onPressed: onRecognise,
-              child: const Text('I recognise this place'),
+              child: const Text('Rozpoznaję to miejsce'),
             ),
-          TextButton(onPressed: onStop, child: const Text('Stop directions')),
+          TextButton(
+            onPressed: onStop,
+            child: const Text('Zatrzymaj wskazówki'),
+          ),
         ],
       ),
     ),

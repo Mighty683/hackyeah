@@ -53,7 +53,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       .where((place) => widget.map.contains(place.latitude, place.longitude))
       .toList();
   String get _instruction => _navigation.destination == null
-      ? 'Choose a place on the map.'
+      ? 'Wybierz miejsce na mapie.'
       : _navigation.instruction;
 
   /// A nearby photo is recognition help, never a verified destination.
@@ -199,28 +199,28 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   }
 
   String get _mapLocationExplanation => kIsWeb
-      ? 'Web demo: the blue dot is a fictional fixed position. No GPS, actual movement or real arrival is detected.\n\n'
-      : 'Your blue dot comes only from phone GPS. No tap moves it. Location is used while this screen is open; no track is saved.\n\n';
+      ? 'Demo w przeglądarce: niebieska kropka to fikcyjna, stała pozycja. Nie wykrywamy GPS, ruchu ani rzeczywistego dotarcia.\n\n'
+      : 'Niebieska kropka wynika wyłącznie z GPS telefonu. Dotknięcie jej nie przesuwa. Lokalizacja działa na otwartym ekranie; trasa nie jest zapisywana.\n\n';
 
   void _about() => showDialog<void>(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('About our map'),
+      title: const Text('O Naszej mapie'),
       scrollable: true,
       content: Text(
         '$_mapLocationExplanation'
-        'Offline coverage: 2 × 2 km around TAURON Arena, Kraków. Walk with an adult. '
-        'Routes use bundled OpenStreetMap paths and local roads. Access, barriers, entrances and hazards are not verified. '
-        'Follow your adult’s judgment at roads and crossings. The endpoint ring is a mapped path near the pin.\n\n'
-        'Turn instructions follow map geometry, not the way the phone is facing. The map is north-up. '
-        'Unclear, old or out-of-area GPS pauses guidance. '
-        'Saved places are parent-selected, with no safety check.\n\n'
-        'Map data © OpenStreetMap contributors · ODbL 1.0.',
+        'Mapa offline: 2 × 2 km wokół TAURON Areny w Krakowie. Spaceruj z dorosłym. '
+        'Trasy korzystają z zapisanych ścieżek i lokalnych dróg OpenStreetMap. Dostęp, bariery, wejścia i zagrożenia nie są sprawdzane. '
+        'Przy drogach i przejściach kieruj się oceną dorosłego. Pierścień końca trasy wskazuje ścieżkę na mapie blisko znacznika.\n\n'
+        'Wskazówki skrętów wynikają z mapy, a nie z kierunku telefonu. Północ jest u góry mapy. '
+        'Niedokładna, stara lub znajdująca się poza mapą pozycja GPS wstrzymuje wskazówki. '
+        'Zapisane miejsca wybiera rodzic. Ich bezpieczeństwo nie jest sprawdzane.\n\n'
+        'Dane mapy © autorzy OpenStreetMap · ODbL 1.0.',
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Close'),
+          child: const Text('Zamknij'),
         ),
       ],
     ),
@@ -231,17 +231,17 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     appBar: AppBar(
       automaticallyImplyLeading: false,
       leading: Navigator.canPop(context) ? const BaseboundBackButton() : null,
-      title: const Text('Our map'),
+      title: const Text('Nasza mapa'),
       actions: [
         IconButton(
           onPressed: _openHelp,
           icon: const BaseboundIcon(BaseboundIconName.help, size: 24),
-          tooltip: 'I need help · prototype',
+          tooltip: 'Potrzebuję pomocy · prototyp',
         ),
         IconButton(
           onPressed: _about,
           icon: const BaseboundIcon(BaseboundIconName.info, size: 24),
-          tooltip: 'About our map',
+          tooltip: 'O Naszej mapie',
         ),
       ],
     ),
@@ -254,7 +254,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
             children: [
               GameMapLayout(
                 instruction: _recognised
-                    ? 'You recognised this place!'
+                    ? 'Rozpoznajesz to miejsce!'
                     : _instruction,
                 onReplay: _speak,
                 controls: _controls(),
@@ -291,7 +291,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
             Semantics(
               liveRegion: true,
               child: Text(
-                'Finding a path…',
+                'Szukanie ścieżki…',
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
             ),
@@ -300,7 +300,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
             const SizedBox(height: 24),
             TextButton(
               onPressed: _navigation.stop,
-              child: const Text('Cancel'),
+              child: const Text('Anuluj'),
             ),
           ],
         ),
@@ -317,7 +317,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         children: [
           const Text(
-            'Our places',
+            'Nasze miejsca',
             style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 8),
@@ -347,23 +347,27 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
 
   String? get _locationStatus {
     if (kIsWeb) {
-      return 'Demo location · fictional fixed position. No GPS is used.';
+      return 'Pozycja demo · fikcyjna, stała lokalizacja. Bez użycia GPS.';
     }
-    if (_navigation.outsideMap) return 'GPS is outside this demo map.';
+    if (_navigation.outsideMap) return 'Pozycja GPS jest poza mapą demo.';
     return switch (_location.state) {
-      LocationState.off => 'Location is off. You can still explore.',
-      LocationState.waiting => 'Finding your location…',
+      LocationState.off =>
+        'Lokalizacja jest wyłączona. Możesz dalej poznawać mapę.',
+      LocationState.waiting => 'Szukanie twojej pozycji…',
       LocationState.live =>
         _location.isPrecise
             ? null
-            : 'GPS is approximate. Walking directions are paused.',
-      LocationState.denied => 'Location is not allowed. You can still explore.',
+            : 'GPS jest niedokładny. Wskazówki spaceru są wstrzymane.',
+      LocationState.denied =>
+        'Brak zgody na lokalizację. Możesz dalej poznawać mapę.',
       LocationState.settingsRequired =>
-        'Your adult can allow location in app settings.',
-      LocationState.disabled => 'Your adult can turn on phone location.',
-      LocationState.unavailable => 'GPS is unavailable. You can still explore.',
-      LocationState.stale => 'GPS is old. Walking directions are paused.',
-      LocationState.paused => 'Location is paused.',
+        'Dorosły może włączyć dostęp do lokalizacji w ustawieniach aplikacji.',
+      LocationState.disabled => 'Dorosły może włączyć lokalizację telefonu.',
+      LocationState.unavailable =>
+        'GPS jest niedostępny. Możesz dalej poznawać mapę.',
+      LocationState.stale =>
+        'Pozycja GPS jest nieaktualna. Wskazówki spaceru są wstrzymane.',
+      LocationState.paused => 'Lokalizacja jest wstrzymana.',
     };
   }
 
@@ -376,7 +380,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'Nearby landmark · about ${metres(nearby.distance)} away',
+                'Punkt orientacyjny w pobliżu · około ${metres(nearby.distance)} stąd',
                 style: const TextStyle(fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 8),
@@ -414,12 +418,12 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
           onStop: _navigation.stop,
         ),
       if (widget.landmarks.isEmpty)
-        const Text('Ask your adult to add familiar places.')
+        const Text('Poproś dorosłego o dodanie znanych miejsc.')
       else if (_selected == null && _navigation.destination == null)
         OutlinedButton.icon(
           onPressed: _showPlaces,
           icon: const BaseboundIcon(BaseboundIconName.pin, size: 24),
-          label: const Text('Places'),
+          label: const Text('Miejsca'),
         ),
       if (_locationStatus case final status?) ...[
         const SizedBox(height: 8),
@@ -431,8 +435,8 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       if (!_voiceAvailable)
         const Text(
           kIsWeb
-              ? 'Web demo has no narration. Ask your adult to read with you.'
-              : 'Voice is unavailable. Ask your adult to help.',
+              ? 'Demo w przeglądarce nie ma narracji. Poproś dorosłego o wspólne czytanie.'
+              : 'Głos jest niedostępny. Poproś dorosłego o pomoc.',
           style: TextStyle(fontSize: 12),
         ),
     ],

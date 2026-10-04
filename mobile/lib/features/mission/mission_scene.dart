@@ -241,40 +241,39 @@ ChildPoseName _characterPose(
 String _sceneDescription(MissionVisual visual, MissionChoice? choice) {
   if (visual == MissionVisual.street &&
       choice?.continuesAfterFeedback == true) {
-    return 'The child has started along the street and is still outside.';
+    return 'Dziecko ruszyło ulicą i nadal jest na zewnątrz.';
   }
   if (choice?.isCorrect == false) choice = null;
   if (choice?.icon == MissionActionIcon.window) {
-    return 'The child has moved toward the window.';
+    return 'Dziecko podeszło do okna.';
   }
   if (choice?.icon == MissionActionIcon.door ||
       choice?.icon == MissionActionIcon.leave) {
-    return 'The child has moved toward the door.';
+    return 'Dziecko podeszło do drzwi.';
   }
   return switch (visual) {
-    MissionVisual.alarm =>
-      'A child playing at home. An alarm sounds outside the window.',
-    MissionVisual.room => 'A room with a window, an inside area, and a door.',
-    MissionVisual.apartment => 'A home seen from above. Three rooms have windows. The hallway is inside.',
+    MissionVisual.alarm => 'Dziecko bawi się w domu. Za oknem słychać alarm.',
+    MissionVisual.room => 'Pokój z oknem, wnętrzem i drzwiami.',
+    MissionVisual.apartment =>
+      'Dom widziany z góry. Trzy pokoje mają okna. Korytarz jest w środku.',
     MissionVisual.twoWalls =>
-      'The child, one wall, another wall, then outside.',
-    MissionVisual.contacts => 'Pretend family faces on the child’s phone.',
-    MissionVisual.communication =>
-      'A pretend phone. Try one call, then an SMS if there is no answer.',
-    MissionVisual.message => 'A pretend message and a reply from an adult.',
+      'Dziecko, jedna ściana, druga ściana, a za nimi zewnętrzna część domu.',
+    MissionVisual.contacts => 'Twarze rodziny na niby na telefonie dziecka.',
+    MissionVisual.communication => 'Telefon na niby. Spróbuj zadzwonić raz, a potem wysłać SMS, jeśli nikt nie odbiera.',
+    MissionVisual.message => 'Wiadomość na niby i odpowiedź osoby dorosłej.',
     MissionVisual.sheltered ||
-    MissionVisual.quiet => 'The child is waiting in an inside room.',
-    MissionVisual.allClear => 'A pretend phone shows the all-clear.',
-    MissionVisual.recall => 'Pictures of the six actions practiced.',
+    MissionVisual.quiet => 'Dziecko czeka w wewnętrznym pomieszczeniu.',
+    MissionVisual.allClear => 'Telefon na niby pokazuje odwołanie alarmu.',
+    MissionVisual.recall => 'Obrazki sześciu ćwiczonych czynności.',
     MissionVisual.street =>
-      'A street with home and school far away and a solid building nearby.',
+      'Ulica z domem i szkołą w oddali oraz solidnym budynkiem w pobliżu.',
     MissionVisual.getDown =>
       choice?.isCorrect == true
-          ? 'The child has got down low.'
-          : 'The child is standing outdoors.',
+          ? 'Dziecko położyło się nisko.'
+          : 'Dziecko stoi na zewnątrz.',
     MissionVisual.protectHead =>
       choice?.isCorrect == true
-          ? 'The child covers their head with both arms.'
-          : 'The child is down low with their arms by their side.',
+          ? 'Dziecko osłania głowę obiema rękami.'
+          : 'Dziecko jest nisko, z rękami wzdłuż ciała.',
   };
 }
