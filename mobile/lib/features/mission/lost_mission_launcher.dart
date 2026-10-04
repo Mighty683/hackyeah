@@ -114,7 +114,7 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
         : '';
     return 'To ćwiczenie na niby. Nie wykonujemy połączeń ani nie wysyłamy wiadomości. '
         '$detail'
-        'Twój punkt spotkania do ćwiczeń: ${_practiceContext?.meetingPointLabel}. '
+        'Twój punkt spotkania na niby: ${_practiceContext?.meetingPointLabel}. '
         'Wybierz scenę. Punkt spotkania jest blisko lub poza zasięgiem wzroku.';
   }
 
@@ -209,7 +209,7 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
     return Scaffold(
       appBar: AppBar(
         leading: Navigator.canPop(context) ? const BaseboundBackButton() : null,
-        title: const Text('Ćwiczenie: zgubienie się · 7+'),
+        title: const Text('Zgubienie się · 7+'),
       ),
       body: IllustratedBackdrop(
         warm: true,
@@ -244,11 +244,13 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text(
-          'Ćwiczenie na niby. Bez połączeń i wiadomości.',
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 20),
+        if (_loadFailed || _needsMeetingPoint) ...[
+          const Text(
+            'Na niby. Bez połączeń i wiadomości.',
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+        ],
         if (_loadFailed)
           ..._errorContent()
         else if (_needsMeetingPoint)
@@ -301,19 +303,24 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
     final practice = _practiceContext!;
     return [
       if (practice.photoMeetingPoint case final place?)
-        LandmarkPhoto(
-          fit: BoxFit.contain,
-          path: place.photoPath,
-          label: place.label,
+        LayoutBuilder(
+          builder: (context, constraints) => LandmarkPhoto(
+            height: constraints.maxWidth * 3 / 4,
+            fit: BoxFit.contain,
+            path: place.photoPath,
+            label: place.label,
+          ),
         )
       else
         LostLandmarkIllustration(presetId: practice.meetingPoint.presetId),
       const SizedBox(height: 12),
       Text(
-        'Punkt spotkania do ćwiczeń: ${practice.meetingPointLabel}',
+        'Punkt spotkania na niby: ${practice.meetingPointLabel}',
         textAlign: TextAlign.center,
         style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
       ),
+      const SizedBox(height: 8),
+      const Text('Bez połączeń i wiadomości.', textAlign: TextAlign.center),
       if (practice.contacts.any((contact) => contact.isFictional)) ...[
         const SizedBox(height: 8),
         const Text(
@@ -323,7 +330,7 @@ class _LostMissionLauncherState extends State<LostMissionLauncher>
       ],
       const SizedBox(height: 24),
       const Text(
-        'Wybierz scenę do ćwiczenia',
+        'Wybierz scenę',
         style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800),
       ),
       const SizedBox(height: 16),

@@ -44,7 +44,7 @@ void main() {
       expect(find.text('Nasza mapa'), findsNothing);
       await _tap(tester, 'Ćwicz z mapą');
       expect(
-        find.text('Punkt spotkania do ćwiczeń: Blue help desk'),
+        find.text('Punkt spotkania na niby: Blue help desk'),
         findsOneWidget,
       );
       await _tap(
@@ -134,16 +134,13 @@ void main() {
     await tester.pumpAndSettle();
     await _tap(tester, 'Ćwiczenia');
     await _tap(tester, 'Ćwicz z mapą');
-    expect(
-      find.text('Punkt spotkania do ćwiczeń: First point'),
-      findsOneWidget,
-    );
+    expect(find.text('Punkt spotkania na niby: First point'), findsOneWidget);
     await tester.pageBack();
     await tester.pumpAndSettle();
     await repository.save(_configuredPlan);
     await _tap(tester, 'Ćwicz z mapą');
     expect(
-      find.text('Punkt spotkania do ćwiczeń: Blue help desk'),
+      find.text('Punkt spotkania na niby: Blue help desk'),
       findsOneWidget,
     );
     expect(tester.takeException(), isNull);

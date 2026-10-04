@@ -62,7 +62,7 @@ void main() {
       await _tap(tester, 'Ćwicz z mapą');
       await _wait(
         tester,
-        find.text('Punkt spotkania do ćwiczeń: Czerwony sklep na rogu'),
+        find.text('Punkt spotkania na niby: Czerwony sklep na rogu'),
       );
       expect(find.byType(LandmarkPhoto), findsWidgets);
       await _tap(tester, 'Punkt spotkania w pobliżu');

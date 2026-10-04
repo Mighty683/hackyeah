@@ -232,8 +232,10 @@ class _LostMissionScreenState extends State<LostMissionScreen>
                   fontWeight: FontWeight.w800,
                 ),
               ),
-              const SizedBox(height: 10),
-              _instruction(),
+              if (_session.step.id != 'stop') ...[
+                const SizedBox(height: 10),
+                _instruction(),
+              ],
               const SizedBox(height: 12),
               if (_session.step.id == 'map_meeting_point' &&
                   !_session.hasFeedback)
