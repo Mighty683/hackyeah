@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
+import '../../widgets/basebound_mascot.dart';
 import '../parent/data/family_plan.dart';
 
 /// Local number-recall practice. Completing it never sends a message or calls.
@@ -103,25 +104,35 @@ class _PracticePhoneKeypadState extends State<PracticePhoneKeypad> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Semantics(
-          header: true,
-          child: Text(
-            'Wpisz numer telefonu',
-            style: theme.textTheme.headlineMedium,
+        if (_matches)
+          Semantics(
+            label: _matched,
+            liveRegion: true,
+            child: const Center(
+              child: BaseboundMascot(size: 160, pose: DinoPose.celebrate),
+            ),
+          )
+        else ...[
+          Semantics(
+            header: true,
+            child: Text(
+              'Wpisz numer telefonu',
+              style: theme.textTheme.headlineMedium,
+            ),
           ),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          'Wpisz numer telefonu zaufanej osoby dorosłej.',
-          style: theme.textTheme.bodyLarge,
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'Tylko ćwiczenie. Bez połączeń i wiadomości.',
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: BaseboundColors.muted,
+          const SizedBox(height: 12),
+          Text(
+            'Wpisz numer telefonu zaufanej osoby dorosłej.',
+            style: theme.textTheme.bodyLarge,
           ),
-        ),
+          const SizedBox(height: 8),
+          Text(
+            'Tylko ćwiczenie. Bez połączeń i wiadomości.',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: BaseboundColors.muted,
+            ),
+          ),
+        ],
         const SizedBox(height: 24),
         if (contacts.isEmpty) ...[
           Semantics(
@@ -137,7 +148,7 @@ class _PracticePhoneKeypadState extends State<PracticePhoneKeypad> {
             child: const Text('Ćwicz dalej bez numeru'),
           ),
         ] else ...[
-          if (_showHint) ...[
+          if (_showHint && !_matches) ...[
             _buildHint([contacts.first]),
             const SizedBox(height: 16),
           ],
@@ -180,26 +191,27 @@ class _PracticePhoneKeypadState extends State<PracticePhoneKeypad> {
               ],
             ),
           ),
-          if (_feedback != null) ...[
+          if (_feedback != null && !_matches) ...[
             const SizedBox(height: 16),
             _buildFeedback(),
           ],
           const SizedBox(height: 16),
+          if (!_matches) ...[
+            OutlinedButton(
+              style: OutlinedButton.styleFrom(backgroundColor: Colors.white),
+              onPressed: _toggleHint,
+              child: Text(
+                _showHint ? 'Ukryj podpowiedź' : 'Potrzebujesz podpowiedzi?',
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
           FilledButton(
             onPressed: _matches
                 ? widget.onComplete
                 : (_digits.isEmpty ? null : _checkNumber),
             child: Text(_matches ? 'Zadzwoń na niby' : 'Sprawdź numer'),
           ),
-          if (!_matches) ...[
-            const SizedBox(height: 8),
-            TextButton(
-              onPressed: _toggleHint,
-              child: Text(
-                _showHint ? 'Ukryj podpowiedź' : 'Potrzebujesz podpowiedzi?',
-              ),
-            ),
-          ],
         ],
       ],
     );

@@ -168,6 +168,17 @@ class _PracticeSelectionScreenState extends State<_PracticeSelectionScreen>
           title: Text(
             _selection == _Selection.activity ? 'Tuptu' : 'Tylko ćwiczenie',
           ),
+          actions: [
+            UnavailableAudioTooltip(
+              unavailable: kIsWeb && !_audioAvailable,
+              child: IconButton(
+                onPressed: _opening ? null : _speak,
+                tooltip: 'Posłuchaj ponownie',
+                icon: const BaseboundIcon(BaseboundIconName.speaker),
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
         ),
         body: SafeArea(
           child: IllustratedBackdrop(
@@ -217,50 +228,10 @@ class _PracticeSelectionScreenState extends State<_PracticeSelectionScreen>
                           ),
                           SizedBox(height: compact ? 8 : 24),
                           ..._choices(compact: compact),
-                          if (compact) ...[
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: HelpEntryButton(
-                                    onPressed: () => _open(const HelpScreen()),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                UnavailableAudioTooltip(
-                                  unavailable: kIsWeb && !_audioAvailable,
-                                  child: IconButton(
-                                    onPressed: _opening ? null : _speak,
-                                    tooltip: 'Posłuchaj ponownie',
-                                    icon: const BaseboundIcon(
-                                      BaseboundIconName.speaker,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                          if (_selection == _Selection.activity &&
-                              !compact) ...[
-                            const SizedBox(height: 12),
+                          if (compact || _selection == _Selection.activity) ...[
+                            if (!compact) const SizedBox(height: 12),
                             HelpEntryButton(
                               onPressed: () => _open(const HelpScreen()),
-                            ),
-                          ],
-                          if (!compact) ...[
-                            const SizedBox(height: 8),
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: UnavailableAudioTooltip(
-                                unavailable: kIsWeb && !_audioAvailable,
-                                child: TextButton.icon(
-                                  onPressed: _opening ? null : _speak,
-                                  icon: const BaseboundIcon(
-                                    BaseboundIconName.speaker,
-                                    size: 24,
-                                  ),
-                                  label: const Text('Posłuchaj ponownie'),
-                                ),
-                              ),
                             ),
                           ],
                           if (!kIsWeb && !_audioAvailable && compact)
@@ -285,19 +256,6 @@ class _PracticeSelectionScreenState extends State<_PracticeSelectionScreen>
                                     color: BaseboundColors.muted,
                                   ),
                                 ),
-                              ),
-                            ),
-                          if (_selection == _Selection.mode)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 8),
-                              child: TextButton.icon(
-                                onPressed: _opening
-                                    ? null
-                                    : () => _select(_Selection.scenario),
-                                icon: const BaseboundIcon(
-                                  BaseboundIconName.back,
-                                ),
-                                label: const Text('Wybierz scenariusz'),
                               ),
                             ),
                         ],

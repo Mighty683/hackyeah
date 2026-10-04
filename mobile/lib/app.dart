@@ -138,13 +138,15 @@ class _AppStartupState extends State<_AppStartup> {
             ),
           ),
         ),
-        bottomNavigationBar: SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: HelpEntryButton(onPressed: _help),
-          ),
-        ),
+        bottomNavigationBar: snapshot.hasError
+            ? SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: HelpEntryButton(onPressed: _help),
+                ),
+              )
+            : null,
       );
     },
   );

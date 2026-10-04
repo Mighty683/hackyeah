@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:do_bazy/app.dart';
-import 'package:do_bazy/features/help/help_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -30,19 +29,17 @@ void main() {
     expect(attempts, 2);
   });
 
-  testWidgets('help remains accessible while setup is loading', (tester) async {
+  testWidgets('help is hidden while setup is loading and on welcome', (
+    tester,
+  ) async {
     final ready = Completer<void>();
     await tester.pumpWidget(BaseboundApp(initialize: () => ready.future));
     await tester.pump();
-    await tester.tap(find.text('Potrzebuję pomocy'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 400));
-    expect(find.byType(HelpScreen), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.text('Potrzebuję pomocy'), findsNothing);
     ready.complete();
     await tester.pumpAndSettle();
-    expect(find.text('Witaj w Tuptu', skipOffstage: false), findsNothing);
-    tester.state<NavigatorState>(find.byType(Navigator)).pop();
-    await tester.pumpAndSettle();
     expect(find.text('Witaj w Tuptu'), findsOneWidget);
+    expect(find.text('Potrzebuję pomocy'), findsNothing);
   });
 }

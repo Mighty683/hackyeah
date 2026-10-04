@@ -16,7 +16,6 @@ flowchart TD
     BOOT -->|Ready| W
     BOOT -->|Initialization failed| BE
     BE -->|Retry| BOOT
-    BOOT -->|I need help| H
     BE -->|I need help| H
     A["PARENT INTRO<br/>Set up a family plan; demo details"]
     AL["SETUP: LOADING<br/>Read the encrypted local family plan"]
@@ -44,12 +43,7 @@ flowchart TD
     E["OUR MAP: MAP ERROR<br/>Go back and try again"]
     I["ABOUT OUR MAP<br/>GPS, offline route limits and map credits"]
     H["HELP PROTOTYPE: WHAT IS HAPPENING?<br/>Not responding, air raid, lost, unsure"]
-    HA["ADULT SUPPORT<br/>Tell that adult what happened"]
-    Q["SCENARIO INSTRUCTION<br/>Offline 112 practice; optional adult support"]
-    HQ["AIR-RAID STEPS<br/>Distinct outside choices; cannot-reach-shelter fallback"]
-    HO["OPERATOR PRACTICE<br/>Follow the operator's instructions<br/>No call connection inferred"]
-    MOCK["NATIVE ANDROID DEMO POPUP<br/>Pretend 112 call; no dialler or real call"]
-    D["PHONE APP<br/>Explicit child tap; no automatic call or SMS"]
+    GUIDE["PLANNED INTERACTIVE GUIDE<br/>Placeholder only; no emergency instructions"]
 
     LP["PARENT: WALK TOGETHER<br/>Independent photo landmarks on the offline map"]
     PHOTO["ANDROID CAMERA OR GALLERY<br/>Choose one photo; cancellation saves nothing"]
@@ -84,22 +78,9 @@ flowchart TD
     G -->|I need help: pause map GPS and narration| H
     R -->|I need help: pause map GPS and narration| H
     E -->|I need help: pause map GPS and narration| H
-    H -->|Not responding, lost, or unsure| Q
-    H -->|Air raid| HQ
-    Q -->|Back| H
-    HQ -->|Answer, next step, or shelter fallback| HQ
-    HQ -->|Back from first location question| H
-    Q -->|Not responding: Practise the next step, even offline| HO
-    HO -->|Back| Q
-    Q -->|A trusted adult is here| HA
-    HQ -->|Instruction: A trusted adult is here| HA
-    HO -->|A trusted adult is here| HA
-    HA -->|They cannot help or Back: restore exact instruction| HR{"Previous instruction"}
-    HR --> Q
-    HR --> HQ
-    HR --> HO
-    H -->|Close: stop help GPS; restore opener| HP{"Help opened by"}
-    HP -->|First-launch loading| BOOT
+    H -->|Any of the four scenarios| GUIDE
+    GUIDE -->|Return to choose scenario or Back| H
+    H -->|Close: restore opener| HP{"Help opened by"}
     HP -->|Startup error| BE
     HP -->|Activity selection: resume narration| PS
     HP -->|Saved-place loading| F
@@ -108,10 +89,6 @@ flowchart TD
     HP -->|Map: obtain fresh GPS| G
     HP -->|Near place: obtain fresh GPS| R
     HP -->|Map error| E
-    Q -->|Practise calling 112: explicit tap, any service| MOCK
-    MOCK -->|Close or dismiss: same instruction| Q
-    Q -->|Lost/unsure + normal service + usable saved contact; explicit tap| D
-    D -->|Return to instruction; refresh service and GPS; no connection assumed| Q
     W -->|I'm an adult| AL
     AL -->|Details loaded| A
     AL -->|Read failed| AE
@@ -324,12 +301,12 @@ flowchart TD
 
 | Screen/state | One primary task | Secondary actions |
 | --- | --- | --- |
-| First-launch loading/error | Prepare three photo landmarks, fictional Home and a linked meeting place | Retry on failure; Help prototype; existing records preserved |
+| First-launch loading/error | Prepare three photo landmarks, fictional Home and a linked meeting place | No Help button while loading; Retry and Help prototype on failure; existing records preserved |
 | Welcome | Foreground location permission once, then choose child or adult | Denial permits navigation; two role choices |
 | Child onboarding | Enter age, name or nickname, then select girl or boy | Confirm the current field with “Zatwierdź wiek” / “Zatwierdź imię”; Back keeps edits; load/save errors allow retry; each visit starts empty |
 | Activity selection | Choose Practices or Our map | Help prototype after child onboarding; replay audio, back |
 | Practice scenarios | Choose alarm or lost practice | Replay audio, back to activities |
-| Mission mode (7+) | Choose home or outside | Replay audio, back to scenarios |
+| Mission mode (7+) | Choose home or outside | Replay audio in header; header or system Back returns to scenarios |
 | Mission scene | Tap a pictured scene object to choose an action, or hear the situation | Replay audio, mute/unmute sound effects, back |
 | Outdoor interruption/recovery | Connect the chosen destination to still being outside; get down, cover head, then follow the adult in the story | Drag or equivalent tap; retry physical choices; nearby shelter skips this branch |
 | Alarm phone practice | Enter a saved trusted adult's number using the pretend keypad | Backspace, Clear, single contact-number hint above the keypad, shown automatically after an incorrect number; match the number, then Send pretend message |
@@ -362,32 +339,23 @@ flowchart TD
 | Landmark name | Name the photographed place; photo only | Choose map position, back without saving |
 | Landmark pin | Confirm one position inside the demo map | Manual tap/accessible direction controls, optional foreground GPS, previous step; saving preserves edits on failure |
 | Landmark load error | Retry reading saved landmarks | Back; no silent deletion or reset |
-| Help prototype entry | Choose the situation | Not responding / Słyszsz syrenę (air raid) / lost / unsure; close |
-| Adult support | Tell that adult what happened | They cannot help or Back restores the exact scenario instruction |
-| Not responding | Practise calling 112 | Offline pretend-call dialog; practise operator step; optional adult support |
-| Lost / unsure | Stay unless in danger / call out for an adult | Offline 112 practice; real contact handoff with normal service and saved contact |
-| Air raid | Choose location | Inside / outside without explosions / outside hearing explosions / unsure |
-| Shelter steps | Follow scenario guidance | Self-reported arrival; cannot reach shelter / unknown route fallback; optional adult support |
-| Shelter fallback | Follow official instructions | App cannot find a safe route; choose location again; optional adult support |
-| Operator practice | Follow operator instructions | No connected call claimed; Back; optional adult support |
+| Help prototype entry | Choose the situation | Not responding / Słyszysz syrenę / lost / unsure; close |
+| Help guide preview | Read that a child-friendly interactive guide is planned | Wróć do wyboru scenariusza or Back restores the four help choices |
+
 
 Child onboarding stores name, age and optional serialized gender in the existing encrypted family record, preserving address, support notes, contacts and practice places. Older records without gender still load. Character selection shows front-facing girl and boy illustrations side by side, each with its text-only selection button directly below. The selected girl or boy appears in mission poses; the map uses a blue GPS dot; adult Play together also uses the saved character. Age entry is personalization, not age verification. Returning to the child route starts the three steps with empty name and age fields and no selected character; back within the current visit keeps edits.
 
 Each parent stage offers **Setup options → Delete all saved details**, with confirmation. Completed child, contact and safe-place editors save their records before returning; completing onboarding launches practice without an additional bulk save. **Review setup** returns to the intro and preserves saved records.
 
-Help opens with situation selection. Scenario instructions offer optional **A trusted adult is here** support. Adult support preserves history; **They cannot help** returns to the preceding instruction. Back from the first situation screen restores the opener.
+Help opens with four situation choices. Every choice opens the same **Interaktywny przewodnik** placeholder, explaining that a future guide will show children what to do step by step. **Wróć do wyboru scenariusza** and Back return to these four help choices. Closing the situation screen restores the opener. The visible notice labels the feature as in preparation and not for real emergencies.
 
-The [decision diagram](I_NEED_HELP_DECISION_DIAGRAM.md) records all implemented help branches. **Practise calling 112** opens only a pretend-call dialog and works regardless of telephone service. Operator practice is also available offline. Air-raid and adult-support screens have no call actions. Real trusted-contact handoff is labelled **Open phone to call an adult**, requires normal service and a usable saved contact, and never claims a call connected. Web phone actions remain simulated.
-
-Telephone reports describe the default subscription, not internet access or guaranteed call capability. Backgrounding cancels the stream; returning refreshes it. Unknown service never blocks practice. Shelter fallbacks acknowledge that the app cannot choose a safe route; they do not validate emergency procedures. No-service medical guidance remains incomplete. [EMERGENCY_HELP.md](EMERGENCY_HELP.md) records safety sources and real-use limitations.
-
-Help also reads named non-demo saved family pins and independently uses foreground GPS with the existing permission grant, without another prompt or delaying the first instruction. A familiar-place hint requires a fix at most 30 seconds old, accuracy at most 25 m, and distance plus reported accuracy at most 50 m. The nearest qualifying pin yields “You may be near [name]. This is a saved place.” Fictional Home/demo pins, missing permission, stale/poor fixes and unreadable records yield no hint. It never proves safety, indoor location or helper presence, chooses a situation, or directs the child to a pin. The air-raid inside/outside question remains explicit. Help GPS stops on background/exit and requires a fresh fix on return; no location track is retained.
+The previous emergency instructions, helper branches, phone actions, contact loading, telephone-service monitoring and help-owned GPS are no longer connected to the UI. Help does not call, show pretend-call dialogs or send messages. Opening it still pauses the map GPS and narration; closing it restores them. See [the decision diagram](I_NEED_HELP_DECISION_DIAGRAM.md) and [EMERGENCY_HELP.md](EMERGENCY_HELP.md).
 
 ### Mission 01 — air-raid alarm practice
 
 The home tutorial practices alarm recognition, moving away from windows, choosing an interior hallway, a pretend call followed by an SMS when there is no answer, staying after a noise, waiting through silence, and following an explicit all-clear. The premise is a fallback when the agreed shelter cannot be reached. An interior area and two walls offer some protection; the game does not certify a home as safe.
 
-The home alarm bell appears at the window to show the sound coming from outside. Each fictional Mom, Dad or Grandparent portrait has its name beside it. After choosing an adult, **Try one call** practices a single pretend call. Choosing **Try one call** opens a pretend numeric keypad within the mission. The child practices a number from the encrypted local trusted-contact records, with digits, backspace and Clear. Any saved usable contact number matches after removing formatting such as `+`, spaces and separators; country-code digits remain required. **Need a hint?** reveals the first saved contact’s name/relationship and number above the keypad, with a bold blue number on a pale blue bordered panel. An incorrect number shows this hint automatically. The browser demo’s Mom number is `555333444`, without a country code (Dad: `555333445`, Grandparent: `555333446`). A correct match enables **Call on pretend phone**. A quiet local busy signal plays, then narration explains that the line is busy and the call could not connect. After this feedback, **Send an SMS** becomes available. Effects can be muted; the written explanation remains. These are guided actions, each with one target. One conversation screen then shows the outgoing “I am away from windows.” and adult reply “Good. Stay there and wait for the all-clear.” together, labelled **Practice only. Nothing was sent.** **Stay here** advances directly to the loud-noise decision. If no usable number is saved, the screen explains adult setup and offers **Continue without a number**. A failed read offers **Try loading again** or **Continue without a number**, preserving saved records. Both fallback actions continue through the simulated busy call and SMS choice.
+The home alarm bell appears at the window to show the sound coming from outside. Each fictional Mom, Dad or Grandparent portrait has its name beside it. After choosing an adult, **Try one call** practices a single pretend call. Choosing **Try one call** opens a pretend numeric keypad within the mission. The child practices a number from the encrypted local trusted-contact records, with digits, backspace and Clear. Any saved usable contact number matches after removing formatting such as `+`, spaces and separators; country-code digits remain required. **Need a hint?** reveals the first saved contact’s name/relationship and number above the keypad, with a bold blue number on a pale blue bordered panel. An incorrect number shows this hint automatically. The browser demo’s Mom number is `555333444`, without a country code (Dad: `555333445`, Grandparent: `555333446`). A correct match replaces the introductory text with Dino celebrating directly above the entered number, without a coloured tile or visible confirmation text below. The hint is hidden after a match. Success remains available to screen readers and narration. **Call on pretend phone** then becomes available. A quiet local busy signal plays, then narration explains that the line is busy and the call could not connect. After this feedback, **Send an SMS** becomes available. Effects can be muted; the written explanation remains. These are guided actions, each with one target. One conversation screen then shows the outgoing “I am away from windows.” and adult reply “Good. Stay there and wait for the all-clear.” together, labelled **Practice only. Nothing was sent.** **Stay here** advances directly to the loud-noise decision. If no usable number is saved, the screen explains adult setup and offers **Continue without a number**. A failed read offers **Try loading again** or **Continue without a number**, preserving saved records. Both fallback actions continue through the simulated busy call and SMS choice.
 
 The MVP targets children aged 7+ with two to four choices and optional fictional outdoor practice: compare nearby shelter against distant destinations and exposed places. Child onboarding collects age, but there is no younger-child branch; saved age does not change this mission. An outdoor mistake first explains why the child remains outside, then a short “Still outside” scene names the chosen destination as a sound interrupts the journey. The next two decisions practice getting down (drag or tap) and covering the head. An explicit story scene keeps the child down while a trusted adult helps them reach shelter when possible; arriving at the shelter then leads to fictional contact selection. Choosing the nearby shelter skips this recovery branch. Home and physical-action mistakes show immediate dinosaur feedback, grey out the rejected target, and let the child choose again without moving. Accepted actions and outdoor destination consequences advance automatically after narration and a minimum three-second reading pause. Both modes finish with three numbered reminders, matching icons and short descriptions: find a protected place away from windows, call a trusted adult then send an SMS if there is no answer, and wait for the all-clear even when it is quiet. Dino celebrates with “You did a great job! You finished the practice.” The same recap appears before Finish practice and on completion, and narration reads the displayed text. There is no score or countdown.
 
@@ -409,7 +377,7 @@ The lost selector is headed **Zgubienie się · 7+**, shows a large meeting-plac
 
 The implemented screens follow [UI_GUIDELINES.md](UI_GUIDELINES.md): warm neutral backgrounds, slate Nunito text, one muted blue action accent, flat white panels and consistent 12-pixel control corners. Shared action tiles use small icons and left-aligned labels. Equivalent choices stay neutral until selected; feedback adds a symbol and explanation. No control uses a decorative gradient, glow or raised game-button treatment.
 
-Welcome, child onboarding, activity selection and practice scenarios use clear headings and calm choices. The activity heading includes Dino even in short phone browser viewports. Compact activity layouts omit the repeated instruction, use large image-and-label choice tiles, group help and audio replay on one row and shorten the unavailable-audio notice so the menu fits without scrolling at normal text size; oversized text can still scroll to keep every action reachable. The first child activity screen has two choices: **Practices** opens a separate scenario list; **Our map** opens the familiar-place map. **I need help** is available here after child onboarding, rather than on welcome; opening it pauses activity narration, and closing it restores activity selection and narration. The scenario buttons read **Słyszysz alarm** (alarm practice) and **Ćwicz z mapą** (lost practice); narration uses the same labels. Alarm and lost practice return to the scenario list, whose back action returns to activities. Maps and landmark photos remain the main content of their screens, with compact controls and preserved attribution. Adult onboarding uses a field-first layout with one detail per step, a compact progress indicator and a single save/next action. Help retains its separate cool theme, no training mascot and a visible prototype notice.
+Welcome, child onboarding, activity selection and practice scenarios use clear headings and calm choices. The activity heading includes Dino even in short phone browser viewports. Compact activity layouts omit the repeated instruction, use large image-and-label choice tiles, keep help below the choices and audio replay in the top navigation header and shorten the unavailable-audio notice so the menu fits without scrolling at normal text size; oversized text can still scroll to keep every action reachable. The first child activity screen has two choices: **Practices** opens a separate scenario list; **Our map** opens the familiar-place map. **I need help** is available here after child onboarding, rather than on welcome; opening it pauses activity narration, and closing it restores activity selection and narration. The scenario buttons read **Słyszysz alarm** (alarm practice) and **Ćwicz z mapą** (lost practice); narration uses the same labels. Alarm and lost practice return to the scenario list, whose back action returns to activities. Maps and landmark photos remain the main content of their screens, with compact controls and preserved attribution. Adult onboarding uses a field-first layout with one detail per step, a compact progress indicator and a single save/next action. Help retains its separate cool theme, no training mascot and a visible prototype notice.
 
 Mission 01 uses portrait environment backgrounds and a separate character layer. Decision targets are the pictured windows, doors, rooms and destinations, with blue outlines on the pictured objects and native tap controls. Physical scene choices have no visible captions or button surfaces; spoken instructions, accessibility labels, keyboard focus and tap feedback remain available. The apartment composes a bundled transparent furniture sprite sheet over a warm timber floor, with softly painted dollhouse walls, windows in wall openings and simple wooden doors. A single central hallway connects the living room and kitchen on the left, a bedroom with a reading corner along the whole right side, and the front door at the bottom. There is no nested bottom-right room or duplicated outer wall. The loud-noise decision targets the actual living-room window, front door and child in the central inside hallway. Abstract actions and fictional contacts use separate illustrated targets within the scene. Each fictional contact target shows an avatar with its visible name beside it; narration and screen-reader labels remain available. The guided call and SMS targets show their action names beside the icons. Mission 02 places selectable people, landmarks and action objects in its fictional square. Equivalent targets use the same object-outline treatment before selection; feedback supplies the outcome colour and symbol. Training and adult-setup icons retain their original colours.
 
@@ -421,7 +389,7 @@ The current activity split adds a separate scenario-list route to the implemente
 
 **Our map** combines independent photo landmarks, saved named parent pins, recognition and walking guidance. Opening it shows the full bundled 2 × 2 km TAURON Arena, Kraków area, without an invented player position or random destination. Landmark pins show only their photo thumbnail. Family destinations keep their saved icon; Home shows a home icon and a fictional demo photo. Tap a pin to inspect its name/photo. **Walk here together** starts guidance to that selected real place. Fictional demo pins are for recognition only and have no walking action.
 
-The welcome screen requests foreground location permission once on first launch before role navigation. Denial permits practice; explicit permission retry or Android settings access is available in parent Setup options. Welcome does not start location tracking. **Our map** starts foreground GPS automatically without requesting permission. Only received phone positions set the blue dot; the accuracy circle shows uncertainty. An accepted fix is at most 30 seconds old, and turn guidance requires reported accuracy at most 25 m. Approximate fixes may show a dot but pause directions. Old fixes remove both dot and route. Denied permission, disabled GPS, stream failure and out-of-area positions are explicit states. Out-of-area coordinates are never clamped onto the arena map. Backgrounding, leaving this screen or opening Help cancels the map's GPS subscription; returning while foreground obtains a fresh fix without another permission prompt. Help uses its own foreground subscription for the optional familiar-place hint, with the same existing grant. No background permission or location history is added.
+The welcome screen requests foreground location permission once on first launch before role navigation. Denial permits practice; explicit permission retry or Android settings access is available in parent Setup options. Welcome does not start location tracking. **Our map** starts foreground GPS automatically without requesting permission. Only received phone positions set the blue dot; the accuracy circle shows uncertainty. An accepted fix is at most 30 seconds old, and turn guidance requires reported accuracy at most 25 m. Approximate fixes may show a dot but pause directions. Old fixes remove both dot and route. Denied permission, disabled GPS, stream failure and out-of-area positions are explicit states. Out-of-area coordinates are never clamped onto the arena map. Backgrounding, leaving this screen or opening Help cancels the map's GPS subscription; returning while foreground obtains a fresh fix without another permission prompt. Help itself does not request or track location. No background permission or location history is added.
 
 The map stays north-up and starts with the whole area visible. Dragging and pinching are the only camera controls, with 1–8× zoom. GPS updates the dot and route without recentering or zooming. There are no GPS-toggle, zoom, recenter or overview buttons. An accessible **Places** selector opens on demand; a contextual panel shows exploration, the selected place or walking guidance. The closest photo landmark within 50 m appears beneath the map, or beside it in landscape. Photo markers retain a 48-pixel touch target at each zoom. Directions, map attribution and scrolling secondary controls remain outside the map gesture area. Landscape places controls beside the map. Appearance verification remains with the user.
 
@@ -476,8 +444,8 @@ flowchart TD
     WA["SHARED ACTIVITY CHOICE<br/>Practices or Our map"]
     WM["SHARED OUR MAP<br/>Bundled pins and fixed labelled demo position"]
     WT["SHARED PRACTICES<br/>Home/outside alarm; nearby/out-of-sight lost"]
-    WH["SHARED HELP PROTOTYPE<br/>Existing unreviewed warning; simulated service"]
-    WD["WEB PRETEND CALL DIALOG<br/>No dialler, call or message"]
+    WH["SHARED HELP PROTOTYPE<br/>Feature in preparation; no real emergency help"]
+    WG["INTERACTIVE GUIDE PREVIEW<br/>Future feature placeholder"]
     WR["PRESENTER RESET OR BROWSER REFRESH<br/>Discard session edits and current route"]
     WS --> WW
     WW -->|Adult| WP
@@ -490,8 +458,8 @@ flowchart TD
     WA -->|Practices| WT
     WA -->|I need help: after child onboarding| WH
     WM -->|I need help| WH
-    WH -->|Explicit pretend phone action| WD
-    WD -->|Close| WH
+    WH -->|Any scenario| WG
+    WG -->|Return to choose scenario| WH
     WR --> WS
 ```
 
@@ -503,8 +471,7 @@ setup explains this separately from Android storage.
 Camera/gallery selections use bundled example photos. The fixed demo position
 and one-shot placement substitute never request browser GPS. Seeded fictional
 pins remain excluded from walking guidance; there is no simulated movement or
-arrival claim. Phone-service state is simulated, and every phone action opens a
-pretend dialog without launching an external app. Narration uses the browser
+arrival claim. Help choices open a future-guide placeholder without phone actions or GPS. Narration uses the browser
 Web Speech API with an available Polish voice, preferring a local voice. Remote
 voices may need connectivity. Replay starts speech after a tap when available.
 Missing voices or playback errors retain text instructions; the web replay button
@@ -587,7 +554,7 @@ Preference costs multiply map distance: dedicated pedestrian paths 1.0, roads wi
 
 Start and target must each be within 12 map units (about 60 m) of a graph node. The route starts/ends on nearby mapped paths, with no invented connectors to GPS or a photo pin. A start more than 15 m from the route asks the child to find the path with their adult. Missing/disconnected paths show a calm message. The pin and the endpoint ring remain separate.
 
-GPS fixes drive progress along the directed route. Significant geometry bends produce left/right/back cues; OSM names, steps and crossings enrich the instructions. Turn cues use route direction, not device orientation. Accurate positions more than 25 m off the mapped line trigger a new A* route. Narration plays on route creation and approaching turns; Replay audio reads the current instruction. Turn guidance pauses outside coverage or on stale/approximate fixes. Opening Help pauses map GPS and guidance; Help independently uses foreground GPS only for its familiar-place hint.
+GPS fixes drive progress along the directed route. Significant geometry bends produce left/right/back cues; OSM names, steps and crossings enrich the instructions. Turn cues use route direction, not device orientation. Accurate positions more than 25 m off the mapped line trigger a new A* route. Narration plays on route creation and approaching turns; Replay audio reads the current instruction. Turn guidance pauses outside coverage or on stale/approximate fixes. Opening Help pauses map GPS and guidance; Help itself does not use GPS.
 
 The snapshot lacks original OSM node IDs, validated access, entrance connections, barrier handling and live hazards. Coordinate-based topology and nearby snapping can select the wrong path or leave a pin unreachable. Live GPS does not validate those limitations. Routes must not be described as fastest, safest, verified shelter access or real emergency guidance. The application keeps the adult-accompaniment instruction visible.
 

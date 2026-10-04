@@ -130,26 +130,21 @@ void main() {
   );
 
   testWidgets(
-    'help emergency and trusted contact calls remain pretend',
+    'help choices show the planned interactive guide',
     (tester) async {
       await _start(tester);
       await _tap(tester, 'Potrzebuję pomocy');
-      await _tap(tester, 'Ktoś nie reaguje');
-      await _wait(tester, find.text('Przećwicz telefon pod 112'));
-      await _tap(tester, 'Przećwicz telefon pod 112');
-      await _wait(tester, find.byType(AlertDialog));
-      expect(find.textContaining('prawdziwego połączenia'), findsWidgets);
-      await _closeDialog(tester);
-      await tester.tap(find.byTooltip('Poprzedni krok'));
-      await _wait(tester, find.text('Co się dzieje?'));
-      await _tap(tester, 'Nie wiem, gdzie jestem');
-      for (final contact in ['Mama (demo)', 'Tata (demo)', 'Babcia (demo)']) {
-        await _tap(tester, 'Otwórz telefon, aby zadzwonić do dorosłego');
-        await _wait(tester, find.text('Otwórz telefon, aby zadzwonić do…'));
-        await _tap(tester, contact);
-        await _wait(tester, find.byType(AlertDialog));
-        expect(find.textContaining('prawdziwego połączenia'), findsWidgets);
-        await _closeDialog(tester);
+      for (final label in [
+        'Ktoś nie reaguje',
+        'Słyszysz syrenę',
+        'Nie wiem, gdzie jestem',
+        'Nie wiem',
+      ]) {
+        await _tap(tester, label);
+        await _wait(tester, find.text('Interaktywny przewodnik'));
+        expect(find.byType(AlertDialog), findsNothing);
+        await _tap(tester, 'Wróć do wyboru scenariusza');
+        await _wait(tester, find.text('Co się dzieje?'));
       }
       final error = tester.takeException();
       expect(error, isNull);
@@ -227,13 +222,6 @@ Future<void> _wait(WidgetTester tester, Finder target) async {
   throw StateError(
     'Missing $target. Text: ${tester.widgetList<Text>(find.byType(Text)).map((text) => text.data).join(' | ')}. Exception: ${tester.takeException()}',
   );
-}
-
-Future<void> _closeDialog(WidgetTester tester) async {
-  final dialog = find.byType(AlertDialog);
-  final button = find.descendant(of: dialog, matching: find.byType(TextButton));
-  await tester.tap(button.last);
-  await tester.pump(const Duration(milliseconds: 500));
 }
 
 Future<void> _dispose(WidgetTester tester) async {
