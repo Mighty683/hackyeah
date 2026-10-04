@@ -52,11 +52,12 @@ class MissionCueAudio(private val context: Context) {
             "alarm" -> 6000 to 4000
             "all_clear" -> 2000 to 3000
             "noise" -> 0 to 1000
+            "busy" -> 0 to 2500
             else -> throw IllegalArgumentException("Unknown training cue")
         }
         val wav = context.assets.open("flutter_assets/assets/audio/mission01/$name.wav").use { it.readBytes() }
         val (samples, sampleRate) = decodeExcerpt(wav, offset, duration)
-        return Cue(samples, sampleRate, if (name == "noise") 0.7f else 0.10f)
+        return Cue(samples, sampleRate, when (name) { "noise" -> 0.7f; "busy" -> 0.4f; else -> 0.10f })
     }
 
     private data class Tone(

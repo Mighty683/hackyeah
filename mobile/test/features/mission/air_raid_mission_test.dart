@@ -23,7 +23,7 @@ void main() {
     expect(session.step.id, 'communication');
     expect(session.hasFeedback, isFalse);
     session.choose('call');
-    expect(session.feedback, contains('nikt nie odbiera'));
+    expect(session.feedback, contains('Linia jest zajęta'));
     session.advance();
     expect(session.step.id, 'sms');
     _chooseAndAdvance(session, 'message');

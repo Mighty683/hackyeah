@@ -28,9 +28,22 @@ extension type _Utterance._(JSObject _) implements JSObject {
   external set onerror(JSFunction? value);
 }
 
+@JS('Audio')
+extension type _CueAudio._(JSObject _) implements JSObject {
+  external _CueAudio(String src);
+  external set volume(double value);
+  external set onended(JSFunction? value);
+  external set onerror(JSFunction? value);
+  external JSPromise<JSAny?> play();
+  external void pause();
+}
+
 /// Browser-provided Polish narration; local voices are preferred, not required.
-/// Remote voices may require connectivity. Teaching sound cues remain silent.
+/// Remote voices may require connectivity. The busy cue uses a local asset.
 class BrowserNarration {
+  _CueAudio? _cue;
+  Completer<void>? _cuePlayback;
+  Timer? _cueTimeout;
   _Voice? _voice;
   _Utterance? _utterance;
   Completer<void>? _playback;
@@ -76,6 +89,49 @@ class BrowserNarration {
       _voiceTimeout = null;
       _voiceLoading = null;
       synthesis.removeEventListener('voiceschanged', listener);
+    }
+  }
+
+  /// Play the simulated busy signal even when no Polish voice is available.
+  Future<void> playCue(String sound) async {
+    stop();
+    if (sound != 'busy') return;
+    final playback = Completer<void>();
+    final cue = _CueAudio('assets/assets/audio/mission01/busy.wav')
+      ..volume = 0.4;
+    _cue = cue;
+    _cuePlayback = playback;
+    cue.onended = ((JSAny? event) => _finishCue()).toJS;
+    cue.onerror = ((JSAny? event) {
+      _finishCue(StateError('Browser busy signal failed.'));
+    }).toJS;
+    _cueTimeout = Timer(const Duration(seconds: 5), () {
+      _finishCue(StateError('Browser busy signal timed out.'));
+    });
+    final finished = playback.future;
+    unawaited(
+      cue.play().toDart.catchError((Object error) {
+        if (identical(_cue, cue)) _finishCue(error);
+        return null;
+      }),
+    );
+    await finished;
+  }
+
+  void _finishCue([Object? error]) {
+    _cueTimeout?.cancel();
+    _cueTimeout = null;
+    _cue?.onended = null;
+    _cue?.onerror = null;
+    _cue?.pause();
+    _cue = null;
+    final playback = _cuePlayback;
+    _cuePlayback = null;
+    if (playback == null || playback.isCompleted) return;
+    if (error == null) {
+      playback.complete();
+    } else {
+      playback.completeError(error);
     }
   }
 
@@ -138,6 +194,7 @@ class BrowserNarration {
   }
 
   void stop() {
+    _finishCue();
     _voiceTimeout?.cancel();
     final loading = _voiceLoading;
     if (loading != null && !loading.isCompleted) loading.complete(false);

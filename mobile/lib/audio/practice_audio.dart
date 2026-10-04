@@ -51,7 +51,11 @@ class PracticeAudio {
     if (_disposed) return;
     final generation = ++_generation;
     if (!await initialize() || _disposed || generation != _generation) return;
-    if (kIsWeb) return _browser.narrate(text);
+    if (kIsWeb) {
+      if (sound != null) await _browser.playCue(sound);
+      if (_disposed || generation != _generation) return;
+      return _browser.narrate(text);
+    }
     await _channel.invokeMethod<void>('narrate', {
       'text': text,
       'sound': sound,
@@ -60,15 +64,14 @@ class PracticeAudio {
 
   /// Plays a cue without requiring or initializing an offline narration voice.
   ///
-  /// Supports the teaching cues `alarm`, `all_clear`, and `noise`, plus gentle
+  /// Supports the teaching cues `alarm`, `all_clear`, `noise`, and `busy`, plus gentle
   /// interaction cues `select`, `action`, `success`, and `retry`. Each playback
   /// cancels the previous cue or narration and completes when stopped or done.
   Future<void> playCue(String sound) async {
     if (_disposed) return;
     ++_generation;
     if (kIsWeb) {
-      _browser.stop();
-      return;
+      return _browser.playCue(sound);
     }
     await _channel.invokeMethod<void>('narrate', {'text': '', 'sound': sound});
   }

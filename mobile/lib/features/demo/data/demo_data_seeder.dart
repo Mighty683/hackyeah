@@ -26,22 +26,21 @@ const demoFamilyPlan = FamilyPlan(
     supportNotes: 'Demo: mów powoli i podawaj jedną instrukcję naraz.',
     gender: ChildGender.boy,
   ),
-  // NANPA reserves 555-0100–0199 for fictional, non-working numbers:
-  // https://nanpa.com/numbering/555-line-numbers
+  // Demo-only training numbers. Never dial these or claim they are unassigned.
   contacts: [
     TrustedContact(
       name: 'Mama (demo)',
-      phone: '+1 202 555 0101',
+      phone: '555333444',
       relationship: 'Mama',
     ),
     TrustedContact(
       name: 'Tata (demo)',
-      phone: '+1 202 555 0102',
+      phone: '555333445',
       relationship: 'Tata',
     ),
     TrustedContact(
       name: 'Babcia (demo)',
-      phone: '+1 202 555 0103',
+      phone: '555333446',
       relationship: 'Babcia',
     ),
   ],

@@ -176,12 +176,12 @@ void main() {
       findsOneWidget,
     );
     await tapMissionAction(tester, 'Spróbuj zadzwonić raz');
-    await tapMissionAction(tester, 'Wyślij SMS');
     for (final digit in '123456789'.split('')) {
       await tapMissionAction(tester, digit);
     }
     await tapMissionAction(tester, 'Sprawdź numer');
-    await tapMissionAction(tester, 'Wyślij wiadomość na niby');
+    await tapMissionAction(tester, 'Zadzwoń na niby');
+    await tapMissionAction(tester, 'Wyślij SMS');
     expect(find.text('Rozmowa na niby'), findsOneWidget);
     await tapMissionAction(tester, 'Zostań tutaj');
     expect(find.text('Słyszysz głośny huk'), findsOneWidget);

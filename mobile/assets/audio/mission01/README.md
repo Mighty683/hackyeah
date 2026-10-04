@@ -67,3 +67,7 @@ assets, network connection, third-party attribution, or installed speech voice.
 The `playCue` Dart method plays through the existing narration channel with an
 empty spoken instruction, preserving cancellation and activity lifecycle
 handling. Feedback remains visible in text and symbols when audio is muted.
+
+`busy.wav` is an original generated practice cue: three 425 Hz pulses,
+0.5 seconds on / 0.5 seconds off, with softened edges. It represents a
+simulated busy call only. It is bundled locally for Android and browser play.

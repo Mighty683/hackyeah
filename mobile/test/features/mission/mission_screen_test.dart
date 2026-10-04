@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:do_bazy/features/mission/air_raid_mission.dart';
 import 'package:do_bazy/features/mission/mission_scene.dart';
 import 'package:do_bazy/features/mission/practice_phone_keypad.dart';
@@ -92,18 +94,6 @@ void main() {
       'Spróbuj zadzwonić raz',
       advanceFeedback: false,
     );
-    expect(
-      find.text('W tym ćwiczeniu nikt nie odbiera. Spróbuj wysłać krótki SMS.'),
-      findsOneWidget,
-    );
-    expect(find.text('Wyślij SMS'), findsNothing);
-    expect(
-      lastMissionNarration(audioCalls)['text'],
-      contains('nikt nie odbiera'),
-    );
-    await finishMissionFeedback(tester);
-    expect(find.text('Nikt nie odbiera? Wyślij SMS'), findsOneWidget);
-    await tapMissionAction(tester, 'Wyślij SMS');
     expect(find.byType(PracticePhoneKeypad), findsOneWidget);
     expect(find.text('987 654 321'), findsNothing);
     await tapMissionAction(tester, '1');
@@ -114,7 +104,7 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(find.text('Wyślij wiadomość na niby'), findsNothing);
+    expect(find.text('Zadzwoń na niby'), findsNothing);
     await tapMissionAction(tester, 'Potrzebujesz podpowiedzi?');
     expect(find.text('+48 (123) 456-789'), findsOneWidget);
     await tapMissionAction(tester, 'Ukryj podpowiedź');
@@ -131,7 +121,31 @@ void main() {
       find.text('Numer zgadza się z zapisanym kontaktem.'),
       findsOneWidget,
     );
-    await tapMissionAction(tester, 'Wyślij wiadomość na niby');
+    final busyPlayback = Completer<void>();
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(audioChannel, (call) async {
+          audioCalls.add(call);
+          if (call.method == 'initialize') return true;
+          if (call.method == 'narrate' &&
+              (call.arguments as Map)['sound'] == 'busy') {
+            await busyPlayback.future;
+          }
+          return null;
+        });
+    await tapMissionAction(tester, 'Zadzwoń na niby', advanceFeedback: false);
+    expect(
+      find.text(
+        'Linia jest zajęta. Nie udało się połączyć. Spróbuj wysłać krótki SMS.',
+      ),
+      findsOneWidget,
+    );
+    expect(lastMissionNarration(audioCalls)['sound'], 'busy');
+    await tester.pump(const Duration(seconds: 4));
+    expect(find.text('Wyślij SMS'), findsNothing);
+    busyPlayback.complete();
+    await tester.pumpAndSettle();
+    expect(find.byType(PracticePhoneKeypad), findsNothing);
+    await tapMissionAction(tester, 'Wyślij SMS');
     expect(find.text('Rozmowa na niby'), findsOneWidget);
     expect(find.text('Jestem z dala od okien.'), findsOneWidget);
     expect(
@@ -270,7 +284,6 @@ void main() {
         'Wewnętrzny korytarz',
         'Mama',
         'Spróbuj zadzwonić raz',
-        'Wyślij SMS',
       ]) {
         await tapMissionAction(tester, label);
       }
@@ -287,6 +300,7 @@ void main() {
         findsOneWidget,
       );
       await tapMissionAction(tester, 'Ćwicz dalej bez numeru');
+      await tapMissionAction(tester, 'Wyślij SMS');
       expect(find.text('Rozmowa na niby'), findsOneWidget);
       await tapMissionAction(tester, 'Zostań tutaj');
       expect(find.text('Słyszysz głośny huk'), findsOneWidget);

@@ -50,8 +50,7 @@ class _PracticePhoneKeypadState extends State<PracticePhoneKeypad> {
   );
 
   String get _hintInstruction =>
-      'Wpisz wszystkie pokazane cyfry, także numer kierunkowy kraju. '
-      'Nie musisz wpisywać plusa, spacji ani myślników.';
+      'Wpisz pokazane cyfry. Nie wpisuj spacji ani myślników.';
 
   void _editNumber(String digits) {
     final hadFeedback = _feedback != null;
@@ -84,7 +83,7 @@ class _PracticePhoneKeypadState extends State<PracticePhoneKeypad> {
       _feedback = matches ? _matched : _mismatch;
     });
     widget.onInstructionChanged(
-      matches ? '$_matched Dotknij Wyślij wiadomość na niby.' : _mismatch,
+      matches ? '$_matched Dotknij Zadzwoń na niby.' : _mismatch,
     );
   }
 
@@ -137,6 +136,7 @@ class _PracticePhoneKeypadState extends State<PracticePhoneKeypad> {
             child: const Text('Ćwicz dalej bez numeru'),
           ),
         ] else ...[
+          if (_showHint) ...[_buildHint(contacts), const SizedBox(height: 16)],
           SoftPanel(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -185,9 +185,7 @@ class _PracticePhoneKeypadState extends State<PracticePhoneKeypad> {
             onPressed: _matches
                 ? widget.onComplete
                 : (_digits.isEmpty ? null : _checkNumber),
-            child: Text(
-              _matches ? 'Wyślij wiadomość na niby' : 'Sprawdź numer',
-            ),
+            child: Text(_matches ? 'Zadzwoń na niby' : 'Sprawdź numer'),
           ),
           if (!_matches) ...[
             const SizedBox(height: 8),
@@ -197,7 +195,6 @@ class _PracticePhoneKeypadState extends State<PracticePhoneKeypad> {
                 _showHint ? 'Ukryj podpowiedź' : 'Potrzebujesz podpowiedzi?',
               ),
             ),
-            if (_showHint) _buildHint(contacts),
           ],
         ],
       ],
@@ -269,17 +266,38 @@ class _PracticePhoneKeypadState extends State<PracticePhoneKeypad> {
       Text(_hintInstruction),
       for (final contact in contacts) ...[
         const SizedBox(height: 12),
-        Text(
-          [
-            contact.name.trim(),
-            contact.relationship.trim(),
-          ].where((part) => part.isNotEmpty).join(' · '),
-          style: const TextStyle(fontWeight: FontWeight.w700),
-        ),
-        Semantics(
-          label: 'Zapisany numer',
-          value: _phoneDigits(contact.phone).split('').join(' '),
-          child: ExcludeSemantics(child: Text(contact.phone)),
+        SoftPanel(
+          color: BaseboundColors.sky,
+          borderColor: BaseboundColors.blue,
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                [
+                  contact.name.trim(),
+                  contact.relationship.trim(),
+                ].where((part) => part.isNotEmpty).join(' · '),
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 8),
+              Semantics(
+                label: 'Zapisany numer',
+                value: _phoneDigits(contact.phone).split('').join(' '),
+                child: ExcludeSemantics(
+                  child: Text(
+                    contact.phone,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w700,
+                      color: BaseboundColors.blue,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     ],

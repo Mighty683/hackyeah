@@ -135,14 +135,14 @@ Map<String, MissionStep> buildAirRaidSteps(MissionMode mode) {
           'Spróbuj zadzwonić raz',
           MissionActionIcon.call,
           true,
-          'W tym ćwiczeniu nikt nie odbiera. Spróbuj wysłać krótki SMS.',
+          'Linia jest zajęta. Nie udało się połączyć. Spróbuj wysłać krótki SMS.',
         ),
       ],
     ),
     MissionStep(
       id: 'sms',
-      title: 'Nikt nie odbiera? Wyślij SMS',
-      narration: 'Nikt nie odebrał. Wyślij jeden krótki SMS z informacją, gdzie jesteś.',
+      title: 'Nie udało się połączyć? Wyślij SMS',
+      narration: 'Nie udało się połączyć. Wyślij krótki SMS z informacją, gdzie jesteś.',
       visual: MissionVisual.communication,
       choices: [
         _choice(

@@ -90,10 +90,11 @@ class _MissionScreenState extends State<MissionScreen>
     if (_session.isComplete) return 'success';
     final choice = _session.selectedChoice;
     if (choice == null) return _session.step.sound;
-    if (choice.continuesAfterFeedback ||
-        choice.id == 'more_places' ||
-        (_session.step.id == 'communication' && choice.id == 'call')) {
+    if (choice.continuesAfterFeedback || choice.id == 'more_places') {
       return 'select';
+    }
+    if (_session.step.id == 'communication' && choice.id == 'call') {
+      return 'busy';
     }
     if (!choice.isCorrect) return 'retry';
     if (_session.step.id == 'get_down' || _session.step.id == 'protect_head') {
@@ -130,14 +131,20 @@ class _MissionScreenState extends State<MissionScreen>
         _enteringPhoneNumber) {
       return;
     }
-    if (_session.step.id == 'sms' && id == 'message') {
+    if (_session.step.id == 'communication' && id == 'call') {
       ++_feedbackRequest;
       setState(() => _enteringPhoneNumber = true);
       unawaited(_loadPhoneContacts());
       return;
     }
-    setState(() => _session.choose(id));
-    unawaited(_respondToChoice());
+    setState(() {
+      _session.choose(id);
+      if (_session.step.id == 'sms' && id == 'message') {
+        // Show the pretend message and reply together.
+        _session.advance();
+      }
+    });
+    unawaited(_playCurrent());
   }
 
   Future<void> _playCurrent() => _session.hasFeedback && !_enteringPhoneNumber
@@ -209,11 +216,9 @@ class _MissionScreenState extends State<MissionScreen>
       _enteringPhoneNumber = false;
       _phoneContacts = null;
       _phoneNarration = '';
-      _session.choose('message');
-      // The pretend message and reply share one screen after number practice.
-      _session.advance();
+      _session.choose('call');
     });
-    unawaited(_narrate());
+    unawaited(_respondToChoice());
   }
 
   void _next() {
