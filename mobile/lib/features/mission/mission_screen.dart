@@ -286,7 +286,7 @@ class _MissionScreenState extends State<MissionScreen>
           onPressed: _exiting ? null : () => unawaited(_exit()),
         ),
         title: const Text(
-          'Ćwiczenie · alarm lotniczy',
+          'Alarm lotniczy',
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
@@ -589,13 +589,11 @@ class _MissionScreenState extends State<MissionScreen>
   };
 
   Widget _recallLayout() => MissionRecapLayout(
-    title: _session.step.title,
     audioControls: _audioControls(),
     actions: [_nextButton()],
   );
 
   Widget _completionLayout() => MissionRecapLayout(
-    title: 'Ćwiczenie ukończone',
     audioControls: _audioControls(),
     actions: [
       FilledButton.icon(

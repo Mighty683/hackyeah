@@ -267,8 +267,8 @@ class _ChildOnboardingScreenState extends State<ChildOnboardingScreen> {
             _busy
                 ? 'Zapisywanie…'
                 : [
-                    'Podaj imię',
-                    'Wybierz postać',
+                    'Zatwierdź wiek',
+                    'Zatwierdź imię',
                     'Rozpocznij ćwiczenie',
                   ][_step],
           ),

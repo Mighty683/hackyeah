@@ -326,7 +326,7 @@ flowchart TD
 | --- | --- | --- |
 | First-launch loading/error | Prepare three photo landmarks, fictional Home and a linked meeting place | Retry on failure; Help prototype; existing records preserved |
 | Welcome | Foreground location permission once, then choose child or adult | Denial permits navigation; two role choices |
-| Child onboarding | Enter name or nickname, age, then select girl or boy | Back keeps edits; load/save errors allow retry; each visit starts empty |
+| Child onboarding | Enter age, name or nickname, then select girl or boy | Confirm the current field with “Zatwierdź wiek” / “Zatwierdź imię”; Back keeps edits; load/save errors allow retry; each visit starts empty |
 | Activity selection | Choose Practices or Our map | Help prototype after child onboarding; replay audio, back |
 | Practice scenarios | Choose alarm or lost practice | Replay audio, back to activities |
 | Mission mode (7+) | Choose home or outside | Replay audio, back to scenarios |
@@ -336,7 +336,7 @@ flowchart TD
 | Alarm phone practice unavailable | Explain missing saved numbers or a failed read | Continue without a number; failed reads also offer Try loading again; saved details remain intact |
 | Alarm pretend conversation | See the outgoing message and adult reply together | Stay here continues to the loud-noise decision; Practice only. Nothing was sent. |
 | Mission feedback | See the consequence and explanation | Choose another action after a mistake; accepted actions advance automatically; replay audio, mute/unmute sound effects |
-| Mission recall/completion | Read three numbered reminders with short descriptions and Dino’s “You did a great job!” | Finish practice; replay audio, Play again, Back to practice choices |
+| Mission recall/completion | Read three numbered reminders with short descriptions and Dino’s praise once, without a duplicate completion heading | Finish practice; replay audio, Play again, Back to practice choices |
 | Lost practice loading/error | Load the current display-only family snapshot | Retry or explicitly use pretend family; back preserves saved details |
 | Lost scene selection (7+) | Choose meeting point nearby or out of sight | Replay audio, back; unavailable voice offers adult help and retry |
 | Lost decision/feedback | Recognize the chosen photo; find its pin on the shared Our map; hear calm feedback | Map drag/pinch and Places include the saved Home practice point when inside the demo map; I cannot find it returns to staying nearby; retry or advance, replay audio, exit |

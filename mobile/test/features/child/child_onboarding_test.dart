@@ -80,20 +80,20 @@ void main() {
         '',
       );
       if (gender == ChildGender.boy) {
-        await _tap(tester, 'Podaj imię');
+        await _tap(tester, 'Zatwierdź wiek');
         expect(
           find.text('Podaj swój wiek, aby przejść dalej.'),
           findsOneWidget,
         );
         await tester.enterText(find.byType(TextField), '0');
-        await _tap(tester, 'Podaj imię');
+        await _tap(tester, 'Zatwierdź wiek');
         expect(
           find.text('Podaj swój wiek, aby przejść dalej.'),
           findsOneWidget,
         );
       }
       await tester.enterText(find.byType(TextField), '9');
-      await _tap(tester, 'Podaj imię');
+      await _tap(tester, 'Zatwierdź wiek');
       if (gender == ChildGender.boy) {
         await tester.binding.handlePopRoute();
         await tester.pumpAndSettle();
@@ -101,8 +101,8 @@ void main() {
           tester.widget<TextField>(find.byType(TextField)).controller!.text,
           '9',
         );
-        await _tap(tester, 'Podaj imię');
-        await _tap(tester, 'Wybierz postać');
+        await _tap(tester, 'Zatwierdź wiek');
+        await _tap(tester, 'Zatwierdź imię');
         expect(find.text('Podaj imię lub pseudonim.'), findsOneWidget);
       }
       expect(
@@ -110,7 +110,7 @@ void main() {
         '',
       );
       await tester.enterText(find.byType(TextField), 'Demo child');
-      await _tap(tester, 'Wybierz postać');
+      await _tap(tester, 'Zatwierdź imię');
       await _tap(tester, 'Rozpocznij ćwiczenie');
       expect(find.text('Wybierz dziewczynkę lub chłopca.'), findsOneWidget);
       await _tap(
