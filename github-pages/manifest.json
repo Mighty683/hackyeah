@@ -1,0 +1,18 @@
+{
+    "name": "Tuptu — demo w przeglądarce",
+    "short_name": "Tuptu",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#F7F5F0",
+    "theme_color": "#2C5F9B",
+    "description": "Ćwiczenia podejmowania decyzji na niby z symulowanymi funkcjami Androida.",
+    "orientation": "portrait-primary",
+    "prefer_related_applications": false,
+    "icons": [
+        {
+            "src": "icons/safe-path.png",
+            "sizes": "1254x1254",
+            "type": "image/png"
+        }
+    ]
+}

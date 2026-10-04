@@ -1,0 +1,21 @@
+[
+  {
+    "key": "demo-shop",
+    "prompt": "Use case: photorealistic-natural. Asset type: small in-app landmark photo thumbnail, landscape 4:3 composition, request compact 640x480 image. Generate a realistic eye-level daytime photograph of a fictional small red brick corner shop in a Central European neighbourhood, a recognisable red-and-white striped awning, one big window and a green entrance door, pavement visible, leafy tree edge. Whole shop storefront occupies most of frame and is clear at small size. Calm bright natural daylight, candid phone-camera look, sharp familiar visual features, neutral skies. NO legible lettering, logos, watermarks, people, private house numbers, vehicles, maps, UI or labels. Standalone single photo, no collage. This is fictional training demo imagery, not a photograph of a named real location."
+  },
+  {
+    "key": "demo-playground",
+    "prompt": "Use case: photorealistic-natural. Asset type: small in-app landmark photo thumbnail, landscape 4:3 composition, request compact 640x480 image. Generate a realistic eye-level daytime photograph of a fictional public neighbourhood playground in Central Europe. Dominant bright yellow slide attached to a small wooden climbing tower, green trees and a low fence behind it, sandy or rubber play surface in foreground. Frame the whole slide clearly so a child can recognise it instantly in a small thumbnail. Calm bright natural daylight, casual phone-camera look. NO people, text, logos, watermarks, private house numbers, maps, UI or labels. Standalone single photo, no collage. Fictional training demo imagery, not any named real playground."
+  },
+  {
+    "key": "demo-bus-stop",
+    "prompt": "Use case: photorealistic-natural. Asset type: small in-app landmark photo thumbnail, landscape 4:3 composition, request compact 640x480 image. Generate a realistic eye-level daytime photograph of a fictional Central European neighbourhood bus stop, simple blue metal frame and clear glass shelter with a wooden bench, a recognisable blue-and-white square bus pictogram pole beside it, leafy street setting and pavement. Shelter and sign occupy the frame and are clear at small size. Calm bright natural daylight, casual phone-camera look. NO legible route numbers or lettering, logos, watermarks, people, vehicles, private house numbers, maps, UI or labels. Standalone single photo, no collage. Fictional training demo imagery, not a named real location."
+  },
+  {
+    "key": "demo-home",
+    "file": "demo-home.png",
+    "tool": "built-in image_gen",
+    "date": "2026-10-03",
+    "prompt": "Use case: photorealistic-natural. Asset type: small in-app Home destination photo thumbnail, landscape 4:3 composition. Generate a realistic eye-level daytime photograph of a fictional modest Central European family house, warm cream facade, muted red tiled pitched roof, clearly visible blue front door and two windows, short garden path and low wooden fence. Whole house occupies most of the frame and remains recognizable at thumbnail size. Calm bright natural daylight, candid phone-camera look. NO lettering, logos, watermarks, people, house numbers, vehicles, maps, UI, labels or collage. Fictional training demo imagery, not a photograph of a named real location."
+  }
+]

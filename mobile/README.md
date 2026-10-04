@@ -76,6 +76,28 @@ flutter test --platform chrome test/web_demo_storage_test.dart test/web_demo_flo
 Native checks and Android APK builds use the commands below. Appearance review
 stays with the user.
 
+## GitHub Pages
+
+The browser demo targets https://mighty683.github.io/hackyeah/ with the Flutter
+base href `/hackyeah/`. From the workspace root, rebuild the committed release:
+
+```sh
+bash scripts/build-github-pages.sh
+git add github-pages
+git commit -m "Update Flutter web demo release"
+```
+
+The script copies `mobile/build/web` into `github-pages/`, removes stale release
+files and adds `.nojekyll`. Renderer files are bundled locally. Commit the entire
+directory after each app change; the deployment workflow publishes these files
+and does not rebuild Flutter from source.
+
+In the repository's **Settings → Pages → Build and deployment**, select
+**GitHub Actions** as the source. Pushing release changes to `main` triggers
+`.github/workflows/github-pages.yml`; it can also be run manually from Actions.
+The live site is available after a successful deployment. Browser refresh loses
+demo data and device services remain mocks as described above.
+
 ## Verify and build
 
 ```sh
