@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 
 import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
-import '../../widgets/child_character.dart';
 import '../mission/practice_launcher.dart';
 import '../parent/data/family_plan.dart';
 import '../parent/data/family_plan_repository.dart';
@@ -230,29 +229,14 @@ class _ChildOnboardingScreenState extends State<ChildOnboardingScreen> {
         if (_step == 2) ...[
           const Text('Wybierz postać do ćwiczeń.'),
           const SizedBox(height: 24),
-          const SizedBox(
-            height: 140,
-            child: Row(
-              children: [
-                Expanded(
-                  child: ChildCharacter(
-                    pose: ChildPoseName.stand,
-                    gender: ChildGender.girl,
-                  ),
-                ),
-                Expanded(
-                  child: ChildCharacter(
-                    pose: ChildPoseName.stand,
-                    gender: ChildGender.boy,
-                  ),
-                ),
-              ],
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: _genderChoice(ChildGender.girl, 'Dziewczynka')),
+              const SizedBox(width: 12),
+              Expanded(child: _genderChoice(ChildGender.boy, 'Chłopiec')),
+            ],
           ),
-          const SizedBox(height: 24),
-          _genderChoice(ChildGender.girl, 'Dziewczynka'),
-          const SizedBox(height: 12),
-          _genderChoice(ChildGender.boy, 'Chłopiec'),
         ],
         if (_error != null)
           Padding(
@@ -296,15 +280,43 @@ class _ChildOnboardingScreenState extends State<ChildOnboardingScreen> {
     );
   }
 
-  Widget _genderChoice(ChildGender gender, String label) => BaseboundActionTile(
-    label: label,
-    icon: _gender == gender ? BaseboundIconName.check : BaseboundIconName.child,
-    selected: _gender == gender,
-    onPressed: _busy
-        ? null
-        : () => setState(() {
-            _gender = gender;
-            _error = null;
-          }),
+  Widget _genderChoice(ChildGender gender, String label) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Image.asset(
+        gender == ChildGender.girl
+            ? 'assets/illustrations/girl-front-v1.png'
+            : 'assets/illustrations/boy-front-v1.png',
+        height: 140,
+        fit: BoxFit.contain,
+        excludeFromSemantics: true,
+      ),
+      const SizedBox(height: 16),
+      Semantics(
+        selected: _gender == gender,
+        child: OutlinedButton(
+          style: OutlinedButton.styleFrom(
+            minimumSize: const Size(0, 56),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+            backgroundColor: _gender == gender
+                ? BaseboundColors.sky
+                : Colors.white,
+            side: BorderSide(
+              color: _gender == gender
+                  ? BaseboundColors.blue
+                  : BaseboundColors.border,
+              width: _gender == gender ? 2 : 1,
+            ),
+          ),
+          onPressed: _busy
+              ? null
+              : () => setState(() {
+                  _gender = gender;
+                  _error = null;
+                }),
+          child: Text(label, textAlign: TextAlign.center),
+        ),
+      ),
+    ],
   );
 }

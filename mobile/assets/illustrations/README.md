@@ -1,5 +1,10 @@
 # Training illustration assets
 
+Child onboarding uses front-facing `girl-front-v1.png` and `boy-front-v1.png`
+with selection buttons directly below each character. See
+[CHARACTER_SELECTION_ASSETS.md](CHARACTER_SELECTION_ASSETS.md) for prompts and
+provenance.
+
 The current Android mission uses the versioned portrait backgrounds
 `home-practice-v2.png`, `hallway-practice-v2.png` and `street-practice-v2.png`.
 See [PORTRAIT_ASSETS.md](PORTRAIT_ASSETS.md) for their final prompts and provenance.
