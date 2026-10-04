@@ -251,11 +251,13 @@ class _LostMissionScreenState extends State<LostMissionScreen>
                   onSelected: _choose,
                   onHelp: _mapHelp,
                 )
-              else if (_session.step.isDecision && !_session.hasFeedback)
+              else if (_session.step.visual == LostMissionVisual.contacts ||
+                  (_session.step.isDecision && !_session.hasFeedback))
                 LostMissionScene(
                   step: _session.step,
                   practiceContext: widget.practiceContext,
-                  onChoice: _exiting ? null : _choose,
+                  selectedChoice: _session.selectedChoice,
+                  onChoice: _exiting || _session.hasFeedback ? null : _choose,
                 )
               else
                 SizedBox(

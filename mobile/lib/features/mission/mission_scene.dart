@@ -12,6 +12,7 @@ import 'mission_object_highlights.dart';
 import 'mission_outdoor_action_scene.dart';
 import 'mission_scene_layout.dart';
 import 'scene_object_target.dart';
+import 'practice_contact_picker.dart';
 
 /// Uncropped practice art with accessible targets around scene objects.
 class MissionScene extends StatelessWidget {
@@ -36,6 +37,25 @@ class MissionScene extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (visual == MissionVisual.contacts) {
+      return PracticeContactPicker(
+        contacts: [
+          for (final choice in choices)
+            PracticeContactChoice(
+              id: choice.id,
+              label: choice.label,
+              avatar: switch (choice.icon) {
+                MissionActionIcon.mom => BaseboundIconName.mother,
+                MissionActionIcon.dad => BaseboundIconName.father,
+                MissionActionIcon.grandparent => BaseboundIconName.grandparent,
+                _ => BaseboundIconName.adult,
+              },
+            ),
+        ],
+        selectedId: selectedChoice?.id,
+        onChoose: onChoose,
+      );
+    }
     final layout = missionSceneLayout(
       visual == MissionVisual.twoWalls ? null : stepId,
       visual,

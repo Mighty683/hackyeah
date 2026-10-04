@@ -53,7 +53,7 @@ const helpSteps = <HelpPage, HelpStep>{
     title: 'Co się dzieje?',
     choices: [
       HelpChoice('Ktoś nie reaguje', HelpPage.unresponsive),
-      HelpChoice('Alarm lotniczy', HelpPage.airLocation),
+      HelpChoice('Słyszsz syrenę', HelpPage.airLocation),
       HelpChoice('Nie wiem, gdzie jestem', HelpPage.lostNoAdult),
       HelpChoice('Nie wiem', HelpPage.unsure),
     ],

@@ -286,7 +286,7 @@ class _MissionScreenState extends State<MissionScreen>
           onPressed: _exiting ? null : () => unawaited(_exit()),
         ),
         title: const Text(
-          'Ćwiczenie · alarm lotniczy',
+          'Ćwiczenie · Słyszsz syrenę',
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),

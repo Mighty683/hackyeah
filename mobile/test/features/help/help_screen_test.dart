@@ -124,7 +124,7 @@ void main() {
     tester,
   ) async {
     await open(tester);
-    await tap(tester, 'Alarm lotniczy');
+    await tap(tester, 'Słyszsz syrenę');
     await tap(tester, 'W budynku');
     await tap(tester, 'Przeczytaj krok o schronieniu');
     await tap(tester, 'Nie znam drogi');
@@ -197,7 +197,7 @@ void main() {
       );
       expect(find.text('Co się dzieje?'), findsOneWidget);
       await service(tester, HelpPhoneService.available);
-      await tap(tester, 'Alarm lotniczy');
+      await tap(tester, 'Słyszsz syrenę');
       expect(find.text('W budynku'), findsOneWidget);
       expect(find.text('Na zewnątrz, nie słychać wybuchów'), findsOneWidget);
       expect(find.text('Przećwicz telefon pod 112'), findsNothing);

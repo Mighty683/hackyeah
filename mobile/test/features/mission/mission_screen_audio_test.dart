@@ -133,7 +133,7 @@ void main() {
       advanceFeedback: false,
     );
     await tester.pump(const Duration(seconds: 5));
-    expect(find.text('Dokąd pójdziesz?'), findsOneWidget);
+    expect(find.text('Słyszysz alarm'), findsOneWidget);
     expect(find.text('Następny krok'), findsNothing);
     feedbackVoice.complete();
     await tester.pumpAndSettle();
@@ -160,10 +160,10 @@ void main() {
       );
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
       await tester.pump(const Duration(seconds: 5));
-      expect(find.text('Dokąd pójdziesz?'), findsOneWidget);
+      expect(find.text('Słyszysz alarm'), findsOneWidget);
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
       await tester.pumpAndSettle();
-      expect(find.text('Dokąd pójdziesz?'), findsOneWidget);
+      expect(find.text('Słyszysz alarm'), findsOneWidget);
       await finishMissionFeedback(tester);
       expect(find.text('W schronieniu na niby'), findsOneWidget);
       await tester.pumpWidget(const SizedBox.shrink());

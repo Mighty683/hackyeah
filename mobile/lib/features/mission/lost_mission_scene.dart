@@ -9,6 +9,7 @@ import 'lost_landmarks.dart';
 import 'lost_mission.dart';
 import 'lost_mission_choice_card.dart';
 import 'lost_mission_scene_layout.dart';
+import 'practice_contact_picker.dart';
 
 /// Fictional square with independently labelled, clickable scene objects.
 class LostMissionScene extends StatelessWidget {
@@ -27,6 +28,38 @@ class LostMissionScene extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (step.visual == LostMissionVisual.contacts) {
+      return Column(
+        children: [
+          PracticeContactPicker(
+            contacts: [
+              for (final choice in step.choices)
+                if (choice.contactId != null)
+                  PracticeContactChoice(
+                    id: choice.id,
+                    key: ValueKey('lost-choice-${choice.id}'),
+                    label: practiceContext.contacts
+                        .firstWhere((contact) => contact.id == choice.contactId)
+                        .label,
+                    avatar: lostActionIcon(choice.icon),
+                  ),
+            ],
+            selectedId: selectedChoice?.id,
+            onChoose: onChoice,
+          ),
+          if (selectedChoice == null)
+            for (final choice in step.choices)
+              if (choice.contactId == null)
+                LostMissionChoiceCard(
+                  key: ValueKey('lost-choice-${choice.id}'),
+                  choice: choice,
+                  onPressed: onChoice == null
+                      ? null
+                      : () => onChoice!(choice.id),
+                ),
+        ],
+      );
+    }
     final layout = lostMissionSceneLayout(
       step,
       practiceContext,

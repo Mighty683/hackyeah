@@ -240,8 +240,8 @@ Map<String, MissionStep> buildAirRaidSteps(MissionMode mode) {
     ),
     MissionStep(
       id: 'destination',
-      title: 'Dokąd pójdziesz?',
-      narration: 'Słyszysz alarm. Wybierz, dokąd pójdziesz.',
+      title: 'Słyszysz alarm',
+      narration: 'Dokąd pójdziesz',
       visual: MissionVisual.street,
       choices: [
         _choice(

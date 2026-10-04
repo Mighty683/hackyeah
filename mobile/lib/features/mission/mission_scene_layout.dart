@@ -148,7 +148,7 @@ MissionSceneLayout missionSceneLayout(String? stepId, MissionVisual visual) {
     ),
     'quiet' => const MissionSceneLayout(
       family: MissionVisual.quiet,
-      asset: 'assets/illustrations/hallway-practice-v2.png',
+      asset: 'assets/illustrations/hallway-practice-v3.png',
       targets: {
         'leave': Rect.fromLTWH(.815, 0, .16, .68),
         'stay': Rect.fromLTWH(.27, .51, .37, .40),
@@ -206,7 +206,7 @@ MissionSceneLayout _nonDecisionLayout(MissionVisual visual) => switch (visual) {
   ),
   MissionVisual.sheltered || MissionVisual.quiet => MissionSceneLayout(
     family: visual,
-    asset: 'assets/illustrations/hallway-practice-v2.png',
+    asset: 'assets/illustrations/hallway-practice-v3.png',
     targets: const {},
     childFeet: const Offset(.47, .83),
   ),
