@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../ui/basebound_icons.dart';
 import '../../ui/basebound_ui.dart';
 import '../../widgets/child_character.dart';
+import '../../widgets/child_character_outline.dart';
 import '../landmarks/widgets/landmark_photo.dart';
 import '../parent/data/family_plan.dart';
 import 'lost_adult_sprite.dart';
@@ -120,12 +121,14 @@ class LostSceneObjectOutline extends CustomPainter {
     required this.rejected,
     required this.selected,
     required this.correct,
+    required this.gender,
   });
 
   final LostSceneObjectKind kind;
   final bool rejected;
   final bool selected;
   final bool correct;
+  final ChildGender gender;
 
   @override
   void paint(Canvas canvas, Size size) => paintSceneHighlight(
@@ -159,8 +162,15 @@ class LostSceneObjectOutline extends CustomPainter {
           paint,
         );
       case LostSceneObjectKind.standingChild:
+        canvas.drawPath(
+          childCharacterOutlinePath(ChildPoseName.stand, gender, size),
+          paint,
+        );
       case LostSceneObjectKind.walkingChild:
-        _person(canvas, size, paint, child: true);
+        canvas.drawPath(
+          childCharacterOutlinePath(ChildPoseName.walk, gender, size),
+          paint,
+        );
       case LostSceneObjectKind.adult:
         _person(canvas, size, paint);
       case LostSceneObjectKind.informationDesk:
@@ -192,7 +202,10 @@ class LostSceneObjectOutline extends CustomPainter {
           canvas,
           size,
           const Rect.fromLTWH(.64, .43, .35, .57),
-          (part) => _person(canvas, part, paint, child: true),
+          (part) => canvas.drawPath(
+            childCharacterOutlinePath(ChildPoseName.stand, gender, part),
+            paint,
+          ),
         );
       case LostSceneObjectKind.exit:
         canvas.drawRRect(
@@ -227,14 +240,10 @@ class LostSceneObjectOutline extends CustomPainter {
     Canvas canvas,
     Size size,
     Paint paint, {
-    bool child = false,
     double aspect = 325 / 613,
   }) {
-    final childHeight = math.min(size.height, size.width / .55);
-    final width = child
-        ? childHeight * .52
-        : math.min(size.width, size.height * aspect);
-    final height = child ? childHeight : math.min(size.height, width / aspect);
+    final width = math.min(size.width, size.height * aspect);
+    final height = math.min(size.height, width / aspect);
     final left = (size.width - width) / 2;
     final top = size.height - height;
     final points = <Offset>[
@@ -283,6 +292,7 @@ class LostSceneObjectOutline extends CustomPainter {
   @override
   bool shouldRepaint(LostSceneObjectOutline oldDelegate) =>
       kind != oldDelegate.kind ||
+      gender != oldDelegate.gender ||
       rejected != oldDelegate.rejected ||
       selected != oldDelegate.selected ||
       correct != oldDelegate.correct;

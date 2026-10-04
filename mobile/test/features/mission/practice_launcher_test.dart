@@ -112,8 +112,8 @@ void main() {
       expect(find.byType(BaseboundActionTile), findsNWidgets(2));
       expect(find.text('Nasza mapa'), findsNothing);
       const unavailableNotice =
-          'Ten scenariusz nie jest jeszcze gotowy. '
-          'Scenariusz „Słyszysz alarm” jest gotowy do testów.';
+          'Tutaj nie można ćwiczyć z mapą. '
+          'Wróć i wybierz „Nasza mapa”.';
       final lostTile = tester
           .widgetList<BaseboundActionTile>(find.byType(BaseboundActionTile))
           .singleWhere((tile) => tile.label == 'Ćwicz z mapą');

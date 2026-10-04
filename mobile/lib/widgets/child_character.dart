@@ -30,12 +30,17 @@ class ChildCharacter extends StatelessWidget {
     Rect.fromLTRB(790, 745, 1105, 1215),
   ];
 
+  /// Shared source geometry keeps sprite outlines aligned across poses.
+  static Rect sourceRectFor(ChildPoseName pose, ChildGender gender) =>
+      (gender == ChildGender.boy ? _boySourceRects : _sourceRects)[pose.index];
+
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
-      final rects = gender == ChildGender.boy ? _boySourceRects : _sourceRects;
-      final source = rects[pose.index];
-      final scale = constraints.maxHeight / rects.first.height;
+      final source = sourceRectFor(pose, gender);
+      final scale =
+          constraints.maxHeight /
+          sourceRectFor(ChildPoseName.stand, gender).height;
       return Align(
         alignment: Alignment.bottomCenter,
         child: SizedBox(

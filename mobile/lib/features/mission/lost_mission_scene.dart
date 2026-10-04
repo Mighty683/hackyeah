@@ -138,6 +138,7 @@ class LostMissionScene extends StatelessWidget {
                 ? null
                 : LostSceneObjectOutline(
                     kind: object.kind,
+                    gender: practiceContext.gender,
                     rejected: rejected,
                     selected: selectedChoice?.id == choice.id,
                     correct: choice.isCorrect,

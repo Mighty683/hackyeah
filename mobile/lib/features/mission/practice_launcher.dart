@@ -58,8 +58,8 @@ class _PracticeSelectionScreen extends StatefulWidget {
 class _PracticeSelectionScreenState extends State<_PracticeSelectionScreen>
     with WidgetsBindingObserver {
   static const _lostScenarioNotice =
-      'Ten scenariusz nie jest jeszcze gotowy. '
-      'Scenariusz „Słyszysz alarm” jest gotowy do testów.';
+      'Tutaj nie można ćwiczyć z mapą. '
+      'Wróć i wybierz „Nasza mapa”.';
 
   PracticeAudio _audio = PracticeAudio();
   late _Selection _selection = widget.initialSelection;
@@ -71,7 +71,7 @@ class _PracticeSelectionScreenState extends State<_PracticeSelectionScreen>
     _Selection.activity => 'Wybierz zajęcie. Ćwiczenia lub Nasza mapa.',
     _Selection.scenario =>
       'Wybierz scenariusz. Słyszysz alarm jest gotowy do testów. '
-          'Ćwicz z mapą nie jest jeszcze gotowy.',
+          'Aby ćwiczyć z mapą, wróć i wybierz Nasza mapa.',
     _Selection.mode => 'Wybierz miejsce ćwiczenia. W domu lub na zewnątrz.',
   };
 
@@ -308,7 +308,10 @@ class _PracticeSelectionScreenState extends State<_PracticeSelectionScreen>
           enabled: false,
           child: ExcludeSemantics(
             child: IgnorePointer(
-              child: _choice('Ćwicz z mapą', BaseboundIconName.lost, null),
+              child: Opacity(
+                opacity: 0.5,
+                child: _choice('Ćwicz z mapą', BaseboundIconName.lost, null),
+              ),
             ),
           ),
         ),
